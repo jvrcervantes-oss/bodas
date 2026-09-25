@@ -256,7 +256,11 @@
         el('span', { class: 'c-sec-nombre', text: s.titulo || D.secciones[s.tipo].titulo }),
         s.tipo === 'libre' ? el('span', { class: 'c-sec-tipo', text: 'propia' }) : null
       ]);
-      abrir.addEventListener('click', function () { abierta = abierta === s.id ? null : s.id; pintaSecciones(); });
+      abrir.addEventListener('click', function () {
+        abierta = abierta === s.id ? null : s.id;
+        pintaSecciones();
+        if (abierta) irAPagina(rutaDe[s.id]);   // la vista previa enseña la página que se edita
+      });
       var item = el('li', { class: 'c-sec' + (s.on === false ? ' is-off' : ''), 'data-id': s.id }, [
         el('div', { class: 'c-sec-fila' }, [
           on, abrir,
@@ -286,6 +290,7 @@
   var paginaSel = document.getElementById('paginaSel');
   var marco = document.getElementById('marco');
   var pagina = 'inicio';
+  var rutaDe = {}, idDe = {};   // id de sección <-> ruta de su página (del último render)
   var scrollY = 0;
   var pideN = 0;
 
@@ -298,7 +303,9 @@
         iframe.srcdoc = j.html;
         paginaSel.textContent = '';
         var existe = false;
+        rutaDe = {}; idDe = {};
         j.paginas.forEach(function (p) {
+          if (p[2]) { rutaDe[p[2]] = p[0]; idDe[p[0]] = p[2]; }
           var o = el('option', { value: p[0], text: p[1] });
           if (p[0] === pagina) { o.selected = true; existe = true; }
           paginaSel.appendChild(o);
@@ -319,9 +326,34 @@
       iframe.contentWindow.postMessage({ tipo: 'scroll', y: scrollY }, '*');
     }
     if (d.tipo === 'scroll' && typeof d.y === 'number') scrollY = d.y;
-    if (d.tipo === 'ir' && typeof d.pagina === 'string') { pagina = d.pagina; scrollY = 0; previa(); }
+    if (d.tipo === 'ir' && typeof d.pagina === 'string') { irAPagina(d.pagina); sigueEnEditor(d.pagina); }
   });
-  paginaSel.addEventListener('change', function () { pagina = paginaSel.value; scrollY = 0; previa(); });
+  paginaSel.addEventListener('change', function () { irAPagina(paginaSel.value); sigueEnEditor(paginaSel.value); });
+
+  function irAPagina(ruta) {
+    if (!ruta || ruta === pagina) return;
+    pagina = ruta; scrollY = 0; previa();
+  }
+  // Navegar en la vista previa mueve el configurador a lo que se está viendo: la página de
+  // una sección abre esa sección; la portada lleva a «Portada y estilo» (salvo que ya se
+  // esté en una pestaña de la portada). En móvil no se cambia de vista: solo se deja listo.
+  function sigueEnEditor(ruta) {
+    var id = idDe[ruta];
+    if (id) {
+      abierta = id;
+      muestraTab('secciones', true);
+      pintaSecciones();
+      var n = li({ id: id });
+      if (n) {
+        if (document.body.getAttribute('data-ver') !== 'previa') n.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        n.classList.remove('c-destaca'); void n.offsetWidth; n.classList.add('c-destaca');
+      }
+    } else if (ruta === 'inicio') {
+      var actual = document.querySelector('[data-tab][aria-selected="true"]');
+      var k = actual && actual.getAttribute('data-tab');
+      if (k !== 'pareja' && k !== 'lugares' && k !== 'portada') muestraTab('portada', true);
+    }
+  }
 
   // Móvil / escritorio: el escritorio se pinta a 1280 px y se escala al hueco
   function ajustaMarco() {
@@ -352,13 +384,20 @@
 
   // ------------------------------------------------------------ pestañas
   var tabs = document.querySelectorAll('[data-tab]');
-  function muestraTab(k) {
+  function muestraTab(k, sinCambiarVista) {
     tabs.forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === k ? 'true' : 'false'); });
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
-    document.body.setAttribute('data-ver', 'editor');
+    if (!sinCambiarVista) document.body.setAttribute('data-ver', 'editor');
+  }
+  // Y al revés: cambiar de pestaña lleva la vista previa a la página que esa pestaña edita
+  function paginaDeTab(k) {
+    if (k === 'lugares') { var inf = st.secciones.filter(function (x) { return x.tipo === 'informacion' && x.on !== false; })[0]; return inf && rutaDe[inf.id] || 'inicio'; }
+    if (k === 'secciones') return abierta && rutaDe[abierta] || null;
+    if (k === 'pareja' || k === 'portada') return 'inicio';
+    return null;
   }
   tabs.forEach(function (t, i) {
-    t.addEventListener('click', function () { muestraTab(t.getAttribute('data-tab')); });
+    t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); });
     t.addEventListener('keydown', function (e) {
       var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
       if (!d) return;

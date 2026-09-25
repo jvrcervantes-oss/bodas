@@ -115,6 +115,9 @@
 .c-secciones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .c-sec { border-radius: var(--r-lg); background: var(--surface-low); border: 1px solid var(--line-soft); transition: border-color .15s, box-shadow .15s; }
 .c-sec:hover { border-color: var(--line); }
+.c-sec { scroll-margin-top: 90px; }
+.c-destaca { animation: destaca 1.4s var(--ease-out, ease-out); }
+@keyframes destaca { 0%, 30% { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(197, 160, 89, .25); } 100% { box-shadow: none; } }
 .c-sec-fila { display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 14px; }
 .c-sec-abrir { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left; border: 0; background: none; padding: 10px 0; cursor: pointer; font-size: 14px; font-weight: 500; }
 .c-sec-ico { color: var(--bronze); }

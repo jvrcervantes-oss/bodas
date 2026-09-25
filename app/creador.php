@@ -59,7 +59,8 @@ function api_vista_previa(string $metodo, string $assets): void {
     $html = render_pagina($c, $pagina === 'inicio' ? '' : $pagina, ['modo' => 'preview', 'assets' => $assets, 'foto' => '']);
     if ($html === null) $html = render_pagina($c, '', ['modo' => 'preview', 'assets' => $assets, 'foto' => '']);
     $paginas = [['inicio', 'Inicio']];
-    foreach ($c['secciones'] as $s) if ($s['on']) $paginas[] = [$s['ruta'], $s['titulo']];
+    // [ruta, título, id de la sección]: el creador sincroniza vista previa y configurador por el id
+    foreach ($c['secciones'] as $s) if ($s['on']) $paginas[] = [$s['ruta'], $s['titulo'], $s['id']];
     $paginas[] = ['privacidad', 'Privacidad'];
     json_response(['ok' => true, 'html' => $html, 'paginas' => $paginas, 'faltan' => faltan($c)]);
 }
