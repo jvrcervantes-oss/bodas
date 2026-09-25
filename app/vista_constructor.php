@@ -12,6 +12,8 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $datos = ['modo' => $modo, 'config' => $c, 'slug' => $slug, 'csrf' => $csrf,
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
         'fuentes' => array_map(fn($f) => ['nombre' => $f[0], 'titulos' => $f[1], 'nombres' => $f[3], 'estilo' => $f[4]], FUENTES),
+        // Muestras en imagen (no el fichero de la fuente): se enseñan también bloqueadas en el Esencial
+        'fuentesAutor' => array_map(fn($f) => ['nombre' => $f['nombre'], 'nota' => $f['nota']], fuentes_autor()),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),

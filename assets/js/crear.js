@@ -76,6 +76,7 @@
     var ve = document.getElementById('verEntrada'); if (ve) ve.hidden = !st.atelier;
     // Pack Esencial = estilo propio (paleta, letra, adornos); Pack Atelier = solo los diseños de autor
     propioEl.hidden = !!st.atelier;
+    pintaAutor();
     var t = document.getElementById('precioTotal');
     if (t) {
       t.textContent = st.atelier ? D.precio.totalAtelier : D.precio.total;
@@ -138,6 +139,41 @@
     muestra.style.fontStyle = f.estilo;
     fuentesEl.appendChild(el('label', { class: 'c-fuente' }, [r, muestra, el('small', { text: f.nombre })]));
   });
+
+  // ------------------------------------------------------------ tipografías de autor (solo Pack Atelier)
+  // En el Atelier se eligen bajo los diseños; en el Esencial se ven bloqueadas junto a las cuatro de siempre.
+  var autorKs = Object.keys(D.fuentesAutor || {});
+  var autorEl = null;
+  function muestraAutor(k) { return el('img', { class: 'c-fuente-img', src: '/assets/img/fuentes/autor-' + k + '.webp', alt: 'Muestra de ' + D.fuentesAutor[k].nombre, loading: 'lazy' }); }
+  if (autorKs.length) {
+    autorEl = el('div', { class: 'c-autor', id: 'fuentesAutor' }, [
+      el('div', { class: 'c-atelier-cab' }, [el('span', { class: 'overline', text: 'Tipografía de autor' }), el('span', { class: 'c-atelier-precio', text: 'Incluida en el Pack Atelier' })])]);
+    var gAutor = el('div', { class: 'c-fuentes', role: 'radiogroup', 'aria-label': 'Tipografía de autor' });
+    [''].concat(autorKs).forEach(function (k) {
+      var r = el('input', { type: 'radio', name: 'fuente_autor', value: k });
+      r.checked = (st.fuente_autor || '') === k;
+      r.addEventListener('change', function () { st.fuente_autor = k; cambio(); });
+      var m = k ? muestraAutor(k) : el('span', { class: 'c-fuente-muestra', text: 'La del diseño' });
+      gAutor.appendChild(el('label', { class: 'c-fuente' }, [r, m, el('small', { text: k ? D.fuentesAutor[k].nombre : 'Recomendada' })]));
+    });
+    autorEl.appendChild(gAutor);
+    atelierEl.parentNode.insertBefore(autorEl, atelierEl.nextSibling);
+    // Esencial: las mismas muestras, bloqueadas
+    var bloq = el('div', { class: 'c-fuentes c-fuentes-bloq' });
+    autorKs.forEach(function (k) {
+      bloq.appendChild(el('div', { class: 'c-fuente is-bloq', title: 'Solo en el Pack Atelier' }, [muestraAutor(k),
+        el('small', { text: D.fuentesAutor[k].nombre }), el('span', { class: 'c-candado', text: 'Solo en Pack Atelier' })]));
+    });
+    fuentesEl.parentNode.insertBefore(el('p', { class: 'c-ayuda c-bloq-nota', text: 'Tipografías de autor, solo en el Pack Atelier:' }), fuentesEl.nextSibling);
+    fuentesEl.parentNode.insertBefore(bloq, fuentesEl.nextSibling.nextSibling);
+  }
+  function pintaAutor() {
+    if (!autorEl) return;
+    autorEl.hidden = !st.atelier;
+    if (!st.atelier) st.fuente_autor = '';
+    document.querySelectorAll('input[name="fuente_autor"]').forEach(function (r) { r.checked = (st.fuente_autor || '') === r.value; });
+  }
+  pintaAutor();
 
   // ------------------------------------------------------------ convite en el mismo sitio
   var convMismo = document.getElementById('convMismo');

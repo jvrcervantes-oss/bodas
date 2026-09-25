@@ -37,18 +37,27 @@
     var calma = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!previa && (vista || calma)) { en.remove(); return; }
     document.body.classList.add('con-entrada');
+    // Mientras el sobre está cerrado, la web de detrás no recibe foco ni clics (teclado: Tab va al sello)
+    var detras = Array.prototype.filter.call(document.body.children, function (n) { return n !== en && n.tagName !== 'SCRIPT'; });
+    detras.forEach(function (n) { n.inert = true; });
+    // Secuencia (CSS, .abre): el sello salta, la solapa gira, la tarjeta sale y viene hacia
+    // delante. Después (.sale) el sobre se funde y la web pasa de desenfocada a nítida.
     function abrir() {
-      if (en.classList.contains('sale')) return;
+      if (en.classList.contains('abre')) return;
       try { sessionStorage.setItem(clave, '1'); } catch (e) {}
-      en.classList.add('sale');
-      document.body.classList.remove('con-entrada');
-      setTimeout(function () { en.remove(); }, 1400);
+      en.classList.add('abre');
+      var t = en.classList.contains('entrada-lacre') ? 2900 : 2500;
+      setTimeout(function () {
+        en.classList.add('sale');
+        document.body.classList.add('revelando');
+        document.body.classList.remove('con-entrada');
+        detras.forEach(function (n) { n.inert = false; });
+      }, t);
+      setTimeout(function () { en.remove(); document.body.classList.remove('revelando'); }, t + 1300);
     }
     en.querySelectorAll('[data-entrada-abrir]').forEach(function (b) { b.addEventListener('click', abrir); });
     en.querySelectorAll('[data-entrada-rsvp]').forEach(function (a) { a.addEventListener('click', function () { try { sessionStorage.setItem(clave, '1'); } catch (e) {} }); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrir(); });
-    var b = en.querySelector('[data-entrada-abrir]');
-    if (b) setTimeout(function () { try { b.focus({ preventScroll: true }); } catch (e) {} }, 1800);
   }
 
   // ---------- Menú a pantalla completa (móvil) ----------

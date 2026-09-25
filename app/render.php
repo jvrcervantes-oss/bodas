@@ -93,42 +93,91 @@ function tema_css(array $c): string {
 function fuente_css(array $c): string {
     $f = FUENTES[$c['fuente'] ?? 'clasica'] ?? FUENTES['clasica'];
     if (($c['atelier'] ?? '') !== '') $f = array_merge([ATELIER[$c['atelier']]['nombre']], ATELIER[$c['atelier']]['fuentes']);
+    if (($a = FUENTES_AUTOR[$c['fuente_autor'] ?? ''] ?? null) && ($c['atelier'] ?? '') !== '') $f = [$a['nombre'], $a['titulos'], $a['textos'], $a['nombres'], $a['estilo']];
     return '--serif:' . $f[1] . ';--sans:' . $f[2] . ';--nombres:' . $f[3] . ';--nombres-estilo:' . $f[4];
 }
 
-/** Ilustración de cabecera de cada diseño Atelier. El sello lleva encima las iniciales de ESTA pareja. */
+/**
+ * @font-face de la tipografía de autor elegida, solo si se usa. En el ZIP no: el fichero no se
+ * entrega (redistribución) y la web descargada cae a la alternativa libre de la pila.
+ */
+function fuente_autor_css(array $c, array $ctx): string {
+    $f = fuentes_autor()[$c['fuente_autor'] ?? ''] ?? null;
+    if (!$f || ($c['atelier'] ?? '') === '' || $ctx['modo'] === 'zip') return '';
+    $o = '';
+    foreach ($f['archivos'] as $arch => [$fam, $estilo]) {
+        $o .= "@font-face{font-family:'" . $fam . "';font-style:" . $estilo . ";font-weight:1 700;font-display:swap;src:url(" . $ctx['assets'] . 'fonts/' . $arch . ") format('woff2');}";
+    }
+    return $o;
+}
+
+/** Iniciales para sellos y monogramas: «E&A». */
+function monograma(array $c): string { return str_replace(' ', '', iniciales($c)); }
+
+/** Hasta $n accesos a secciones de la web, en el orden en que la pareja las tiene. */
+function accesos(array $c, array $ctx, int $n, string $clase = ''): array {
+    $links = [];
+    foreach (['informacion', 'rsvp', 'regalos', 'musica', 'historia', 'galeria'] as $t) {
+        $s = seccion_tipo($c, $t);
+        if ($s && count($links) < $n) $links[] = a_interno($s['ruta'], $ctx, $clase !== '' ? 'class="' . $clase . '"' : '') . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
+    }
+    return $links;
+}
+
+function lugar_linea(array $c): string {
+    return trim($c['ceremonia']['lugar'] . ($c['ciudad'] !== '' ? ' · ' . $c['ciudad'] : ''), ' ·');
+}
+
+/** Ilustración de cabecera de cada diseño Atelier (piezas de la maqueta del owner, sin textos ni iniciales ajenas). */
 function arte_atelier(array $c, string $A): string {
-    $img = fn($f, $cls) => '<img class="atelier-arte ' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '.webp" alt="" aria-hidden="true">';
+    $img = fn($f, $cls) => '<img class="atelier-arte ' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '" alt="" aria-hidden="true">';
     switch ($c['atelier']) {
-        case 'citricos': return $img('esquina-1', 'esq esq-i') . $img('esquina-2', 'esq esq-d');
-        case 'herbario': return $img('herbario-banda', 'banda-herbario');
-        case 'masia': return $img('masia', 'arte-masia');
-        case 'lacre': return '<div class="arte-sello" aria-hidden="true"><img src="' . h($A) . 'img/atelier/sello.webp" alt=""><span>' . h(iniciales($c) ?: '♥') . '</span></div>';
-        case 'ceramica': return '<p class="arte-monograma" aria-hidden="true">' . h(iniciales($c)) . '</p>';
+        case 'citricos': return $img('esquina-1.webp', 'esq esq-i') . $img('esquina-2.webp', 'esq esq-d');
+        case 'herbario': return $img('herbario-banda.webp', 'banda-herbario');
+        case 'masia': return $img('masia.webp', 'arte-masia');
+        // Monograma entre las dos ramas de olivo de azulejo
+        case 'ceramica': return '<div class="tal-mono" aria-hidden="true">' . $img('olivo-i.webp', 'tal-olivo') . '<span>' . h(iniciales($c) ?: '♥') . '</span>' . $img('olivo-d.webp', 'tal-olivo') . '</div>';
         default: return '';
     }
 }
 
-/** Lo que va bajo los nombres en Cítricos y Herbario (composición de sus especificaciones). */
+/** Sello de cera bronce con las iniciales de ESTA pareja (el original traía un monograma ajeno, borrado). */
+function sello_bronce(array $c, string $A, string $cls = 'sello-bronce'): string {
+    return '<span class="' . $cls . '"><img src="' . h($A) . 'img/atelier/sello-bronce.webp" alt=""><b>' . h(monograma($c) ?: '♥') . '</b></span>';
+}
+
+/** Lo que va bajo los nombres en cada diseño (composición de sus especificaciones). */
 function atelier_tras_texto(array $c, array $ctx): string {
     $A = $ctx['assets'];
     $rsvp = seccion_tipo($c, 'rsvp');
-    if ($c['atelier'] === 'citricos') {
-        $links = [];
-        foreach (['informacion', 'rsvp', 'regalos', 'musica'] as $t) {
-            $s = seccion_tipo($c, $t);
-            if ($s && count($links) < 3) $links[] = a_interno($s['ruta'], $ctx) . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
-        }
-        return '<img class="atelier-arte arte-limones" src="' . h($A) . 'img/atelier/limones.webp" alt="" aria-hidden="true">'
-            . '<img class="div-olivo" src="' . h($A) . 'img/atelier/divisor-olivo.svg" alt="" aria-hidden="true">'
-            . ($links ? '<nav class="cit-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '')
-            . sello_circular($c, $A);
-    }
-    if ($c['atelier'] === 'herbario') {
-        $lugar = trim($c['ceremonia']['lugar'] . ($c['ciudad'] !== '' ? ', ' . $c['ciudad'] : ''), ', ');
-        return '<img class="ramita" src="' . h($A) . 'img/atelier/ramita.svg" alt="" aria-hidden="true">'
-            . ($lugar !== '' ? '<p class="herb-lugar">' . h($lugar) . '</p>' : '')
-            . ($rsvp ? '<span class="herb-label">Confirmación</span>' . a_interno($rsvp['ruta'], $ctx, 'class="herb-btn"') . h($rsvp['titulo']) . '</a>' : '');
+    $lugar = lugar_linea($c);
+    switch ($c['atelier']) {
+        case 'citricos':
+            $links = accesos($c, $ctx, 3);
+            return '<img class="atelier-arte arte-limones" src="' . h($A) . 'img/atelier/limones.webp" alt="" aria-hidden="true">'
+                . '<img class="div-olivo" src="' . h($A) . 'img/atelier/divisor-olivo.svg" alt="" aria-hidden="true">'
+                . ($links ? '<nav class="cit-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '')
+                . sello_circular($c, $A);
+        case 'herbario':
+            return '<img class="ramita" src="' . h($A) . 'img/atelier/ramita.svg" alt="" aria-hidden="true">'
+                . ($lugar !== '' ? '<p class="herb-lugar">' . h($lugar) . '</p>' : '')
+                . ($rsvp ? '<span class="herb-label">Confirmación</span>' . a_interno($rsvp['ruta'], $ctx, 'class="herb-btn"') . h($rsvp['titulo']) . '</a>' : '');
+        case 'ceramica':
+            $links = accesos($c, $ctx, 3, 'tal-btn');
+            return '<img class="tal-flor" src="' . h($A) . 'img/atelier/flor-talavera.svg" alt="" aria-hidden="true">'
+                . ($lugar !== '' ? '<p class="tal-lugar">' . h($lugar) . '</p>' : '')
+                . ($links ? '<nav class="tal-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
+        case 'lacre':
+            $links = accesos($c, $ctx, 4);
+            return sello_bronce($c, $A, 'sello-bronce lac-sello')
+                . ($lugar !== '' ? '<p class="lac-lugar">' . h($lugar) . '</p>' : '')
+                . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="lac-btn"') . h($rsvp['titulo']) . '</a>' : '')
+                . ($links ? '<nav class="lac-nav" aria-label="Accesos">' . implode('<i aria-hidden="true">•</i>', $links) . '</nav>' : '');
+        case 'atardecer':
+            $links = accesos($c, $ctx, 3);
+            return ($lugar !== '' ? '<p class="atd-lugar">' . h($lugar) . '</p>' : '')
+                . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="atd-btn"') . h($rsvp['titulo']) . '</a>' : '')
+                . ($links ? '<nav class="atd-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
     }
     return '';
 }
@@ -147,46 +196,53 @@ function sello_circular(array $c, string $A): string {
 }
 
 /**
- * Entrada del pack Atelier: portada a pantalla completa que se abre al llegar (una vez por
- * visita; boda.js la quita si ya se vio o si el dispositivo pide menos movimiento).
+ * Entrada del pack Atelier: un sobre cerrado a pantalla completa. Se pulsa el sello, la solapa
+ * gira en 3D, la tarjeta sale del sobre, viene hacia delante y la web aparece detrás, de
+ * desenfocada a nítida. Mismo mecanismo para los seis diseños, con la piel de cada uno
+ * (fondo, forro, sello y arte de la tarjeta). boda.js la enseña una vez por visita y nunca
+ * con «reducir movimiento».
  */
 function entrada_atelier(array $c, array $ctx): string {
     $A = $ctx['assets'];
     $k = $c['atelier'];
     $nom = nombres($c) ?: 'Vuestros nombres';
     $rsvp = seccion_tipo($c, 'rsvp');
-    $img = fn($f, $cls = '') => '<img class="' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '.webp" alt="">';
-    switch ($k) {
-        case 'masia':
-            // Dos capas: el trazo tenue de lápiz y el grabado que se «dibuja» encima con una máscara
-            $arte = '<div class="en-dibujo">' . $img('masia', 'en-lapiz') . $img('masia', 'en-tinta') . '<span class="en-pluma"></span></div>';
-            break;
-        case 'lacre':
-            $arte = '<button type="button" class="en-sello" data-entrada-abrir aria-label="Abrir la invitación">' . $img('sello') . '<span>' . h(iniciales($c) ?: '♥') . '</span></button><p class="en-pista">Pulsad el sello para abrir</p>';
-            break;
-        case 'citricos':
-            $arte = $img('esquina-1', 'en-esq en-esq-i') . $img('esquina-2', 'en-esq en-esq-d')
-                . '<div class="en-rama">' . $img('limones') . '</div><div class="en-petalos" aria-hidden="true">' . str_repeat('<i></i>', 14) . '</div>';
-            break;
-        case 'ceramica':
-            $arte = '<div class="en-azulejo">' . $img('talavera') . '<span class="en-mono">' . h(iniciales($c)) . '</span></div>';
-            break;
-        case 'herbario':
-            $arte = '<div class="en-banda">' . $img('herbario-banda') . '</div>';
-            break;
-        default:
-            $arte = '<span class="en-sol" aria-hidden="true"></span>';
-    }
-    return '<div class="entrada entrada-' . h($k) . '" id="entrada" role="dialog" aria-label="Invitación" data-entrada' . (!empty($ctx['intro']) ? ' data-entrada-previa' : '') . '>'
-        . '<div class="en-papel"></div>'
-        . '<div class="en-contenido">' . $arte
-        . '<p class="en-kicker">' . h($c['portada']['invitacion'] ?: 'Nos casamos') . '</p>'
+    $img = fn($f, $cls = '') => '<img class="' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '" alt="">';
+    $mono = h(monograma($c) ?: '♥');
+    // Sello: lo que se pulsa. Lacre y Cítricos llevan su pieza; el resto, lacre de color con las iniciales.
+    $sello = match ($k) {
+        'lacre' => '<img src="' . h($A) . 'img/atelier/sello-bronce.webp" alt=""><b>' . $mono . '</b>',
+        'citricos' => '<img class="en-sello-disco" src="' . h($A) . 'img/atelier/sello-limon.webp" alt="">',
+        default => '<b>' . $mono . '</b>',
+    };
+    $arte = match ($k) {
+        'masia' => '<div class="en-dibujo">' . $img('masia.webp', 'en-lapiz') . $img('masia.webp', 'en-tinta') . '</div>',
+        'citricos' => $img('limones.webp', 'en-arte'),
+        'herbario' => $img('herbario-banda.webp', 'en-arte en-arte-banda'),
+        'ceramica' => '<div class="tal-mono en-arte">' . $img('olivo-i.webp', 'tal-olivo') . '<span>' . h(iniciales($c) ?: '♥') . '</span>' . $img('olivo-d.webp', 'tal-olivo') . '</div>',
+        'lacre' => '<span class="en-arte en-poema">' . h($c['portada']['invitacion'] ?: 'Nos casamos') . '</span>',
+        default => '<span class="en-arte en-aro"></span>',
+    };
+    $escena = $k === 'citricos'
+        ? $img('esquina-1.webp', 'en-esq en-esq-i') . $img('esquina-2.webp', 'en-esq en-esq-d') . '<div class="en-petalos" aria-hidden="true">' . str_repeat('<i></i>', 14) . '</div>'
+        : ($k === 'atardecer' ? '<span class="en-sol" aria-hidden="true"></span>' : '');
+    return '<div class="entrada entrada-' . h($k) . '" id="entrada" role="dialog" aria-modal="true" aria-label="Invitación de ' . h($nom) . '" data-entrada' . (!empty($ctx['intro']) ? ' data-entrada-previa' : '') . '>'
+        . '<div class="en-papel"></div>' . $escena
+        . '<div class="en-escena">'
+        . '<div class="en-sobre" data-entrada-abrir>'
+        . '<div class="en-fondo"></div>'
+        . '<div class="en-tarjeta">' . $arte
+        . '<p class="en-kicker">' . h($k === 'lacre' ? linea_fecha($c) : ($c['portada']['invitacion'] ?: 'Nos casamos')) . '</p>'
         . '<h2 class="en-nombres">' . h($nom) . '</h2>'
-        . '<p class="en-fecha">' . h(linea_fecha($c)) . '</p>'
-        . '<div class="en-acciones">'
-        . ($k !== 'lacre' ? '<button type="button" class="btn en-boton" data-entrada-abrir>Abrir la invitación</button>' : '')
-        . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="en-rsvp" data-entrada-rsvp') . h($rsvp['titulo']) . '</a>' : '')
-        . '</div></div></div>';
+        . ($k !== 'lacre' ? '<p class="en-fecha">' . h(linea_fecha($c)) . '</p>' : '')
+        . '</div>'
+        . '<div class="en-bolsillo"><span class="en-destino">' . h($nom) . '</span></div>'
+        . '<div class="en-solapa"><i class="en-solapa-f"></i><i class="en-solapa-b"></i></div>'
+        . '<button type="button" class="en-sello en-sello-' . h($k) . '" data-entrada-abrir aria-label="Abrir la invitación">' . $sello . '</button>'
+        . '</div>'
+        . '<p class="en-pista">Pulsad el sello para abrir la invitación</p>'
+        . ($rsvp ? '<p class="en-atajo">' . a_interno($rsvp['ruta'], $ctx, 'class="en-rsvp" data-entrada-rsvp') . 'Ir directos a ' . h(mb_strtolower($rsvp['titulo'], 'UTF-8')) . '</a></p>' : '')
+        . '</div></div>';
 }
 
 function linea_fecha(array $c): string {
@@ -210,7 +266,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <meta name="robots" content="noindex, nofollow">
 <?php if ($ctx['modo'] === 'preview'): ?><base href="<?= h($A) ?>"><?php endif; ?>
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
-<style><?= tema_css($c) ?></style>
+<style><?= tema_css($c) ?><?= fuente_autor_css($c, $ctx) ?></style>
 </head>
 <body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
 <?php if ($ctx['modo'] === 'preview'): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep) ?>
@@ -385,7 +441,7 @@ function pagina_inicio(array $c, array $ctx): string {
             <h3><?= h($e['lugar'] ?: 'Lugar de la ' . strtolower($rot)) ?></h3>
 <?php if ($e['direccion'] !== ''): ?>            <p class="where"><?= h($e['direccion']) ?></p><?php endif; ?>
           </div>
-          <div class="icon-dot" aria-hidden="true"><?= ico($k === 'ceremonia' ? 'M12 2v4M10 4h4M6 21V11l6-4 6 4v10M3 21h18M10 21v-5h4v5' : 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6') ?></div>
+          <div class="icon-dot icon-<?= h($k) ?>" aria-hidden="true"><?= ico($k === 'ceremonia' ? 'M12 2v4M10 4h4M6 21V11l6-4 6 4v10M3 21h18M10 21v-5h4v5' : 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6') ?></div>
         </div>
 <?php if ($e['lugar'] !== ''): ?>
         <a class="btn btn-soft" href="https://maps.google.com/?q=<?= h(rawurlencode(mapa_q($e))) ?>" target="_blank" rel="noopener noreferrer"><?= ico(ICONOS['mapa'], 'ico ico-sm') ?>Ver mapa · <?= h($rot) ?></a>

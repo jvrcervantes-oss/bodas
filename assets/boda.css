@@ -934,15 +934,6 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 @media (min-width: 901px){ .atelier-citricos .hero-names, .atelier-ceramica .hero-names{ font-size: 80px; line-height: 92px; } .arte-limones{ width: 420px; } }
 .atelier-citricos main > .wrap::before{ content: ''; display: block; height: 96px; margin: -8px 0 4px; background: url(img/atelier/limones.webp) center / contain no-repeat; mix-blend-mode: multiply; }
 
-/* Cerámica y azulejo: la foto dentro del marco de Talavera */
-.arte-monograma{ margin: 0 0 6px; font-family: 'Cinzel Decorative', Georgia, serif; font-size: 22px; letter-spacing: .12em; color: var(--primary); text-align: center; }
-.atelier-ceramica .mat-inner{ position: relative; aspect-ratio: 700 / 778; padding: 0; background: url(img/atelier/talavera.webp) center / 100% 100% no-repeat; box-shadow: none; }
-.atelier-ceramica .mat{ background: none; box-shadow: none; padding: 0; }
-.atelier-ceramica .mat-photo{ position: absolute; left: 25%; right: 25.8%; top: 22.6%; bottom: 23.3%; aspect-ratio: auto; border-radius: 2px; }
-.atelier-ceramica .mat-caption{ display: none; }
-.atelier-ceramica main > .wrap{ border: 3px double rgb(var(--primary-rgb) / .55); }
-.atelier-ceramica .divider, .atelier-ceramica .mini-rule{ background: var(--gold); }
-
 /* Herbario y lavanda: pliego prensado en su marco */
 .arte-herbario-marco{ width: min(230px, 64%); margin: 0 auto 16px; padding: 9px; background: #fff; box-shadow: 0 10px 24px rgb(var(--primary-rgb) / .14); transform: rotate(-1.5deg); border: 1px solid rgb(var(--primary-rgb) / .12); }
 .arte-herbario{ width: 100%; mix-blend-mode: normal; }
@@ -951,32 +942,11 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .atelier-herbario main > .wrap{ box-shadow: 0 1px 0 rgb(var(--primary-rgb) / .08), 0 14px 30px -12px rgb(var(--primary-rgb) / .22); }
 .atelier-herbario main > .wrap::before{ content: ''; display: block; width: 70px; height: 86px; margin: -8px auto 8px; background: url(img/atelier/herbario.webp) center / cover; border: 5px solid #fff; box-shadow: 0 4px 10px rgb(var(--primary-rgb) / .15); transform: rotate(2deg); }
 
-/* Sello de lacre: lino y sello de cera con las iniciales de la pareja */
-.atelier-lacre{ background-image: repeating-linear-gradient(0deg, rgb(0 0 0 / .018) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgb(0 0 0 / .018) 0 1px, transparent 1px 3px); }
-.arte-sello{ position: relative; width: 132px; margin: 0 auto 14px; }
-.arte-sello img{ display: block; width: 100%; mix-blend-mode: multiply; }
-.arte-sello span{ position: absolute; left: 22%; top: 21%; width: 56%; height: 56%; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 40% 35%, #B98263, #8C5A41 62%, #6E4431); color: #F3DCC8;
-  box-shadow: inset 0 2px 4px rgb(255 255 255 / .22), inset 0 -3px 7px rgb(0 0 0 / .35);
-  font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 21px; text-shadow: 0 -1px 0 rgb(0 0 0 / .45), 0 1px 0 rgb(255 255 255 / .18); }
-.atelier-lacre main > .wrap::before{ content: ''; display: block; width: 54px; height: 56px; margin: -6px auto 10px; background: url(img/atelier/sello.webp) center / contain no-repeat; }
-
 /* Boceto de masía: grabado a plumilla */
 .arte-masia{ width: min(420px, 96%); margin: 0 auto 6px; }
 .atelier-masia{ font-size: 16px; font-weight: 400; }
 .atelier-masia .hero-names{ font-size: 34px; }
 .atelier-masia main > .wrap::before{ content: ''; display: block; height: 110px; margin: -6px 0 8px; background: url(img/atelier/masia.webp) center / contain no-repeat; mix-blend-mode: multiply; opacity: .85; }
-
-/* Atardecer en cala: acuarela de fondo y foto en ventana redonda */
-.atelier-atardecer .hero{ background: url(img/atelier/atardecer.webp) center / cover no-repeat; }
-.atelier-atardecer .hero-text{ padding: 18px 10px; }
-.atelier-atardecer .mat, .atelier-atardecer .mat-inner{ background: none; box-shadow: none; }
-.atelier-atardecer .mat-inner{ padding: 6px; border-radius: 50%; background: linear-gradient(135deg, #D4AF37, #F4DE9A 50%, #C9A13A); }
-.atelier-atardecer .mat-photo{ aspect-ratio: 1; border-radius: 50%; }
-.atelier-atardecer .mat-caption{ display: none; }
-.atelier-atardecer main > .wrap{ overflow: hidden; }
-.atelier-atardecer main > .wrap::before{ content: ''; display: block; height: 90px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 12px; background: url(img/atelier/atardecer.webp) center 30% / cover; }
-@media (min-width: 901px){ .atelier-atardecer main > .wrap::before{ height: 130px; margin: -56px -64px 18px; } }
 
 /* ============================================================
    Animaciones del pack Atelier (195 €, 25-sep-2026)
@@ -985,63 +955,16 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
    - Detalle propio de cada diseño
    Todo se apaga con prefers-reduced-motion.
    ============================================================ */
-body.con-entrada{ overflow: hidden; }
-.entrada{ position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden; }
-.en-papel{ position: absolute; inset: 0; background: var(--sage); }
-.atelier-lacre .en-papel{ background-color: var(--sage); background-image: repeating-linear-gradient(0deg, rgb(0 0 0 / .02) 0 1px, transparent 1px 3px), repeating-linear-gradient(90deg, rgb(0 0 0 / .02) 0 1px, transparent 1px 3px); }
-/* Sin z-index a propósito: crearía otro contexto de apilado y las ilustraciones (multiply) dejarían de fundirse con el papel */
-.en-contenido{ position: relative; width: min(520px, 90vw); display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px; }
-.en-kicker{ margin: 18px 0 4px; font-size: 11px; font-weight: 600; letter-spacing: .25em; text-transform: uppercase; color: var(--secondary); opacity: 0; animation: en-sube .9s var(--ease-out) forwards; animation-delay: var(--t-texto, 1.1s); }
-.en-nombres{ margin: 0; font-family: var(--nombres, var(--serif)); font-style: var(--nombres-estilo, italic); font-weight: 400; font-size: clamp(38px, 11vw, 64px); line-height: 1.15; color: var(--primary);
-  opacity: 0; filter: blur(10px); animation: en-tinta 1.4s var(--ease-out) forwards; animation-delay: calc(var(--t-texto, 1.1s) + .2s); }
-.en-fecha{ margin: 8px 0 0; font-size: 12px; font-weight: 500; letter-spacing: .2em; color: var(--ink-muted); opacity: 0; animation: en-sube .9s var(--ease-out) forwards; animation-delay: calc(var(--t-texto, 1.1s) + .6s); }
-.en-acciones{ display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 28px; opacity: 0; animation: en-sube .9s var(--ease-out) forwards; animation-delay: calc(var(--t-texto, 1.1s) + 1s); }
-.en-rsvp{ font-size: 13px; color: var(--primary); text-decoration: underline; text-underline-offset: 4px; }
-@keyframes en-sube{ from{ opacity: 0; transform: translateY(14px); } to{ opacity: 1; transform: none; } }
-@keyframes en-tinta{ 0%{ opacity: 0; filter: blur(10px); letter-spacing: .08em; } 100%{ opacity: 1; filter: blur(0); letter-spacing: 0; } }
-/* Salida por defecto: la portada sube como una hoja que se levanta */
-.entrada.sale{ animation: en-levanta 1.2s cubic-bezier(.7, 0, .2, 1) forwards; pointer-events: none; }
-@keyframes en-levanta{ to{ transform: translateY(-104%); } }
-
-/* Masía: el grabado se dibuja a plumilla */
-.entrada-masia{ --t-texto: 4.1s; }
-.en-dibujo{ position: relative; width: min(440px, 88vw); }
-.en-dibujo img{ display: block; width: 100%; mix-blend-mode: multiply; }
-.en-lapiz{ opacity: .12; filter: grayscale(1); }
-.en-tinta{ position: absolute; inset: 0; -webkit-mask-image: linear-gradient(100deg, #000 42%, transparent 58%); mask-image: linear-gradient(100deg, #000 42%, transparent 58%);
-  -webkit-mask-size: 260% 100%; mask-size: 260% 100%; -webkit-mask-position: 100% 0; mask-position: 100% 0; animation: en-dibuja 4s cubic-bezier(.45, .05, .35, 1) .3s forwards; }
-@keyframes en-dibuja{ to{ -webkit-mask-position: 0 0; mask-position: 0 0; } }
-.en-pluma{ position: absolute; top: 0; bottom: 0; left: 0; width: 2px; background: linear-gradient(transparent, rgb(var(--primary-rgb) / .5), transparent); filter: blur(1px); opacity: 0;
-  animation: en-pluma 4s cubic-bezier(.45, .05, .35, 1) .3s forwards; }
-@keyframes en-pluma{ 0%{ left: 0; opacity: 0; } 8%{ opacity: 1; } 90%{ opacity: 1; } 100%{ left: 100%; opacity: 0; } }
-
-/* Lacre: se pulsa el sello, se rompe y el sobre se abre en dos */
-.entrada-lacre{ --t-texto: .5s; }
-.entrada-lacre .en-contenido{ order: 0; }
-.en-sello{ position: relative; width: 150px; padding: 0; border: 0; background: none; cursor: pointer; animation: en-late 2.4s ease-in-out 1.6s infinite; }
-.en-sello img{ display: block; width: 100%; mix-blend-mode: multiply; }
-.en-sello span{ position: absolute; left: 22%; top: 21%; width: 56%; height: 56%; border-radius: 50%; display: grid; place-items: center;
-  background: radial-gradient(circle at 40% 35%, #B98263, #8C5A41 62%, #6E4431); color: #F3DCC8; font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-size: 24px;
-  box-shadow: inset 0 2px 4px rgb(255 255 255 / .22), inset 0 -3px 7px rgb(0 0 0 / .35); text-shadow: 0 -1px 0 rgb(0 0 0 / .45); }
-.en-sello:hover{ animation-play-state: paused; transform: scale(1.04); }
-.en-sello:focus-visible{ outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 50%; }
-.en-pista{ margin: 10px 0 0; font-size: 12px; font-style: italic; color: var(--ink-muted); }
-@keyframes en-late{ 0%, 100%{ transform: scale(1); filter: drop-shadow(0 0 0 transparent); } 50%{ transform: scale(1.035); filter: drop-shadow(0 6px 14px rgb(156 105 78 / .35)); } }
-.entrada-lacre.sale{ animation: none; }
-.entrada-lacre.sale .en-sello{ animation: en-rompe .6s cubic-bezier(.5, 0, .7, .4) forwards; }
-.entrada-lacre.sale .en-contenido > :not(.en-sello){ animation: en-desvanece .4s forwards; }
-.entrada-lacre.sale .en-papel{ animation: en-abre 1.1s cubic-bezier(.7, 0, .2, 1) .35s forwards; }
-.entrada-lacre.sale .en-papel::after{ content: ''; position: absolute; inset: 50% 0 0; background: inherit; animation: en-abre-baja 1.1s cubic-bezier(.7, 0, .2, 1) .35s forwards; }
-.entrada-lacre .en-papel{ clip-path: inset(0 0 0 0); }
-@keyframes en-rompe{ 30%{ transform: scale(1.18) rotate(-6deg); } 100%{ transform: scale(.4) rotate(18deg); opacity: 0; filter: blur(4px); } }
-@keyframes en-desvanece{ to{ opacity: 0; } }
-@keyframes en-abre{ to{ clip-path: inset(0 0 100% 0); } }
-
-/* Cítricos: la rama crece y caen pétalos de azahar */
-.entrada-citricos{ --t-texto: 1.2s; }
-.en-rama{ width: min(380px, 84vw); transform-origin: 70% 20%; animation: en-crece 1.6s var(--ease-out) both; }
-.en-rama img{ display: block; width: 100%; mix-blend-mode: multiply; }
-@keyframes en-crece{ from{ opacity: 0; transform: scale(.82) rotate(-6deg); } to{ opacity: 1; transform: none; } }
+/* Detalles vivos de la web (no de la entrada) */
+.atelier-citricos .arte-limones{ transform-origin: 70% 15%; animation: se-mece 6s ease-in-out infinite; }
+@keyframes se-mece{ 0%, 100%{ transform: rotate(0); } 50%{ transform: rotate(1.6deg); } }
+.atelier-ceramica .mat-inner::after{ content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .45) 48%, transparent 60%); background-size: 250% 100%; background-position: 150% 0; animation: vidriado 5s ease-in-out 1.6s infinite;
+  -webkit-mask: url(img/atelier/talavera-marco.webp) center / 100% 100%; mask: url(img/atelier/talavera-marco.webp) center / 100% 100%; }
+@keyframes vidriado{ 0%, 55%{ background-position: 150% 0; } 85%, 100%{ background-position: -60% 0; } }
+@keyframes deriva{ from{ background-position: 40% 50%; } to{ background-position: 60% 40%; } }
+@keyframes gira{ to{ transform: rotate(360deg); } }
+/* Pétalos de azahar de la entrada de Cítricos */
 .en-petalos{ position: absolute; inset: 0; pointer-events: none; }
 .en-petalos i{ position: absolute; top: -20px; width: 9px; height: 7px; border-radius: 60% 40% 60% 40%; background: #fff; box-shadow: 0 0 0 .5px rgb(0 0 0 / .06); opacity: 0;
   animation: en-petalo 7s linear infinite; }
@@ -1053,41 +976,6 @@ body.con-entrada{ overflow: hidden; }
 .en-petalos i:nth-child(11){ left: 92%; animation-delay: 3.9s; } .en-petalos i:nth-child(12){ left: 14%; animation-delay: 5.2s; }
 .en-petalos i:nth-child(13){ left: 58%; animation-delay: 5.8s; } .en-petalos i:nth-child(14){ left: 73%; animation-delay: 6.3s; }
 @keyframes en-petalo{ 0%{ opacity: 0; transform: translate(0, 0) rotate(0); } 10%{ opacity: .95; } 100%{ opacity: 0; transform: translate(60px, 105vh) rotate(540deg); } }
-.atelier-citricos .arte-limones{ transform-origin: 70% 15%; animation: se-mece 6s ease-in-out infinite; }
-@keyframes se-mece{ 0%, 100%{ transform: rotate(0); } 50%{ transform: rotate(1.6deg); } }
-
-/* Cerámica: el marco se descubre desde el centro y brilla el vidriado */
-.entrada-ceramica{ --t-texto: 1.3s; }
-.en-azulejo{ position: relative; width: min(250px, 60vw); clip-path: circle(0 at 50% 50%); animation: en-circulo 1.4s cubic-bezier(.6, 0, .2, 1) .2s forwards; }
-.en-azulejo img{ display: block; width: 100%; }
-.en-mono{ position: absolute; inset: 22% 25% 23% 25%; display: grid; place-items: center; font-family: 'Cinzel Decorative', Georgia, serif; font-size: 28px; color: var(--primary); background: var(--sage); }
-.en-azulejo::after, .atelier-ceramica .mat-inner::after{ content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .55) 48%, transparent 60%); background-size: 250% 100%; background-position: 150% 0; animation: vidriado 5s ease-in-out 1.6s infinite; }
-@keyframes en-circulo{ to{ clip-path: circle(75% at 50% 50%); } }
-@keyframes vidriado{ 0%, 55%{ background-position: 150% 0; } 85%, 100%{ background-position: -60% 0; } }
-
-/* Herbario: el cuadro cae, se asienta y refleja el cristal */
-.entrada-herbario{ --t-texto: 1.3s; }
-.en-cuadro{ position: relative; width: min(230px, 60vw); padding: 10px; background: #fff; box-shadow: 0 18px 40px rgb(var(--primary-rgb) / .2); animation: en-cae 1.3s cubic-bezier(.2, .9, .3, 1.2) both; overflow: hidden; }
-.en-cuadro img{ display: block; width: 100%; }
-.en-cuadro::after, .arte-herbario-marco::after{ content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(120deg, transparent 30%, rgb(255 255 255 / .5) 45%, transparent 58%); background-size: 260% 100%; background-position: 140% 0; animation: vidriado 6s ease-in-out 1.4s infinite; }
-.arte-herbario-marco{ position: relative; overflow: hidden; }
-@keyframes en-cae{ from{ opacity: 0; transform: translateY(-40px) rotate(-8deg); } 70%{ opacity: 1; transform: translateY(4px) rotate(-.5deg); } to{ opacity: 1; transform: rotate(-1.5deg); } }
-
-/* Atardecer: la acuarela amanece desde abajo, se mueve y el aro de la foto gira */
-.entrada-atardecer{ --t-texto: 1.2s; }
-.entrada-atardecer .en-papel{ background: url(img/atelier/atardecer.webp) center / cover; clip-path: inset(100% 0 0 0); animation: en-amanece 1.6s cubic-bezier(.5, 0, .2, 1) forwards, deriva 30s linear infinite alternate; }
-.en-sol{ width: 90px; height: 90px; border-radius: 50%; background: radial-gradient(circle, #FFE9B8, rgb(255 214 150 / .6) 45%, transparent 70%); animation: en-sol 2.4s var(--ease-out) .4s both; }
-@keyframes en-amanece{ to{ clip-path: inset(0 0 0 0); } }
-@keyframes en-sol{ from{ opacity: 0; transform: translateY(40px) scale(.7); } to{ opacity: 1; transform: none; } }
-@keyframes deriva{ from{ background-position: 40% 50%; } to{ background-position: 60% 40%; } }
-.atelier-atardecer .hero{ animation: deriva 40s linear infinite alternate; }
-.atelier-atardecer .mat-inner{ position: relative; background: none; }
-.atelier-atardecer .mat-inner::before{ content: ''; position: absolute; inset: 0; border-radius: 50%; z-index: -1;
-  background: conic-gradient(from 0deg, #C9A13A, #F4DE9A, #D4AF37, #FFF3C9, #C9A13A); animation: gira 8s linear infinite; }
-.atelier-atardecer .mat{ position: relative; z-index: 0; }
-@keyframes gira{ to{ transform: rotate(360deg); } }
 
 /* Todos los Atelier: revelado nítido y escalonado, brillo en botones, cuenta atrás viva */
 .atelier .rv{ filter: blur(8px); transform: translateY(26px); transition: opacity 1.1s var(--ease-out), transform 1.1s var(--ease-out), filter 1.1s var(--ease-out); transition-delay: calc(var(--i, 0) * 90ms); }
@@ -1175,14 +1063,229 @@ body.con-entrada{ overflow: hidden; }
 .en-esq-d{ right: 0; animation: en-esq-d 1.4s var(--ease-out) .35s forwards; }
 @keyframes en-esq-i{ from{ opacity: 0; transform: translate(-30%, -30%) rotate(-8deg); } to{ opacity: 1; transform: none; } }
 @keyframes en-esq-d{ from{ opacity: 0; transform: translate(30%, -30%) rotate(8deg); } to{ opacity: 1; transform: none; } }
-.entrada-citricos .en-papel{ background: #FAF7F2; }
-.entrada-herbario .en-papel{ background: #FAF7F2 url(img/atelier/pliego-herbario.svg) center / 100% 100% no-repeat; }
-.en-banda{ width: min(420px, 86vw); clip-path: inset(0 50% 0 50%); animation: en-despliega 1.5s cubic-bezier(.6, 0, .2, 1) .2s forwards; }
-.en-banda img{ display: block; width: 100%; }
-@keyframes en-despliega{ to{ clip-path: inset(0 0 0 0); } }
 .atelier-citricos .sello-circular{ animation: aparece 1.4s var(--ease-out) .3s both, gira-lento 60s linear 1.7s infinite; }
 @keyframes gira-lento{ to{ transform: rotate(360deg); } }
 .atelier-citricos .esq{ animation: aparece 1.6s var(--ease-out) both; }
 .atelier-herbario .banda-herbario{ animation: en-despliega-h 1.6s cubic-bezier(.6, 0, .2, 1) both; }
 @keyframes en-despliega-h{ from{ clip-path: inset(0 50% 0 50%); } to{ clip-path: inset(0 0 0 0); } }
 @media (prefers-reduced-motion: reduce){ .atelier-citricos .sello-circular, .atelier-citricos .esq, .atelier-herbario .banda-herbario{ animation: none !important; } }
+
+/* ============================================================
+   Cerámica, Sello de lacre y Atardecer, rehechos con las piezas del owner
+   (Bodas/stitch… (5), (6) y (7), 25-sep-2026). Sin textos ni iniciales ajenas:
+   el monograma del sello de bronce se borró y lleva encima el de cada pareja.
+   ============================================================ */
+.atelier-ceramica .hero-left, .atelier-lacre .hero-left, .atelier-atardecer .hero-left{ display: block !important; position: relative; width: 100%; max-width: 420px; margin: 0 auto; text-align: center; }
+.atelier-ceramica .hero-text, .atelier-lacre .hero-text, .atelier-atardecer .hero-text{ margin-bottom: 0; text-align: center; }
+.atelier-lacre .hero-names, .atelier-atardecer .hero-names{ font-size: 48px; line-height: 56px; }
+@media (min-width: 901px){ .atelier-lacre .hero-names, .atelier-atardecer .hero-names{ font-size: 76px; line-height: 88px; } }
+
+/* Cerámica & azulejo Talavera: patio andaluz, pliego con cenefa de azulejo, marco barroco */
+.atelier-ceramica .hero{ align-self: stretch; width: 100%; max-width: none; padding: 28px 12px 32px;
+  background: linear-gradient(rgb(24 59 117 / .18), rgb(24 59 117 / .28)), url(img/atelier/patio.webp) center / cover no-repeat; }
+.atelier-ceramica .hero-left{ border: 22px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 22px round; background: #FDFCFA padding-box; padding: 22px 16px 22px;
+  box-shadow: inset 0 0 0 2px #C6A664, inset 0 0 0 5px #FDFCFA, inset 0 0 0 6px #A9C2D8, 0 22px 44px -18px rgb(24 59 117 / .5); }
+.tal-mono{ display: flex; align-items: center; justify-content: center; gap: 4px; margin: 0 auto 4px; }
+.tal-olivo{ display: block; height: 58px; width: auto; }
+.tal-mono span{ font-family: 'Cinzel Decorative', Georgia, serif; font-size: 19px; letter-spacing: .14em; color: #183B75; white-space: nowrap; }
+.atelier-ceramica .hero-text .kicker{ font-family: 'Cinzel', Georgia, serif; color: #C6A664; letter-spacing: .24em; }
+.atelier-ceramica .hero-date .kicker{ color: #183B75; }
+.tal-flor{ display: block; width: 180px; margin: 12px auto 6px; }
+.tal-lugar{ margin: 0 0 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 17px; color: var(--tinta); }
+.tal-nav{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tal-btn{ position: relative; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 12px; white-space: nowrap;
+  background: #183B75 radial-gradient(circle at 8px 8px, #C6A664 2px, transparent 2.6px) no-repeat, #183B75;
+  border: 1.6px solid #C6A664; border-radius: 4px; outline: 1px dashed #A9C2D8; outline-offset: -6px; box-shadow: 0 4px 8px rgb(24 59 117 / .25);
+  color: #fff; font-family: 'Cinzel', Georgia, serif; font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; transition: transform .25s var(--ease-out); }
+.tal-btn::before, .tal-btn::after{ content: ''; position: absolute; top: 5px; bottom: 5px; width: 5px; background: radial-gradient(circle, #C6A664 2px, transparent 2.6px) center top / 5px 5px no-repeat, radial-gradient(circle, #C6A664 2px, transparent 2.6px) center bottom / 5px 5px no-repeat; }
+.tal-btn::before{ left: 5px; } .tal-btn::after{ right: 5px; }
+.tal-btn{ background: #183B75; }
+.tal-btn:hover{ transform: scale(1.04); } .tal-btn:active{ transform: scale(.97); }
+.atelier-ceramica .mat{ background: none; box-shadow: none; padding: 0; width: 100%; max-width: 440px; margin: 18px auto 0; }
+.atelier-ceramica .mat-inner{ position: relative; aspect-ratio: 900 / 705; padding: 0; background: none; box-shadow: none; }
+.atelier-ceramica .mat-inner::before{ content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: url(img/atelier/talavera-marco.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 10px 16px rgb(24 59 117 / .3)); }
+.atelier-ceramica .mat-photo{ position: absolute; left: 17.6%; right: 17.7%; top: 22.8%; bottom: 22.6%; aspect-ratio: auto; border-radius: 0; z-index: 1; }
+.atelier-ceramica .mat-caption{ display: none; }
+.atelier-ceramica main > .wrap{ border: 18px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 18px round; border-radius: 0; box-shadow: inset 0 0 0 2px #C6A664; background: #FDFCFA padding-box; }
+.atelier-ceramica .divider, .atelier-ceramica .mini-rule{ height: 16px; width: 180px; border-radius: 0; background: url(img/atelier/flor-talavera.svg) center / contain no-repeat; }
+.atelier-ceramica .lede, .atelier-ceramica .letter p{ color: var(--tinta); font-size: 18px; }
+.atelier-ceramica .icon-dot{ width: 46px; height: 46px; background: center / contain no-repeat; }
+.atelier-ceramica .icon-dot svg{ display: none; }
+.atelier-ceramica .icon-ceremonia{ background-image: url(img/atelier/ico-ceremonia.svg); }
+.atelier-ceramica .icon-convite{ background-image: url(img/atelier/ico-convite.svg); }
+.atelier-ceramica .tal-olivo{ animation: aparece 1.4s var(--ease-out) both; }
+@media (min-width: 901px){
+  .atelier-ceramica .hero{ padding: 72px max(24px, calc(50vw - 570px)) 56px; }
+  .atelier-ceramica .hero-left{ max-width: 470px; }
+  .atelier-ceramica .mat{ margin: 0; align-self: center; }
+  .atelier-ceramica.page-inner{ background: linear-gradient(rgb(245 243 237 / .6), rgb(245 243 237 / .6)), url(img/atelier/patio.webp) center / cover fixed no-repeat; }
+}
+
+/* Sello de cera & caligrafía poética: lino, papel de algodón rasgado, sello bronce */
+.atelier-lacre{ background: #E5DED4 url(img/atelier/lino.webp) center top / 100% auto no-repeat; }
+.atelier-lacre .hero-left{ padding: 46px 30px 42px; background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 14px 22px rgb(45 41 38 / .2)); }
+.atelier-lacre .hero-text .kicker{ font-family: 'Cinzel', Georgia, serif; letter-spacing: .22em; color: #6B635B; }
+.sello-bronce{ position: relative; display: block; width: 124px; margin: 16px auto 8px; }
+.sello-bronce img{ display: block; width: 100%; }
+.sello-bronce b{ position: absolute; left: 26%; top: 25%; width: 46%; height: 46%; display: grid; place-items: center; font-family: 'Pinyon Script', cursive; font-weight: 400; font-size: 34px; line-height: 1;
+  color: rgb(66 36 20 / .92); text-shadow: 0 1px 0 rgb(255 222 186 / .7), 0 -1px 1px rgb(30 14 6 / .6); }
+.lac-sello{ animation: aparece 1.4s var(--ease-out) both, respira 4s ease-in-out 1.4s infinite; }
+@keyframes respira{ 0%, 100%{ transform: none; filter: drop-shadow(0 4px 6px rgb(60 35 20 / .25)); } 50%{ transform: scale(1.03); filter: drop-shadow(0 8px 14px rgb(156 105 78 / .35)); } }
+.lac-lugar{ margin: 0 0 16px; font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 17px; color: #6B635B; }
+.lac-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 22px; background: #FAF8F5; border: 1.2px solid #2D2926; border-radius: 2px;
+  outline: .75px dashed rgb(197 160 89 / .8); outline-offset: -5px; box-shadow: 0 3px 8px rgb(45 40 36 / .08); color: #2D2926;
+  font-family: 'Cinzel', Georgia, serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; transition: transform .25s var(--ease-out), background .25s; }
+.lac-btn:hover{ transform: scale(1.02); background: #fff; } .lac-btn:active{ transform: scale(.98); }
+.lac-nav{ display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 10px; margin-top: 20px; padding-top: 12px; border-top: 1px solid rgb(45 41 38 / .14); font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; }
+.lac-nav a{ color: #2D2926; transition: color .25s; } .lac-nav a:hover{ color: #9C694E; }
+.lac-nav i{ font-style: normal; color: #9C694E; }
+.atelier-lacre .lede, .atelier-lacre .letter p{ color: var(--tinta); font-size: 18px; }
+.atelier-lacre .divider, .atelier-lacre .mini-rule{ background: #9C694E; }
+.atelier-lacre main > .wrap{ background: #FAF8F5; border-radius: 2px; box-shadow: 0 16px 34px -16px rgb(45 41 38 / .3); }
+.atelier-lacre main > .wrap::before{ content: ''; display: block; width: 62px; height: 62px; margin: -4px auto 10px; background: url(img/atelier/sello-bronce.webp) center / contain no-repeat; }
+@media (min-width: 901px){
+  .atelier-lacre{ background: #E5DED4 url(img/atelier/lino.webp) center / cover fixed no-repeat; }
+  .atelier-lacre .hero{ align-self: stretch; width: 100%; max-width: none; padding: 64px max(24px, calc(50vw - 570px)) 56px; }
+  .atelier-lacre .hero-left{ max-width: 470px; }
+}
+
+/* Acuarela atardecer & calas: acuarela con polvo de oro, tarjeta flotante, aro dorado, mapa */
+.atelier-atardecer{ background: #F9F5EE url(img/atelier/acuarela.webp) center top / 100% auto no-repeat; }
+.atelier-atardecer .hero{ background: none; }
+.atelier-atardecer .hero-left{ padding: 36px 24px 28px; background: #FDFBF7; border: 1px solid rgb(197 160 89 / .45); border-radius: 3px; box-shadow: 0 22px 44px -22px rgb(140 74 50 / .4); }
+.atelier-atardecer .hero-text .kicker{ font-family: 'Playfair Display', Georgia, serif; font-style: italic; letter-spacing: .12em; text-transform: none; font-size: 15px; color: #BD6A4B; }
+.atelier-atardecer .hero-date .kicker{ font-family: 'Montserrat', system-ui, sans-serif; font-style: normal; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: #7A6E65; }
+.atd-lugar{ margin: 14px 0 18px; font-family: 'Montserrat', system-ui, sans-serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #7A6E65; }
+.atd-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 24px; border: 1px solid #96482D; border-radius: 2px;
+  background: linear-gradient(135deg, #C87A5B, #BD6A4B 50%, #AA583A); outline: .75px dashed rgb(245 213 197 / .6); outline-offset: -5px; box-shadow: 0 4px 10px rgb(140 74 50 / .22), 0 1px 2px rgb(45 40 36 / .1);
+  color: #FDFBF7; font-family: 'Playfair Display', Georgia, serif; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; transition: transform .25s var(--ease-out), filter .25s; }
+.atd-btn:hover{ transform: scale(1.03); filter: brightness(1.05); } .atd-btn:active{ transform: scale(.97); }
+.atd-nav{ display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin-top: 20px; padding-top: 12px; border-top: 1px solid rgb(197 160 89 / .35); }
+.atd-nav a{ font-family: 'Playfair Display', Georgia, serif; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #7A6E65; transition: color .25s; }
+.atd-nav a:hover{ color: #BD6A4B; }
+.atelier-atardecer .mat, .atelier-atardecer .mat-inner{ background: none; box-shadow: none; }
+.atelier-atardecer .mat{ width: 100%; max-width: 380px; margin: 22px auto 0; padding: 0; }
+.atelier-atardecer .mat-inner{ position: relative; padding: 4.6%; border-radius: 50%; }
+.atelier-atardecer .mat-inner::before{ content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: url(img/atelier/aro-oro.svg) center / 100% 100% no-repeat; animation: gira 60s linear infinite; }
+.atelier-atardecer .mat-photo{ aspect-ratio: 1; border-radius: 50%; box-shadow: 0 10px 26px rgb(140 74 50 / .25); }
+.atelier-atardecer .mat-caption{ display: none; }
+.atelier-atardecer .event-card::before{ content: ''; display: block; height: 84px; margin-bottom: 14px; border-radius: 2px; background: url(img/atelier/mapa-cala.svg) center / cover no-repeat; }
+.atelier-atardecer .lede, .atelier-atardecer .letter p{ color: var(--tinta); }
+.atelier-atardecer main > .wrap{ overflow: hidden; background: #FDFBF7; border: 1px solid rgb(197 160 89 / .4); border-radius: 3px; box-shadow: 0 20px 40px -22px rgb(140 74 50 / .35); }
+.atelier-atardecer main > .wrap::before{ content: ''; display: block; height: 90px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 12px; background: url(img/atelier/acuarela.webp) center 30% / cover; animation: deriva 30s linear infinite alternate; }
+@media (min-width: 901px){
+  .atelier-atardecer{ background: #F9F5EE url(img/atelier/acuarela.webp) center / cover fixed no-repeat; }
+  .atelier-atardecer .hero{ padding: 64px max(24px, calc(50vw - 570px)) 56px; }
+  .atelier-atardecer .hero-left{ max-width: 470px; min-width: min(420px, 100%); }
+  .atelier-atardecer .mat{ margin: 0; align-self: center; }
+  .atelier-atardecer main > .wrap::before{ height: 130px; margin: -56px -64px 18px; }
+}
+
+/* ============================================================
+   Entrada del pack Atelier: la invitación llega en un sobre cerrado.
+   Se pulsa el sello → salta (o se rompe, en lacre) → la solapa gira en 3D →
+   la tarjeta sale del sobre y viene hacia delante → el sobre se funde y la
+   web aparece detrás, de desenfocada a nítida. Misma mecánica, piel de cada diseño.
+   Sin mix-blend-mode dentro: en capas transformadas pinta cajas blancas.
+   ============================================================ */
+body.con-entrada{ overflow: hidden; }
+body.con-entrada > :not(.entrada){ transform: scale(.96); filter: blur(8px); }
+body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), filter 1.3s var(--ease-out); }
+.entrada{ position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; overflow: hidden;
+  --so-papel: #FAF7F2; --so-forro: #EADFCD; --so-tarjeta: #FDFBF7; --so-sello: var(--accent); --so-pista: var(--ink-muted); --so-t: .3s; }
+.en-papel{ position: absolute; inset: 0; background: var(--sage); }
+.en-escena{ position: relative; display: flex; flex-direction: column; align-items: center; padding: 24px; }
+.en-sobre{ --w: min(380px, 86vw); position: relative; width: var(--w); aspect-ratio: 7 / 5; cursor: pointer; animation: so-llega 1.1s var(--ease-out) .15s both; }
+@keyframes so-llega{ from{ opacity: 0; transform: translateY(36px) rotate(-4deg) scale(.94); } to{ opacity: 1; transform: none; } }
+.en-fondo{ position: absolute; inset: 0; border-radius: 4px; background: var(--so-forro); box-shadow: 0 34px 60px -24px rgb(0 0 0 / .45), 0 2px 6px rgb(0 0 0 / .12); }
+.en-tarjeta{ position: absolute; left: 5%; right: 5%; top: 4%; height: 92%; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 5% 7%; text-align: center; background: var(--so-tarjeta); border-radius: 2px; box-shadow: 0 2px 12px rgb(0 0 0 / .14); }
+.en-arte{ display: block; max-width: 72%; max-height: 34%; width: auto; object-fit: contain; margin: 0 auto 3%; }
+.en-kicker{ margin: 0 0 4px; font-size: 9px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--secondary); }
+.en-nombres{ margin: 0; font-family: var(--nombres, var(--serif)); font-style: var(--nombres-estilo, italic); font-weight: 400; font-size: clamp(24px, 7.6vw, 36px); line-height: 1.12; color: var(--nombres-color, var(--primary)); }
+.en-fecha{ margin: 6px 0 0; font-size: 10px; font-weight: 500; letter-spacing: .2em; color: var(--ink-muted); }
+.en-bolsillo{ position: absolute; inset: 0; z-index: 3; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4.5%; border-radius: 0 0 4px 4px;
+  background: linear-gradient(to top right, transparent calc(50% - .6px), rgb(0 0 0 / .07) 50%, transparent calc(50% + .6px)), linear-gradient(to top left, transparent calc(50% - .6px), rgb(0 0 0 / .07) 50%, transparent calc(50% + .6px)), var(--so-papel);
+  clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); }
+.en-destino{ font-family: var(--nombres, var(--serif)); font-style: var(--nombres-estilo, italic); font-size: clamp(15px, 4.2vw, 20px); color: var(--nombres-color, var(--primary)); opacity: .85; }
+.en-solapa{ position: absolute; left: 0; right: 0; top: 0; height: 60%; z-index: 4; transform-origin: 50% 0; transform: perspective(1100px) rotateX(0); transform-style: preserve-3d; pointer-events: none; }
+.en-solapa i{ position: absolute; inset: 0; clip-path: polygon(0 0, 100% 0, 50% 100%); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.en-solapa-f{ background: linear-gradient(180deg, rgb(255 255 255 / .25), rgb(0 0 0 / .06)), var(--so-papel); }
+.en-solapa-b{ background: var(--so-forro); opacity: 0; }
+/* Cara de fuera / forro: se cambian al pasar la vertical (backface-visibility no es fiable con clip-path) */
+.entrada.abre .en-solapa-f{ animation: so-cara-f .85s var(--so-t) forwards; }
+.entrada.abre .en-solapa-b{ animation: so-cara-b .85s var(--so-t) forwards; }
+@keyframes so-cara-f{ 0%, 49%{ opacity: 1; } 50%, 100%{ opacity: 0; } }
+@keyframes so-cara-b{ 0%, 49%{ opacity: 0; } 50%, 100%{ opacity: 1; } }
+.en-sello{ position: absolute; left: 50%; top: 57%; z-index: 5; width: 22%; aspect-ratio: 1; translate: -50% -50%; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: radial-gradient(circle at 36% 30%, color-mix(in srgb, var(--so-sello) 65%, #fff), var(--so-sello) 55%, color-mix(in srgb, var(--so-sello) 70%, #000));
+  box-shadow: 0 4px 10px rgb(0 0 0 / .3), inset 0 2px 3px rgb(255 255 255 / .28), inset 0 -3px 6px rgb(0 0 0 / .3); animation: so-late 2.4s ease-in-out 1.6s infinite; }
+.en-sello::before{ content: ''; position: absolute; inset: 12%; border-radius: 50%; border: 1px solid rgb(255 255 255 / .28); pointer-events: none; }
+.en-sello b{ position: relative; font-family: 'Pinyon Script', cursive; font-weight: 400; font-size: clamp(17px, 5.2vw, 25px); line-height: 1; color: rgb(255 255 255 / .9); text-shadow: 0 -1px 0 rgb(0 0 0 / .35), 0 1px 0 rgb(255 255 255 / .2); }
+.en-sello:focus-visible{ outline: 2px solid #fff; outline-offset: 5px; box-shadow: 0 0 0 6px rgb(0 0 0 / .35); }
+@keyframes so-late{ 0%, 100%{ scale: 1; } 50%{ scale: 1.07; } }
+.en-pista{ margin: 22px 0 0; font-size: 12.5px; font-style: italic; color: var(--so-pista); animation: so-aparece .8s var(--ease-out) 1.1s both; }
+.en-atajo{ margin: 8px 0 0; animation: so-aparece .8s var(--ease-out) 1.4s both; }
+.en-rsvp{ font-size: 12px; color: var(--so-pista); text-decoration: underline; text-underline-offset: 4px; opacity: .8; }
+@keyframes so-aparece{ from{ opacity: 0; transform: translateY(8px); } to{ opacity: 1; transform: none; } }
+
+/* La secuencia (boda.js pone .abre y, al terminar, .sale) */
+.entrada.abre .en-sello{ animation: so-salta .55s cubic-bezier(.5, 0, .7, .4) forwards; }
+@keyframes so-salta{ 30%{ scale: 1.16; } 100%{ scale: .5; opacity: 0; translate: -50% -160%; } }
+.entrada.abre .en-solapa{ animation: so-solapa .85s cubic-bezier(.6, 0, .3, 1) var(--so-t) forwards, so-funde .5s ease calc(var(--so-t) + 1.5s) forwards; }
+@keyframes so-solapa{ 0%{ transform: perspective(1100px) rotateX(0); z-index: 4; } 49%{ z-index: 4; } 50%{ z-index: 1; } 100%{ transform: perspective(1100px) rotateX(180deg); z-index: 1; } }
+.entrada.abre .en-tarjeta{ animation: so-sale .9s cubic-bezier(.3, .1, .2, 1) calc(var(--so-t) + .7s) forwards, so-delante .8s cubic-bezier(.5, 0, .2, 1) calc(var(--so-t) + 1.6s) forwards; }
+@keyframes so-sale{ to{ transform: translateY(-64%); } }
+@keyframes so-delante{ from{ z-index: 6; transform: translateY(-64%); } to{ z-index: 6; transform: translateY(-14%) scale(1.22); box-shadow: 0 30px 70px -20px rgb(0 0 0 / .45); } }
+.entrada.abre .en-bolsillo, .entrada.abre .en-fondo{ animation: so-cae .8s cubic-bezier(.5, 0, .7, 1) calc(var(--so-t) + 1.6s) forwards; }
+@keyframes so-cae{ to{ transform: translateY(45%); opacity: 0; } }
+@keyframes so-funde{ to{ opacity: 0; } }
+.entrada.abre .en-pista, .entrada.abre .en-atajo{ animation: so-funde .3s forwards; }
+.entrada.abre .en-sobre{ cursor: default; }
+.entrada.sale{ animation: so-funde .9s ease forwards; pointer-events: none; }
+
+/* Pieles */
+.entrada-ceramica{ --so-papel: #FDFCFA; --so-forro: #F5F3ED url(img/atelier/pliego-ceramica.svg) 0 0 / 40px 40px; --so-sello: #183B75; --so-pista: #fff; }
+.entrada-ceramica .en-papel{ background: linear-gradient(rgb(24 59 117 / .3), rgb(24 59 117 / .45)), url(img/atelier/patio.webp) center / cover; }
+.en-sello-ceramica{ border: 2px solid #C6A664; }
+.en-sello-ceramica b{ font-family: 'Cinzel Decorative', Georgia, serif; font-size: clamp(12px, 3.4vw, 16px); letter-spacing: .06em; color: #E6CF98; }
+.entrada-ceramica .en-tarjeta{ box-shadow: inset 0 0 0 3px #FDFCFA, inset 0 0 0 4px #C6A664, 0 2px 12px rgb(0 0 0 / .14); }
+.en-tarjeta .tal-mono{ display: flex; margin-bottom: 2%; }
+.entrada-ceramica .tal-olivo{ height: 40px; } .entrada-ceramica .tal-mono span{ font-size: 15px; }
+.entrada-lacre{ --so-papel: #FAF8F5; --so-forro: #E5DED4 url(img/atelier/lino.webp) center / cover; --so-t: .6s; }
+.entrada-lacre .en-papel{ background: #E5DED4 url(img/atelier/lino.webp) center / cover; }
+.en-sello-lacre{ width: 32%; background: none; box-shadow: none; }
+.en-sello-lacre::before{ display: none; }
+.en-sello-lacre img{ position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 5px 8px rgb(60 35 20 / .35)); }
+.en-sello-lacre b{ font-size: clamp(20px, 6vw, 30px); color: rgb(92 55 36 / .9); text-shadow: 0 1px 0 rgb(255 226 196 / .45), 0 -1px 1px rgb(40 20 10 / .55); }
+.entrada-lacre.abre .en-sello{ animation: so-rompe .7s cubic-bezier(.5, 0, .7, .4) forwards; }
+@keyframes so-rompe{ 25%{ scale: 1.18; rotate: -7deg; } 100%{ scale: .4; rotate: 20deg; opacity: 0; filter: blur(4px); } }
+.en-poema{ font-family: 'Pinyon Script', cursive; font-size: clamp(18px, 5vw, 24px); color: #9C694E; }
+.entrada-lacre .en-tarjeta{ background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; box-shadow: none; filter: drop-shadow(0 3px 8px rgb(45 41 38 / .18)); }
+.entrada-atardecer{ --so-papel: #FDFBF7; --so-forro: #F3D2C1 url(img/atelier/acuarela.webp) center / cover; --so-sello: #BD6A4B; }
+.entrada-atardecer .en-papel{ background: url(img/atelier/acuarela.webp) center / cover; animation: deriva 30s linear infinite alternate; }
+.en-aro{ position: relative; width: 30%; max-width: none; aspect-ratio: 1; border-radius: 50%; background: url(img/atelier/acuarela.webp) center / cover; }
+.en-aro::after{ content: ''; position: absolute; inset: -6%; background: url(img/atelier/aro-oro.svg) center / 100% 100% no-repeat; animation: gira 20s linear infinite; }
+.en-sol{ position: absolute; left: 50%; top: 18%; width: 160px; height: 160px; margin-left: -80px; border-radius: 50%; background: radial-gradient(circle, #FFE9B8, rgb(255 214 150 / .55) 45%, transparent 70%); animation: en-sol 2.6s var(--ease-out) .3s both; }
+@keyframes en-sol{ from{ opacity: 0; transform: translateY(80px) scale(.7); } to{ opacity: 1; transform: none; } }
+.entrada-citricos{ --so-papel: #FAF7F2; --so-forro: #F4ECCB; --so-sello: #FAF7F2; }
+.entrada-citricos .en-papel{ background: #F0ECE1; }
+.en-sello-citricos{ width: 24%; box-shadow: 0 4px 10px rgb(0 0 0 / .22); border: 1px solid rgb(92 107 87 / .4); }
+.en-sello-citricos::before{ border-color: rgb(92 107 87 / .35); border-style: dashed; }
+.en-sello-disco{ width: 74%; height: 74%; border-radius: 50%; object-fit: cover; }
+.entrada-herbario{ --so-papel: #F6F1E7; --so-forro: #EFE9DD url(img/atelier/herbario-banda.webp) center top / cover; --so-sello: #645166; --so-pista: #fff; }
+.entrada-herbario .en-papel{ background: linear-gradient(rgb(58 46 43 / .35), rgb(58 46 43 / .35)), url(img/atelier/mesa.webp) center / cover; }
+.en-arte-banda{ max-width: 100%; width: 100%; max-height: 26%; object-fit: cover; }
+.entrada-masia{ --so-papel: #F8F4EC; --so-forro: #EADFCD; --so-sello: #A6634B; }
+.entrada-masia .en-papel{ background: #F1EADF; }
+.en-dibujo{ position: relative; width: 76%; margin: 0 auto 3%; }
+.en-dibujo img{ display: block; width: 100%; }
+.en-lapiz{ opacity: .14; filter: grayscale(1); }
+.en-tinta{ position: absolute; inset: 0; -webkit-mask-image: linear-gradient(100deg, #000 42%, transparent 58%); mask-image: linear-gradient(100deg, #000 42%, transparent 58%);
+  -webkit-mask-size: 260% 100%; mask-size: 260% 100%; -webkit-mask-position: 100% 0; mask-position: 100% 0; }
+.entrada-masia.abre .en-tinta{ animation: en-dibuja 1.8s cubic-bezier(.45, .05, .35, 1) calc(var(--so-t) + .7s) forwards; }
+@keyframes en-dibuja{ to{ -webkit-mask-position: 0 0; mask-position: 0 0; } }
+@media (prefers-reduced-motion: reduce){
+  body.con-entrada > :not(.entrada){ transform: none; filter: none; }
+  .lac-sello, .atelier-atardecer .mat-inner::before, .atelier-ceramica .tal-olivo{ animation: none !important; }
+}

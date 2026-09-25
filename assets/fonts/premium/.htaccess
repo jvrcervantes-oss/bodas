@@ -1,0 +1,10 @@
+# Tipografías de autor (comerciales): solo las usan las webs de boda del estudio y la vista
+# previa del creador (iframe aislado = Origin "null"). Otro dominio no puede cargarlas con
+# @font-face. Recomendación de Legal (revisión previa #89, 25-sep-2026).
+Options -Indexes
+<IfModule mod_headers.c>
+  Header unset Access-Control-Allow-Origin
+  SetEnvIf Origin "^(null|https://([a-z0-9-]+\.)?axisworks\.studio)$" ORIGEN_OK=$0
+  Header set Access-Control-Allow-Origin "%{ORIGEN_OK}e" env=ORIGEN_OK
+  Header merge Vary "Origin"
+</IfModule>

@@ -31,6 +31,35 @@ const FUENTES = [
     'moderna'     => ['Moderna',     "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", 'normal'],
 ];
 
+// Tipografías de autor: SOLO en el Pack Atelier (owner, 25-sep-2026). Sustituyen a las letras
+// del diseño elegido (null = se queda la del diseño).
+// Los woff2 comerciales viven en assets/fonts/premium/, FUERA de git y fuera del ZIP: el repo es
+// público y entregar el fichero es redistribuirlo. Si el fichero no está en el servidor, la opción
+// no existe (ni se vende ni se enseña bloqueada). Licencia pendiente del owner: BOD-8.
+// Fuera del catálogo: Adelia y Artifact, sin á é í ó ú ñ (un «Lucía» saldría con letras de otra fuente).
+const FUENTES_AUTOR = [
+    'awesome' => ['nombre' => 'Awesome Serif', 'nota' => 'Serif editorial con Montserrat',
+        'titulos' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'textos' => "'Montserrat', system-ui, sans-serif",
+        'nombres' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'estilo' => 'normal',
+        'archivos' => ['premium/as-r-5e8c.woff2' => ['Awesome Serif', 'normal']]],
+    'awesome-cursiva' => ['nombre' => 'Awesome Serif cursiva', 'nota' => 'Nombres en cursiva editorial',
+        'titulos' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'textos' => "'Montserrat', system-ui, sans-serif",
+        'nombres' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'estilo' => 'italic',
+        'archivos' => ['premium/as-r-5e8c.woff2' => ['Awesome Serif', 'normal'], 'premium/as-i-5e8c.woff2' => ['Awesome Serif', 'italic']]],
+];
+
+/** Las tipografías de autor cuyos ficheros están de verdad en este servidor. */
+function fuentes_autor(): array {
+    static $d = null;
+    if ($d === null) {
+        $d = array_filter(FUENTES_AUTOR, function ($f) {
+            foreach (array_keys($f['archivos']) as $a) if (!is_file(WEB_DIR . '/assets/fonts/' . $a)) return false;
+            return true;
+        });
+    }
+    return $d;
+}
+
 // Colección Atelier (owner, 25-sep-2026; diseño de Stitch «Creatividades de autor»). Cada diseño
 // trae su paleta, sus letras y su ilustración, y sustituye a paleta/tipografía/decoración.
 // colores: mismo orden que TEMAS (primary, accent, accent-hover, secondary, sage, sage-2, sage-2-hover, gold, on-dark, on-dark-soft)
@@ -41,23 +70,29 @@ const ATELIER = [
         'colores' => ['#5C6B57', '#5C6B57', '#4D5A49', '#5C6B57', '#F0ECE1', '#E6DCC4', '#DDD1B5', '#A6634B', '#F4ECCB', '#DCD3AE'],
         'fuentes' => ["'Playfair Display', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Alex Brush', cursive", 'normal'],
         'nombres_color' => '#A6634B', 'tinta' => '#3D352E'],
-    'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Marco de azulejo azul cobalto y oro para vuestra foto.',
-        'colores' => ['#183B75', '#1F4C94', '#183B75', '#3E5A86', '#F5F3ED', '#DCE6F0', '#CCDAE8', '#A8864A', '#DCE7F4', '#A9C2D8'],
-        'fuentes' => ["'Cinzel', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Pinyon Script', cursive", 'normal']],
+    // Tokens de «Cerámica & Azulejo Talavera» (especificación del owner, 25-sep-2026)
+    'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Cenefa de azulejo cobalto, marco barroco para vuestra foto y patio andaluz.',
+        'colores' => ['#183B75', '#183B75', '#2C5EA8', '#6B7A8D', '#F5F3ED', '#E6ECF3', '#D8E2EC', '#C6A664', '#FDFCFA', '#A9C2D8'],
+        'fuentes' => ["'Cinzel', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Pinyon Script', cursive", 'normal'],
+        'nombres_color' => '#183B75', 'tinta' => '#3D352E'],
     // Tokens de «Herbario y lavanda silvestre» (especificación del owner, 25-sep-2026)
     'herbario' => ['nombre' => 'Herbario y lavanda', 'categoria' => 'Botánica', 'desc' => 'Pliego rasgado con flores prensadas sobre mesa de roble.',
         'colores' => ['#645166', '#645166', '#54445A', '#5A674E', '#EFE9DD', '#E4DCCB', '#DCD2BE', '#5A674E', '#EDE3EE', '#D2C4D4'],
         'fuentes' => ["'Bodoni Moda', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Newsreader', Georgia, serif", 'italic'],
         'nombres_color' => '#3D352E', 'tinta' => '#3D352E'],
-    'lacre' => ['nombre' => 'Sello de lacre', 'categoria' => 'Editorial', 'desc' => 'Lino, tinta y un sello de cera con vuestras iniciales.',
-        'colores' => ['#3A2A20', '#9C694E', '#85573F', '#6B5A4B', '#EFE8DE', '#E3D7C5', '#D8CAB4', '#B39355', '#F2E3D4', '#DCC6AE'],
-        'fuentes' => ["'Libre Baskerville', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Playfair Display', Georgia, serif", 'italic']],
+    // Tokens de «Sello de cera & caligrafía poética» (especificación del owner, 25-sep-2026)
+    'lacre' => ['nombre' => 'Sello de lacre', 'categoria' => 'Editorial', 'desc' => 'Papel de algodón rasgado sobre lino y un sello de cera bronce con vuestras iniciales.',
+        'colores' => ['#2D2926', '#9C694E', '#85573F', '#6B635B', '#F3EFE8', '#E8E2D8', '#DDD5C8', '#C5A059', '#FAF8F5', '#E5DED4'],
+        'fuentes' => ["'Playfair Display', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Pinyon Script', cursive", 'normal'],
+        'nombres_color' => '#2D2926', 'tinta' => '#2D2926'],
     'masia' => ['nombre' => 'Boceto de masía', 'categoria' => 'Tinta y arquitectura', 'desc' => 'Grabado a plumilla de una masía, como un cuaderno de viaje.',
         'colores' => ['#38312B', '#A6634B', '#8E533E', '#4A5844', '#F8F4EC', '#EADFCD', '#E1D4BE', '#A6634B', '#F3E2D6', '#DDC3B3'],
         'fuentes' => ["'Cinzel', Georgia, serif", "'EB Garamond', Georgia, serif", "'EB Garamond', Georgia, serif", 'italic']],
-    'atardecer' => ['nombre' => 'Atardecer en cala', 'categoria' => 'Acuarela costera', 'desc' => 'Acuarela de puesta de sol y foto en ventana redonda.',
-        'colores' => ['#8C4A3C', '#C9706C', '#B25E5A', '#A0705E', '#F9F3EB', '#F6DCCB', '#F0CFBA', '#B8912A', '#FCE6DA', '#F0C4B0'],
-        'fuentes' => ["'Cormorant Infant', Georgia, serif", "'Montserrat', system-ui, sans-serif", "'Cormorant Infant', Georgia, serif", 'italic']],
+    // Tokens de «Acuarela atardecer & calas» (especificación del owner, 25-sep-2026)
+    'atardecer' => ['nombre' => 'Atardecer en cala', 'categoria' => 'Acuarela costera', 'desc' => 'Acuarela melocotón con polvo de oro, foto en aro dorado y mapa de la cala.',
+        'colores' => ['#BD6A4B', '#BD6A4B', '#AA583A', '#7A6E65', '#F9F5EE', '#F3D2C1', '#EDC3AE', '#C5A059', '#FDFBF7', '#F3D2C1'],
+        'fuentes' => ["'Playfair Display', Georgia, serif", "'Montserrat', system-ui, sans-serif", "'Pinyon Script', cursive", 'normal'],
+        'nombres_color' => '#BD6A4B', 'tinta' => '#2D2824'],
 ];
 
 // Decoración (estructura visual), independiente de la paleta. Owner, 25-sep-2026.
@@ -127,6 +162,7 @@ function config_inicial(): array {
         'decoracion' => 'flores',
         'fuente' => 'clasica',
         'atelier' => '',
+        'fuente_autor' => '',
         'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
         'convite' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'mismo' => false],
         'portada' => [
@@ -281,6 +317,8 @@ function normaliza_config($in): array {
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
     $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
     $c['atelier'] = isset(ATELIER[$in['atelier'] ?? '']) ? $in['atelier'] : '';
+    // Solo con un diseño Atelier: sin él se descarta (el panel ya rechaza Atelier no comprado)
+    $c['fuente_autor'] = ($c['atelier'] !== '' && isset(fuentes_autor()[$in['fuente_autor'] ?? ''])) ? $in['fuente_autor'] : '';
     foreach (['ceremonia', 'convite'] as $k) {
         $e = is_array($in[$k] ?? null) ? $in[$k] : [];
         $c[$k] = ['lugar' => clean_str($e['lugar'] ?? '', 120), 'direccion' => clean_str($e['direccion'] ?? '', 160), 'hora' => norm_hora($e['hora'] ?? '')];

@@ -285,10 +285,11 @@ function pagina_landing(): string {
           <ul>
             <li><?= il('check', 'i i-sm') ?>Todo lo del pack Esencial</li>
             <li><?= il('check', 'i i-sm') ?>Uno de los <?= count(ATELIER) ?> diseños de la Colección Atelier</li>
-            <li><?= il('check', 'i i-sm') ?>Entrada animada: la invitación se abre al llegar</li>
+            <li><?= il('check', 'i i-sm') ?>Entrada animada: la invitación llega en un sobre que se abre</li>
             <li><?= il('check', 'i i-sm') ?>Ilustraciones y fotos que aparecen con movimiento</li>
             <li><?= il('check', 'i i-sm') ?>Detalles animados propios de cada diseño</li>
-          </ul>
+<?php if (fuentes_autor()): ?>            <li><?= il('check', 'i i-sm') ?>Tipografías de autor, solo en este pack</li>
+<?php endif; ?>          </ul>
           <a class="b-btn b-rose" href="/#atelier">Ver la Colección Atelier <?= il('flecha', 'i i-sm i-arrow') ?></a>
         </div>
       </div>

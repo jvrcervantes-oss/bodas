@@ -325,3 +325,13 @@
   .c-editor { padding: 20px 16px; }
   .c-top-tit h1 { font-size: 15px; }
 }
+
+/* Tipografías de autor (Pack Atelier): muestras en imagen; en el Esencial, bloqueadas */
+.c-autor { margin-top: 22px; }
+.c-autor .c-fuentes { margin-top: 10px; }
+.c-fuente-img { display: block; height: 30px; width: auto; max-width: 100%; object-fit: contain; }
+.c-bloq-nota { margin: 14px 0 8px; }
+.c-fuente.is-bloq { cursor: not-allowed; opacity: .78; background: repeating-linear-gradient(135deg, transparent 0 8px, rgb(0 0 0 / .025) 8px 16px); }
+.c-fuente.is-bloq .c-fuente-img { filter: grayscale(1); opacity: .6; }
+.c-candado { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold, #A8864A); }
+.c-candado::before { content: '🔒 '; }
