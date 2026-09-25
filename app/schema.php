@@ -17,7 +17,12 @@ const TEMAS = [
     'malva'     => ['Malva',     '#5A3651', '#7D5271', '#68435E', '#6E5A68', '#F6F1F4', '#E8D8E2', '#DDC8D5', '#8A6440', '#EED3E5', '#D8B6CC'],
 ];
 
-const MENUS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
+// Menús: desde el 25-sep-2026 cada boda define los suyos ({id, nombre, descripcion, infantil}).
+// Esta tabla es solo la de antes (claves fijas): convierte los config y las respuestas viejos,
+// cuyo id de menú ES esa clave, para que sigan casando.
+const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
+const MAX_MENUS = 8;
+const MAX_TRAYECTOS = 6;
 
 // tipo => [título por defecto, ruta fija (null = libre, sale del título), única]
 const SECCIONES = [
@@ -82,10 +87,11 @@ function config_inicial(): array {
 
 function datos_iniciales(string $tipo): array {
     switch ($tipo) {
-        case 'rsvp': return ['texto' => 'Si venís en familia o en grupo, basta con que uno lo rellene por todos.', 'menus' => ['carne', 'pescado', 'vegetariano', 'infantil'], 'bus' => false, 'asistencia' => true, 'fecha_limite' => ''];
+        case 'rsvp': return ['texto' => 'Si venís en familia o en grupo, basta con que uno lo rellene por todos.', 'asistencia' => true, 'fecha_limite' => '',
+            'menus' => [menu_nuevo('carne', 'Carne'), menu_nuevo('pescado', 'Pescado'), menu_nuevo('vegetariano', 'Vegetariano'), menu_nuevo('infantil', 'Infantil', true)]];
         case 'informacion': return ['texto' => ''];
         case 'hoteles': return ['texto' => 'Opciones de alojamiento cerca de la celebración.', 'hoteles' => []];
-        case 'transporte': return ['texto' => ''];
+        case 'transporte': return ['texto' => '', 'trayectos' => [], 'preguntar' => true];
         case 'regalos': return ['texto' => 'Vuestra compañía es el mejor regalo. Si además queréis tener un detalle con nosotros, podéis hacerlo aquí.', 'titular' => '', 'iban' => '', 'otro' => ''];
         case 'musica': return ['texto' => 'Proponed la canción que os hace saltar a la pista y votad las de los demás.'];
         case 'dresscode': return ['texto' => ''];
@@ -127,15 +133,52 @@ function iban_ok(string $v): bool {
 }
 function norm_bool($v): bool { return $v === true || $v === 1 || $v === '1' || $v === 'si'; }
 
+function menu_nuevo(string $id, string $nombre, bool $infantil = false): array {
+    return ['id' => $id, 'nombre' => $nombre, 'descripcion' => '', 'infantil' => $infantil];
+}
+
+/** Menús de la confirmación. Acepta el formato viejo (lista de claves fijas) y lo convierte. */
+function norm_menus($lista): array {
+    $out = [];
+    $ids = [];
+    foreach (array_slice(is_array($lista) ? array_values($lista) : [], 0, MAX_MENUS) as $m) {
+        if (is_string($m)) {                                   // formato antiguo
+            if (!isset(MENUS_ANTIGUOS[$m])) continue;
+            $m = menu_nuevo($m, MENUS_ANTIGUOS[$m], $m === 'infantil');
+        }
+        if (!is_array($m)) continue;
+        $id = preg_match('/^[a-z0-9]{1,12}$/', (string) ($m['id'] ?? '')) ? $m['id'] : 'm' . bin2hex(random_bytes(3));
+        if (isset($ids[$id])) $id = 'm' . bin2hex(random_bytes(3));
+        $ids[$id] = true;
+        $out[] = ['id' => $id, 'nombre' => clean_str($m['nombre'] ?? '', 40), 'descripcion' => clean_str($m['descripcion'] ?? '', 300),
+            'infantil' => norm_bool($m['infantil'] ?? false)];
+    }
+    return $out ?: [menu_nuevo('general', 'Menú')];
+}
+
+function norm_trayectos($lista): array {
+    $out = [];
+    foreach (array_slice(is_array($lista) ? array_values($lista) : [], 0, MAX_TRAYECTOS) as $t) {
+        if (!is_array($t)) continue;
+        $out[] = ['titulo' => clean_str($t['titulo'] ?? '', 60), 'salida' => clean_str($t['salida'] ?? '', 140),
+            'hora' => norm_hora($t['hora'] ?? ''), 'llegada' => clean_str($t['llegada'] ?? '', 140), 'nota' => clean_str($t['nota'] ?? '', 300)];
+    }
+    return $out;
+}
+
 function norm_datos(string $tipo, $d): array {
     $d = is_array($d) ? $d : [];
     $texto = clean_str($d['texto'] ?? '', 2000);
     switch ($tipo) {
         case 'rsvp':
-            $menus = array_values(array_intersect(array_keys(MENUS), is_array($d['menus'] ?? null) ? $d['menus'] : []));
-            return ['texto' => clean_str($d['texto'] ?? '', 600), 'menus' => $menus ?: ['carne'],
-                'bus' => norm_bool($d['bus'] ?? false), 'asistencia' => norm_bool($d['asistencia'] ?? true),
-                'fecha_limite' => norm_fecha($d['fecha_limite'] ?? '')];
+            $r = ['texto' => clean_str($d['texto'] ?? '', 600), 'menus' => norm_menus($d['menus'] ?? null),
+                'asistencia' => norm_bool($d['asistencia'] ?? true), 'fecha_limite' => norm_fecha($d['fecha_limite'] ?? '')];
+            // La pregunta del autobús vivía aquí hasta el 25-sep: se conserva solo para migrarla a Transporte
+            if (array_key_exists('bus', $d)) $r['_bus_antiguo'] = norm_bool($d['bus']);
+            return $r;
+        case 'transporte':
+            return ['texto' => $texto, 'trayectos' => norm_trayectos($d['trayectos'] ?? null),
+                'preguntar' => array_key_exists('preguntar', $d) ? norm_bool($d['preguntar']) : null];
         case 'hoteles':
             $hs = [];
             foreach (array_slice(is_array($d['hoteles'] ?? null) ? array_values($d['hoteles']) : [], 0, 8) as $x) {
@@ -202,6 +245,16 @@ function normaliza_config($in): array {
         $sec[] = ['id' => $id, 'tipo' => $tipo, 'on' => norm_bool($s['on'] ?? true), 'titulo' => $titulo, 'ruta' => $ruta,
             'datos' => norm_datos($tipo, $s['datos'] ?? [])];
     }
+    // Migración (25-sep-2026): «¿Necesitáis autobús?» pasa de la confirmación a Transporte.
+    // Si Transporte no dice nada, hereda lo que tenía la confirmación; si no hay nada, se pregunta.
+    $busAntiguo = null;
+    foreach ($sec as &$x) {
+        if ($x['tipo'] === 'rsvp' && array_key_exists('_bus_antiguo', $x['datos'])) { $busAntiguo = $x['datos']['_bus_antiguo']; unset($x['datos']['_bus_antiguo']); }
+    }
+    foreach ($sec as &$x) {
+        if ($x['tipo'] === 'transporte' && $x['datos']['preguntar'] === null) $x['datos']['preguntar'] = $busAntiguo ?? true;
+    }
+    unset($x);
     $c['secciones'] = $sec;
     return $c;
 }
@@ -228,6 +281,16 @@ function faltan(array $c): array {
                 if ($ho['nombre'] === '') $f['sec.' . $s['id'] . '.hotel' . $i] = 'Hay un hotel sin nombre en «' . $s['titulo'] . '».';
             }
         }
+        if ($s['tipo'] === 'rsvp') {
+            foreach ($s['datos']['menus'] as $i => $m) {
+                if ($m['nombre'] === '') $f['sec.' . $s['id'] . '.menu' . $i] = 'Hay un menú sin nombre en «' . $s['titulo'] . '».';
+            }
+        }
+        if ($s['tipo'] === 'transporte') {
+            foreach ($s['datos']['trayectos'] as $i => $t) {
+                if ($t['salida'] === '') $f['sec.' . $s['id'] . '.trayecto' . $i] = 'Hay un trayecto sin punto de salida en «' . $s['titulo'] . '».';
+            }
+        }
         if ($s['tipo'] === 'libre' && $s['datos']['texto'] === '') {
             $f['sec.' . $s['id']] = 'La sección «' . $s['titulo'] . '» está vacía: escribid su texto o quitadla.';
         }
@@ -252,4 +315,21 @@ function seccion_por_ruta(array $c, string $ruta): ?array {
 function seccion_tipo(array $c, string $tipo): ?array {
     foreach ($c['secciones'] as $s) if ($s['on'] && $s['tipo'] === $tipo) return $s;
     return null;
+}
+
+/** Menús que ofrece la boda (vacío si no recoge confirmaciones). */
+function menus_de(array $c): array {
+    $s = seccion_tipo($c, 'rsvp');
+    return $s ? $s['datos']['menus'] : [];
+}
+/** Nombre de un menú por su id; si la pareja lo borró, la copia que guardó la respuesta. */
+function nombre_menu(array $c, string $id, string $copia = ''): string {
+    foreach (menus_de($c) as $m) if ($m['id'] === $id) return $m['nombre'];
+    if ($copia !== '') return $copia;
+    return MENUS_ANTIGUOS[$id] ?? ($id !== '' ? $id : 'sin indicar');
+}
+/** ¿Se pregunta a los invitados si necesitan autobús? Solo con la sección Transporte activa. */
+function pregunta_bus(array $c): bool {
+    $t = seccion_tipo($c, 'transporte');
+    return $t !== null && !empty($t['datos']['preguntar']);
 }

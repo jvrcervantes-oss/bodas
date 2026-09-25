@@ -281,6 +281,10 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php foreach ($c['secciones'] as $s):
         if (!$s['on'] || $s['tipo'] === 'informacion') continue;
         $resumen = resumen($s['datos']['texto'] ?? '');
+        if ($resumen === '' && $s['tipo'] === 'transporte' && $s['datos']['trayectos']) {
+            $t0 = $s['datos']['trayectos'][0];
+            $resumen = resumen('Autobús' . ($t0['hora'] !== '' ? ' a las ' . $t0['hora'] : '') . ' desde ' . $t0['salida'] . '.');
+        }
         if ($s['tipo'] === 'rsvp'): ?>
       <div class="q-card q-rsvp rv">
         <div class="q-label"><?= ico(ICONOS['rsvp']) ?><span class="kicker" style="color:inherit">Confirmación</span></div>
@@ -363,7 +367,8 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
     $intro = parrafos($d['texto'] ?? '', 'lede');
     switch ($s['tipo']) {
         case 'rsvp': return envoltorio($s['titulo'], $intro . form_rsvp($c, $s, $ctx));
-        case 'informacion': return envoltorio($s['titulo'], $intro . pagina_informacion($c));
+        case 'informacion': return envoltorio($s['titulo'], $intro . pagina_informacion($c) . tarjeta_menu($c));
+        case 'transporte': return envoltorio($s['titulo'], $intro . bloque_transporte($c, $s, $ctx));
         case 'hoteles': return envoltorio($s['titulo'], $intro . lista_hoteles($d));
         case 'regalos': return envoltorio($s['titulo'], $intro . bloque_regalos($c, $d));
         case 'musica': return envoltorio($s['titulo'], $intro . bloque_musica($ctx));
@@ -405,6 +410,44 @@ function pagina_informacion(array $c): string {
         $first = false;
     }
     return $o . '</div>';
+}
+
+/** «El menú»: solo si algún menú lleva descripción (si no, repetiría los nombres del formulario). */
+function tarjeta_menu(array $c): string {
+    $ms = array_filter(menus_de($c), fn($m) => $m['nombre'] !== '');
+    if (!array_filter($ms, fn($m) => $m['descripcion'] !== '')) return '';
+    $o = '<div class="menu-card"><div class="info-title">EL MENÚ</div>';
+    foreach ($ms as $m) {
+        $o .= '<div class="menu-item"><h3>' . h($m['nombre']) . ($m['infantil'] ? ' <span class="menu-tag">niños</span>' : '') . '</h3>'
+            . ($m['descripcion'] !== '' ? parrafos($m['descripcion']) : '') . '</div>';
+    }
+    return $o . '</div>';
+}
+
+function bloque_transporte(array $c, array $s, array $ctx): string {
+    $d = $s['datos'];
+    $o = '';
+    if ($d['trayectos']) {
+        $o .= '<div class="trayectos">';
+        foreach ($d['trayectos'] as $t) {
+            $o .= '<article class="trayecto">'
+                . '<div class="trayecto-cab">' . ($t['hora'] !== '' ? '<span class="trayecto-hora">' . h($t['hora']) . '</span>' : '')
+                . ($t['titulo'] !== '' ? '<h3>' . h($t['titulo']) . '</h3>' : '') . '</div>'
+                . '<ol class="trayecto-ruta"><li><span class="kicker">Salida</span>' . h($t['salida']) . '</li>'
+                . ($t['llegada'] !== '' ? '<li><span class="kicker">Llegada</span>' . h($t['llegada']) . '</li>' : '') . '</ol>'
+                . ($t['nota'] !== '' ? parrafos($t['nota'], 'trayecto-nota') : '')
+                . '<a class="btn btn-soft" href="https://maps.google.com/?q=' . h(rawurlencode($t['salida'])) . '" target="_blank" rel="noopener noreferrer">'
+                . ico(ICONOS['mapa'], 'ico ico-sm') . 'Ver la salida en el mapa</a></article>';
+        }
+        $o .= '</div>';
+    } elseif ($d['texto'] === '') {
+        $o .= '<div class="pending-note">Horarios y paradas: os los contamos pronto.</div>';
+    }
+    $rsvp = seccion_tipo($c, 'rsvp');
+    if (!empty($d['preguntar']) && $rsvp) {
+        $o .= '<p class="lede trayecto-aviso">¿Necesitáis autobús? Decídnoslo al ' . a_interno($rsvp['ruta'], $ctx) . h(mb_strtolower($rsvp['titulo'], 'UTF-8')) . '</a>.</p>';
+    }
+    return $o;
 }
 
 function lista_hoteles(array $d): string {
@@ -466,22 +509,30 @@ function form_rsvp(array $c, array $s, array $ctx): string {
     if ($ctx['modo'] === 'zip') return aviso_alojada($ctx, 'Confirmad vuestra asistencia en nuestra web');
     $d = $s['datos'];
     $L = textos_legales();
+    // Menú por defecto: el primero "para niños" para los peques, el primero que no lo es para adultos
+    $ms = array_values(array_filter($d['menus'], fn($m) => $m['nombre'] !== ''));
+    if (!$ms) $ms = [menu_nuevo('general', 'Menú')];
+    $ninos = array_values(array_filter($ms, fn($m) => $m['infantil']));
+    $adultos = array_values(array_filter($ms, fn($m) => !$m['infantil']));
+    $defNino = ($ninos[0] ?? $ms[0])['id'];
+    $defAdulto = ($adultos[0] ?? $ms[0])['id'];
     $menus = '';
     $menuTpl = '';
-    foreach ($d['menus'] as $i => $m) {
-        $menus .= '<label><input type="radio" data-f="menu" name="invitados[0][menu]" value="' . h($m) . '"' . ($i === 0 ? ' checked' : '') . '> ' . h(MENUS[$m]) . '</label>';
-        $menuTpl .= '<label><input type="radio" data-f="menu" value="' . h($m) . '"> ' . h(MENUS[$m]) . '</label>';
+    foreach ($ms as $m) {
+        $desc = $m['descripcion'] !== '' ? '<small class="menu-desc">' . h(resumen($m['descripcion'], 90)) . '</small>' : '';
+        $menus .= '<label><input type="radio" data-f="menu" name="invitados[0][menu]" value="' . h($m['id']) . '"' . ($m['id'] === $defAdulto ? ' checked' : '') . '> <span>' . h($m['nombre']) . $desc . '</span></label>';
+        $menuTpl .= '<label><input type="radio" data-f="menu" value="' . h($m['id']) . '"> <span>' . h($m['nombre']) . $desc . '</span></label>';
     }
-    $menuField = fn($radios) => count($d['menus']) > 1
-        ? '<div class="field"><span class="field-label">Menú</span><div class="radio-group">' . $radios . '</div></div>'
-        : '<input type="hidden" data-f="menu" value="' . h($d['menus'][0]) . '">';
+    $menuField = fn($radios) => count($ms) > 1
+        ? '<div class="field"><span class="field-label">Menú</span><div class="radio-group radio-menus">' . $radios . '</div></div>'
+        : '<input type="hidden" data-f="menu" value="' . h($ms[0]['id']) . '">';
     $capa1 = strtr((string) ($L['rsvp_capa1'] ?? ''), [
         '{pareja}' => nombres($c, ' y '), '{email}' => $c['pareja']['email'],
         '{borrado}' => $c['fecha'] !== '' ? fecha_larga(fecha_borrado($c['fecha']), false) : '',
     ]);
     $conv = $c['convite']['lugar'] !== '';
     ob_start(); ?>
-<form id="rsvpForm" class="stack" novalidate data-menu-nino="<?= in_array('infantil', $d['menus'], true) ? 'infantil' : h($d['menus'][0]) ?>" data-menu-adulto="<?= h($d['menus'][0] === 'infantil' && count($d['menus']) > 1 ? $d['menus'][1] : $d['menus'][0]) ?>">
+<form id="rsvpForm" class="stack" novalidate data-menu-nino="<?= h($defNino) ?>" data-menu-adulto="<?= h($defAdulto) ?>">
   <input type="text" name="web" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
   <div class="guests-head">
     <span class="kicker">Quiénes venís</span>
@@ -521,8 +572,8 @@ function form_rsvp(array $c, array $s, array $ctx): string {
 <?php else: ?>
   <input type="hidden" name="asiste_ceremonia" value="si"><input type="hidden" name="asiste_banquete" value="si">
 <?php endif; ?>
-<?php if ($d['bus']): ?>
-  <div class="field"><label class="check-group"><input type="checkbox" name="necesita_bus" value="si"> Necesitamos autobús</label></div>
+<?php if (pregunta_bus($c)): $tr = seccion_tipo($c, 'transporte'); ?>
+  <div class="field"><label class="check-group"><input type="checkbox" name="necesita_bus" value="si"> Necesitamos autobús <?= a_interno($tr['ruta'], $ctx, 'class="field-link"') ?>(ver horarios)</a></label></div>
 <?php endif; ?>
   <div class="field"><label for="rsvpContacto">Teléfono o email de contacto</label><input type="text" id="rsvpContacto" name="contacto" maxlength="120" data-validate="email-or-phone" required></div>
   <div class="field"><label for="rsvpCancion">La canción que no puede faltar (opcional)</label><input type="text" id="rsvpCancion" name="cancion" maxlength="150"></div>

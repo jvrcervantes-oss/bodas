@@ -55,7 +55,11 @@ function api_rsvp(string $slug, array $c, string $metodo): void {
     if (clean_str($_POST['web'] ?? '') !== '') json_response(['ok' => true, 'personas' => 1]); // honeypot
     if (!limite('rsvp|' . $slug . '|' . ip_cliente(), 20, 3600)) json_response(['ok' => false, 'error' => 'Demasiados envíos seguidos. Prueba dentro de un rato.'], 429);
 
-    $menus = $s['datos']['menus'];
+    $menus = array_values(array_filter($s['datos']['menus'], fn($m) => $m['nombre'] !== ''));
+    if (!$menus) $menus = [menu_nuevo('general', 'Menú')];
+    $porId = array_column($menus, null, 'id');
+    $defNino = (array_values(array_filter($menus, fn($m) => $m['infantil']))[0] ?? $menus[0])['id'];
+    $defAdulto = (array_values(array_filter($menus, fn($m) => !$m['infantil']))[0] ?? $menus[0])['id'];
     $invitados = [];
     $raw = $_POST['invitados'] ?? null;
     if (!is_array($raw)) json_response(['ok' => false, 'error' => 'Falta el nombre.']);
@@ -65,8 +69,11 @@ function api_rsvp(string $slug, array $c, string $metodo): void {
         if ($nombre === '') json_response(['ok' => false, 'error' => 'Falta el nombre de alguno de los invitados.']);
         $tipo = ($g['tipo'] ?? '') === 'nino' ? 'nino' : 'adulto';
         $menu = clean_str($g['menu'] ?? '', 20);
-        if (!in_array($menu, $menus, true)) $menu = ($tipo === 'nino' && in_array('infantil', $menus, true)) ? 'infantil' : $menus[0];
-        $invitados[] = ['nombre' => $nombre, 'tipo' => $tipo, 'menu' => $menu, 'alergias' => clean_str($g['alergias'] ?? '', 300)];
+        if (!isset($porId[$menu])) $menu = $tipo === 'nino' ? $defNino : $defAdulto;
+        // Se guarda el id (manda) y una copia del nombre: si la pareja borra ese menú
+        // después, el panel sigue sabiendo qué eligió esta persona
+        $invitados[] = ['nombre' => $nombre, 'tipo' => $tipo, 'menu' => $menu, 'menu_nombre' => $porId[$menu]['nombre'],
+            'alergias' => clean_str($g['alergias'] ?? '', 300)];
     }
     if (!$invitados) json_response(['ok' => false, 'error' => 'Falta el nombre.']);
 
@@ -93,7 +100,7 @@ function api_rsvp(string $slug, array $c, string $metodo): void {
         'invitados' => $invitados,
         'asiste_ceremonia' => ($_POST['asiste_ceremonia'] ?? '') === 'si',
         'asiste_banquete' => ($_POST['asiste_banquete'] ?? '') === 'si',
-        'necesita_bus' => !empty($s['datos']['bus']) && ($_POST['necesita_bus'] ?? '') === 'si',
+        'necesita_bus' => pregunta_bus($c) && ($_POST['necesita_bus'] ?? '') === 'si',
         'contacto' => $contacto,
         'cancion' => clean_str($_POST['cancion'] ?? '', 150),
         'consentimientos' => ['alergias' => $hayAlergias, 'acompanantes' => count($invitados) > 1, 'version' => $L['version'] ?? ''],
@@ -240,7 +247,7 @@ function panel_recuperar(string $slug, array $c, string $metodo): void {
 /** Única lectura de quién viene (igual que personas() de EduCora). */
 function personas(array $r): array {
     return array_map(fn($g) => ['nombre' => (string) ($g['nombre'] ?? ''), 'tipo' => ($g['tipo'] ?? '') === 'nino' ? 'nino' : 'adulto',
-        'menu' => (string) ($g['menu'] ?? ''), 'alergias' => (string) ($g['alergias'] ?? '')],
+        'menu' => (string) ($g['menu'] ?? ''), 'menu_nombre' => (string) ($g['menu_nombre'] ?? ''), 'alergias' => (string) ($g['alergias'] ?? '')],
         array_values(array_filter((array) ($r['invitados'] ?? []), 'is_array')));
 }
 function clave_nombre(string $n): string {
@@ -248,10 +255,11 @@ function clave_nombre(string $n): string {
     return strtr($n, ['á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n']);
 }
 
-function panel_datos(string $slug): array {
+function panel_datos(string $slug, array $c): array {
     $rsvps = lee_json(dir_boda($slug) . '/guardado/rsvp.json') ?? [];
     $st = ['personas' => 0, 'adultos' => 0, 'ninos' => 0, 'ceremonia' => 0, 'banquete' => 0, 'bus' => 0];
-    $menus = array_fill_keys(array_keys(MENUS), 0);
+    $menus = [];
+    foreach (menus_de($c) as $m) $menus[$m['id']] = ['nombre' => $m['nombre'], 'n' => 0];
     $vistos = [];
     foreach ($rsvps as $i => $r) {
         $ps = personas($r);
@@ -259,7 +267,10 @@ function panel_datos(string $slug): array {
         $st['personas'] += $n;
         foreach ($ps as $p) {
             $st[$p['tipo'] === 'nino' ? 'ninos' : 'adultos']++;
-            if (!empty($r['asiste_banquete']) && isset($menus[$p['menu']])) $menus[$p['menu']]++;
+            if (!empty($r['asiste_banquete'])) {
+                $menus[$p['menu']] = $menus[$p['menu']] ?? ['nombre' => nombre_menu($c, $p['menu'], $p['menu_nombre']) . ' (ya no se ofrece)', 'n' => 0];
+                $menus[$p['menu']]['n']++;
+            }
             $k = clave_nombre($p['nombre']);
             if ($k !== '') $vistos[$k][$i] = true;
         }
@@ -272,11 +283,11 @@ function panel_datos(string $slug): array {
 }
 
 function panel_inicio(string $slug, array $c): string {
-    [$rsvps, $st, $menus, $rep] = panel_datos($slug);
+    [$rsvps, $st, $menus, $rep] = panel_datos($slug, $c);
     $canciones = lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? [];
     usort($canciones, fn($a, $b) => ($b['votos'] ?? 0) <=> ($a['votos'] ?? 0));
-    $rs = seccion_tipo($c, 'rsvp');
-    $menusOn = $rs ? $rs['datos']['menus'] : array_keys(MENUS);
+    // Columna de bus si hoy se pregunta o si alguna respuesta antigua lo pidió
+    $bus = pregunta_bus($c) || (bool) array_filter($rsvps, fn($r) => !empty($r['necesita_bus']));
     $sino = fn($v) => !empty($v) ? '<span class="yes">Sí</span>' : '<span class="no">No</span>';
     $o = '<header class="panel-head"><div><span class="kicker">Panel privado</span><h1>' . h(nombres($c)) . '</h1>'
         . '<p><a href="/" target="_blank" rel="noopener">' . h(preg_replace('~^https?://~', '', rtrim(url_boda($slug), '/'))) . '</a> · se mantiene hasta el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '</p></div>'
@@ -287,15 +298,15 @@ function panel_inicio(string $slug, array $c): string {
     foreach ([['personas', 'personas'], ['adultos', 'adultos'], ['ninos', 'niños/as'], ['ceremonia', 'van a ceremonia'], ['banquete', 'van a banquete']] as [$k, $t]) {
         $o .= '<div class="stat"><b>' . $st[$k] . '</b><span>' . $t . '</span></div>';
     }
-    if ($rs && $rs['datos']['bus']) $o .= '<div class="stat"><b>' . $st['bus'] . '</b><span>necesitan bus</span></div>';
+    if ($bus) $o .= '<div class="stat"><b>' . $st['bus'] . '</b><span>necesitan bus</span></div>';
     $o .= '<div class="stat"><b>' . count($rsvps) . '</b><span>respuestas</span></div></div>';
     $o .= '<p class="panel-nota">Menús de quienes van al banquete</p><div class="stat-row">';
-    foreach ($menusOn as $m) $o .= '<div class="stat"><b>' . $menus[$m] . '</b><span>' . h(mb_strtolower(MENUS[$m], 'UTF-8')) . '</span></div>';
+    foreach ($menus as $m) $o .= '<div class="stat"><b>' . $m['n'] . '</b><span>' . h(mb_strtolower($m['nombre'], 'UTF-8')) . '</span></div>';
     $o .= '</div></section>';
 
     $o .= '<section class="section"><h2 class="panel-h2">Confirmaciones</h2>';
     if ($rep) $o .= '<p class="panel-aviso">Hay nombres que aparecen en más de una respuesta (marcados con «repetido»). Puede que alguien haya confirmado dos veces.</p>';
-    $o .= '<div class="table-wrap"><table><thead><tr><th>Quién viene</th><th>Ceremonia</th><th>Banquete</th>' . ($rs && $rs['datos']['bus'] ? '<th>Bus</th>' : '') . '<th>Contacto</th><th>Canción</th><th>Enviado</th></tr></thead><tbody>';
+    $o .= '<div class="table-wrap"><table><thead><tr><th>Quién viene</th><th>Ceremonia</th><th>Banquete</th>' . ($bus ? '<th>Bus</th>' : '') . '<th>Contacto</th><th>Canción</th><th>Enviado</th></tr></thead><tbody>';
     if (!$rsvps) $o .= '<tr><td colspan="7" class="vacio">Todavía no hay confirmaciones.</td></tr>';
     foreach (array_reverse($rsvps) as $r) {
         $o .= '<tr><td>';
@@ -303,11 +314,11 @@ function panel_inicio(string $slug, array $c): string {
             $o .= '<div class="persona"><b>' . h($p['nombre']) . '</b>'
                 . (in_array(clave_nombre($p['nombre']), $rep, true) ? '<span class="rep"> · repetido</span>' : '')
                 . ($p['tipo'] === 'nino' ? '<span class="muted"> · niño/a</span>' : '')
-                . '<span class="muted"> · ' . h(MENUS[$p['menu']] ?? $p['menu']) . '</span>'
+                . '<span class="muted"> · ' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</span>'
                 . ($p['alergias'] !== '' ? '<br><span class="alergia">Alergias: ' . h($p['alergias']) . '</span>' : '') . '</div>';
         }
         $o .= '</td><td>' . $sino($r['asiste_ceremonia'] ?? false) . '</td><td>' . $sino($r['asiste_banquete'] ?? false) . '</td>'
-            . ($rs && $rs['datos']['bus'] ? '<td>' . $sino($r['necesita_bus'] ?? false) . '</td>' : '')
+            . ($bus ? '<td>' . $sino($r['necesita_bus'] ?? false) . '</td>' : '')
             . '<td>' . h($r['contacto'] ?? '') . '</td><td>' . h($r['cancion'] ?? '') . '</td>'
             . '<td>' . h(isset($r['fecha_envio']) ? date('d/m/Y H:i', strtotime($r['fecha_envio'])) : '') . '</td></tr>';
     }
@@ -325,7 +336,7 @@ function panel_inicio(string $slug, array $c): string {
 
 /** Excel: una fila por persona. `;` + BOM para el Excel en español; celdas = + - @ neutralizadas (las escribe un invitado). */
 function panel_excel(string $slug, array $c): void {
-    [$rsvps, , , $rep] = panel_datos($slug);
+    [$rsvps, , , $rep] = panel_datos($slug, $c);
     $celda = fn($v) => (($v = (string) $v) !== '' && strpbrk($v[0], "=+-@\t\r") !== false) ? "'" . $v : $v;
     $sino = fn($v) => !empty($v) ? 'Sí' : 'No';
     header('Content-Type: text/csv; charset=UTF-8');
@@ -335,7 +346,7 @@ function panel_excel(string $slug, array $c): void {
     fputcsv($out, ['Grupo', 'Nombre', 'Tipo', 'Menú', 'Alergias', 'Ceremonia', 'Banquete', 'Bus', 'Contacto', 'Canción', 'Enviado', 'Nombre repetido'], ';');
     foreach ($rsvps as $i => $r) {
         foreach (personas($r) as $p) {
-            fputcsv($out, [$i + 1, $celda($p['nombre']), $p['tipo'] === 'nino' ? 'niño/a' : 'adulto', MENUS[$p['menu']] ?? $p['menu'], $celda($p['alergias']),
+            fputcsv($out, [$i + 1, $celda($p['nombre']), $p['tipo'] === 'nino' ? 'niño/a' : 'adulto', $celda(nombre_menu($c, $p['menu'], $p['menu_nombre'])), $celda($p['alergias']),
                 $sino($r['asiste_ceremonia'] ?? null), $sino($r['asiste_banquete'] ?? null), $sino($r['necesita_bus'] ?? null),
                 $celda($r['contacto'] ?? ''), $celda($r['cancion'] ?? ''),
                 isset($r['fecha_envio']) ? date('d/m/Y H:i', strtotime($r['fecha_envio'])) : '',

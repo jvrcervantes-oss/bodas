@@ -11,7 +11,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $L = textos_legales();
     $datos = ['modo' => $modo, 'config' => $c, 'slug' => $slug, 'csrf' => $csrf,
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
-        'menus' => MENUS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
+        'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
         'precio' => ['base' => euros(PRECIO_BASE_CENT), 'iva' => IVA_PCT, 'total' => euros(precio_total_cent())],
         'fotoUrl' => $modo === 'editar' && is_file(dir_boda($slug) . '/foto.webp') ? '/foto?v=' . filemtime(dir_boda($slug) . '/foto.webp') : '',

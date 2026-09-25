@@ -134,7 +134,65 @@
   // ------------------------------------------------------------ secciones
   var secEl = document.getElementById('secciones');
   var abierta = null;
-  var MENUS = D.menus;
+  var idNuevo = function (p) { return p + Math.random().toString(36).slice(2, 8); };
+
+  // Borradores guardados antes del 25-sep: menús como claves fijas y el autobús en la
+  // confirmación. Se pasan al formato nuevo (mismos ids) para que el editor los entienda.
+  (function migraBorrador() {
+    var ANT = { carne: 'Carne', pescado: 'Pescado', vegetariano: 'Vegetariano', vegano: 'Vegano', infantil: 'Infantil' };
+    var busAntiguo = null;
+    st.secciones.forEach(function (x) {
+      if (x.tipo === 'rsvp') {
+        x.datos.menus = (x.datos.menus || []).map(function (m) {
+          return typeof m === 'string' ? { id: m, nombre: ANT[m] || m, descripcion: '', infantil: m === 'infantil' } : m;
+        });
+        if ('bus' in x.datos) { busAntiguo = !!x.datos.bus; delete x.datos.bus; }
+      }
+    });
+    st.secciones.forEach(function (x) {
+      if (x.tipo === 'transporte') {
+        x.datos.trayectos = x.datos.trayectos || [];
+        if (typeof x.datos.preguntar !== 'boolean') x.datos.preguntar = busAntiguo === null ? true : busAntiguo;
+      }
+    });
+  })();
+
+  // Lista editable genérica (menús, trayectos): cada fila con subir/bajar/quitar
+  function listaEditable(arr, opts) {
+    var caja = el('div', { class: 'c-lista' });
+    function pinta() {
+      caja.textContent = '';
+      arr.forEach(function (it, i) {
+        var mover = function (d) { return function () { var j = i + d; if (j < 0 || j >= arr.length) return; var x = arr[i]; arr[i] = arr[j]; arr[j] = x; pinta(); cambio(); }; };
+        var cab = el('b', { text: opts.titulo(it, i) });
+        var refresca = function () { cab.textContent = opts.titulo(it, i); };
+        caja.appendChild(el('div', { class: 'c-item' }, [
+          el('div', { class: 'c-item-cab' }, [
+            cab,
+            el('span', { class: 'c-item-acc' }, [
+              el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Subir', disabled: i === 0, text: '↑', onclick: mover(-1) }),
+              el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Bajar', disabled: i === arr.length - 1, text: '↓', onclick: mover(1) }),
+              (arr.length > (opts.min || 0)) ? el('button', { type: 'button', class: 'c-link c-link-mal', text: 'Quitar', onclick: function () { arr.splice(i, 1); pinta(); cambio(); } }) : null
+            ])
+          ])
+        ].concat(opts.campos(it, refresca))));
+      });
+      if (arr.length < opts.max) caja.appendChild(el('button', { type: 'button', class: 'b-btn b-paper c-btn-sm', text: opts.anadir, onclick: function () {
+        arr.push(opts.nuevo()); pinta(); cambio();
+        var ins = caja.querySelectorAll('.c-item'); var ult = ins[ins.length - 1]; var f = ult && ult.querySelector('input');
+        if (f) f.focus();
+      } }));
+    }
+    pinta();
+    return caja;
+  }
+  function campoDe(obj, k, etiqueta, opts) {
+    opts = opts || {};
+    var inp = el(opts.area ? 'textarea' : 'input', { maxlength: opts.max || 200, rows: opts.area ? (opts.rows || 2) : null, type: opts.type || null, placeholder: opts.ph || null });
+    inp.value = obj[k] || '';
+    inp.addEventListener('input', function () { obj[k] = inp.value; if (opts.alCambiar) opts.alCambiar(); cambio(); });
+    return el('label', { class: 'c-campo' + (opts.clase ? ' ' + opts.clase : '') }, [el('span', { text: etiqueta }), inp]);
+  }
 
   function campoTexto(s, clave, etiqueta, opts) {
     opts = opts || {};
@@ -159,15 +217,29 @@
     switch (s.tipo) {
       case 'rsvp':
         w.appendChild(campoTexto(s, 'texto', 'Texto de introducción', { area: true, max: 600, rows: 3 }));
-        var menus = el('div', { class: 'c-checks' });
-        Object.keys(MENUS).forEach(function (m) {
-          menus.appendChild(casilla(s.datos.menus.indexOf(m) > -1, MENUS[m], function (on) {
-            s.datos.menus = Object.keys(MENUS).filter(function (x) { return x === m ? on : s.datos.menus.indexOf(x) > -1; });
-          }));
-        });
-        w.appendChild(el('fieldset', { class: 'c-fs' }, [el('legend', { text: 'Menús que ofrecéis' }), menus]));
+        w.appendChild(el('fieldset', { class: 'c-fs' }, [
+          el('legend', { text: 'Menús que ofrecéis' }),
+          el('p', { class: 'c-ayuda', text: 'Cada invitado elige uno. Si describís los platos, también salen en «Información».' }),
+          listaEditable(s.datos.menus, {
+            max: D.maxMenus, min: 1, anadir: '+ Añadir menú',
+            titulo: function (m, i) { return m.nombre || 'Menú ' + (i + 1); },
+            nuevo: function () { return { id: idNuevo('m'), nombre: '', descripcion: '', infantil: false }; },
+            campos: function (m, refresca) {
+              return [
+                campoDe(m, 'nombre', 'Nombre', { max: 40, ph: 'Ej.: Sin gluten', alCambiar: refresca }),
+                campoDe(m, 'descripcion', 'Platos (opcional)', { area: true, max: 300, ph: 'Entrante, principal y postre' }),
+                casilla(m.infantil, 'Es el menú de los niños (sale marcado por defecto para ellos)', function (v) { m.infantil = v; })
+              ];
+            }
+          })
+        ]));
         w.appendChild(casilla(s.datos.asistencia, 'Preguntar si van a la ceremonia, al banquete o a los dos', function (v) { s.datos.asistencia = v; }));
-        w.appendChild(casilla(s.datos.bus, 'Preguntar si necesitan autobús', function (v) { s.datos.bus = v; }));
+        var tr = st.secciones.filter(function (x) { return x.tipo === 'transporte'; })[0];
+        if (tr) w.appendChild(el('p', { class: 'c-ayuda' }, [
+          document.createTextNode('La pregunta del autobús se configura en '),
+          el('button', { type: 'button', class: 'c-link', text: tr.titulo || 'Transporte', onclick: function () { abierta = tr.id; pintaSecciones(); var n = li(tr); if (n) n.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }),
+          document.createTextNode('.')
+        ]));
         w.appendChild(campoTexto(s, 'fecha_limite', 'Fecha límite para confirmar (opcional)', { type: 'date' }));
         break;
       case 'hoteles':
@@ -203,6 +275,26 @@
         w.appendChild(campoTexto(s, 'titular', 'Titular de la cuenta', { max: 120 }));
         w.appendChild(campoTexto(s, 'iban', 'IBAN', { max: 50, ph: 'ES00 0000 0000 0000 0000 0000', ayuda: 'Comprobamos que el IBAN sea válido: si tiene un error, no se publica.' }));
         w.appendChild(campoTexto(s, 'otro', 'Otras formas de regalo (opcional)', { area: true, max: 600, rows: 2 }));
+        break;
+      case 'transporte':
+        w.appendChild(campoTexto(s, 'texto', 'Introducción (opcional)', { area: true, max: 2000, rows: 3 }));
+        w.appendChild(el('fieldset', { class: 'c-fs' }, [
+          el('legend', { text: 'Trayectos' }),
+          listaEditable(s.datos.trayectos, {
+            max: D.maxTrayectos, anadir: '+ Añadir trayecto',
+            titulo: function (t, i) { return t.titulo || 'Trayecto ' + (i + 1); },
+            nuevo: function () { return { titulo: '', salida: '', hora: '', llegada: '', nota: '' }; },
+            campos: function (t, refresca) {
+              return [
+                el('div', { class: 'c-fila' }, [campoDe(t, 'titulo', 'Nombre', { max: 60, ph: 'Ida a la finca', clase: 'c-crece', alCambiar: refresca }), campoDe(t, 'hora', 'Hora', { type: 'time', clase: 'c-hora' })]),
+                campoDe(t, 'salida', 'Punto de salida', { max: 140, ph: 'Puerta de la iglesia' }),
+                campoDe(t, 'llegada', 'Llegada (opcional)', { max: 140 }),
+                campoDe(t, 'nota', 'Nota (opcional)', { area: true, max: 300, ph: 'Vuelta a las 2:00 y a las 4:00' })
+              ];
+            }
+          })
+        ]));
+        w.appendChild(casilla(s.datos.preguntar, 'Preguntar en la confirmación si necesitan autobús', function (v) { s.datos.preguntar = v; }));
         break;
       case 'informacion':
         w.appendChild(el('p', { class: 'c-ayuda', text: 'Muestra la ceremonia y el convite con su mapa (los datos del paso 2).' }));
