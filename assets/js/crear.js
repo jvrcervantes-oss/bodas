@@ -8,7 +8,8 @@
   var D = JSON.parse(document.getElementById('datos').textContent);
   var MODO = D.modo;                         // 'crear' | 'editar'
   var CLAVE = 'boda_borrador_v1';
-  var URL_PREVIA = MODO === 'editar' ? '/panel/vista-previa' : '/api/vista-previa';
+  var BASE = D.base || '';   // '/bodas' mientras el creador vive en axisworks.studio/bodas
+  var URL_PREVIA = MODO === 'editar' ? '/panel/vista-previa' : BASE + '/api/vista-previa';
   var st = D.config;
   var foto = { blob: null, src: '', quitar: false };
   var slugTocado = false;
@@ -92,7 +93,7 @@
       if (k) { conEntrada = true; if (typeof irAPagina === 'function' && pagina !== 'inicio') { pagina = 'inicio'; } }
       cambio();
     });
-    var muestra = k ? el('img', { class: 'c-atelier-img', src: '/assets/img/atelier/muestra-' + k + '.webp', alt: '', loading: 'lazy' })
+    var muestra = k ? el('img', { class: 'c-atelier-img', src: BASE + '/assets/img/atelier/muestra-' + k + '.webp', alt: '', loading: 'lazy' })
       : el('span', { class: 'c-atelier-img c-atelier-propio', text: 'Aa' });
     return el('label', { class: 'c-atelier-card' + (r.disabled ? ' is-bloq' : '') }, [r, muestra,
       el('span', { class: 'c-atelier-txt' }, [
@@ -144,7 +145,7 @@
   // En el Atelier se eligen bajo los diseños; en el Esencial se ven bloqueadas junto a las cuatro de siempre.
   var autorKs = Object.keys(D.fuentesAutor || {});
   var autorEl = null;
-  function muestraAutor(k) { return el('img', { class: 'c-fuente-img', src: '/assets/img/fuentes/autor-' + k + '.webp', alt: 'Muestra de ' + D.fuentesAutor[k].nombre, loading: 'lazy' }); }
+  function muestraAutor(k) { return el('img', { class: 'c-fuente-img', src: BASE + '/assets/img/fuentes/autor-' + k + '.webp', alt: 'Muestra de ' + D.fuentesAutor[k].nombre, loading: 'lazy' }); }
   if (autorKs.length) {
     autorEl = el('div', { class: 'c-autor', id: 'fuentesAutor' }, [
       el('div', { class: 'c-atelier-cab' }, [el('span', { class: 'overline', text: 'Tipografía de autor' }), el('span', { class: 'c-atelier-precio', text: 'Incluida en el Pack Atelier' })])]);
@@ -774,7 +775,7 @@
     var v = slugEl.value;
     if (!v) { slugEstado.textContent = ''; slugEstado.className = ''; return; }
     slugT = setTimeout(function () {
-      fetch('/api/nombre?s=' + encodeURIComponent(v)).then(function (r) { return r.json(); }).then(function (j) {
+      fetch(BASE + '/api/nombre?s=' + encodeURIComponent(v)).then(function (r) { return r.json(); }).then(function (j) {
         if (slugEl.value !== v) return;
         slugEstado.textContent = j.libre ? '✓ Disponible' : (j.motivo || 'No disponible');
         slugEstado.className = j.libre ? 'ok' : 'mal';
@@ -812,7 +813,7 @@
     pagar.disabled = true;
     var txt = pagar.textContent;
     pagar.textContent = 'Abriendo el pago…';
-    fetch('/api/pagar', { method: 'POST', body: fd })
+    fetch(BASE + '/api/pagar', { method: 'POST', body: fd })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (j.ok && j.url) { location.href = j.url; return; }

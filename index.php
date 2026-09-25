@@ -23,13 +23,15 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
 
 $host = strtolower((string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
-$ruta = trim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
+$ruta = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+if (BASE_PATH !== '' && strpos($ruta . '/', BASE_PATH . '/') === 0) $ruta = substr($ruta, strlen(BASE_PATH));
+$ruta = trim($ruta, '/');
 $metodo = (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
 try {
     if ($host === CREATOR_HOST) {
         // Solo la landing es indexable: el constructor, los legales y la API no
-        if ($ruta !== '') header('X-Robots-Tag: noindex, nofollow');
+        if ($ruta !== '' || OCULTO) header('X-Robots-Tag: noindex, nofollow');
         rutas_creador($ruta, $metodo);
     } else {
         $sufijo = '.' . BASE_DOMAIN;

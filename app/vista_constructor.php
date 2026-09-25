@@ -13,6 +13,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
         'fuentes' => array_map(fn($f) => ['nombre' => $f[0], 'titulos' => $f[1], 'nombres' => $f[3], 'estilo' => $f[4]], FUENTES),
         // Muestras en imagen (no el fichero de la fuente): se enseñan también bloqueadas en el Esencial
+        'base' => BASE_PATH,
         'fuentesAutor' => array_map(fn($f) => ['nombre' => $f['nombre'], 'nota' => $f['nota']], fuentes_autor()),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
@@ -53,14 +54,14 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h($titulo) ?> — <?= h(MARCA) ?></title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="/assets/marca.css?v=<?= h(ASSETS_V) ?>">
-<link rel="stylesheet" href="/assets/crear.css?v=<?= h(ASSETS_V) ?>">
+<link rel="stylesheet" href="<?= BASE_PATH ?>/assets/marca.css?v=<?= h(ASSETS_V) ?>">
+<link rel="stylesheet" href="<?= BASE_PATH ?>/assets/crear.css?v=<?= h(ASSETS_V) ?>">
 </head>
 <body class="c-app" data-modo="<?= h($modo) ?>" data-ver="editor">
 <script type="application/json" id="datos"><?= $json ?></script>
 
 <aside class="c-rail" aria-label="Menú">
-  <a class="c-marca" href="<?= $editar ? '/panel' : '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+  <a class="c-marca" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
   <nav>
 <?php if ($editar): foreach ($rail as [$href, $ico, $txt, $on]): ?>
     <a href="<?= h($href) ?>"<?= $on ? ' aria-current="page"' : '' ?><?= $href === '/panel/factura' ? ' target="_blank" rel="noopener"' : '' ?>><?= il($ico) ?><?= h($txt) ?></a>
@@ -77,7 +78,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 
 <div class="c-main">
   <header class="c-top">
-    <a class="c-marca c-marca-movil" href="<?= $editar ? '/panel' : '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+    <a class="c-marca c-marca-movil" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
     <div class="c-top-tit">
       <div class="c-top-txt"><h1 id="proyNom">Vuestra boda</h1><small><i class="c-punto"></i><?= $editar ? 'Los cambios se publican al guardar' : 'Guardado en este navegador' ?></small></div>
       <span class="c-badge"><?= $editar ? 'Publicada' : 'Borrador' ?></span>
@@ -212,7 +213,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <li><?= il('check', 'i i-sm') ?>Online hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda</li>
         </ul>
         <div class="c-precio"><b id="precioTotal"><?= h(euros(precio_total_cent())) ?></b><span id="precioDesglose">Pack Esencial · IVA incluido · pago único</span></div>
-        <label class="c-check"><input type="checkbox" id="aceptoCond"> <span><?= h($L['check_condiciones'] ?? '') ?> <a href="/condiciones" target="_blank" rel="noopener">Leer condiciones</a></span></label>
+        <label class="c-check"><input type="checkbox" id="aceptoCond"> <span><?= h($L['check_condiciones'] ?? '') ?> <a href="<?= BASE_PATH ?>/condiciones" target="_blank" rel="noopener">Leer condiciones</a></span></label>
         <label class="c-check"><input type="checkbox" id="aceptoDes"> <span><?= h($L['check_desistimiento'] ?? '') ?></span></label>
         <ul class="c-faltan" id="faltan" aria-live="polite"></ul>
         <button type="button" class="b-btn b-dark c-btn-pagar" id="pagar">Pagar <?= h(euros(precio_total_cent())) ?></button>
@@ -247,7 +248,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
   </div>
 <?php if (!$editar): ?><?= pie_creador() ?><?php endif; ?>
 </div>
-<script src="/assets/js/crear.js?v=<?= h(ASSETS_V) ?>" defer></script>
+<script src="<?= BASE_PATH ?>/assets/js/crear.js?v=<?= h(ASSETS_V) ?>" defer></script>
 </body>
 </html>
 <?php

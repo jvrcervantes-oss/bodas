@@ -22,6 +22,13 @@ function rutas_creador(string $ruta, string $metodo): void {
             header('Content-Security-Policy: ' . CSP_CREADOR);
             $t = ['condiciones' => 'Condiciones de contratación', 'privacidad' => 'Privacidad', 'aviso-legal' => 'Aviso legal'][$ruta];
             $E = empresa();
+            // Sin titular, NIF y domicilio (BOD-1) los textos saldrían con huecos: se dice la verdad
+            if (!empresa_completa()) {
+                echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(MARCA) . ' todavía no está a la venta. '
+                    . 'Publicaremos aquí el texto completo, con los datos de quién presta el servicio, antes de abrir la contratación.</p>'
+                    . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
+                return;
+            }
             ob_start();
             include APP_DIR . '/legal/' . $ruta . '.php';
             echo pagina_simple($t, '<article class="legal">' . ob_get_clean() . '</article>');
@@ -85,6 +92,10 @@ function api_pagar(string $metodo): void {
     if (!limite('pagar|' . ip_cliente(), 20, 3600)) json_response(['ok' => false, 'error' => 'Demasiados intentos. Prueba dentro de un rato.'], 429);
     // En LIVE no se vende sin los datos del titular en los textos legales y la factura
     // Sin el Tax Rate, Stripe cobraría 100 € con un botón que dice 121 €: no se abre el pago.
+    // Escondido y sin Stripe configurado (BOD-3): se puede montar y ver la web, no comprarla
+    if (secreto('stripe_secret') === '') {
+        json_response(['ok' => false, 'error' => 'Todavía no está a la venta. Podéis montar vuestra web y verla tal cual; abrimos la contratación muy pronto.'], 503);
+    }
     if (secreto('stripe_tax_rate') === '') {
         registra('ALERTA pago bloqueado: falta stripe_tax_rate');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
@@ -202,11 +213,11 @@ function pagina_listo(): void {
 function pagina_simple(string $titulo, string $cuerpo): string {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — ' . h(MARCA) . '</title><meta name="robots" content="noindex">'
-        . '<link rel="stylesheet" href="/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
+        . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
         . '<header class="s-top"><a class="c-marca" href="/">' . il('flor') . '<span>' . h(MARCA) . '</span></a></header>'
         . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main>' . pie_creador() . '</body></html>';
 }
 
 function pie_creador(): string {
-    return '<footer class="c-pie"><a href="/condiciones">Condiciones</a><a href="/privacidad">Privacidad</a><a href="/aviso-legal">Aviso legal</a><span>' . h(empresa()['email']) . '</span></footer>';
+    return '<footer class="c-pie"><a href="' . BASE_PATH . '/condiciones">Condiciones</a><a href="' . BASE_PATH . '/privacidad">Privacidad</a><a href="' . BASE_PATH . '/aviso-legal">Aviso legal</a><span>' . h(empresa()['email']) . '</span></footer>';
 }

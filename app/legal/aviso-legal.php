@@ -14,7 +14,7 @@
 </ul>
 
 <h2>Para qué sirve esta web</h2>
-<p>Desde aquí se crea, se paga y se aloja una web de boda. Las condiciones de la compra están en las <a href="/condiciones">condiciones de contratación</a> y el uso de los datos, en la <a href="/privacidad">política de privacidad</a>.</p>
+<p>Desde aquí se crea, se paga y se aloja una web de boda. Las condiciones de la compra están en las <a href="<?= BASE_PATH ?>/condiciones">condiciones de contratación</a> y el uso de los datos, en la <a href="/privacidad">política de privacidad</a>.</p>
 
 <h2>Contenido de las webs de boda</h2>
 <p>Los textos y la foto de cada web de boda los escribe y sube la pareja que la contrata, y es ella quien responde de ellos. AxisWorks solo los aloja. Si alguien nos avisa de que una web tiene contenido ilegal o que vulnera derechos de otra persona, lo revisaremos y, si es así, lo retiraremos o bloquearemos el acceso sin demora.</p>

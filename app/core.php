@@ -17,9 +17,28 @@ define('WEB_DIR', dirname(__DIR__));
 
 if (is_file(APP_DIR . '/config.local.php')) require APP_DIR . '/config.local.php';
 
-defined('DATA_DIR')     || define('DATA_DIR', dirname(WEB_DIR) . '/bodas_datos');
+// Datos junto a public_html, nunca dentro: instalada en public_html/bodas, «dirname(WEB_DIR)»
+// sería public_html y los datos quedarían servidos por la web principal. Se sube hasta la
+// carpeta public_html (igual en la web y en el cron, que no tiene DOCUMENT_ROOT).
+if (!defined('DATA_DIR')) {
+    $d = WEB_DIR;
+    while ($d !== dirname($d) && basename($d) !== 'public_html') $d = dirname($d);
+    define('DATA_DIR', (basename($d) === 'public_html' ? dirname($d) : dirname(WEB_DIR)) . '/bodas_datos');
+    unset($d);
+}
 defined('BASE_DOMAIN')  || define('BASE_DOMAIN', 'axisworks.studio');
-defined('CREATOR_HOST') || define('CREATOR_HOST', 'bodas.' . BASE_DOMAIN);
+// Por ahora el creador vive escondido en axisworks.studio/bodas (owner, 25-sep-2026). El día
+// que tenga su subdominio: CREATOR_HOST = 'bodas.axisworks.studio' y CREATOR_BASE = ''.
+defined('CREATOR_HOST') || define('CREATOR_HOST', BASE_DOMAIN);
+defined('CREATOR_BASE') || define('CREATOR_BASE', '/bodas');
+// Carpeta bajo la que responde ESTA petición ('/bodas' o ''), sacada de dónde está index.php
+defined('BASE_PATH') || define('BASE_PATH', (function (): string {
+    $s = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+    // dirname('/index.php') en Windows da una barra invertida: se normaliza o el prefijo saldría como '//assets'
+    return basename($s) === 'index.php' ? rtrim(str_replace('\\', '/', dirname($s)), '/') : '';
+})());
+// Escondido: nada del producto se indexa mientras no esté a la venta
+const OCULTO = true;
 defined('SCHEME')       || define('SCHEME', 'https');
 // Stripe: la base de la API se puede apuntar a un simulador local para pruebas.
 defined('STRIPE_API')   || define('STRIPE_API', 'https://api.stripe.com');
@@ -38,7 +57,9 @@ const PRODUCTO = 'bodas';              // marca de propiedad en la metadata de S
 // competidores directos (25-sep-2026); el owner elige entre las propuestas. Una sola constante.
 const MARCA = 'Bodas by AxisWorks';
 
-if (strpos(str_replace('\\', '/', realpath(DATA_DIR) ?: DATA_DIR) . '/', str_replace('\\', '/', WEB_DIR) . '/') === 0) {
+$__dd = str_replace('\\', '/', realpath(DATA_DIR) ?: DATA_DIR) . '/';
+$__dr = str_replace('\\', '/', (string) (realpath((string) ($_SERVER['DOCUMENT_ROOT'] ?? '')) ?: '')) . '/';
+if (strpos($__dd, str_replace('\\', '/', WEB_DIR) . '/') === 0 || ($__dr !== '/' && strpos($__dd, $__dr) === 0)) {
     http_response_code(500);
     exit('DATA_DIR no puede estar dentro de la carpeta publicada.');
 }
@@ -202,7 +223,7 @@ function url_boda(string $slug, string $ruta = ''): string {
     return SCHEME . '://' . $slug . '.' . BASE_DOMAIN . (defined('PUERTO_DEV') ? ':' . PUERTO_DEV : '') . '/' . ltrim($ruta, '/');
 }
 function url_creador(string $ruta = ''): string {
-    return SCHEME . '://' . CREATOR_HOST . (defined('PUERTO_DEV') ? ':' . PUERTO_DEV : '') . '/' . ltrim($ruta, '/');
+    return SCHEME . '://' . CREATOR_HOST . (defined('PUERTO_DEV') ? ':' . PUERTO_DEV : '') . CREATOR_BASE . '/' . ltrim($ruta, '/');
 }
 
 function cabeceras_privadas(): void {

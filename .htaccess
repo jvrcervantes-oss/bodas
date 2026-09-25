@@ -20,9 +20,9 @@ DirectoryIndex index.php
   RewriteCond %{REQUEST_URI} !^/\.well-known/
   RewriteRule (^|/)\. - [R=404,L]
 
-  RewriteCond %{REQUEST_URI} ^/assets/
+  # Estáticos de assets/ tal cual (vale en la raíz de un dominio y en axisworks.studio/bodas)
   RewriteCond %{REQUEST_FILENAME} -f
-  RewriteRule ^ - [L]
+  RewriteRule ^assets/ - [L]
 
   RewriteRule ^ index.php [L,QSA]
 </IfModule>

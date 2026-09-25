@@ -54,7 +54,8 @@ function pagina_landing(): string {
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<?php if (OCULTO): ?><meta name="robots" content="noindex, nofollow">
+<?php endif; ?><meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h(MARCA) ?> — La web de vuestra boda con confirmación de asistencia</title>
 <meta name="description" content="Cread la web de vuestra boda en un rato: confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. <?= h($total) ?> en un pago único.">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
@@ -62,14 +63,14 @@ function pagina_landing(): string {
 <meta property="og:description" content="Confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Pago único de <?= h($total) ?>.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="<?= h(url_creador('assets/img/landing/demo-escritorio.webp')) ?>">
-<link rel="stylesheet" href="/assets/marca.css?v=<?= h(ASSETS_V) ?>">
-<link rel="stylesheet" href="/assets/landing.css?v=<?= h(ASSETS_V) ?>">
+<link rel="stylesheet" href="<?= BASE_PATH ?>/assets/marca.css?v=<?= h(ASSETS_V) ?>">
+<link rel="stylesheet" href="<?= BASE_PATH ?>/assets/landing.css?v=<?= h(ASSETS_V) ?>">
 </head>
 <body class="l">
 
 <header class="l-top">
   <div class="l-top-in">
-    <a class="l-logo" href="/"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
     <nav class="l-nav" aria-label="Secciones">
       <a href="#incluye">Qué incluye</a>
       <a href="#pasos">Cómo funciona</a>
@@ -78,21 +79,21 @@ function pagina_landing(): string {
       <a href="#precio">Precio</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
-    <a class="b-btn b-rose l-top-cta" href="/crear">Crear nuestra web</a>
+    <a class="b-btn b-rose l-top-cta" href="<?= BASE_PATH ?>/crear">Crear nuestra web</a>
   </div>
 </header>
 
 <main>
   <section class="l-hero">
-    <img class="l-deco l-deco-hero-a" src="/assets/img/landing/enredadera.webp" alt="" width="896" height="1200">
-    <img class="l-deco l-deco-hero-b" src="/assets/img/landing/enredadera-2.webp" alt="" width="896" height="1200">
+    <img class="l-deco l-deco-hero-a" src="<?= BASE_PATH ?>/assets/img/landing/enredadera.webp" alt="" width="896" height="1200">
+    <img class="l-deco l-deco-hero-b" src="<?= BASE_PATH ?>/assets/img/landing/enredadera-2.webp" alt="" width="896" height="1200">
     <div class="l-wrap l-hero-grid">
       <div class="l-hero-txt">
         <span class="l-chip"><?= il('flor', 'i i-sm') ?>Web de boda con confirmación de asistencia</span>
         <h1>La web de vuestra boda, <em>tan bonita</em> como el gran día.</h1>
         <p class="l-lede">Montadla en un rato, desde el móvil o el ordenador: confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Sin tocar código.</p>
         <div class="l-ctas">
-          <a class="b-btn b-rose" href="/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
+          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
           <a class="b-btn b-paper" href="#pasos">Cómo funciona</a>
         </div>
         <dl class="l-datos">
@@ -103,9 +104,9 @@ function pagina_landing(): string {
       </div>
       <div class="l-hero-vis">
         <div class="l-marco">
-          <img class="l-marco-fondo" src="/assets/img/landing/papel.webp" alt="" width="1376" height="768">
+          <img class="l-marco-fondo" src="<?= BASE_PATH ?>/assets/img/landing/papel.webp" alt="" width="1376" height="768">
           <figure class="l-movil">
-            <img src="/assets/img/landing/demo-movil.webp" alt="Ejemplo de web de boda creada con <?= h(MARCA) ?>: portada con los nombres, la fecha y la cuenta atrás" width="390" height="780">
+            <img src="<?= BASE_PATH ?>/assets/img/landing/demo-movil.webp" alt="Ejemplo de web de boda creada con <?= h(MARCA) ?>: portada con los nombres, la fecha y la cuenta atrás" width="390" height="780">
           </figure>
           <span class="l-ejemplo">Ejemplo</span>
         </div>
@@ -160,7 +161,7 @@ function pagina_landing(): string {
   </section>
 
   <section class="l-sec l-pasos" id="pasos">
-    <img class="l-guirnalda" src="/assets/img/landing/guirnalda.webp" alt="" width="1376" height="768">
+    <img class="l-guirnalda" src="<?= BASE_PATH ?>/assets/img/landing/guirnalda.webp" alt="" width="1376" height="768">
     <div class="l-wrap">
       <div class="l-sec-cab l-centro">
         <span class="overline">Fácil y al momento</span>
@@ -212,14 +213,14 @@ function pagina_landing(): string {
             <span class="l-swatches l-swatches-sm"><?php foreach ($paletas as $i => $col): ?><i class="<?= $i === 'rosa' ? 'on' : '' ?>" style="background:<?= h($col) ?>"></i><?php endforeach; ?></span>
           </div>
           <div class="l-demo-previa">
-            <img src="/assets/img/landing/demo-escritorio.webp" alt="Ejemplo de la vista previa en ordenador de una web de boda" width="1280" height="800" loading="lazy">
+            <img src="<?= BASE_PATH ?>/assets/img/landing/demo-escritorio.webp" alt="Ejemplo de la vista previa en ordenador de una web de boda" width="1280" height="800" loading="lazy">
             <span class="l-ejemplo">Ejemplo</span>
           </div>
         </div>
         <div class="l-demo-pie">
           <span class="l-flota-ico"><?= il('flor') ?></span>
           <p><b>¿Lo probáis?</b> Crear la web y verla en la vista previa es gratis. Solo se paga al publicar.</p>
-          <a class="b-btn b-gold" href="/crear">Abrir el constructor</a>
+          <a class="b-btn b-gold" href="<?= BASE_PATH ?>/crear">Abrir el constructor</a>
         </div>
       </div>
     </div>
@@ -237,11 +238,11 @@ function pagina_landing(): string {
       <div class="l-atelier-grid">
 <?php foreach (ATELIER as $k => $a): ?>
         <article class="l-atelier-card">
-          <div class="l-atelier-img"><img src="/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
+          <div class="l-atelier-img"><img src="<?= BASE_PATH ?>/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
           <div class="l-atelier-meta"><span class="overline overline-bronze"><?= h($a['categoria']) ?></span><span class="l-atelier-precio"><?= h($totalAtelier) ?> <small>IVA incl.</small></span></div>
           <h3><?= h($a['nombre']) ?></h3>
           <p><?= h($a['desc']) ?></p>
-          <a class="b-btn b-dark l-atelier-btn" href="/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a>
+          <a class="b-btn b-dark l-atelier-btn" href="<?= BASE_PATH ?>/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a>
         </article>
 <?php endforeach; ?>
       </div>
@@ -277,7 +278,7 @@ function pagina_landing(): string {
             <li><?= il('check', 'i i-sm') ?>Galería y libro de invitados</li>
             <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
           </ul>
-          <a class="b-btn b-paper" href="/crear">Empezar gratis</a>
+          <a class="b-btn b-paper" href="<?= BASE_PATH ?>/crear">Empezar gratis</a>
         </div>
         <div class="l-precio-card l-precio-atelier">
           <span class="overline">Atelier · diseño de autor</span>
@@ -290,7 +291,7 @@ function pagina_landing(): string {
             <li><?= il('check', 'i i-sm') ?>Detalles animados propios de cada diseño</li>
 <?php if (fuentes_autor()): ?>            <li><?= il('check', 'i i-sm') ?>Tipografías de autor, solo en este pack</li>
 <?php endif; ?>          </ul>
-          <a class="b-btn b-rose" href="/#atelier">Ver la Colección Atelier <?= il('flecha', 'i i-sm i-arrow') ?></a>
+          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/#atelier">Ver la Colección Atelier <?= il('flecha', 'i i-sm i-arrow') ?></a>
         </div>
       </div>
     </div>
@@ -320,7 +321,7 @@ function pagina_landing(): string {
           <p>Sin suscripciones. Un único pago al publicar, y la web vuestra hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</p>
         </div>
         <div class="l-final-ctas">
-          <a class="b-btn b-rose" href="/crear">Crear nuestra web</a>
+          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Crear nuestra web</a>
           <a class="b-btn l-btn-ghost" href="#precio">Ver precio</a>
         </div>
       </div>
@@ -330,8 +331,8 @@ function pagina_landing(): string {
 
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
-    <a class="l-logo" href="/"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
-    <nav aria-label="Legal"><a href="/condiciones">Condiciones</a><a href="/privacidad">Privacidad</a><a href="/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
+    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>
 </body>
