@@ -1,0 +1,79 @@
+/* Sistema visual de la marca (landing + constructor), 25-sep-2026.
+   Fuente: maqueta de Stitch del owner (Bodas/stitch_wedding_landing_page_builder,
+   DESIGN.md "Warm Editorial Bridal" + landing "botánica pastel"). Se toma la piel
+   y la composición; ningún texto ni dato de la maqueta (traía cifras y testimonios
+   inventados y funciones que el producto no tiene). Fuentes alojadas aquí. */
+
+@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/PlusJakartaSans.woff2) format('woff2'); }
+@font-face { font-family: 'Playfair Display'; font-style: normal; font-weight: 400 500; font-display: swap; src: url(fonts/PlayfairDisplay.woff2) format('woff2'); }
+@font-face { font-family: 'Playfair Display'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/PlayfairDisplay-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/CormorantGaramond-italic.woff2) format('woff2'); }
+
+:root {
+  --surface: #fdfbf9;
+  --surface-low: #faf6f2;
+  --surface-c: #f8f3ef;
+  --surface-high: #f1ebe4;
+  --paper: #ffffff;
+  --ink: #2a2624;
+  --ink-2: #5e5751;
+  --ink-3: #8a8179;
+  --line: #ded5cb;
+  --line-soft: #ebe4dc;
+  --bronze: #8a7350;
+  --bronze-c: #e8dac5;
+  --gold: #c5a059;
+  --rose: #a86b68;
+  --rose-2: #9c5f5c;
+  --rose-c: #f9e5e3;
+  --blush: #fcf4f2;
+  --sage: #6b8072;
+  --sage-c: #dce6e0;
+  --espresso: #262220;
+  --espresso-2: #3b3430;
+  --ok: #4f7a60;
+  --mal: #b3413a;
+  --serif: 'Playfair Display', Georgia, serif;
+  --editorial: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --r: 8px;
+  --r-lg: 16px;
+  --r-xl: 24px;
+  --pill: 999px;
+  --e1: 0 1px 3px rgba(38, 34, 32, .04), 0 4px 12px rgba(38, 34, 32, .03);
+  --e2: 0 6px 20px rgba(38, 34, 32, .06), 0 2px 6px rgba(38, 34, 32, .03);
+  --e3: 0 16px 36px rgba(38, 34, 32, .08), 0 4px 12px rgba(38, 34, 32, .04);
+  --e-rose: 0 6px 20px rgba(168, 107, 104, .28);
+  --focus: 0 0 0 3px rgba(197, 160, 89, .18);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--surface); color: var(--ink); font: 400 15px/1.6 var(--sans); -webkit-font-smoothing: antialiased; }
+::selection { background: var(--rose-c); color: #4a2422; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+img { max-width: 100%; }
+.i { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.i-sm { width: 16px; height: 16px; }
+
+/* Botones de marca */
+.b-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 26px; border-radius: var(--pill);
+  font-weight: 500; font-size: 15px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: filter .2s, background .2s, border-color .2s, box-shadow .2s, transform .15s; }
+.b-btn:active { transform: scale(.98); }
+.b-rose { background: linear-gradient(90deg, var(--rose), var(--rose-2)); color: #fff; box-shadow: var(--e-rose); }
+.b-rose:hover { filter: brightness(1.05); }
+.b-paper { background: rgba(255, 255, 255, .9); border-color: var(--line); color: var(--ink); box-shadow: var(--e1); }
+.b-paper:hover { background: var(--surface-high); border-color: rgba(138, 115, 80, .4); }
+.b-dark { background: var(--espresso); color: #fff; }
+.b-dark:hover { background: var(--espresso-2); }
+.b-gold { background: var(--gold); color: #fff; }
+.b-gold:hover { filter: brightness(1.05); }
+.b-btn .i { transition: transform .2s; }
+.b-btn:hover .i-arrow { transform: translateX(3px); }
+
+.overline { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--rose); }
+.overline-bronze { color: var(--bronze); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }

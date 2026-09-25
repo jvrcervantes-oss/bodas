@@ -12,12 +12,13 @@ require __DIR__ . '/app/render.php';
 require __DIR__ . '/app/foto.php';
 require __DIR__ . '/app/alta.php';
 require __DIR__ . '/app/creador.php';
+require __DIR__ . '/app/landing.php';
+require __DIR__ . '/app/vista_constructor.php';
 require __DIR__ . '/app/boda.php';
 
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
-header('X-Robots-Tag: noindex, nofollow');
 
 $host = strtolower((string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
 $ruta = trim((string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH), '/');
@@ -25,10 +26,13 @@ $metodo = (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
 try {
     if ($host === CREATOR_HOST) {
+        // Solo la landing es indexable: el constructor, los legales y la API no
+        if ($ruta !== '') header('X-Robots-Tag: noindex, nofollow');
         rutas_creador($ruta, $metodo);
     } else {
         $sufijo = '.' . BASE_DOMAIN;
         $slug = substr($host, -strlen($sufijo)) === $sufijo ? substr($host, 0, -strlen($sufijo)) : '';
+        header('X-Robots-Tag: noindex, nofollow');   // las webs de boda nunca se indexan
         if ($slug === '' || !slug_valido($slug) || !boda_existe($slug)) no_existe();
         rutas_boda($slug, $ruta, $metodo);
     }

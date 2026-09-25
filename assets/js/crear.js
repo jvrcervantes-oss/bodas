@@ -45,6 +45,7 @@
   }
   var t;
   function cambio() {
+    pintaCabecera();
     clearTimeout(t);
     t = setTimeout(function () { persiste(); previa(); }, 350);
   }
@@ -73,8 +74,10 @@
     r.addEventListener('change', function () { st.tema = k; cambio(); });
     var sw = el('span', { class: 'c-tema-sw' });
     sw.style.background = tm.color;
-    sw.style.boxShadow = 'inset 0 0 0 6px ' + tm.fondo;
-    temasEl.appendChild(el('label', { class: 'c-tema' }, [r, sw, el('span', { text: tm.nombre })]));
+    var muestra = el('span', { class: 'c-tema-muestra', text: 'Aa' });
+    muestra.style.background = tm.fondo;
+    muestra.style.color = tm.titulo;
+    temasEl.appendChild(el('label', { class: 'c-tema' }, [r, muestra, el('span', { class: 'c-tema-nom' }, [sw, el('span', { text: tm.nombre })])]));
   });
 
   // ------------------------------------------------------------ foto
@@ -88,6 +91,7 @@
     fotoVacia.hidden = hay;
     fotoQuitar.hidden = !hay;
     if (hay) fotoImg.src = foto.src;
+    document.getElementById('fotoNom').textContent = hay ? 'Foto de portada elegida' : 'Sin foto';
     st.foto = hay;
   }
   // Se reduce y convierte a WebP aquí (norma del estudio) antes de subirla; el
@@ -189,7 +193,7 @@
               el('label', { class: 'c-campo' }, [el('span', { text: 'Notas (precio, código de descuento…)' }), nota])
             ]));
           });
-          if (s.datos.hoteles.length < 8) lista.appendChild(el('button', { type: 'button', class: 'c-btn c-btn-sec', text: '+ Añadir hotel', onclick: function () { s.datos.hoteles.push({ nombre: '', zona: '', web: '', telefono: '', nota: '' }); pinta(); cambio(); } }));
+          if (s.datos.hoteles.length < 8) lista.appendChild(el('button', { type: 'button', class: 'b-btn b-paper c-btn-sm', text: '+ Añadir hotel', onclick: function () { s.datos.hoteles.push({ nombre: '', zona: '', web: '', telefono: '', nota: '' }); pinta(); cambio(); } }));
         };
         pinta();
         w.appendChild(lista);
@@ -216,6 +220,19 @@
     return w;
   }
 
+  var ICO = {
+    rsvp: 'M3 6h18v12H3zM3 7l9 6 9-6', informacion: 'M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
+    hoteles: 'M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5', transporte: 'M4 3h16v14H4zM4 11h16M7 17v3M17 17v3',
+    regalos: 'M3 8h18v4H3zM5 12v8h14v-8M12 8v12', musica: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+    dresscode: 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z', libre: 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5'
+  };
+  function icono(tipo) {
+    var n = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    n.setAttribute('viewBox', '0 0 24 24'); n.setAttribute('class', 'i i-sm c-sec-ico'); n.setAttribute('aria-hidden', 'true');
+    var p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', ICO[tipo] || ICO.libre);
+    n.appendChild(p);
+    return n;
+  }
   function li(s) { return secEl.querySelector('[data-id="' + s.id + '"]'); }
 
   function pintaSecciones() {
@@ -235,6 +252,7 @@
         };
       };
       var abrir = el('button', { type: 'button', class: 'c-sec-abrir', 'aria-expanded': abierta === s.id ? 'true' : 'false' }, [
+        icono(s.tipo),
         el('span', { class: 'c-sec-nombre', text: s.titulo || D.secciones[s.tipo].titulo }),
         s.tipo === 'libre' ? el('span', { class: 'c-sec-tipo', text: 'propia' }) : null
       ]);
@@ -327,10 +345,47 @@
   document.querySelectorAll('[data-ver]').forEach(function (b) {
     b.addEventListener('click', function () {
       document.body.setAttribute('data-ver', b.getAttribute('data-ver'));
-      document.querySelectorAll('[data-ver]').forEach(function (x) { if (x.tagName === 'BUTTON') x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
       ajustaMarco();
+      window.scrollTo(0, 0);
     });
   });
+
+  // ------------------------------------------------------------ pestañas
+  var tabs = document.querySelectorAll('[data-tab]');
+  function muestraTab(k) {
+    tabs.forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === k ? 'true' : 'false'); });
+    document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
+    document.body.setAttribute('data-ver', 'editor');
+  }
+  tabs.forEach(function (t, i) {
+    t.addEventListener('click', function () { muestraTab(t.getAttribute('data-tab')); });
+    t.addEventListener('keydown', function (e) {
+      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (!d) return;
+      var n = tabs[(i + d + tabs.length) % tabs.length];
+      n.focus(); n.click();
+    });
+  });
+  var irPublicar = document.getElementById('irPublicar');
+  if (irPublicar) irPublicar.addEventListener('click', function () { muestraTab('publicar'); document.getElementById('tab-publicar').focus(); });
+  var guardarTop = document.getElementById('guardarTop');
+  if (guardarTop) guardarTop.addEventListener('click', function () { document.getElementById('guardar').click(); });
+
+  // Nombres en la tarjeta del proyecto y en el carril; la URL en la barra de la vista previa
+  var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  function pintaCabecera() {
+    var a = (st.pareja.nombre1 || '').trim(), b = (st.pareja.nombre2 || '').trim();
+    var nom = a && b ? a + ' & ' + b : (a || b);
+    document.getElementById('proyNom').textContent = nom ? 'Boda de ' + nom : 'Vuestra boda';
+    document.getElementById('railNom').textContent = nom || 'Vuestra boda';
+    document.getElementById('railIni').textContent = ((a[0] || '') + (b[0] || '')).toUpperCase() || '·';
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(st.fecha || '');
+    if (m) document.getElementById('railFecha').textContent = (+m[3]) + ' de ' + MESES[+m[2] - 1] + ' de ' + m[1];
+  }
+  function pintaUrl() {
+    var v = MODO === 'editar' ? D.slug : (slugEl && slugEl.value) || 'vuestra-web';
+    document.getElementById('urlPrevia').textContent = v + '.' + D.dominio;
+  }
 
   // ------------------------------------------------------------ lo que falta
   var faltanEl = document.getElementById('faltan');
@@ -351,11 +406,7 @@
       var inp = document.querySelector('[data-k="' + k + '"]');
       if (inp) inp.closest('.c-campo').classList.add('c-mal');
     });
-    var primero = Object.keys(f).map(function (k) { return document.querySelector('[data-k="' + k + '"]'); }).filter(Boolean)[0];
-    if (primero) {
-      var det = primero.closest('details');
-      if (det) det.open = true;
-    }
+    // El aviso sale junto al botón (Publicar / Guardar); los campos quedan marcados en su pestaña
   }
 
   // ------------------------------------------------------------ nombre de la web
@@ -366,6 +417,7 @@
     if (!slugEl || slugTocado) return;
     var a = slugify(st.pareja.nombre1), b = slugify(st.pareja.nombre2);
     slugEl.value = a && b ? a + '-y-' + b : (a || b);
+    pintaUrl();
     compruebaSlug();
   }
   function compruebaSlug() {
@@ -386,6 +438,7 @@
       var limpio = slugEl.value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9-]+/g, '-').replace(/-{2,}/g, '-').replace(/^-/, '').slice(0, 40);
       if (limpio !== slugEl.value) slugEl.value = limpio;
       slugTocado = slugEl.value !== '';
+      pintaUrl();
       persiste();
       compruebaSlug();
     });
@@ -453,5 +506,7 @@
 
   pintaFoto();
   pintaSecciones();
+  pintaCabecera();
+  pintaUrl();
   previa();
 })();

@@ -77,7 +77,7 @@ function stripe_crea_checkout(string $token, string $slug, string $email): array
         'client_reference_id' => $token,
         'expires_at' => time() + 1800,                 // la reserva del nombre caduca con la sesión
         'success_url' => url_creador('listo?sid={CHECKOUT_SESSION_ID}'),
-        'cancel_url' => url_creador('?cancelado=1'),
+        'cancel_url' => url_creador('crear?cancelado=1'),
         'line_items[0][quantity]' => 1,
         'line_items[0][price_data][currency]' => 'eur',
         'line_items[0][price_data][unit_amount]' => PRECIO_BASE_CENT,

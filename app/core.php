@@ -29,6 +29,9 @@ const PRECIO_BASE_CENT = 10000;
 const IVA_PCT = 21;
 const MESES_ALOJAMIENTO = 4;          // tras la fecha de la boda: borrado de invitados
 const PRODUCTO = 'bodas';              // marca de propiedad en la metadata de Stripe
+// Nombre comercial del producto. "Vowly" (el de la maqueta de Stitch) está cogido por
+// competidores directos (25-sep-2026); el owner elige entre las propuestas. Una sola constante.
+const MARCA = 'Bodas by AxisWorks';
 
 if (strpos(str_replace('\\', '/', realpath(DATA_DIR) ?: DATA_DIR) . '/', str_replace('\\', '/', WEB_DIR) . '/') === 0) {
     http_response_code(500);
@@ -65,7 +68,7 @@ function stripe_modo_live(): bool {
 
 // Versión de los assets para romper la caché del CDN de Hostinger (sirve CSS viejo
 // si la URL no cambia — memoria reference_hostinger_cdn_css_sin_version).
-define('ASSETS_V', substr(md5((string) @filemtime(WEB_DIR . '/assets/boda.css') . (string) @filemtime(WEB_DIR . '/assets/js/boda.js') . (string) @filemtime(WEB_DIR . '/assets/js/crear.js') . (string) @filemtime(WEB_DIR . '/assets/crear.css')), 0, 8));
+define('ASSETS_V', substr(md5((string) @filemtime(WEB_DIR . '/assets/boda.css') . (string) @filemtime(WEB_DIR . '/assets/js/boda.js') . (string) @filemtime(WEB_DIR . '/assets/js/crear.js') . (string) @filemtime(WEB_DIR . '/assets/crear.css') . (string) @filemtime(WEB_DIR . '/assets/landing.css') . (string) @filemtime(WEB_DIR . '/assets/marca.css')), 0, 8));
 
 function h($v): string { return htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 

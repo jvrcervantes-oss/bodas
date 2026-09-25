@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 const TEMAS = [
     // clave => [nombre, primary, accent, accent-hover, secondary, sage, sage-2, sage-2-hover, gold, on-dark, on-dark-soft]
+    'rosa'      => ['Rosa empolvado', '#7E4744', '#A86B68', '#925856', '#7E6461', '#FCF4F2', '#F3DEDB', '#EDD2CE', '#8A7350', '#F9E5E3', '#E9C6C2'],
+    'champagne' => ['Champagne', '#5E4B2A', '#8A7350', '#74603F', '#6E6353', '#FAF6F0', '#EDE2CF', '#E5D7C0', '#A86B68', '#F2E6D2', '#DCCCB0'],
     'eucalipto' => ['Eucalipto', '#2C5448', '#446C5F', '#37574D', '#506357', '#F2F5F0', '#D3E8D9', '#C8DDCE', '#815D40', '#C0EBDB', '#A5D0C0'],
     'terracota' => ['Terracota', '#6E3B2A', '#9A5238', '#7F422D', '#7A5A4C', '#F7F1EC', '#EFD9CB', '#E6CBB9', '#8A6A2F', '#F5D6C6', '#E4B9A4'],
     'oceano'    => ['Océano',    '#23445E', '#3C6482', '#30526C', '#4F6475', '#F0F4F7', '#D4E2EC', '#C5D6E2', '#8A6B3D', '#CFE3F2', '#AECBE0'],
@@ -63,7 +65,7 @@ function config_inicial(): array {
         'pareja' => ['nombre1' => '', 'nombre2' => '', 'email' => ''],
         'fecha' => '',
         'ciudad' => '',
-        'tema' => 'eucalipto',
+        'tema' => 'rosa',
         'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
         'convite' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
         'portada' => [

@@ -365,7 +365,7 @@ function panel_zip(string $slug, array $c): void {
     $z->addFile(WEB_DIR . '/assets/boda.css', 'assets/boda.css');
     $z->addFile(WEB_DIR . '/assets/js/boda.js', 'assets/js/boda.js');
     $z->addFile(WEB_DIR . '/assets/img/eucalipto.webp', 'assets/img/eucalipto.webp');
-    foreach (glob(WEB_DIR . '/assets/fonts/*.woff2') ?: [] as $f) $z->addFile($f, 'assets/fonts/' . basename($f));
+    foreach (array_merge(glob(WEB_DIR . '/assets/fonts/Manrope*.woff2') ?: [], glob(WEB_DIR . '/assets/fonts/PlayfairDisplay*.woff2') ?: []) ?: [] as $f) $z->addFile($f, 'assets/fonts/' . basename($f));
     $z->close();
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="web-boda-' . $slug . '.zip"');
