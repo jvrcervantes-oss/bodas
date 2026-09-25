@@ -28,7 +28,7 @@
 
 <h2>Cuánto tiempo los guardamos</h2>
 <ul>
-  <li>Contenido de la web: mientras la web esté publicada. Cuando la web pasa a la página de agradecimiento (4 meses después de la boda), podéis pedirnos que la borremos entera.</li>
+  <li>Contenido de la web: mientras la web esté publicada. Cuando la web pasa a la página de agradecimiento (<?= (int) MESES_ALOJAMIENTO ?> meses después de la boda), podéis pedirnos que la borremos entera.</li>
   <li>Datos de compra y factura: el tiempo que nos obliga la ley fiscal y mercantil, hasta 6 años.</li>
   <li>Mensajes: el tiempo necesario para resolver lo que nos planteéis y, después, mientras puedan surgir reclamaciones.</li>
 </ul>

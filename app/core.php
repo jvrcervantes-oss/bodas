@@ -27,7 +27,10 @@ defined('STRIPE_API')   || define('STRIPE_API', 'https://api.stripe.com');
 // Precio: fijado por el owner el 25-sep-2026 — 100 € + IVA. Nunca llega del cliente.
 const PRECIO_BASE_CENT = 10000;
 const IVA_PCT = 21;
-const MESES_ALOJAMIENTO = 4;          // tras la fecha de la boda: borrado de invitados
+// Tras la fecha de la boda: la web pasa a agradecimiento y se borran los datos de invitados.
+// 2 meses por decisión del owner (25-sep-2026; antes 4): menos tiempo guardando alergias (dato de salud).
+// Todos los textos (legales, landing, email, Stripe) leen esta constante: no escribir el número a mano.
+const MESES_ALOJAMIENTO = 2;
 const PRODUCTO = 'bodas';              // marca de propiedad en la metadata de Stripe
 // Nombre comercial del producto. "Vowly" (el de la maqueta de Stitch) está cogido por
 // competidores directos (25-sep-2026); el owner elige entre las propuestas. Una sola constante.

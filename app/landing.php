@@ -47,7 +47,7 @@ function pagina_landing(): string {
         ['¿Cómo llega la web a los invitados?', "Con un enlace del tipo $ejemplo que compartís por WhatsApp, email o donde queráis. No tienen que instalar nada ni registrarse."],
         ['¿Podemos usar nuestro propio dominio?', 'Por ahora la web vive en un subdominio nuestro. Desde el panel podéis descargarla en ZIP y subirla a vuestro dominio, aunque esa copia no recoge confirmaciones.'],
         ['¿Se ve bien en el móvil?', 'Está pensada primero para el móvil, que es donde la van a abrir casi todos vuestros invitados. En la vista previa podéis verla en móvil y en ordenador.'],
-        ['¿Qué pasa con los datos de nuestros invitados?', 'Solo los veis vosotros, en vuestro panel. La web no aparece en Google y no lleva publicidad. Cuatro meses después de la boda borramos las respuestas: exportad el Excel antes si queréis guardarlas.'],
+        ['¿Qué pasa con los datos de nuestros invitados?', 'Solo los veis vosotros, en vuestro panel. La web no aparece en Google y no lleva publicidad. ' . MESES_ALOJAMIENTO . ' meses después de la boda borramos las respuestas: exportad el Excel antes si queréis guardarlas.'],
     ];
     ob_start(); ?>
 <!DOCTYPE html>
@@ -97,7 +97,7 @@ function pagina_landing(): string {
         <dl class="l-datos">
           <div><dt><?= h($total) ?></dt><dd>Pago único al publicar</dd></div>
           <div><dt>0 €</dt><dd>Crear y probar la web</dd></div>
-          <div><dt>4 meses</dt><dd>Online después de la boda</dd></div>
+          <div><dt><?= (int) MESES_ALOJAMIENTO ?> meses</dt><dd>Online después de la boda</dd></div>
         </dl>
       </div>
       <div class="l-hero-vis">
@@ -227,7 +227,7 @@ function pagina_landing(): string {
   <section class="l-sec l-confianza">
     <div class="l-wrap">
       <ul class="l-confianza-lista">
-        <li><?= il('escudo') ?><span><b>Datos de invitados protegidos</b>Solo los veis vosotros y se borran cuatro meses después de la boda.</span></li>
+        <li><?= il('escudo') ?><span><b>Datos de invitados protegidos</b>Solo los veis vosotros y se borran <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</span></li>
         <li><?= il('ojo') ?><span><b>Fuera de los buscadores</b>Vuestra web no aparece en Google: solo la ve quien tiene el enlace.</span></li>
         <li><?= il('check') ?><span><b>Sin publicidad ni suscripciones</b>Un único pago, con factura, a través de Stripe.</span></li>
       </ul>
@@ -248,7 +248,7 @@ function pagina_landing(): string {
           <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
           <li><?= il('check', 'i i-sm') ?>Panel privado con Excel para el catering</li>
           <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
-          <li><?= il('check', 'i i-sm') ?>Online hasta cuatro meses después de la boda</li>
+          <li><?= il('check', 'i i-sm') ?>Online hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda</li>
         </ul>
         <a class="b-btn b-rose" href="/crear">Empezar gratis <?= il('flecha', 'i i-sm i-arrow') ?></a>
       </div>
@@ -276,7 +276,7 @@ function pagina_landing(): string {
         <div>
           <span class="l-chip l-chip-dark"><?= il('flor', 'i i-sm') ?>Vuestro momento es ahora</span>
           <h2>Cread hoy la web que vuestros invitados van a abrir una y otra vez.</h2>
-          <p>Sin suscripciones. Un único pago al publicar, y la web vuestra hasta cuatro meses después de la boda.</p>
+          <p>Sin suscripciones. Un único pago al publicar, y la web vuestra hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</p>
         </div>
         <div class="l-final-ctas">
           <a class="b-btn b-rose" href="/crear">Crear nuestra web</a>

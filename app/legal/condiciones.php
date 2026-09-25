@@ -15,7 +15,7 @@
   <li>Un formulario de confirmación de asistencia por grupo. Por cada invitado: nombre, si es adulto o niño, menú y alergias. Por cada grupo: si asiste, si usa el autobús, un dato de contacto y una canción.</li>
   <li>Peticiones y votos de canciones.</li>
   <li>Un panel privado con contraseña para ver las respuestas, exportarlas a Excel, editar la web y descargar un ZIP.</li>
-  <li>Alojamiento de la web hasta 4 meses después de la fecha de la boda (apartado 7).</li>
+  <li>Alojamiento de la web hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda (apartado 7).</li>
 </ul>
 <p>El ZIP contiene el HTML estático de vuestra web, sin datos de invitados. Es una copia de lo que se ve, no de lo que funciona: fuera de nuestro alojamiento, el formulario de asistencia, las canciones y el panel no funcionan. Se abre en cualquier navegador actual.</p>
 <p>Las webs de boda no aparecen en buscadores: están marcadas para que Google y similares no las indexen. Cualquiera que tenga el enlace puede verlas.</p>
@@ -40,7 +40,7 @@
 <p>La web se publica en cuanto Stripe confirma el pago, normalmente en segundos. Si pasado un rato no la veis o no os llega el email, escribid a <?= h($E['email']) ?> y lo resolvemos.</p>
 
 <h2>7. Duración y borrado</h2>
-<p>La web y las respuestas de los invitados se mantienen hasta 4 meses después de la fecha de la boda que figure en la web. Ese día, de forma automática:</p>
+<p>La web y las respuestas de los invitados se mantienen hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda que figure en la web. Ese día, de forma automática:</p>
 <ul>
   <li>se borran todas las respuestas de asistencia (nombres, menús, alergias, contactos) y las canciones;</li>
   <li>la web deja de mostrar su contenido y pasa a una página de agradecimiento.</li>
@@ -112,7 +112,7 @@
   <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños).</li>
   <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas.</li>
   <li>Categoría especial: las alergias e intolerancias son datos de salud (artículo 9 del RGPD). La web solo las recoge si quien responde da su consentimiento explícito en el formulario.</li>
-  <li>Duración: desde la publicación de la web hasta el borrado automático, 4 meses después de la fecha de la boda.</li>
+  <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda.</li>
 </ul>
 
 <h2>II.3. Obligaciones de AxisWorks</h2>
