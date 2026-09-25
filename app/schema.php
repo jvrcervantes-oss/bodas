@@ -36,15 +36,19 @@ const FUENTES = [
 // colores: mismo orden que TEMAS (primary, accent, accent-hover, secondary, sage, sage-2, sage-2-hover, gold, on-dark, on-dark-soft)
 // fuentes: títulos, textos, nombres, estilo de los nombres
 const ATELIER = [
-    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Limones y olivo en acuarela sobre papel verjurado.',
-        'colores' => ['#3F4A3B', '#5C6B57', '#4D5A49', '#6E6A55', '#FAF7F2', '#F1E8C9', '#E9DEB8', '#B98E1F', '#F4ECCB', '#DCD3AE'],
-        'fuentes' => ["'Playfair Display', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Alex Brush', cursive", 'normal']],
+    // Tokens de «Jardín de cítricos y azahar» (especificación del owner, 25-sep-2026)
+    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Papel de algodón rasgado, limones y azahar en acuarela.',
+        'colores' => ['#5C6B57', '#5C6B57', '#4D5A49', '#5C6B57', '#F0ECE1', '#E6DCC4', '#DDD1B5', '#A6634B', '#F4ECCB', '#DCD3AE'],
+        'fuentes' => ["'Playfair Display', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Alex Brush', cursive", 'normal'],
+        'nombres_color' => '#A6634B', 'tinta' => '#3D352E'],
     'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Marco de azulejo azul cobalto y oro para vuestra foto.',
         'colores' => ['#183B75', '#1F4C94', '#183B75', '#3E5A86', '#F5F3ED', '#DCE6F0', '#CCDAE8', '#A8864A', '#DCE7F4', '#A9C2D8'],
         'fuentes' => ["'Cinzel', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Pinyon Script', cursive", 'normal']],
-    'herbario' => ['nombre' => 'Herbario y lavanda', 'categoria' => 'Botánica', 'desc' => 'Pliego de flores prensadas y lavanda silvestre.',
-        'colores' => ['#4A3E4C', '#645166', '#54445A', '#5A674E', '#F3EFE6', '#E6DECE', '#DCD2BE', '#5A674E', '#EDE3EE', '#D2C4D4'],
-        'fuentes' => ["'Italiana', Georgia, serif", "'Newsreader', Georgia, serif", "'Italiana', Georgia, serif", 'normal']],
+    // Tokens de «Herbario y lavanda silvestre» (especificación del owner, 25-sep-2026)
+    'herbario' => ['nombre' => 'Herbario y lavanda', 'categoria' => 'Botánica', 'desc' => 'Pliego rasgado con flores prensadas sobre mesa de roble.',
+        'colores' => ['#645166', '#645166', '#54445A', '#5A674E', '#EFE9DD', '#E4DCCB', '#DCD2BE', '#5A674E', '#EDE3EE', '#D2C4D4'],
+        'fuentes' => ["'Bodoni Moda', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Newsreader', Georgia, serif", 'italic'],
+        'nombres_color' => '#3D352E', 'tinta' => '#3D352E'],
     'lacre' => ['nombre' => 'Sello de lacre', 'categoria' => 'Editorial', 'desc' => 'Lino, tinta y un sello de cera con vuestras iniciales.',
         'colores' => ['#3A2A20', '#9C694E', '#85573F', '#6B5A4B', '#EFE8DE', '#E3D7C5', '#D8CAB4', '#B39355', '#F2E3D4', '#DCC6AE'],
         'fuentes' => ["'Libre Baskerville', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Playfair Display', Georgia, serif", 'italic']],

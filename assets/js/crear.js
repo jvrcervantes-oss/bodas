@@ -72,9 +72,10 @@
   var atelierEl = document.getElementById('atelier');
   var propioEl = document.getElementById('estiloPropio');
   function pintaAtelier() {
-    atelierEl.querySelectorAll('input').forEach(function (r) { r.checked = (st.atelier || '') === r.value; });
+    document.querySelectorAll('input[name="atelier"]').forEach(function (r) { r.checked = (st.atelier || '') === r.value; });
     var ve = document.getElementById('verEntrada'); if (ve) ve.hidden = !st.atelier;
-    propioEl.classList.toggle('is-off', !!st.atelier);
+    // Pack Esencial = estilo propio (paleta, letra, adornos); Pack Atelier = solo los diseños de autor
+    propioEl.hidden = !!st.atelier;
     var t = document.getElementById('precioTotal');
     if (t) {
       t.textContent = st.atelier ? D.precio.totalAtelier : D.precio.total;
@@ -101,7 +102,12 @@
   }
   var pedido = (location.search.match(/[?&]atelier=([a-z]+)/) || [])[1];
   if (MODO === 'crear' && pedido && D.atelier[pedido]) st.atelier = pedido;
-  atelierEl.appendChild(tarjetaAtelier('', { nombre: 'Vuestro estilo', categoria: 'Incluido', desc: 'Paleta, letra y adornos a vuestro gusto.' }));
+  var esencial = tarjetaAtelier('', { nombre: 'Vuestro estilo', categoria: 'Pack Esencial · ' + D.precio.total + ' · sin diseño premium', desc: 'Elegís vosotros la paleta, la letra y los adornos.' });
+  esencial.classList.add('c-atelier-esencial');
+  // Orden: Esencial → (sus opciones de paleta, letra y adornos, que se abren debajo) → Colección Atelier
+  atelierEl.parentNode.insertBefore(esencial, atelierEl);
+  atelierEl.parentNode.insertBefore(propioEl, atelierEl);
+  atelierEl.parentNode.insertBefore(el('div', { class: 'c-atelier-cab c-atelier-cab-sep' }, [el('span', { class: 'overline', text: 'Colección Atelier · diseños premium' }), el('span', { class: 'c-atelier-precio', text: 'Pack Atelier · ' + D.precio.totalAtelier })]), atelierEl);
   Object.keys(D.atelier).forEach(function (k) { atelierEl.appendChild(tarjetaAtelier(k, D.atelier[k])); });
   if (!D.atelierPermitido) atelierEl.appendChild(el('p', { class: 'c-ayuda c-atelier-nota', text: 'Los diseños Atelier se eligen al crear la web. Si queréis cambiar a uno, escribidnos.' }));
   pintaAtelier();

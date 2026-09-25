@@ -85,7 +85,9 @@ function tema_css(array $c): string {
         . ';--on-dark:' . $t[9] . ';--on-dark-soft:' . $t[10]
         . ';--primary-rgb:' . $rgb($t[1]) . ';--accent-rgb:' . $rgb($t[2]) . ';--on-dark-rgb:' . $rgb($t[9])
         . ';--sage-2-rgb:' . $rgb($t[6]) . ';--sage-rgb:' . $rgb($t[5])
-        . ';' . fuente_css($c) . '}';
+        . ';' . fuente_css($c)
+        . (($c['atelier'] ?? '') !== '' && isset(ATELIER[$c['atelier']]['nombres_color']) ? ';--nombres-color:' . ATELIER[$c['atelier']]['nombres_color'] . ';--tinta:' . ATELIER[$c['atelier']]['tinta'] : '')
+        . '}';
 }
 
 function fuente_css(array $c): string {
@@ -98,13 +100,50 @@ function fuente_css(array $c): string {
 function arte_atelier(array $c, string $A): string {
     $img = fn($f, $cls) => '<img class="atelier-arte ' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '.webp" alt="" aria-hidden="true">';
     switch ($c['atelier']) {
-        case 'citricos': return $img('limones', 'arte-limones');
-        case 'herbario': return '<div class="arte-herbario-marco">' . $img('herbario', 'arte-herbario') . '</div>';
+        case 'citricos': return $img('esquina-1', 'esq esq-i') . $img('esquina-2', 'esq esq-d');
+        case 'herbario': return $img('herbario-banda', 'banda-herbario');
         case 'masia': return $img('masia', 'arte-masia');
         case 'lacre': return '<div class="arte-sello" aria-hidden="true"><img src="' . h($A) . 'img/atelier/sello.webp" alt=""><span>' . h(iniciales($c) ?: '♥') . '</span></div>';
         case 'ceramica': return '<p class="arte-monograma" aria-hidden="true">' . h(iniciales($c)) . '</p>';
         default: return '';
     }
+}
+
+/** Lo que va bajo los nombres en Cítricos y Herbario (composición de sus especificaciones). */
+function atelier_tras_texto(array $c, array $ctx): string {
+    $A = $ctx['assets'];
+    $rsvp = seccion_tipo($c, 'rsvp');
+    if ($c['atelier'] === 'citricos') {
+        $links = [];
+        foreach (['informacion', 'rsvp', 'regalos', 'musica'] as $t) {
+            $s = seccion_tipo($c, $t);
+            if ($s && count($links) < 3) $links[] = a_interno($s['ruta'], $ctx) . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
+        }
+        return '<img class="atelier-arte arte-limones" src="' . h($A) . 'img/atelier/limones.webp" alt="" aria-hidden="true">'
+            . '<img class="div-olivo" src="' . h($A) . 'img/atelier/divisor-olivo.svg" alt="" aria-hidden="true">'
+            . ($links ? '<nav class="cit-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '')
+            . sello_circular($c, $A);
+    }
+    if ($c['atelier'] === 'herbario') {
+        $lugar = trim($c['ceremonia']['lugar'] . ($c['ciudad'] !== '' ? ', ' . $c['ciudad'] : ''), ', ');
+        return '<img class="ramita" src="' . h($A) . 'img/atelier/ramita.svg" alt="" aria-hidden="true">'
+            . ($lugar !== '' ? '<p class="herb-lugar">' . h($lugar) . '</p>' : '')
+            . ($rsvp ? '<span class="herb-label">Confirmación</span>' . a_interno($rsvp['ruta'], $ctx, 'class="herb-btn"') . h($rsvp['titulo']) . '</a>' : '');
+    }
+    return '';
+}
+
+/** Sello de papel con limones y los datos de ESTA pareja escritos en círculo (el original traía texto ajeno). */
+function sello_circular(array $c, string $A): string {
+    $txt = mb_strtoupper(implode(' · ', array_filter([nombres($c, ' & '), fecha_puntos($c['fecha']), $c['ciudad']])) . ' · ', 'UTF-8');
+    if (trim($txt, ' ·') === '') $txt = 'NUESTRA BODA · NUESTRA BODA · ';
+    return '<svg class="sello-circular" viewBox="0 0 160 160" aria-hidden="true">'
+        . '<defs><path id="anillo" d="M80,80 m-61,0 a61,61 0 1,1 122,0 a61,61 0 1,1 -122,0"/><clipPath id="disco"><circle cx="80" cy="80" r="44"/></clipPath></defs>'
+        . '<circle cx="80" cy="80" r="76" fill="#FAF7F2" stroke="currentColor" stroke-opacity=".55" stroke-width="1.2"/>'
+        . '<circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width=".6" stroke-dasharray="2 3"/>'
+        . '<image href="' . h($A) . 'img/atelier/sello-limon.webp" x="36" y="36" width="88" height="88" clip-path="url(#disco)"/>'
+        . '<circle cx="80" cy="80" r="44" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".8"/>'
+        . '<text class="sello-txt"><textPath href="#anillo" textLength="380" lengthAdjust="spacing">' . h($txt) . '</textPath></text></svg>';
 }
 
 /**
@@ -126,13 +165,14 @@ function entrada_atelier(array $c, array $ctx): string {
             $arte = '<button type="button" class="en-sello" data-entrada-abrir aria-label="Abrir la invitación">' . $img('sello') . '<span>' . h(iniciales($c) ?: '♥') . '</span></button><p class="en-pista">Pulsad el sello para abrir</p>';
             break;
         case 'citricos':
-            $arte = '<div class="en-rama">' . $img('limones') . '</div><div class="en-petalos" aria-hidden="true">' . str_repeat('<i></i>', 14) . '</div>';
+            $arte = $img('esquina-1', 'en-esq en-esq-i') . $img('esquina-2', 'en-esq en-esq-d')
+                . '<div class="en-rama">' . $img('limones') . '</div><div class="en-petalos" aria-hidden="true">' . str_repeat('<i></i>', 14) . '</div>';
             break;
         case 'ceramica':
             $arte = '<div class="en-azulejo">' . $img('talavera') . '<span class="en-mono">' . h(iniciales($c)) . '</span></div>';
             break;
         case 'herbario':
-            $arte = '<div class="en-cuadro">' . $img('herbario') . '</div>';
+            $arte = '<div class="en-banda">' . $img('herbario-banda') . '</div>';
             break;
         default:
             $arte = '<span class="en-sol" aria-hidden="true"></span>';
@@ -238,7 +278,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 function tab_bar(array $c, string $ruta, array $ctx): string {
     $items = [['', 'Inicio', ICONOS['casa']]];
     $rsvp = seccion_tipo($c, 'rsvp');
-    if ($rsvp) $items[] = [$rsvp['ruta'], 'RSVP', ICONOS['rsvp']];
+    if ($rsvp) $items[] = [$rsvp['ruta'], 'Menú', ICONOS['rsvp']];   // antes «RSVP» (owner, 25-sep)
     foreach ($c['secciones'] as $s) {
         if (!$s['on'] || $s['tipo'] === 'rsvp' || count($items) >= 5) continue;
         $corto = ['regalos' => 'Regalos', 'informacion' => 'Info', 'dresscode' => 'Dress code'][$s['tipo']] ?? $s['titulo'];
@@ -284,6 +324,8 @@ function pagina_inicio(array $c, array $ctx): string {
           <span class="star" aria-hidden="true">✦</span><span class="rule" aria-hidden="true"></span>
         </div>
       </div>
+<?php if ($c['atelier'] !== ''): ?>      <?= atelier_tras_texto($c, $ctx) ?>
+<?php endif; ?>
     </div>
 <?php if ($hayFoto): ?>
     <div class="mat rv">

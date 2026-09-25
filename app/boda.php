@@ -412,7 +412,7 @@ function panel_zip(string $slug, array $c): void {
     $z->addFile(WEB_DIR . '/assets/img/eucalipto.webp', 'assets/img/eucalipto.webp');
     foreach (glob(WEB_DIR . '/assets/img/deco/*.webp') ?: [] as $f) $z->addFile($f, 'assets/img/deco/' . basename($f));
     foreach (glob(WEB_DIR . '/assets/fonts/*.woff2') ?: [] as $f) $z->addFile($f, 'assets/fonts/' . basename($f));
-    foreach (glob(WEB_DIR . '/assets/img/atelier/*.webp') ?: [] as $f) $z->addFile($f, 'assets/img/atelier/' . basename($f));
+    foreach (glob(WEB_DIR . '/assets/img/atelier/*.{webp,svg}', GLOB_BRACE) ?: [] as $f) $z->addFile($f, 'assets/img/atelier/' . basename($f));
     $z->close();
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="web-boda-' . $slug . '.zip"');

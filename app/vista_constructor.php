@@ -101,10 +101,9 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <span class="overline overline-bronze">Arte y papelería</span>
         <h2>Elegid el estilo</h2>
         <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'Empezad por un diseño de autor de la Colección Atelier o montad el vuestro con paleta, letra y adornos. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
-        <div class="c-atelier-cab"><span class="overline">Colección Atelier</span><span class="c-atelier-precio">Pack Atelier · <?= h(euros(PRECIO_PACK_ATELIER_CENT)) ?></span></div>
-        <div class="c-atelier" id="atelier" role="radiogroup" aria-label="Diseños Atelier"></div>
+        <div class="c-atelier" id="atelier" role="radiogroup" aria-label="Pack y diseño"></div>
         <div id="estiloPropio">
-        <hr class="c-hr">
+        <p class="c-modo-nota">Pack Esencial: vosotros elegís la paleta, la letra y los adornos.</p>
         <span class="overline overline-bronze">Paleta</span>
         <div class="c-temas" id="temas" role="radiogroup" aria-label="Paleta"></div>
         <hr class="c-hr">

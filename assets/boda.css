@@ -53,6 +53,8 @@
 @font-face { font-family: 'Newsreader'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Newsreader.woff2) format('woff2'); }
 @font-face { font-family: 'Pinyon Script'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/PinyonScript.woff2) format('woff2'); }
 
+@font-face { font-family: 'Bodoni Moda'; font-style: normal; font-weight: 400 500; font-display: swap; src: url(fonts/BodoniModa.woff2) format('woff2'); }
+
 :root{
   /* Color */
   --canvas: #FBFBF9;          /* cream-canvas */
@@ -237,7 +239,7 @@ b, strong{ font-weight: 500; }
 .nav-toggle:hover, .nav-close:hover, .nav-heart:hover{ background: var(--sage); }
 .nav-toggle .ico{ width: 26px; height: 26px; }
 .nav-brand{ display: flex; flex-direction: column; align-items: center; text-align: center; }
-.nav-names{ font-family: var(--nombres, var(--serif)); font-style: var(--nombres-estilo, italic); font-size: 22px; line-height: 1.3; color: var(--primary); letter-spacing: .03em; white-space: nowrap; }
+.nav-names{ font-family: var(--nombres, var(--serif)); font-style: var(--nombres-estilo, italic); color: var(--nombres-color, var(--primary)); font-size: 22px; line-height: 1.3; color: var(--primary); letter-spacing: .03em; white-space: nowrap; }
 .nav-sub{ font-size: 10px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--secondary); }
 .nav-links, .nav-cta{ display: none; }
 
@@ -1109,3 +1111,78 @@ body.con-entrada{ overflow: hidden; }
   .atelier *, .atelier *::before, .atelier *::after{ animation: none !important; transition: none !important; }
   .atelier .rv{ filter: none; transform: none; opacity: 1; }
 }
+
+/* ============================================================
+   Cítricos y Herbario, rehechos con las especificaciones y piezas del owner
+   (Bodas/stitch… (3) y (4), 25-sep-2026): pliego de papel rasgado (SVG),
+   esquinas y rama de limones, divisor punteado, accesos, sello con los datos
+   de la pareja en círculo; banda de flores prensadas, ramita, botón con marco
+   y mesa de roble de fondo en escritorio.
+   ============================================================ */
+.atelier .hero-names{ color: var(--nombres-color, var(--primary)); }
+.atelier-citricos, .atelier-herbario{ --card: transparent; }
+/* display:block también en móvil: la plantilla deja .hero-left en display:contents y el papel no se pintaría */
+.atelier-citricos .hero-left, .atelier-herbario .hero-left{ display: block !important; position: relative; width: 100%; max-width: 420px; margin: 0 auto; padding: 48px 30px 44px;
+  background: url(img/atelier/pliego-citricos.svg) center / 100% 100% no-repeat; }
+.atelier-herbario .hero-left{ background-image: url(img/atelier/pliego-herbario.svg); padding: 44px 34px 48px; }
+.atelier-citricos .hero-text, .atelier-herbario .hero-text{ margin-bottom: 0; }
+.atelier-citricos .hero-text p, .atelier-citricos .kicker{ color: var(--primary); }
+
+/* Cítricos */
+.esq{ position: absolute; top: 3.5%; width: 34%; pointer-events: none; }
+.esq-i{ left: 4%; } .esq-d{ right: 4%; }
+.atelier-citricos .hero-text{ margin-top: 62px; }
+.atelier-citricos .arte-limones{ width: 76%; margin: 14px auto 4px; }
+.div-olivo{ display: block; width: 86%; margin: 4px auto; }
+.cit-nav{ display: flex; justify-content: space-around; gap: 6px; width: 100%; margin: 6px 0 10px; padding: 10px 0; border-top: 1px solid rgb(var(--primary-rgb) / .2); border-bottom: 1px solid rgb(var(--primary-rgb) / .2); }
+.cit-nav a{ font-family: 'Playfair Display', Georgia, serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); transition: color .3s; }
+.cit-nav a:hover{ color: var(--nombres-color); }
+.sello-circular{ display: block; width: 138px; height: 138px; margin: 12px auto 0; color: var(--primary); }
+.sello-txt{ font-family: 'Playfair Display', Georgia, serif; font-size: 8.4px; letter-spacing: .12em; fill: var(--primary); }
+.atelier-citricos main > .wrap{ background: url(img/atelier/pliego-citricos.svg) center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; padding-top: 16px; }
+.atelier-citricos main > .wrap::before{ height: 96px; margin: -6px -6px 0; mix-blend-mode: normal;
+  background: url(img/atelier/esquina-1.webp) left top / 104px auto no-repeat, url(img/atelier/esquina-2.webp) right top / 104px auto no-repeat; }
+.atelier-citricos .divider, .atelier-citricos .mini-rule{ height: 12px; width: 180px; border-radius: 0; background: url(img/atelier/divisor-olivo.svg) center / contain no-repeat; }
+.atelier-citricos .lede, .atelier-citricos .letter p{ color: var(--tinta); font-size: 17px; }
+
+/* Herbario */
+.banda-herbario{ display: block; width: 100%; height: 124px; object-fit: cover; object-position: center top; margin-bottom: 10px; }
+.atelier-herbario .hero-text .kicker{ color: var(--primary); }
+.ramita{ display: block; width: 92px; margin: 2px auto 6px; opacity: .8; }
+.herb-lugar{ margin: 0 0 14px; font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-size: 16px; color: var(--secondary); }
+.herb-label{ display: block; margin-top: 10px; font-size: 10px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--primary); }
+.herb-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 210px; margin-top: 8px; padding: 0 22px;
+  background: rgb(255 255 255 / .85); border: 1.2px solid var(--tinta); border-radius: 3px; color: var(--tinta);
+  font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; transition: transform .25s var(--ease-out), background .25s; }
+.herb-btn:hover{ transform: scale(1.02); background: #fff; }
+.herb-btn:active{ transform: scale(.98); }
+.atelier-herbario main > .wrap{ background: url(img/atelier/pliego-herbario.svg) center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; }
+.atelier-herbario main > .wrap::before{ width: auto; height: 110px; margin: -10px -6px 12px; border: 0; box-shadow: none; transform: none;
+  background: url(img/atelier/herbario-banda.webp) center top / cover no-repeat; }
+.atelier-herbario .divider, .atelier-herbario .mini-rule{ height: 14px; width: 92px; border-radius: 0; background: url(img/atelier/ramita.svg) center / contain no-repeat; }
+.atelier-herbario .lede, .atelier-herbario .letter p{ color: var(--tinta); font-size: 17px; }
+@media (min-width: 901px){
+  /* Escritorio: la invitación sobre la mesa de roble */
+  .atelier-herbario .hero{ align-self: stretch; width: 100%; background: linear-gradient(rgb(58 46 43 / .28), rgb(58 46 43 / .28)), url(img/atelier/mesa.webp) center / cover no-repeat; max-width: none; padding: 72px max(24px, calc(50vw - 570px)) 56px; }
+  .atelier-herbario.page-inner{ background: linear-gradient(rgb(58 46 43 / .3), rgb(58 46 43 / .3)), url(img/atelier/mesa.webp) center / cover fixed no-repeat; }
+  .atelier-citricos .hero-left, .atelier-herbario .hero-left{ max-width: 460px; }
+  .atelier-citricos .hero-text, .atelier-herbario .hero-text{ text-align: center; }
+}
+
+/* Entradas nuevas: las esquinas llegan desde fuera; la banda del herbario se despliega */
+.en-esq{ position: fixed; top: 0; width: min(46vw, 260px); pointer-events: none; opacity: 0; }
+.en-esq-i{ left: 0; animation: en-esq-i 1.4s var(--ease-out) .2s forwards; }
+.en-esq-d{ right: 0; animation: en-esq-d 1.4s var(--ease-out) .35s forwards; }
+@keyframes en-esq-i{ from{ opacity: 0; transform: translate(-30%, -30%) rotate(-8deg); } to{ opacity: 1; transform: none; } }
+@keyframes en-esq-d{ from{ opacity: 0; transform: translate(30%, -30%) rotate(8deg); } to{ opacity: 1; transform: none; } }
+.entrada-citricos .en-papel{ background: #FAF7F2; }
+.entrada-herbario .en-papel{ background: #FAF7F2 url(img/atelier/pliego-herbario.svg) center / 100% 100% no-repeat; }
+.en-banda{ width: min(420px, 86vw); clip-path: inset(0 50% 0 50%); animation: en-despliega 1.5s cubic-bezier(.6, 0, .2, 1) .2s forwards; }
+.en-banda img{ display: block; width: 100%; }
+@keyframes en-despliega{ to{ clip-path: inset(0 0 0 0); } }
+.atelier-citricos .sello-circular{ animation: aparece 1.4s var(--ease-out) .3s both, gira-lento 60s linear 1.7s infinite; }
+@keyframes gira-lento{ to{ transform: rotate(360deg); } }
+.atelier-citricos .esq{ animation: aparece 1.6s var(--ease-out) both; }
+.atelier-herbario .banda-herbario{ animation: en-despliega-h 1.6s cubic-bezier(.6, 0, .2, 1) both; }
+@keyframes en-despliega-h{ from{ clip-path: inset(0 50% 0 50%); } to{ clip-path: inset(0 0 0 0); } }
+@media (prefers-reduced-motion: reduce){ .atelier-citricos .sello-circular, .atelier-citricos .esq, .atelier-herbario .banda-herbario{ animation: none !important; } }

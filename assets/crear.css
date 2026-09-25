@@ -127,8 +127,16 @@
 .c-atelier-txt b { font-family: var(--serif); font-weight: 400; font-size: 15px; }
 .c-atelier-txt span { font-size: 11px; line-height: 1.4; color: var(--ink-3); }
 .c-atelier-nota { grid-column: 1 / -1; }
-#estiloPropio.is-off { opacity: .4; pointer-events: none; filter: grayscale(.4); }
-#estiloPropio.is-off::before { content: 'Este diseño Atelier trae su propia paleta, letra y adornos.'; display: block; margin-top: 14px; font-size: 12px; color: var(--ink-2); }
+.c-atelier > .c-atelier-cab { grid-column: 1 / -1; margin-top: 10px; }
+/* «Vuestro estilo» es el modo NO premium: tarjeta ancha, distinta de los diseños Atelier */
+.c-atelier-esencial { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 14px; }
+.c-atelier-cab-sep { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line-soft); }
+#estiloPropio { padding-left: 12px; border-left: 2px solid var(--bronze-c); }
+.c-atelier-esencial .c-atelier-img { width: 72px; flex-shrink: 0; aspect-ratio: 1; font-size: 26px; }
+.c-atelier-esencial .c-atelier-txt small { color: var(--ink-2); }
+#estiloPropio[hidden] { display: none; }
+.c-modo-nota { margin: 14px 0 0; padding: 10px 12px; border-radius: var(--r); background: var(--surface-c); font-size: 12px; color: var(--ink-2); }
+
 
 /* tipografía: muestra con los nombres */
 .c-fuentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
