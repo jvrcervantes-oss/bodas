@@ -100,6 +100,7 @@ function rutas_estudio(string $sub, string $metodo): void {
         case '': echo estudio_pagina('Bodas', estudio_bodas($metodo)); return;
         case 'pedidos': echo estudio_pagina('Pedidos', estudio_pedidos()); return;
         case 'codigos': echo estudio_pagina('Códigos de regalo', estudio_codigos($metodo)); return;
+        case 'guias': echo estudio_pagina('Guías del Padrino', estudio_guias($metodo)); return;
         case 'factura':
             $html = render_factura(clean_str($_GET['n'] ?? '', 40));
             if ($html === null) { http_response_code(404); echo estudio_pagina('Factura', '<p>No existe.</p>'); return; }
@@ -309,7 +310,7 @@ function estudio_codigos(string $metodo): string {
 }
 
 function estudio_pagina(string $titulo, string $cuerpo, bool $menu = true): string {
-    $nav = $menu ? '<nav class="est-nav"><a href="' . h(estudio_url()) . '">Bodas</a><a href="' . h(estudio_url('pedidos')) . '">Pedidos</a><a href="' . h(estudio_url('codigos')) . '">Códigos de regalo</a><a href="' . h(estudio_url('salir')) . '">Salir</a></nav>' : '';
+    $nav = $menu ? '<nav class="est-nav"><a href="' . h(estudio_url()) . '">Bodas</a><a href="' . h(estudio_url('pedidos')) . '">Pedidos</a><a href="' . h(estudio_url('codigos')) . '">Códigos de regalo</a><a href="' . h(estudio_url('guias')) . '">Guías</a><a href="' . h(estudio_url('salir')) . '">Salir</a></nav>' : '';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — Estudio · ' . h(marca()) . '</title><meta name="robots" content="noindex, nofollow">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple estudio">'

@@ -12,14 +12,25 @@ function rutas_creador(string $ruta, string $metodo): void {
     // Panel del estudio (solo el owner): app/estudio.php
     if ($ruta === 'estudio' || strpos($ruta, 'estudio/') === 0) { rutas_estudio(trim(substr($ruta, 7), '/'), $metodo); return; }
     // El Padrino (CEO autónomo, servicio aparte): app/padrino.php, solo con token
+    // Guías del Padrino: SOLO bajo guia/ (nunca en la raíz), así no pueden pisar ninguna ruta
+    if ($ruta === 'guia' || strpos($ruta, 'guia/') === 0) {
+        header('Content-Security-Policy: ' . CSP_CREADOR);
+        $gs = $ruta === 'guia' ? '' : substr($ruta, 5);
+        if ($gs !== '' && !guia_slug_valido($gs)) no_existe();
+        if (!sirve_guia($gs)) no_existe();
+        analitica_vista($ruta);
+        return;
+    }
     if (strpos($ruta, 'api/padrino/') === 0) { rutas_padrino(substr($ruta, 12), $metodo); return; }
     switch ($ruta) {
         case '':
             header('Content-Security-Policy: ' . CSP_CREADOR);
+            analitica_vista($ruta);
             echo pagina_landing();
             return;
         case 'crear':
             header('Content-Security-Policy: ' . CSP_CREADOR);
+            analitica_vista($ruta);
             echo vista_constructor('crear', config_inicial(), '');
             return;
         case 'condiciones': case 'privacidad': case 'aviso-legal':
@@ -33,6 +44,7 @@ function rutas_creador(string $ruta, string $metodo): void {
                     . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
                 return;
             }
+            analitica_vista($ruta);
             ob_start();
             include APP_DIR . '/legal/' . $ruta . '.php';
             echo pagina_simple($t, '<article class="legal">' . ob_get_clean() . '</article>');
@@ -138,6 +150,7 @@ function api_pagar(string $metodo): void {
     }
     $slug = strtolower(clean_str($_POST['slug'] ?? '', 60));
     if (!slug_valido($slug)) json_response(['ok' => false, 'error' => 'El nombre de la web no es válido.'], 422);
+    analitica_evento('pago_intento');
 
     asegura_dir(dir_datos('pendientes'));
     if (count(glob(dir_datos('pendientes', '*'), GLOB_ONLYDIR) ?: []) > 500) {
@@ -175,6 +188,7 @@ function api_pagar(string $metodo): void {
             json_response(['ok' => false, 'error' => 'Este código ya se ha usado.', 'faltan' => ['codigo' => 'Código ya usado.']], 422);
         }
         if (!$ped) json_response(['ok' => false, 'error' => 'No hemos podido publicar la web. Inténtalo de nuevo.'], 500);
+        analitica_evento('regalo');
         json_response(['ok' => true, 'url' => url_creador('listo?c=' . $token)]);
     }
 
@@ -185,6 +199,7 @@ function api_pagar(string $metodo): void {
         @unlink(dir_datos('reservas', $slug . '.json'));
         json_response(['ok' => false, 'error' => 'No hemos podido abrir el pago. Inténtalo de nuevo.'], 502);
     }
+    analitica_evento('checkout');
     json_response(['ok' => true, 'url' => $s['url']]);
 }
 

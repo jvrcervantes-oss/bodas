@@ -106,8 +106,10 @@ function padrino_log(string $accion, array $datos = []): void {
 function rutas_padrino(string $sub, string $metodo): void {
     cabeceras_privadas();
     if (!limite('padrino|' . ip_cliente(), 120, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
-    $escritura = in_array($sub, ['precios', 'marca'], true);
-    if (!padrino_autorizado($escritura ? 'decision' : 'lectura')) {
+    $contenido = $sub === 'contenido' || strpos($sub, 'contenido/') === 0;
+    $escritura = in_array($sub, ['precios', 'marca', 'campanas'], true);
+    if ($contenido && !limite('padrino-contenido|' . ip_cliente(), 30, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
+    if (!padrino_autorizado($contenido ? 'contenido' : ($escritura ? 'decision' : 'lectura'))) {
         padrino_log('rechazo', ['ruta' => $sub, 'ip' => hash('sha256', ip_cliente())]);
         json_response(['ok' => false], 401);
     }
@@ -126,6 +128,12 @@ function rutas_padrino(string $sub, string $metodo): void {
         case 'marca':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
             padrino_cambia_marca($cuerpo);
+        case 'campanas':
+            if ($metodo !== 'POST') json_response(['ok' => false], 405);
+            padrino_alta_campana($cuerpo);
+        case 'contenido': case 'contenido/retirar': case 'contenido/restaurar':
+            if ($metodo !== 'POST') json_response(['ok' => false], 405);
+            padrino_contenido((string) substr($sub, 10), $cuerpo);
     }
     json_response(['ok' => false], 404);
 }
@@ -167,7 +175,9 @@ function padrino_resumen(): array {
             'regalo' => str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_'),
         ];
     }
-    return ['ok' => true, 'generado' => date('c'), 'marca' => marca(), 'precios' => padrino_precios(), 'bodas' => $bodas, 'pedidos' => $pedidos];
+    $guias = array_map(fn($g) => ['slug' => $g['slug'], 'version' => (int) $g['version'], 'publicada' => (string) $g['publicada'], 'retirada' => !empty($g['retirada'])], guias_todas(true));
+    return ['ok' => true, 'generado' => date('c'), 'marca' => marca(), 'precios' => padrino_precios(), 'bodas' => $bodas, 'pedidos' => $pedidos,
+        'analitica' => analitica_resumen(), 'campanas' => (array) ((lee_json(padrino_dir('campanas.json')) ?? [])['ids'] ?? []), 'guias' => $guias];
 }
 
 /** ¿Este remitente tiene boda? Sí/no y el slug. Nunca devuelve el email de nadie. */
@@ -228,4 +238,19 @@ function padrino_cambia_marca(array $c): void {
     padrino_log('marca', ['nombre' => $n, 'ok' => $r === '', 'error' => $r]);
     if ($r !== '') json_response(['ok' => false, 'error' => $r], 422);
     json_response(['ok' => true, 'nombre' => $n]);
+}
+
+/** Alta de un id de campaña para los enlaces con utm_campaign (solo cuentan los dados de alta). */
+function padrino_alta_campana(array $c): void {
+    $id = strtolower(clean_str($c['id'] ?? '', 40));
+    if (!preg_match('/^[a-z0-9-]{1,32}$/', $id)) json_response(['ok' => false, 'error' => 'Id: a-z, 0-9 y guion, hasta 32.'], 422);
+    $n = muta_json(padrino_dir('campanas.json'), function (array &$d) use ($id) {
+        $ids = (array) ($d['ids'] ?? []);
+        if (!in_array($id, $ids, true)) { if (count($ids) >= 200) return -1; $ids[] = $id; }
+        $d['ids'] = $ids;
+        return count($ids);
+    });
+    if ($n === -1) json_response(['ok' => false, 'error' => 'Máximo 200 campañas.'], 422);
+    padrino_log('campana', ['id' => $id]);
+    json_response(['ok' => true, 'id' => $id]);
 }

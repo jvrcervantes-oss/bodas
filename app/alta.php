@@ -73,6 +73,7 @@ function alta_desde_sesion(array $s): ?array {
             registra('ALERTA importe cobrado distinto del precio', ['sid' => $sid, 'importe' => $ped['importe']]);
         }
         if (empty($ped['factura'])) {
+            analitica_evento('alta');   // una vez por pedido: la factura solo se emite la primera
             $ped['factura'] = emite_factura($ped);
             escribe_json($fPedido, $ped);
         }

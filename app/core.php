@@ -39,6 +39,9 @@ defined('BASE_PATH') || define('BASE_PATH', (function (): string {
 })());
 // Escondido: nada del producto se indexa mientras no esté a la venta
 const OCULTO = true;
+// Medición de visitas sin cookies (app/analitica.php). Encendida junto con la privacidad que la explica
+// (Legal #100: sin ese texto, la política diría lo contrario de lo que se hace).
+const ANALITICA = true;
 defined('SCHEME')       || define('SCHEME', 'https');
 // Stripe: la base de la API se puede apuntar a un simulador local para pruebas.
 defined('STRIPE_API')   || define('STRIPE_API', 'https://api.stripe.com');
@@ -193,7 +196,8 @@ function ip_cliente(): string { return (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0
  * responde, se rechaza): obligatorio en subidas anónimas (Seguridad, #87).
  */
 function limite(string $clave, int $max, int $ventana, bool $estricto = false): bool {
-    $f = dir_datos('rl', hash('sha256', $clave) . '.json');
+    // HMAC con la clave de la app: un sha256 sin sal de 'vp|<IP>' se revierte recorriendo IPv4 (Seguridad #100)
+    $f = dir_datos('rl', hash_hmac('sha256', $clave, clave_app()) . '.json');
     $ok = muta_json($f, function (array &$d) use ($max, $ventana) {
         $ahora = time();
         if (($d['desde'] ?? 0) + $ventana < $ahora) $d = ['desde' => $ahora, 'n' => 0, 'v' => $ventana];
@@ -264,3 +268,5 @@ function precio_base_cent(?array $c = null): int { return precio_total_cent($c) 
 
 // Precio y marca vigentes (los decide El Padrino dentro de límites) y su API: lo cargan la web y el cron
 require_once APP_DIR . '/padrino.php';
+require_once APP_DIR . '/analitica.php';
+require_once APP_DIR . '/guias.php';

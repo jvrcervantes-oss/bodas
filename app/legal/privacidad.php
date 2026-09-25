@@ -46,12 +46,22 @@
 <p>No vendemos ni cedemos vuestros datos a nadie más.</p>
 
 <h2>Cookies y almacenamiento en el navegador</h2>
-<p>No usamos analítica, publicidad ni cookies de terceros en nuestras páginas.</p>
+<p>No usamos cookies de analítica ni de publicidad. Medimos las visitas sin cookies, como se explica abajo.</p>
 <ul>
   <li>Cookie de sesión del panel: se crea al entrar en el panel privado para mantener la sesión abierta. Es técnica y necesaria para el servicio que pedís, por eso no requiere consentimiento.</li>
   <li>Almacenamiento local del creador: guarda el borrador en vuestro navegador mientras lo montáis. También es necesario para el servicio que pedís. Podéis borrarlo desde la configuración del navegador.</li>
 </ul>
 <p>La página de pago es de Stripe y usa sus propias cookies, que explica su política.</p>
+
+<h2>Medición de visitas sin cookies</h2>
+<p>En las páginas de presentación del servicio (no en las webs de boda) contamos las visitas para saber qué páginas funcionan. Lo hacemos en nuestro servidor, sin cookies ni nada que se guarde o se lea en vuestro dispositivo:</p>
+<ul>
+  <li>Usamos vuestra dirección IP y el tipo de navegador solo un instante, para calcular una huella cifrada con una clave que cambia cada día. La clave y las huellas se destruyen al terminar ese día. No guardamos la IP.</li>
+  <li>Lo único que queda son contadores agregados por página, origen de la visita, campaña y tipo de dispositivo. Los guardamos 90 días.</li>
+  <li>No se cede a nadie y no se cruza con compras, correos ni ningún otro dato.</li>
+  <li>La base legal es nuestro interés legítimo en saber qué funciona de nuestra web. Podéis oponeros: si vuestro navegador envía la señal «Global Privacy Control» o «Do Not Track», no os contamos.</li>
+</ul>
+<p>Además, como cualquier web, el servidor de nuestro proveedor de alojamiento registra las peticiones (IP y hora) por seguridad y para el funcionamiento técnico.</p>
 
 <h2>Vuestros derechos</h2>
 <p>Podéis pedirnos ver vuestros datos, corregirlos, borrarlos, limitar su uso, oponeros a su tratamiento o recibirlos en un formato que podáis llevar a otro sitio. Escribid a <?= h($E['email']) ?>. Os responderemos en un mes como máximo.</p>
