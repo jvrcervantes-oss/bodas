@@ -139,6 +139,8 @@
   // Borradores guardados antes del 25-sep: menús como claves fijas y el autobús en la
   // confirmación. Se pasan al formato nuevo (mismos ids) para que el editor los entienda.
   (function migraBorrador() {
+    var r = st.secciones.filter(function (x) { return x.tipo === 'rsvp'; })[0];
+    if (r) { r.on = true; st.secciones = [r].concat(st.secciones.filter(function (x) { return x !== r; })); }
     var ANT = { carne: 'Carne', pescado: 'Pescado', vegetariano: 'Vegetariano', vegano: 'Vegano', infantil: 'Infantil' };
     var busAntiguo = null;
     st.secciones.forEach(function (x) {
@@ -212,7 +214,7 @@
     var w = el('div', { class: 'c-sec-edit' });
     var tit = el('input', { maxlength: 40 });
     tit.value = s.titulo;
-    tit.addEventListener('input', function () { s.titulo = tit.value; li(s).querySelector('.c-sec-nombre').textContent = tit.value || D.secciones[s.tipo].titulo; cambio(); });
+    tit.addEventListener('input', function () { s.titulo = tit.value; var n = li(s); if (n) n.querySelector('.c-sec-nombre').textContent = tit.value || D.secciones[s.tipo].titulo; cambio(); });
     w.appendChild(el('label', { class: 'c-campo' }, [el('span', { text: s.tipo === 'libre' ? 'Título' : 'Nombre en el menú' }), tit]));
     switch (s.tipo) {
       case 'rsvp':
@@ -237,7 +239,7 @@
         var tr = st.secciones.filter(function (x) { return x.tipo === 'transporte'; })[0];
         if (tr) w.appendChild(el('p', { class: 'c-ayuda' }, [
           document.createTextNode('La pregunta del autobús se configura en '),
-          el('button', { type: 'button', class: 'c-link', text: tr.titulo || 'Transporte', onclick: function () { abierta = tr.id; pintaSecciones(); var n = li(tr); if (n) n.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }),
+          el('button', { type: 'button', class: 'c-link', text: tr.titulo || 'Transporte', onclick: function () { abierta = tr.id; muestraTab('secciones'); pintaSecciones(); var n = li(tr); if (n) n.scrollIntoView({ behavior: 'smooth', block: 'start' }); } }),
           document.createTextNode('.')
         ]));
         w.appendChild(campoTexto(s, 'fecha_limite', 'Fecha límite para confirmar (opcional)', { type: 'date' }));
@@ -329,20 +331,13 @@
 
   function pintaSecciones() {
     secEl.textContent = '';
-    st.secciones.forEach(function (s, i) {
+    // La confirmación tiene su propio paso; aquí solo las opcionales, sin reordenar (owner, 25-sep:
+    // «hazlo sencillo»). El orden del menú de la web es el de esta lista.
+    st.secciones.forEach(function (s) {
+      if (s.tipo === 'rsvp') return;
       var on = el('input', { type: 'checkbox', class: 'c-switch', 'aria-label': 'Mostrar ' + s.titulo });
       on.checked = s.on !== false;
       on.addEventListener('change', function () { s.on = on.checked; item.classList.toggle('is-off', !s.on); cambio(); });
-      var mueve = function (d) {
-        return function () {
-          var j = i + d;
-          if (j < 0 || j >= st.secciones.length) return;
-          var x = st.secciones[i]; st.secciones[i] = st.secciones[j]; st.secciones[j] = x;
-          pintaSecciones(); cambio();
-          var b = li(x).querySelector(d < 0 ? '[data-sube]' : '[data-baja]');
-          if (b && !b.disabled) b.focus();
-        };
-      };
       var abrir = el('button', { type: 'button', class: 'c-sec-abrir', 'aria-expanded': abierta === s.id ? 'true' : 'false' }, [
         icono(s.tipo),
         el('span', { class: 'c-sec-nombre', text: s.titulo || D.secciones[s.tipo].titulo }),
@@ -354,19 +349,22 @@
         if (abierta) irAPagina(rutaDe[s.id]);   // la vista previa enseña la página que se edita
       });
       var item = el('li', { class: 'c-sec' + (s.on === false ? ' is-off' : ''), 'data-id': s.id }, [
-        el('div', { class: 'c-sec-fila' }, [
-          on, abrir,
-          el('div', { class: 'c-orden' }, [
-            el('button', { type: 'button', 'data-sube': true, 'aria-label': 'Subir', disabled: i === 0, text: '↑', onclick: mueve(-1) }),
-            el('button', { type: 'button', 'data-baja': true, 'aria-label': 'Bajar', disabled: i === st.secciones.length - 1, text: '↓', onclick: mueve(1) })
-          ])
-        ]),
+        el('div', { class: 'c-sec-fila' }, [abrir, on]),
         abierta === s.id ? editorDe(s) : null
       ]);
       secEl.appendChild(item);
     });
     var libres = st.secciones.filter(function (s) { return s.tipo === 'libre'; }).length;
     document.getElementById('anadirLibre').disabled = libres >= D.maxLibres;
+    pintaRsvp();
+  }
+  // La confirmación se edita en su propio paso (se repinta solo si no se está escribiendo en él)
+  var rsvpEl = document.getElementById('rsvpEditor');
+  function pintaRsvp() {
+    if (rsvpEl.contains(document.activeElement)) return;
+    var r = st.secciones.filter(function (x) { return x.tipo === 'rsvp'; })[0];
+    rsvpEl.textContent = '';
+    if (r) rsvpEl.appendChild(editorDe(r));
   }
   document.getElementById('anadirLibre').addEventListener('click', function () {
     var id = 's' + Math.random().toString(36).slice(2, 8);
@@ -431,7 +429,10 @@
   // esté en una pestaña de la portada). En móvil no se cambia de vista: solo se deja listo.
   function sigueEnEditor(ruta) {
     var id = idDe[ruta];
-    if (id) {
+    var sRsvp = st.secciones.filter(function (x) { return x.tipo === 'rsvp'; })[0];
+    if (id && sRsvp && id === sRsvp.id) {
+      muestraTab('rsvp', true);
+    } else if (id) {
       abierta = id;
       muestraTab('secciones', true);
       pintaSecciones();
@@ -485,6 +486,7 @@
   function paginaDeTab(k) {
     if (k === 'lugares') { var inf = st.secciones.filter(function (x) { return x.tipo === 'informacion' && x.on !== false; })[0]; return inf && rutaDe[inf.id] || 'inicio'; }
     if (k === 'secciones') return abierta && rutaDe[abierta] || null;
+    if (k === 'rsvp') { var r = st.secciones.filter(function (x) { return x.tipo === 'rsvp'; })[0]; return r && rutaDe[r.id] || null; }
     if (k === 'estilo' || k === 'pareja' || k === 'portada') return 'inicio';
     return null;
   }

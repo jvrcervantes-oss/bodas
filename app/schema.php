@@ -255,6 +255,18 @@ function normaliza_config($in): array {
         if ($x['tipo'] === 'transporte' && $x['datos']['preguntar'] === null) $x['datos']['preguntar'] = $busAntiguo ?? true;
     }
     unset($x);
+    // Confirmación de asistencia + menú: base del producto (owner, 25-sep-2026). Siempre
+    // existe, siempre activa y va la primera; no se puede quitar desde el creador.
+    $iRsvp = null;
+    foreach ($sec as $i => $x) if ($x['tipo'] === 'rsvp') { $iRsvp = $i; break; }
+    if ($iRsvp === null) {
+        $rs = ['id' => 'rsvp', 'tipo' => 'rsvp', 'on' => true, 'titulo' => SECCIONES['rsvp'][0], 'ruta' => SECCIONES['rsvp'][1], 'datos' => norm_datos('rsvp', datos_iniciales('rsvp'))];
+    } else {
+        $rs = $sec[$iRsvp];
+        $rs['on'] = true;
+        array_splice($sec, $iRsvp, 1);
+    }
+    array_unshift($sec, $rs);
     $c['secciones'] = $sec;
     return $c;
 }

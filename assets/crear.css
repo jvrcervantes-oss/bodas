@@ -129,7 +129,7 @@
 .c-sec { scroll-margin-top: 90px; }
 .c-destaca { animation: destaca 1.4s var(--ease-out, ease-out); }
 @keyframes destaca { 0%, 30% { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(197, 160, 89, .25); } 100% { box-shadow: none; } }
-.c-sec-fila { display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 14px; }
+.c-sec-fila { display: flex; align-items: center; gap: 12px; padding: 6px 14px; }
 .c-sec-abrir { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; text-align: left; border: 0; background: none; padding: 10px 0; cursor: pointer; font-size: 14px; font-weight: 500; }
 .c-sec-ico { color: var(--bronze); }
 .c-sec-abrir[aria-expanded="true"] .c-sec-nombre { color: var(--rose); }
@@ -152,6 +152,8 @@
 .c-hotel-cab { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
 .c-hoteles > .b-btn { align-self: flex-start; }
 .c-anadir { align-self: flex-start; }
+#rsvpEditor .c-sec-edit { padding: 0; border: 0; background: none; }
+#rsvpEditor .c-sec-edit > :first-child { margin-top: 0; }
 /* listas editables (menús, trayectos) */
 .c-lista { display: flex; flex-direction: column; gap: 10px; }
 .c-lista > .b-btn { align-self: flex-start; }

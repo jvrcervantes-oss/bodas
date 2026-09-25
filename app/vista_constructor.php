@@ -20,7 +20,8 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $editar = $modo === 'editar';
     $titulo = $editar ? 'Editar la web' : 'Crea la web de vuestra boda';
     // Orden (owner, 25-sep): primero el estilo, luego los datos
-    $tabs = ['estilo' => 'Estilo', 'pareja' => 'Vosotros', 'lugares' => 'Ceremonia y convite', 'portada' => 'Portada', 'secciones' => 'Secciones'];
+    $tabs = ['estilo' => 'Estilo', 'pareja' => 'Vosotros', 'lugares' => 'Ceremonia y convite', 'rsvp' => 'Confirmación y menú',
+        'portada' => 'Portada', 'secciones' => 'Más secciones'];
     if (!$editar) $tabs['publicar'] = 'Publicar';
     $rail = $editar
         ? [['/panel/editar', 'lapiz', 'Editar la web', true], ['/panel', 'sobre', 'Invitados y respuestas', false],
@@ -158,10 +159,17 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <label class="c-campo"><span>Despedida al pie</span><input data-k="portada.pie" maxlength="200"></label>
       </div>
 
+      <div class="c-panel" role="tabpanel" id="panel-rsvp" data-panel="rsvp" aria-labelledby="tab-rsvp" hidden>
+        <span class="overline overline-bronze">Siempre incluida</span>
+        <h2>Confirmación y menú</h2>
+        <p class="c-ayuda">El corazón de la web: vuestros invitados confirman por grupo y eligen menú. Aquí decidís qué menús ofrecéis y qué les preguntáis.</p>
+        <div id="rsvpEditor"></div>
+      </div>
+
       <div class="c-panel" role="tabpanel" id="panel-secciones" data-panel="secciones" aria-labelledby="tab-secciones" hidden>
-        <span class="overline overline-bronze">Módulos activos</span>
-        <h2>Secciones de la web</h2>
-        <p class="c-ayuda">Activad, quitad y ordenad las páginas. Tocad una para editar su contenido.</p>
+        <span class="overline overline-bronze">Opcionales</span>
+        <h2>Más secciones</h2>
+        <p class="c-ayuda">Encended las que queráis en vuestra web y tocad una para rellenarla.</p>
         <ol class="c-secciones" id="secciones"></ol>
         <button type="button" class="b-btn b-paper c-btn-sm c-anadir" id="anadirLibre"><?= il('mas', 'i i-sm') ?>Añadir sección propia</button>
       </div>
