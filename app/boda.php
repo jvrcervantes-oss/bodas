@@ -5,7 +5,7 @@
 declare(strict_types=1);
 
 const CSP_BODA = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; "
-    . "connect-src 'self'; frame-src https://maps.google.com https://www.google.com; form-action 'self'; "
+    . "connect-src 'self'; frame-src 'none'; form-action 'self'; "
     . "frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
 
 // Topes por boda: una boda no puede llenar el disco que comparte con las demás
@@ -172,7 +172,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
 
 // En el panel la vista previa pide sus assets al propio subdominio
 const CSP_CREADOR_PANEL = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; "
-    . "script-src 'self'; connect-src 'self'; frame-src 'self' https://maps.google.com https://www.google.com; "
+    . "script-src 'self'; connect-src 'self'; frame-src 'self'; "
     . "form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
 function panel_marco(array $c, string $titulo, string $cuerpo, bool $ancho = false): string {

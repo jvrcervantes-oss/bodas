@@ -5,7 +5,7 @@
 declare(strict_types=1);
 
 const CSP_CREADOR = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; "
-    . "script-src 'self'; connect-src 'self'; frame-src 'self' https://maps.google.com https://www.google.com; "
+    . "script-src 'self'; connect-src 'self'; frame-src 'self'; "
     . "form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
 function rutas_creador(string $ruta, string $metodo): void {
@@ -74,6 +74,11 @@ function api_pagar(string $metodo): void {
     if ($metodo !== 'POST') json_response(['ok' => false], 405);
     if (!limite('pagar|' . ip_cliente(), 20, 3600)) json_response(['ok' => false, 'error' => 'Demasiados intentos. Prueba dentro de un rato.'], 429);
     // En LIVE no se vende sin los datos del titular en los textos legales y la factura
+    // Sin el Tax Rate, Stripe cobraría 100 € con un botón que dice 121 €: no se abre el pago.
+    if (secreto('stripe_tax_rate') === '') {
+        registra('ALERTA pago bloqueado: falta stripe_tax_rate');
+        json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
+    }
     if (stripe_modo_live() && !empresa_completa()) {
         registra('ALERTA pago bloqueado: faltan datos del titular');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
@@ -150,6 +155,8 @@ function api_webhook(string $metodo): void {
 
 function pagina_listo(): void {
     cabeceras_privadas();
+    // Cada visita consulta la API de Stripe: sin límite sería un amplificador gratis
+    if (!limite('listo|' . ip_cliente(), 30, 3600)) { http_response_code(429); echo pagina_simple('Demasiadas visitas', '<p>Espera un rato y vuelve a cargar la página.</p>'); return; }
     $sid = clean_str($_GET['sid'] ?? '', 250);
     $s = stripe_lee_sesion($sid);
     if (!$s || ($s['metadata']['producto'] ?? '') !== PRODUCTO) { echo pagina_simple('Pago no encontrado', '<p>No encontramos este pago. Si te han cobrado, escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }

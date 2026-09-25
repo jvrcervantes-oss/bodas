@@ -398,8 +398,10 @@ function pagina_informacion(array $c): string {
             . '<p class="info-text"><b>' . h($e['lugar']) . '</b>'
             . ($e['direccion'] !== '' ? '<br>' . h($e['direccion']) : '')
             . ($cuando !== '' ? '<br>' . h($cuando) : '') . '</p>'
-            . '<iframe class="map-frame" loading="lazy" referrerpolicy="no-referrer" title="Mapa: ' . h($e['lugar']) . '" src="https://maps.google.com/maps?q='
-            . h(rawurlencode(mapa_q($e))) . '&amp;z=15&amp;output=embed"></iframe></div>';
+            // Enlace a Google Maps en vez de mapa incrustado: el iframe carga cookies de
+            // Google y los textos legales prometen una web sin terceros (Legal, 25-sep)
+            . '<p class="info-mapa"><a class="btn btn-soft" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($e))) . '" target="_blank" rel="noopener noreferrer">'
+            . ico(ICONOS['mapa'], 'ico ico-sm') . 'Ver en el mapa</a></p></div>';
         $first = false;
     }
     return $o . '</div>';

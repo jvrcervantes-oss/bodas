@@ -17,6 +17,8 @@ DirectoryIndex index.php
   # Nada de app/, cron/ ni ficheros ocultos por la web (el código no tiene
   # secretos, pero tampoco tiene por qué servirse)
   RewriteRule ^(app|cron|Backups|_dev)(/|$) - [R=404,L]
+  # .well-known queda fuera: Hostinger emite el SSL de cada subdominio por HTTP-01
+  RewriteCond %{REQUEST_URI} !^/\.well-known/
   RewriteRule (^|/)\. - [R=404,L]
 
   RewriteCond %{REQUEST_URI} ^/assets/
@@ -25,13 +27,6 @@ DirectoryIndex index.php
 
   RewriteRule ^ index.php [L,QSA]
 </IfModule>
-
-# En /assets nunca se ejecuta PHP
-<FilesMatch "\.(php|phtml|phar)$">
-  <If "%{REQUEST_URI} =~ m#^/assets/#">
-    Require all denied
-  </If>
-</FilesMatch>
 
 # La vista previa del creador vive en un iframe aislado (origen opaco): las fuentes
 # son peticiones CORS y sin esta cabecera no cargan. Son fuentes OFL públicas.
