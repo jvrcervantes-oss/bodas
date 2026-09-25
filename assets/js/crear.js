@@ -80,6 +80,28 @@
     temasEl.appendChild(el('label', { class: 'c-tema' }, [r, muestra, el('span', { class: 'c-tema-nom' }, [sw, el('span', { text: tm.nombre })])]));
   });
 
+  // ------------------------------------------------------------ tipografía
+  var fuentesEl = document.getElementById('fuentes');
+  Object.keys(D.fuentes).forEach(function (k) {
+    var f = D.fuentes[k];
+    var r = el('input', { type: 'radio', name: 'fuente', value: k });
+    r.checked = (st.fuente || 'clasica') === k;
+    r.addEventListener('change', function () { st.fuente = k; cambio(); });
+    var muestra = el('span', { class: 'c-fuente-muestra', text: 'Lucía & Marcos' });
+    muestra.style.fontFamily = f.nombres;
+    muestra.style.fontStyle = f.estilo;
+    fuentesEl.appendChild(el('label', { class: 'c-fuente' }, [r, muestra, el('small', { text: f.nombre })]));
+  });
+
+  // ------------------------------------------------------------ convite en el mismo sitio
+  var convMismo = document.getElementById('convMismo');
+  function pintaMismo() {
+    document.querySelectorAll('[data-si-otro-sitio]').forEach(function (n) { n.hidden = !!st.convite.mismo; });
+  }
+  convMismo.checked = !!st.convite.mismo;
+  convMismo.addEventListener('change', function () { st.convite.mismo = convMismo.checked; pintaMismo(); cambio(); });
+  pintaMismo();
+
   // ------------------------------------------------------------ decoración
   var decosEl = document.getElementById('decos');
   Object.keys(D.decoraciones).forEach(function (k) {

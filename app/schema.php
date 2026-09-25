@@ -14,12 +14,23 @@ const TEMAS = [
     'eucalipto' => ['Eucalipto', '#2C5448', '#446C5F', '#37574D', '#506357', '#F2F5F0', '#D3E8D9', '#C8DDCE', '#815D40', '#C0EBDB', '#A5D0C0'],
     'terracota' => ['Terracota', '#6E3B2A', '#9A5238', '#7F422D', '#7A5A4C', '#F7F1EC', '#EFD9CB', '#E6CBB9', '#8A6A2F', '#F5D6C6', '#E4B9A4'],
     'oceano'    => ['Océano',    '#23445E', '#3C6482', '#30526C', '#4F6475', '#F0F4F7', '#D4E2EC', '#C5D6E2', '#8A6B3D', '#CFE3F2', '#AECBE0'],
+    'lavanda'   => ['Lavanda',   '#4E3F6B', '#7A69A0', '#665688', '#6A6378', '#F5F3F9', '#E3DDF0', '#D8D0EA', '#8A7350', '#E6DEF7', '#CDC2EA'],
+    'arena'     => ['Arena',     '#5A4A3A', '#9A8266', '#826C53', '#6F6356', '#FAF7F2', '#EEE5D8', '#E6DACA', '#A86B68', '#F1E6D6', '#DDCDB6'],
+    'burdeos'   => ['Burdeos',   '#5C1F2B', '#8A3344', '#742A39', '#6E4E54', '#FAF3F4', '#F0DDE0', '#E8CFD3', '#8A7350', '#F5D9DE', '#E6BCC4'],
     'malva'     => ['Malva',     '#5A3651', '#7D5271', '#68435E', '#6E5A68', '#F6F1F4', '#E8D8E2', '#DDC8D5', '#8A6440', '#EED3E5', '#D8B6CC'],
 ];
 
 // Menús: desde el 25-sep-2026 cada boda define los suyos ({id, nombre, descripcion, infantil}).
 // Esta tabla es solo la de antes (claves fijas): convierte los config y las respuestas viejos,
 // cuyo id de menú ES esa clave, para que sigan casando.
+// Tipografías (owner, 25-sep-2026): clave => [nombre, títulos, textos, nombres de la pareja, estilo de los nombres]
+const FUENTES = [
+    'clasica'     => ['Clásica',     "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",           "'Playfair Display', Georgia, serif",   'italic'],
+    'romantica'   => ['Romántica',   "'Cormorant Garamond', Georgia, serif", "'Manrope', system-ui, sans-serif",           "'Cormorant Garamond', Georgia, serif", 'italic'],
+    'caligrafica' => ['Caligráfica', "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",           "'Great Vibes', cursive",               'normal'],
+    'moderna'     => ['Moderna',     "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", 'normal'],
+];
+
 // Decoración (estructura visual), independiente de la paleta. Owner, 25-sep-2026.
 // Las acuarelas son las de su maqueta de Stitch (assets/img/deco/).
 const DECORACIONES = [
@@ -81,8 +92,9 @@ function config_inicial(): array {
         'ciudad' => '',
         'tema' => 'rosa',
         'decoracion' => 'flores',
+        'fuente' => 'clasica',
         'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
-        'convite' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
+        'convite' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'mismo' => false],
         'portada' => [
             'invitacion' => 'Tenemos el placer de invitaros a nuestra boda',
             'titulo' => 'Os damos la bienvenida',
@@ -222,9 +234,17 @@ function normaliza_config($in): array {
     $c['tema'] = isset(TEMAS[$in['tema'] ?? '']) ? $in['tema'] : 'eucalipto';
     // Las bodas de antes de existir la decoración conservan su rama de eucalipto
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
+    $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
     foreach (['ceremonia', 'convite'] as $k) {
         $e = is_array($in[$k] ?? null) ? $in[$k] : [];
         $c[$k] = ['lugar' => clean_str($e['lugar'] ?? '', 120), 'direccion' => clean_str($e['direccion'] ?? '', 160), 'hora' => norm_hora($e['hora'] ?? '')];
+    }
+    // Convite en el mismo sitio que la ceremonia: el lugar y la dirección SIEMPRE se toman de
+    // la ceremonia (se recalculan en cada normalización, no pueden desviarse)
+    $c['convite']['mismo'] = norm_bool($in['convite']['mismo'] ?? false);
+    if ($c['convite']['mismo']) {
+        $c['convite']['lugar'] = $c['ceremonia']['lugar'];
+        $c['convite']['direccion'] = $c['ceremonia']['direccion'];
     }
     $po = is_array($in['portada'] ?? null) ? $in['portada'] : [];
     $c['portada'] = ['invitacion' => clean_str($po['invitacion'] ?? '', 120), 'titulo' => clean_str($po['titulo'] ?? '', 80),

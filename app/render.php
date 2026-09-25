@@ -81,7 +81,13 @@ function tema_css(array $c): string {
         . ';--sage:' . $t[5] . ';--sage-2:' . $t[6] . ';--sage-2-hover:' . $t[7] . ';--gold:' . $t[8]
         . ';--on-dark:' . $t[9] . ';--on-dark-soft:' . $t[10]
         . ';--primary-rgb:' . $rgb($t[1]) . ';--accent-rgb:' . $rgb($t[2]) . ';--on-dark-rgb:' . $rgb($t[9])
-        . ';--sage-2-rgb:' . $rgb($t[6]) . ';--sage-rgb:' . $rgb($t[5]) . '}';
+        . ';--sage-2-rgb:' . $rgb($t[6]) . ';--sage-rgb:' . $rgb($t[5])
+        . ';' . fuente_css($c) . '}';
+}
+
+function fuente_css(array $c): string {
+    $f = FUENTES[$c['fuente'] ?? 'clasica'] ?? FUENTES['clasica'];
+    return '--serif:' . $f[1] . ';--sans:' . $f[2] . ';--nombres:' . $f[3] . ';--nombres-estilo:' . $f[4];
 }
 
 function linea_fecha(array $c): string {
@@ -107,7 +113,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
 <style><?= tema_css($c) ?></style>
 </head>
-<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?> deco-<?= h($c['decoracion']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
+<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?> deco-<?= h($c['decoracion']) ?> fuente-<?= h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
 <?php if ($ctx['modo'] === 'preview'): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep) ?>
 <div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(MARCA) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
 <?php endif; ?>
@@ -397,6 +403,16 @@ function pagina_informacion(array $c): string {
         if ($c[$k]['lugar'] !== '') $tabs[$k] = $r;
     }
     if (!$tabs) return '<div class="pending-note">Pronto os contamos dónde será.</div>';
+    // Mismo sitio: una sola ficha con las dos horas
+    if (!empty($c['convite']['mismo'])) {
+        $e = $c['ceremonia'];
+        $horas = implode(' · ', array_filter([$e['hora'] !== '' ? 'Ceremonia ' . $e['hora'] : '', $c['convite']['hora'] !== '' ? 'Banquete ' . $c['convite']['hora'] : '']));
+        return '<div class="info-title">CEREMONIA Y BANQUETE</div>'
+            . '<p class="info-text"><b>' . h($e['lugar']) . '</b>' . ($e['direccion'] !== '' ? '<br>' . h($e['direccion']) : '')
+            . ($c['fecha'] !== '' ? '<br>' . h(fecha_larga($c['fecha'], false)) : '') . ($horas !== '' ? '<br>' . h($horas) : '') . '</p>'
+            . '<p class="info-mapa"><a class="btn btn-soft" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($e))) . '" target="_blank" rel="noopener noreferrer">'
+            . ico(ICONOS['mapa'], 'ico ico-sm') . 'Ver en el mapa</a></p>';
+    }
     $o .= '<div data-tabs>';
     if (count($tabs) > 1) {
         $o .= '<div class="tabs" role="tablist">';

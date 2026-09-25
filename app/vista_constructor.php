@@ -11,6 +11,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $L = textos_legales();
     $datos = ['modo' => $modo, 'config' => $c, 'slug' => $slug, 'csrf' => $csrf,
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
+        'fuentes' => array_map(fn($f) => ['nombre' => $f[0], 'titulos' => $f[1], 'nombres' => $f[3], 'estilo' => $f[4]], FUENTES),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
         'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
@@ -91,6 +92,9 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'La paleta cambia los colores de toda la web y podéis cambiarla cuando queráis. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
         <div class="c-temas" id="temas" role="radiogroup" aria-label="Paleta"></div>
         <hr class="c-hr">
+        <span class="overline overline-bronze">Tipografía</span>
+        <div class="c-fuentes" id="fuentes" role="radiogroup" aria-label="Tipografía"></div>
+        <hr class="c-hr">
         <span class="overline overline-bronze">Decoración</span>
         <p class="c-ayuda">La estructura de adornos de vuestra web. Combina con cualquier paleta.</p>
         <div class="c-decos" id="decos" role="radiogroup" aria-label="Decoración"></div>
@@ -124,11 +128,12 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         </div>
         <div class="c-tarjeta">
           <p class="c-sub">Convite <small>(opcional)</small></p>
+          <label class="c-check"><input type="checkbox" id="convMismo"> <span>El convite es en el mismo sitio</span></label>
           <div class="c-fila">
-            <label class="c-campo c-crece"><span>Lugar</span><input data-k="convite.lugar" maxlength="120"></label>
+            <label class="c-campo c-crece" data-si-otro-sitio><span>Lugar</span><input data-k="convite.lugar" maxlength="120"></label>
             <label class="c-campo c-hora"><span>Hora</span><input type="time" data-k="convite.hora"></label>
           </div>
-          <label class="c-campo"><span>Dirección</span><input data-k="convite.direccion" maxlength="160"></label>
+          <label class="c-campo" data-si-otro-sitio><span>Dirección</span><input data-k="convite.direccion" maxlength="160"></label>
         </div>
       </div>
 

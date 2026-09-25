@@ -107,6 +107,20 @@
 .c-tema:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--e1); background: #fffdf8; }
 .c-tema:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
 
+@font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 500; font-display: swap; src: url(fonts/CormorantGaramond.woff2) format('woff2'); }
+@font-face { font-family: 'Great Vibes'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/GreatVibes.woff2) format('woff2'); }
+/* tipografía: muestra con los nombres */
+.c-fuentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-fuente { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px 10px; border-radius: var(--r-lg);
+  background: var(--surface-low); border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.c-fuente input { position: absolute; opacity: 0; pointer-events: none; }
+.c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; }
+.c-fuente small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
+.c-fuente:hover { border-color: var(--line); }
+.c-fuente:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--e1); background: #fffdf8; }
+.c-fuente:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
+[data-si-otro-sitio][hidden] { display: none; }
+
 /* decoración en tarjeta con miniatura */
 .c-decos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .c-deco { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
