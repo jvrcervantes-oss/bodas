@@ -311,8 +311,8 @@ function estudio_codigos(string $metodo): string {
 function estudio_pagina(string $titulo, string $cuerpo, bool $menu = true): string {
     $nav = $menu ? '<nav class="est-nav"><a href="' . h(estudio_url()) . '">Bodas</a><a href="' . h(estudio_url('pedidos')) . '">Pedidos</a><a href="' . h(estudio_url('codigos')) . '">Códigos de regalo</a><a href="' . h(estudio_url('salir')) . '">Salir</a></nav>' : '';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — Estudio · ' . h(MARCA) . '</title><meta name="robots" content="noindex, nofollow">'
+        . '<title>' . h($titulo) . ' — Estudio · ' . h(marca()) . '</title><meta name="robots" content="noindex, nofollow">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple estudio">'
-        . '<header class="s-top est-top"><a class="c-marca" href="' . h(estudio_url()) . '">' . il('flor') . '<span>Estudio · ' . h(MARCA) . '</span></a>' . $nav . '</header>'
+        . '<header class="s-top est-top"><a class="c-marca" href="' . h(estudio_url()) . '">' . il('flor') . '<span>Estudio · ' . h(marca()) . '</span></a>' . $nav . '</header>'
         . '<main class="simple-main est-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main></body></html>';
 }

@@ -81,7 +81,7 @@ function stripe_crea_checkout(string $token, string $slug, string $email, string
         'line_items[0][quantity]' => 1,
         'line_items[0][price_data][currency]' => 'eur',
         // IVA incluido: el Tax Rate de secrets.php tiene que ser INCLUSIVE (BOD-3)
-        'line_items[0][price_data][unit_amount]' => PRECIO_PACK_CENT,
+        'line_items[0][price_data][unit_amount]' => precio_esencial_cent(),
         'line_items[0][price_data][tax_behavior]' => 'inclusive',
         'line_items[0][price_data][product_data][name]' => 'Web de boda — ' . $slug . '.' . BASE_DOMAIN,
         'line_items[0][price_data][product_data][description]' => 'Creación y alojamiento hasta ' . MESES_ALOJAMIENTO . ' meses después de la boda',
@@ -100,7 +100,7 @@ function stripe_crea_checkout(string $token, string $slug, string $email, string
         $p += [
             'line_items[1][quantity]' => 1,
             'line_items[1][price_data][currency]' => 'eur',
-            'line_items[1][price_data][unit_amount]' => PRECIO_PACK_ATELIER_CENT - PRECIO_PACK_CENT,
+            'line_items[1][price_data][unit_amount]' => precio_atelier_cent() - precio_esencial_cent(),
             'line_items[1][price_data][tax_behavior]' => 'inclusive',
             'line_items[1][price_data][product_data][name]' => 'Diseño Atelier «' . ATELIER[$atelier]['nombre'] . '»',
             'metadata[atelier]' => $atelier,

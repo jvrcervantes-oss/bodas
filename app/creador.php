@@ -11,6 +11,8 @@ const CSP_CREADOR = "default-src 'self'; img-src 'self' data: blob:; style-src '
 function rutas_creador(string $ruta, string $metodo): void {
     // Panel del estudio (solo el owner): app/estudio.php
     if ($ruta === 'estudio' || strpos($ruta, 'estudio/') === 0) { rutas_estudio(trim(substr($ruta, 7), '/'), $metodo); return; }
+    // El Padrino (CEO autónomo, servicio aparte): app/padrino.php, solo con token
+    if (strpos($ruta, 'api/padrino/') === 0) { rutas_padrino(substr($ruta, 12), $metodo); return; }
     switch ($ruta) {
         case '':
             header('Content-Security-Policy: ' . CSP_CREADOR);
@@ -26,7 +28,7 @@ function rutas_creador(string $ruta, string $metodo): void {
             $E = empresa();
             // Sin titular, NIF y domicilio (BOD-1) los textos saldrían con huecos: se dice la verdad
             if (!empresa_completa()) {
-                echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(MARCA) . ' todavía no está a la venta. '
+                echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(marca()) . ' todavía no está a la venta. '
                     . 'Publicaremos aquí el texto completo, con los datos de quién presta el servicio, antes de abrir la contratación.</p>'
                     . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
                 return;
@@ -159,7 +161,8 @@ function api_pagar(string $metodo): void {
     $c['foto'] = $fr === '';
     escribe_json($pend . '/config.json', $c);
     $L = textos_legales();
-    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'aceptacion' => [
+    // Precio congelado al abrir el pedido: si El Padrino lo cambia con el pago abierto, manda este
+    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => precio_total_cent($c), 'aceptacion' => [
         'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $L['check_condiciones'] ?? '',
         'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
     ]]);
@@ -261,9 +264,9 @@ function listo_muestra(array $ped): void {
 /** Página sencilla del creador (legales, éxito). */
 function pagina_simple(string $titulo, string $cuerpo): string {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(MARCA) . '</title><meta name="robots" content="noindex">'
+        . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="robots" content="noindex">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
-        . '<header class="s-top"><a class="c-marca" href="' . BASE_PATH . '/">' . il('flor') . '<span>' . h(MARCA) . '</span></a></header>'
+        . '<header class="s-top"><a class="c-marca" href="' . BASE_PATH . '/">' . il('flor') . '<span>' . h(marca()) . '</span></a></header>'
         . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main>' . pie_creador() . '</body></html>';
 }
 

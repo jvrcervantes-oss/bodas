@@ -37,7 +37,7 @@ function il(string $n, string $cls = 'i'): string {
 
 function pagina_landing(): string {
     $total = euros(precio_total_cent());
-    $totalAtelier = euros(PRECIO_PACK_ATELIER_CENT);
+    $totalAtelier = euros(precio_atelier_cent());
     $E = empresa();
     $paletas = array_map(fn($t) => $t[2], TEMAS);
     $ejemplo = 'lucia-y-marcos.' . BASE_DOMAIN;
@@ -58,10 +58,10 @@ function pagina_landing(): string {
 <meta charset="UTF-8">
 <?php if (OCULTO): ?><meta name="robots" content="noindex, nofollow">
 <?php endif; ?><meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= h(MARCA) ?> — La web de vuestra boda con confirmación de asistencia</title>
+<title><?= h(marca()) ?> — La web de vuestra boda con confirmación de asistencia</title>
 <meta name="description" content="Cread la web de vuestra boda en un rato: confirmación de asistencia con menú y alergias, mapa de la ceremonia y el convite, galería, libro de invitados, música y lista de bodas. Desde <?= h($total) ?> en un pago único.">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
-<meta property="og:title" content="<?= h(MARCA) ?> — La web de vuestra boda">
+<meta property="og:title" content="<?= h(marca()) ?> — La web de vuestra boda">
 <meta property="og:description" content="Confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Pago único de <?= h($total) ?>.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="<?= h(url_creador('assets/img/landing/demo-escritorio.webp')) ?>">
@@ -72,7 +72,7 @@ function pagina_landing(): string {
 
 <header class="l-top">
   <div class="l-top-in">
-    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
     <nav class="l-nav" aria-label="Secciones">
       <a href="#incluye">Qué incluye</a>
       <a href="#pasos">Cómo funciona</a>
@@ -108,7 +108,7 @@ function pagina_landing(): string {
         <div class="l-marco">
           <img class="l-marco-fondo" src="<?= BASE_PATH ?>/assets/img/landing/papel.webp" alt="" width="1376" height="768">
           <figure class="l-movil">
-            <img src="<?= BASE_PATH ?>/assets/img/landing/demo-movil.webp" alt="Ejemplo de web de boda creada con <?= h(MARCA) ?>: portada con los nombres, la fecha y la cuenta atrás" width="390" height="780">
+            <img src="<?= BASE_PATH ?>/assets/img/landing/demo-movil.webp" alt="Ejemplo de web de boda creada con <?= h(marca()) ?>: portada con los nombres, la fecha y la cuenta atrás" width="390" height="780">
           </figure>
           <span class="l-ejemplo">Ejemplo</span>
         </div>
@@ -346,7 +346,7 @@ function pagina_landing(): string {
 
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
-    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
     <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>

@@ -45,6 +45,8 @@ defined('STRIPE_API')   || define('STRIPE_API', 'https://api.stripe.com');
 
 // Precio: dos packs con IVA INCLUIDO, fijados por el owner el 25-sep-2026 (antes 100 € + IVA).
 // El total es el dato; la base y la cuota salen hacia atrás. Nunca llega del cliente.
+// Son el valor POR DEFECTO: el vigente lo lee precio_*_cent() (app/padrino.php), que El Padrino
+// puede cambiar dentro de límites fijados en código.
 const PRECIO_PACK_CENT = 12500;          // Esencial
 const PRECIO_PACK_ATELIER_CENT = 19500;  // Atelier (diseño de autor + animaciones)
 const IVA_PCT = 21;
@@ -54,7 +56,8 @@ const IVA_PCT = 21;
 const MESES_ALOJAMIENTO = 2;
 const PRODUCTO = 'bodas';              // marca de propiedad en la metadata de Stripe
 // Nombre comercial del producto. "Vowly" (el de la maqueta de Stitch) está cogido por
-// competidores directos (25-sep-2026); el owner elige entre las propuestas. Una sola constante.
+// competidores directos (25-sep-2026). Desde el 25-sep la elige El Padrino (owner con veto) y vive
+// en DATA_DIR/padrino/marca.json: se lee con marca(); esta constante es solo el valor por defecto.
 const MARCA = 'Bodas by AxisWorks';
 
 $__dd = str_replace('\\', '/', realpath(DATA_DIR) ?: DATA_DIR) . '/';
@@ -253,8 +256,11 @@ function fecha_borrado(string $ymd): string {
 function euros(int $cent): string { return number_format($cent / 100, 2, ',', '.') . ' €'; }
 /** Total con IVA de una boda: la única fuente del precio. */
 function precio_total_cent(?array $c = null): int {
-    return (($c['atelier'] ?? '') !== '') ? PRECIO_PACK_ATELIER_CENT : PRECIO_PACK_CENT;
+    return (($c['atelier'] ?? '') !== '') ? precio_atelier_cent() : precio_esencial_cent();
 }
 /** Cuota de IVA contenida en un total (la misma cuenta que hace Stripe con IVA incluido, línea a línea). */
 function iva_de(int $total): int { return (int) round($total * IVA_PCT / (100 + IVA_PCT)); }
 function precio_base_cent(?array $c = null): int { return precio_total_cent($c) - iva_de(precio_total_cent($c)); }
+
+// Precio y marca vigentes (los decide El Padrino dentro de límites) y su API: lo cargan la web y el cron
+require_once APP_DIR . '/padrino.php';

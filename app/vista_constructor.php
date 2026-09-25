@@ -19,7 +19,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
-        'precio' => ['total' => euros(PRECIO_PACK_CENT), 'totalAtelier' => euros(PRECIO_PACK_ATELIER_CENT)],
+        'precio' => ['total' => euros(precio_esencial_cent()), 'totalAtelier' => euros(precio_atelier_cent())],
         'atelier' => array_map(fn($a) => ['nombre' => $a['nombre'], 'categoria' => $a['categoria'], 'desc' => $a['desc']], ATELIER),
         // En el panel, los diseños Atelier solo si la web se compró con uno (no hay pago de mejora)
         'atelierPermitido' => !$editar || !empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier']),
@@ -54,7 +54,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= h($titulo) ?> — <?= h(MARCA) ?></title>
+<title><?= h($titulo) ?> — <?= h(marca()) ?></title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/marca.css?v=<?= h(ASSETS_V) ?>">
 <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/crear.css?v=<?= h(ASSETS_V) ?>">
@@ -63,7 +63,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <script type="application/json" id="datos"><?= $json ?></script>
 
 <aside class="c-rail" aria-label="Menú">
-  <a class="c-marca" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+  <a class="c-marca" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
   <nav>
 <?php if ($editar): foreach ($rail as [$href, $ico, $txt, $on]): ?>
     <a href="<?= h($href) ?>"<?= $on ? ' aria-current="page"' : '' ?><?= $href === '/panel/factura' ? ' target="_blank" rel="noopener"' : '' ?>><?= il($ico) ?><?= h($txt) ?></a>
@@ -80,7 +80,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 
 <div class="c-main">
   <header class="c-top">
-    <a class="c-marca c-marca-movil" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
+    <a class="c-marca c-marca-movil" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
     <div class="c-top-tit">
       <div class="c-top-txt"><h1 id="proyNom">Vuestra boda</h1><small><i class="c-punto"></i><?= $editar ? 'Los cambios se publican al guardar' : 'Guardado en este navegador' ?></small></div>
       <span class="c-badge"><?= $editar ? 'Publicada' : 'Borrador' ?></span>

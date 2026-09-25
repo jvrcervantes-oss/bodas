@@ -270,7 +270,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 </head>
 <body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
 <?php if ($ctx['modo'] === 'preview'): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep) ?>
-<div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(MARCA) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
+<div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(marca()) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
 <?php endif; ?>
 
 <nav class="site-nav" aria-label="Navegación principal">

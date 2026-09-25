@@ -67,7 +67,9 @@ function alta_desde_sesion(array $s): ?array {
         $cfgPend = ($pend !== '' ? lee_json($pend . '/config.json') : null) ?? [];
         $at = (string) ($s['metadata']['atelier'] ?? $cfgPend['atelier'] ?? '');
         $ped['atelier'] = isset(ATELIER[$at]) ? $at : '';
-        if ($ped['importe']['total'] !== precio_total_cent($ped) || $ped['importe']['base'] !== precio_base_cent($ped)) {
+        // Contra el precio congelado en el pedido (El Padrino puede cambiar el vigente con el pago abierto)
+        $esperado = (int) ($meta['precio_cent'] ?? precio_total_cent($ped));
+        if ($ped['importe']['total'] !== $esperado || $ped['importe']['base'] !== $esperado - iva_de($esperado)) {
             registra('ALERTA importe cobrado distinto del precio', ['sid' => $sid, 'importe' => $ped['importe']]);
         }
         if (empty($ped['factura'])) {
