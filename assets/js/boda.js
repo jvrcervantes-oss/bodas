@@ -21,7 +21,34 @@
         }
       });
     }, { threshold: 0.15 });
-    els.forEach(function (el) { io.observe(el); });
+    els.forEach(function (el, i) { if (document.body.classList.contains('atelier')) el.style.setProperty('--i', i % 4); io.observe(el); });
+  }
+
+  // ---------- Entrada del pack Atelier ----------
+  // Una vez por visita (sessionStorage; si el navegador lo bloquea, se enseña igual) y nunca
+  // con «reducir movimiento». En la vista previa del creador se enseña cuando se pide.
+  function initEntrada() {
+    var en = document.getElementById('entrada');
+    if (!en) return;
+    var previa = en.hasAttribute('data-entrada-previa');
+    var clave = 'entrada-' + location.host;
+    var vista = false;
+    try { vista = sessionStorage.getItem(clave) === '1'; } catch (e) {}
+    var calma = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!previa && (vista || calma)) { en.remove(); return; }
+    document.body.classList.add('con-entrada');
+    function abrir() {
+      if (en.classList.contains('sale')) return;
+      try { sessionStorage.setItem(clave, '1'); } catch (e) {}
+      en.classList.add('sale');
+      document.body.classList.remove('con-entrada');
+      setTimeout(function () { en.remove(); }, 1400);
+    }
+    en.querySelectorAll('[data-entrada-abrir]').forEach(function (b) { b.addEventListener('click', abrir); });
+    en.querySelectorAll('[data-entrada-rsvp]').forEach(function (a) { a.addEventListener('click', function () { try { sessionStorage.setItem(clave, '1'); } catch (e) {} }); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') abrir(); });
+    var b = en.querySelector('[data-entrada-abrir]');
+    if (b) setTimeout(function () { try { b.focus({ preventScroll: true }); } catch (e) {} }, 1800);
   }
 
   // ---------- Menú a pantalla completa (móvil) ----------
@@ -170,10 +197,12 @@
       var m = Math.floor((diff % 3600000) / 60000);
       var s = Math.floor((diff % 60000) / 1000);
       function two(n) { return n < 10 ? '0' + n : String(n); }
-      days.textContent = two(d);
-      hours.textContent = two(h);
-      mins.textContent = two(m);
-      secs.textContent = two(s);
+      // Cada número que cambia da un pequeño salto (solo se nota en los diseños Atelier)
+      [[days, two(d)], [hours, two(h)], [mins, two(m)], [secs, two(s)]].forEach(function (p) {
+        if (p[0].textContent === p[1]) return;
+        p[0].textContent = p[1];
+        p[0].classList.remove('tic'); void p[0].offsetWidth; p[0].classList.add('tic');
+      });
     }
     tick();
     var timer = setInterval(tick, 1000);
@@ -404,6 +433,7 @@
     initCalendar();
     initGuests();
     initReveal();
+    initEntrada();
     initCountdown();
     initTabs();
     loadSongList();

@@ -107,6 +107,48 @@ function arte_atelier(array $c, string $A): string {
     }
 }
 
+/**
+ * Entrada del pack Atelier: portada a pantalla completa que se abre al llegar (una vez por
+ * visita; boda.js la quita si ya se vio o si el dispositivo pide menos movimiento).
+ */
+function entrada_atelier(array $c, array $ctx): string {
+    $A = $ctx['assets'];
+    $k = $c['atelier'];
+    $nom = nombres($c) ?: 'Vuestros nombres';
+    $rsvp = seccion_tipo($c, 'rsvp');
+    $img = fn($f, $cls = '') => '<img class="' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '.webp" alt="">';
+    switch ($k) {
+        case 'masia':
+            // Dos capas: el trazo tenue de lápiz y el grabado que se «dibuja» encima con una máscara
+            $arte = '<div class="en-dibujo">' . $img('masia', 'en-lapiz') . $img('masia', 'en-tinta') . '<span class="en-pluma"></span></div>';
+            break;
+        case 'lacre':
+            $arte = '<button type="button" class="en-sello" data-entrada-abrir aria-label="Abrir la invitación">' . $img('sello') . '<span>' . h(iniciales($c) ?: '♥') . '</span></button><p class="en-pista">Pulsad el sello para abrir</p>';
+            break;
+        case 'citricos':
+            $arte = '<div class="en-rama">' . $img('limones') . '</div><div class="en-petalos" aria-hidden="true">' . str_repeat('<i></i>', 14) . '</div>';
+            break;
+        case 'ceramica':
+            $arte = '<div class="en-azulejo">' . $img('talavera') . '<span class="en-mono">' . h(iniciales($c)) . '</span></div>';
+            break;
+        case 'herbario':
+            $arte = '<div class="en-cuadro">' . $img('herbario') . '</div>';
+            break;
+        default:
+            $arte = '<span class="en-sol" aria-hidden="true"></span>';
+    }
+    return '<div class="entrada entrada-' . h($k) . '" id="entrada" role="dialog" aria-label="Invitación" data-entrada' . (!empty($ctx['intro']) ? ' data-entrada-previa' : '') . '>'
+        . '<div class="en-papel"></div>'
+        . '<div class="en-contenido">' . $arte
+        . '<p class="en-kicker">' . h($c['portada']['invitacion'] ?: 'Nos casamos') . '</p>'
+        . '<h2 class="en-nombres">' . h($nom) . '</h2>'
+        . '<p class="en-fecha">' . h(linea_fecha($c)) . '</p>'
+        . '<div class="en-acciones">'
+        . ($k !== 'lacre' ? '<button type="button" class="btn en-boton" data-entrada-abrir>Abrir la invitación</button>' : '')
+        . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="en-rsvp" data-entrada-rsvp') . h($rsvp['titulo']) . '</a>' : '')
+        . '</div></div></div>';
+}
+
 function linea_fecha(array $c): string {
     $partes = array_filter([fecha_puntos($c['fecha']), $c['ciudad']]);
     return implode(' · ', $partes);
@@ -167,6 +209,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
   </div>
 </nav>
 <?= tab_bar($c, $ruta, $ctx) ?>
+<?php if ($c['atelier'] !== '' && $ruta === '' && ($ctx['modo'] !== 'preview' || !empty($ctx['intro']))) echo entrada_atelier($c, $ctx); ?>
 
 <?= $cuerpo ?>
 

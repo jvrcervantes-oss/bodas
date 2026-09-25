@@ -73,6 +73,7 @@
   var propioEl = document.getElementById('estiloPropio');
   function pintaAtelier() {
     atelierEl.querySelectorAll('input').forEach(function (r) { r.checked = (st.atelier || '') === r.value; });
+    var ve = document.getElementById('verEntrada'); if (ve) ve.hidden = !st.atelier;
     propioEl.classList.toggle('is-off', !!st.atelier);
     var t = document.getElementById('precioTotal');
     if (t) {
@@ -83,7 +84,12 @@
   }
   function tarjetaAtelier(k, a) {
     var r = el('input', { type: 'radio', name: 'atelier', value: k, disabled: k !== '' && !D.atelierPermitido });
-    r.addEventListener('change', function () { st.atelier = k; pintaAtelier(); cambio(); });
+    r.addEventListener('change', function () {
+      st.atelier = k; pintaAtelier();
+      // Al elegir un diseño Atelier se enseña su entrada una vez, en la portada
+      if (k) { conEntrada = true; if (typeof irAPagina === 'function' && pagina !== 'inicio') { pagina = 'inicio'; } }
+      cambio();
+    });
     var muestra = k ? el('img', { class: 'c-atelier-img', src: '/assets/img/atelier/muestra-' + k + '.webp', alt: '', loading: 'lazy' })
       : el('span', { class: 'c-atelier-img c-atelier-propio', text: 'Aa' });
     return el('label', { class: 'c-atelier-card' + (r.disabled ? ' is-bloq' : '') }, [r, muestra,
@@ -541,9 +547,11 @@
   var scrollY = 0;
   var pideN = 0;
 
+  var conEntrada = false;   // la entrada del pack Atelier solo se reproduce cuando se pide
   function previa() {
     var n = ++pideN;
-    fetch(URL_PREVIA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: st, pagina: pagina }) })
+    var intro = conEntrada; conEntrada = false;
+    fetch(URL_PREVIA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: st, pagina: pagina, intro: intro }) })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (n !== pideN || !j.ok) return;
@@ -575,6 +583,7 @@
     if (d.tipo === 'scroll' && typeof d.y === 'number') scrollY = d.y;
     if (d.tipo === 'ir' && typeof d.pagina === 'string') { irAPagina(d.pagina); sigueEnEditor(d.pagina); }
   });
+  document.getElementById('verEntrada').addEventListener('click', function () { conEntrada = true; pagina = 'inicio'; scrollY = 0; previa(); });
   paginaSel.addEventListener('change', function () { irAPagina(paginaSel.value); sigueEnEditor(paginaSel.value); });
 
   function irAPagina(ruta) {

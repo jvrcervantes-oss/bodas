@@ -229,6 +229,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <span class="c-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="c-url" id="urlPrevia"><?= h(($slug !== '' ? $slug : 'vuestra-web') . '.' . BASE_DOMAIN) ?></span>
           <select id="paginaSel" aria-label="Página de la vista previa"></select>
+          <button type="button" class="c-ver-entrada" id="verEntrada" hidden>▶ Ver entrada</button>
           <div class="c-disp" role="group" aria-label="Dispositivo de la vista previa">
             <button type="button" data-disp="escritorio" aria-pressed="false">Escritorio</button>
             <button type="button" data-disp="movil" aria-pressed="true">Móvil</button>
