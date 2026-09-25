@@ -56,7 +56,10 @@ function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''
     if (!is_array($in)) json_response(['ok' => false], 400);
     $c = normaliza_config($in['config'] ?? []);
     $pagina = clean_str($in['pagina'] ?? '', 40);
+    // Mapa: en el panel se ve el último guardado; en el creador anónimo, solo el hueco (no se generan mapas sin sesión)
+    $mapa = $firmaSlug !== '' ? mapa_de($firmaSlug) : null;
     $ctx = ['modo' => 'preview', 'assets' => $assets, 'foto' => '', 'firma_slug' => $firmaSlug, 'intro' => !empty($in['intro']),
+        'mapa' => $mapa ? ['src' => '/mapa.webp?v=' . substr($mapa['id'], 0, 8), 'pines' => $mapa['pines']] : null,
         'libro' => $firmaSlug !== '' ? libro_entradas($firmaSlug) : []];
     $html = render_pagina($c, $pagina === 'inicio' ? '' : $pagina, $ctx);
     if ($html === null) $html = render_pagina($c, '', $ctx);

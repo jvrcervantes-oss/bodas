@@ -35,6 +35,7 @@ $pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
 <h2>Quién más los ve</h2>
 <p>Las respuestas de asistencia y las canciones solo las ven <?= h($pareja) ?>, desde su panel privado con contraseña, y quienes les ayuden a organizar la boda (por ejemplo, el catering) en lo que necesiten. Los mensajes y fotos del libro y la galería los ve cualquiera que tenga el enlace y el código de la boda; la web no aparece en buscadores. AxisWorks usa a Hostinger para alojar la web. Tus datos no se venden ni se ceden a nadie más.</p>
 <p>Esta web no usa analítica. Solo usa una cookie técnica: si escribes el código de la boda para ver la galería o el libro, lo recuerda durante 60 días para no pedírtelo cada vez.</p>
+<p>El mapa de la ceremonia y el convite es una imagen que hace AxisWorks con datos de OpenStreetMap: al verlo, tu navegador no se conecta con nadie más. Para situar los sitios, la dirección del lugar (no la tuya) se consulta una vez en el buscador de OpenStreetMap (Fundación OpenStreetMap, Reino Unido). Los botones «Ver mapa» abren Google Maps y, desde ese momento, se aplica la política de privacidad de Google.</p>
 
 <h2>Tus derechos</h2>
 <p>Puedes pedir ver tus datos, corregirlos, borrarlos, limitar su uso, oponerte o recibirlos en un formato que puedas llevar a otro sitio. Escribe a <?= h($b['email']) ?>. Si no obtienes respuesta, puedes escribir a AxisWorks (<?= h($E['email']) ?>), que avisará a <?= h($pareja) ?> y les ayudará a atenderte.</p>

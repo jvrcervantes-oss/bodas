@@ -77,3 +77,9 @@ img { max-width: 100%; }
 .overline-bronze { color: var(--bronze); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; scroll-behavior: auto !important; } }
+
+/* Barra de scroll fina y de la marca (la de Windows por defecto rompía el estudio, 25-sep-2026) */
+html, .c-editor { scrollbar-width: thin; scrollbar-color: rgb(168 134 74 / .45) transparent; }
+html::-webkit-scrollbar, .c-editor::-webkit-scrollbar { width: 8px; }
+html::-webkit-scrollbar-thumb, .c-editor::-webkit-scrollbar-thumb { background: rgb(168 134 74 / .4); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+html::-webkit-scrollbar-track, .c-editor::-webkit-scrollbar-track { background: transparent; }

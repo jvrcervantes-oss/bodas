@@ -1,7 +1,6 @@
 app/config.local.php
 _dev/
 Backups/
-# Tipografías de autor comerciales: licencia pendiente (BOD-8) y repo público.
-# Se suben al servidor aparte; solo su .htaccess va en git.
+# Tipografías de autor comerciales: nunca en el repo público (se suben aparte con licencia).
 assets/fonts/premium/*
 !assets/fonts/premium/.htaccess

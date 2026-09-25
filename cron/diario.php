@@ -13,6 +13,7 @@ require __DIR__ . '/../app/core.php';
 require __DIR__ . '/../app/schema.php';
 require __DIR__ . '/../app/render.php';
 require __DIR__ . '/../app/alta.php';
+require __DIR__ . '/../app/mapa.php';
 
 $hoy = date('Y-m-d');
 $n = ['archivadas' => 0, 'pendientes' => 0, 'reservas' => 0, 'rl' => 0];
@@ -32,6 +33,17 @@ foreach (glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: [] as $d) {
     escribe_json($d . '/config.json', $c);
     registra('boda archivada: datos de invitados borrados', ['slug' => basename($d), 'fecha' => $c['fecha']]);
     $n['archivadas']++;
+}
+
+// 3. Mapas que quedaron pendientes (Nominatim o las teselas fallaron al guardar). Uno tras otro:
+//    las peticiones a OSM ya van de una en una y a 1/s (políticas de OSMF).
+$n['mapas'] = 0;
+foreach (glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: [] as $d) {
+    $m = lee_json($d . '/mapa.json');
+    if (!$m || empty($m['pendiente'])) continue;
+    $c = lee_json($d . '/config.json');
+    if (!$c || ($c['_estado'] ?? '') === 'archivada') continue;
+    if (mapa_actualiza(basename($d), normaliza_config($c)) === 'ok') $n['mapas']++;
 }
 
 foreach (glob(dir_datos('pendientes', '*'), GLOB_ONLYDIR) ?: [] as $d) {

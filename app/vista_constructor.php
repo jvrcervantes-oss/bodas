@@ -143,6 +143,8 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
             <label class="c-campo c-hora"><span>Hora</span><input type="time" data-k="ceremonia.hora"></label>
           </div>
           <label class="c-campo"><span>Dirección</span><input data-k="ceremonia.direccion" maxlength="160"></label>
+          <label class="c-campo"><span>Punto exacto en el mapa</span><input data-k="ceremonia.coords" maxlength="400" inputmode="url" autocomplete="off">
+            <small>Opcional, solo si la chincheta del mapa no cae en su sitio: pegad el enlace de Google Maps (el largo, el de la barra del navegador) o las coordenadas. Los enlaces cortos maps.app.goo.gl no sirven.</small></label>
         </div>
         <div class="c-tarjeta">
           <p class="c-sub">Convite <small>(opcional)</small></p>
@@ -152,6 +154,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
             <label class="c-campo c-hora"><span>Hora</span><input type="time" data-k="convite.hora"></label>
           </div>
           <label class="c-campo" data-si-otro-sitio><span>Dirección</span><input data-k="convite.direccion" maxlength="160"></label>
+          <label class="c-campo" data-si-otro-sitio><span>Punto exacto en el mapa</span><input data-k="convite.coords" maxlength="400" inputmode="url" autocomplete="off"></label>
         </div>
       </div>
 

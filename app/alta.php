@@ -100,6 +100,7 @@ function alta_desde_sesion(array $s): ?array {
         if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
         // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
         escribe_json($d . '/pedido.json', ['session_id' => $sid, 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
+        mapa_actualiza($slug, normaliza_config($cfg)); // si falla, queda pendiente para el cron
         $enlace = panel_nuevo_enlace($slug);
         $ped['estado'] = 'creada';
         escribe_json($fPedido, $ped);

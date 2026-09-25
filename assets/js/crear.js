@@ -838,7 +838,12 @@
       .then(function (r) { return r.json(); })
       .then(function (j) {
         guardar.disabled = false;
-        if (j.ok) { est.textContent = 'Guardado. Ya está publicado.'; foto.blob = null; foto.quitar = false; return; }
+        if (j.ok) {
+          // El mapa se rehace al guardar: si no encuentra la dirección, que lo sepan ellos y no los invitados
+          var avisoMapa = { 'sin-sitio': ' No encontramos la dirección en el mapa: revisadla o pegad el punto exacto en «Ceremonia y convite».',
+            pendiente: ' El mapa se está preparando; saldrá en la web como tarde mañana.', error: ' El mapa no se ha podido preparar; lo reintentamos.' }[j.mapa] || '';
+          est.textContent = 'Guardado. Ya está publicado.' + avisoMapa; foto.blob = null; foto.quitar = false; return;
+        }
         est.textContent = '';
         muestraFaltan(j.faltan || {}, [j.error || 'No se ha podido guardar.']);
       })

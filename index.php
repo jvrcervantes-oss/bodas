@@ -11,6 +11,7 @@ require __DIR__ . '/app/schema.php';
 require __DIR__ . '/app/render.php';
 require __DIR__ . '/app/foto.php';
 require __DIR__ . '/app/alta.php';
+require __DIR__ . '/app/mapa.php';
 require __DIR__ . '/app/creador.php';
 require __DIR__ . '/app/landing.php';
 require __DIR__ . '/app/vista_constructor.php';

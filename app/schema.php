@@ -31,22 +31,12 @@ const FUENTES = [
     'moderna'     => ['Moderna',     "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", 'normal'],
 ];
 
-// Tipografías de autor: SOLO en el Pack Atelier (owner, 25-sep-2026). Sustituyen a las letras
-// del diseño elegido (null = se queda la del diseño).
-// Los woff2 comerciales viven en assets/fonts/premium/, FUERA de git y fuera del ZIP: el repo es
-// público y entregar el fichero es redistribuirlo. Si el fichero no está en el servidor, la opción
-// no existe (ni se vende ni se enseña bloqueada). Licencia pendiente del owner: BOD-8.
-// Fuera del catálogo: Adelia y Artifact, sin á é í ó ú ñ (un «Lucía» saldría con letras de otra fuente).
-const FUENTES_AUTOR = [
-    'awesome' => ['nombre' => 'Awesome Serif', 'nota' => 'Serif editorial con Montserrat',
-        'titulos' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'textos' => "'Montserrat', system-ui, sans-serif",
-        'nombres' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'estilo' => 'normal',
-        'archivos' => ['premium/as-r-5e8c.woff2' => ['Awesome Serif', 'normal']]],
-    'awesome-cursiva' => ['nombre' => 'Awesome Serif cursiva', 'nota' => 'Nombres en cursiva editorial',
-        'titulos' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'textos' => "'Montserrat', system-ui, sans-serif",
-        'nombres' => "'Awesome Serif', 'Playfair Display', Georgia, serif", 'estilo' => 'italic',
-        'archivos' => ['premium/as-r-5e8c.woff2' => ['Awesome Serif', 'normal'], 'premium/as-i-5e8c.woff2' => ['Awesome Serif', 'italic']]],
-];
+// Tipografías de autor: SOLO en el Pack Atelier. Vacío desde el 25-sep-2026: el owner mandó quitar
+// las que no tenían licencia (Awesome Serif, Adelia, Artifact; las dos últimas, además, sin á é í ó ú ñ).
+// Para añadir una: licencia de producto/SaaS por escrito, cobertura del español comprobada, el woff2
+// en assets/fonts/premium/ fuera de git y del ZIP, y su entrada aquí:
+// 'clave' => ['nombre', 'nota', 'titulos', 'textos', 'nombres', 'estilo', 'archivos' => ['premium/x.woff2' => [familia, estilo]]]
+const FUENTES_AUTOR = [];
 
 /** Las tipografías de autor cuyos ficheros están de verdad en este servidor. */
 function fuentes_autor(): array {
@@ -163,8 +153,8 @@ function config_inicial(): array {
         'fuente' => 'clasica',
         'atelier' => '',
         'fuente_autor' => '',
-        'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
-        'convite' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'mismo' => false],
+        'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'coords' => ''],
+        'convite' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'coords' => '', 'mismo' => false],
         'portada' => [
             'invitacion' => 'Tenemos el placer de invitaros a nuestra boda',
             'titulo' => 'Os damos la bienvenida',
@@ -321,7 +311,9 @@ function normaliza_config($in): array {
     $c['fuente_autor'] = ($c['atelier'] !== '' && isset(fuentes_autor()[$in['fuente_autor'] ?? ''])) ? $in['fuente_autor'] : '';
     foreach (['ceremonia', 'convite'] as $k) {
         $e = is_array($in[$k] ?? null) ? $in[$k] : [];
-        $c[$k] = ['lugar' => clean_str($e['lugar'] ?? '', 120), 'direccion' => clean_str($e['direccion'] ?? '', 160), 'hora' => norm_hora($e['hora'] ?? '')];
+        // coords: enlace de Google Maps o «lat, lon» por si la dirección no cae en su sitio (se lee, nunca se pide)
+        $c[$k] = ['lugar' => clean_str($e['lugar'] ?? '', 120), 'direccion' => clean_str($e['direccion'] ?? '', 160), 'hora' => norm_hora($e['hora'] ?? ''),
+            'coords' => clean_str($e['coords'] ?? '', 400)];
     }
     // Convite en el mismo sitio que la ceremonia: el lugar y la dirección SIEMPRE se toman de
     // la ceremonia (se recalculan en cada normalización, no pueden desviarse)
@@ -329,6 +321,7 @@ function normaliza_config($in): array {
     if ($c['convite']['mismo']) {
         $c['convite']['lugar'] = $c['ceremonia']['lugar'];
         $c['convite']['direccion'] = $c['ceremonia']['direccion'];
+        $c['convite']['coords'] = $c['ceremonia']['coords'];
     }
     $po = is_array($in['portada'] ?? null) ? $in['portada'] : [];
     $c['portada'] = ['invitacion' => clean_str($po['invitacion'] ?? '', 120), 'titulo' => clean_str($po['titulo'] ?? '', 80),

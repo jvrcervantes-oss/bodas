@@ -347,6 +347,25 @@ function tab_bar(array $c, string $ruta, array $ctx): string {
     return $o . '</ul></nav>';
 }
 
+/**
+ * El mapita de ubicaciones: imagen hecha en el servidor (app/mapa.php) y las chinchetas en
+ * HTML, del color del diseño. En la vista previa del creador no hay mapa real (no se generan
+ * mapas sin sesión): se enseña un hueco que lo explica.
+ */
+function bloque_mapa(array $c, array $ctx): string {
+    if (trim($c['ceremonia']['lugar'] . $c['ceremonia']['direccion'] . $c['convite']['lugar'] . $c['convite']['direccion']) === '') return '';
+    $m = $ctx['mapa'] ?? null;
+    if (!$m) {
+        if ($ctx['modo'] !== 'preview') return '';
+        return '<figure class="mapa mapa-hueco rv"><div class="mapa-lienzo"><span>El mapa con vuestras ubicaciones aparece aquí al publicar la web.</span></div></figure>';
+    }
+    $o = '<figure class="mapa rv"><div class="mapa-lienzo"><img src="' . h($m['src']) . '" alt="Mapa con ' . h(implode(' y ', array_map(fn($p) => mb_strtolower($p['t'], 'UTF-8'), $m['pines']))) . '" width="' . 960 . '" height="' . 540 . '" loading="lazy">';
+    foreach ($m['pines'] as $i => $p) {
+        $o .= '<span class="mapa-pin" style="left:' . (float) $p['x'] . '%;top:' . (float) $p['y'] . '%"><i aria-hidden="true"></i><b>' . h($p['t']) . '</b></span>';
+    }
+    return $o . '</div><figcaption>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">Colaboradores de OpenStreetMap</a></figcaption></figure>';
+}
+
 function mapa_q(array $lugar): string {
     return trim($lugar['lugar'] . ' ' . $lugar['direccion']);
 }
@@ -430,6 +449,7 @@ function pagina_inicio(array $c, array $ctx): string {
       <span class="kicker">Itinerario</span>
       <h2 class="section-title"><?= $c['convite']['lugar'] !== '' ? 'Ceremonia y convite' : 'Ceremonia' ?></h2>
     </div>
+    <?= bloque_mapa($c, $ctx) ?>
     <div class="event-list">
 <?php foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot):
         $e = $c[$k];
@@ -548,7 +568,7 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
     $intro = parrafos($d['texto'] ?? '', 'lede');
     switch ($s['tipo']) {
         case 'rsvp': return envoltorio($s['titulo'], $intro . form_rsvp($c, $s, $ctx));
-        case 'informacion': return envoltorio($s['titulo'], $intro . pagina_informacion($c) . tarjeta_menu($c));
+        case 'informacion': return envoltorio($s['titulo'], $intro . bloque_mapa($c, $ctx) . pagina_informacion($c) . tarjeta_menu($c));
         case 'transporte': return envoltorio($s['titulo'], $intro . bloque_transporte($c, $s, $ctx));
         case 'hoteles': return envoltorio($s['titulo'], $intro . lista_hoteles($d));
         case 'regalos': return envoltorio($s['titulo'], $intro . bloque_regalos($c, $d));

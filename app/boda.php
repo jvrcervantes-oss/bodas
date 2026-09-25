@@ -15,7 +15,9 @@ const MAX_INVITADOS = 15;
 
 function ctx_live(string $slug): array {
     $f = dir_boda($slug) . '/foto.webp';
-    return ['modo' => 'live', 'assets' => '/assets/', 'slug' => $slug, 'foto' => is_file($f) ? '/foto?v=' . filemtime($f) : ''];
+    $m = mapa_de($slug);
+    return ['modo' => 'live', 'assets' => '/assets/', 'slug' => $slug, 'foto' => is_file($f) ? '/foto?v=' . filemtime($f) : '',
+        'mapa' => $m ? ['src' => '/mapa.webp?v=' . substr($m['id'], 0, 8), 'pines' => $m['pines']] : null];
 }
 
 function rutas_boda(string $slug, string $ruta, string $metodo): void {
@@ -26,6 +28,7 @@ function rutas_boda(string $slug, string $ruta, string $metodo): void {
 
     if (strpos($ruta, 'panel') === 0) { rutas_panel($slug, $c, $ruta, $metodo); return; }
     if ($ruta === 'foto') { sirve_foto(dir_boda($slug) . '/foto.webp'); }
+    if ($ruta === 'mapa.webp') { sirve_mapa($slug); }
     if ($archivada) {
         if ($ruta === 'privacidad') { echo render_pagina($c, 'privacidad', ctx_live($slug)); return; }
         if ($ruta !== '') { header('Location: /', true, 302); exit; }
@@ -395,7 +398,13 @@ function panel_zip(string $slug, array $c): void {
     $z = new ZipArchive();
     $z->open($tmp, ZipArchive::OVERWRITE);
     $foto = dir_boda($slug) . '/foto.webp';
-    $ctx = ['modo' => 'zip', 'assets' => 'assets/', 'slug' => $slug, 'foto' => is_file($foto) ? 'foto.webp' : ''];
+    $mapa = mapa_de($slug);
+    $ctx = ['modo' => 'zip', 'assets' => 'assets/', 'slug' => $slug, 'foto' => is_file($foto) ? 'foto.webp' : '',
+        'mapa' => $mapa ? ['src' => 'mapa.webp', 'pines' => $mapa['pines']] : null];
+    if ($mapa) {
+        $z->addFile(dir_datos('mapas', $mapa['id'] . '.webp'), 'mapa.webp');
+        $z->addFromString('LICENCIA-MAPA.txt', "El mapa (mapa.webp) está hecho con datos de OpenStreetMap.\n© Colaboradores de OpenStreetMap — https://www.openstreetmap.org/copyright\n");
+    }
     $z->addFromString('index.html', (string) render_pagina($c, '', $ctx));
     foreach ($c['secciones'] as $s) if ($s['on']) $z->addFromString($s['ruta'] . '.html', (string) render_pagina($c, $s['ruta'], $ctx));
     // La galería sí va en el ZIP (son fotos de la pareja); el libro no (contenido de terceros, Legal #87)
@@ -449,5 +458,7 @@ function panel_guardar(string $slug, array $actual, string $metodo): void {
     $c = galeria_filtra_existentes($slug, $c);
     escribe_json($d . '/config.json', $c);
     galeria_limpia_huerfanas($slug, $c);
-    json_response(['ok' => true]);
+    // El mapa se rehace aquí (con sesión), nunca desde la vista previa anónima (revisión previa #92)
+    $mapa = mapa_actualiza($slug, $c);
+    json_response(['ok' => true, 'mapa' => $mapa]);
 }
