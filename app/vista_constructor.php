@@ -16,9 +16,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
-        'precio' => ['base' => euros(PRECIO_BASE_CENT), 'iva' => IVA_PCT, 'total' => euros(precio_total_cent()),
-            'baseAtelier' => euros(PRECIO_BASE_CENT + PRECIO_ATELIER_CENT), 'totalAtelier' => euros(con_iva(PRECIO_BASE_CENT + PRECIO_ATELIER_CENT)),
-            'extraAtelier' => euros(PRECIO_ATELIER_CENT)],
+        'precio' => ['total' => euros(PRECIO_PACK_CENT), 'totalAtelier' => euros(PRECIO_PACK_ATELIER_CENT)],
         'atelier' => array_map(fn($a) => ['nombre' => $a['nombre'], 'categoria' => $a['categoria'], 'desc' => $a['desc']], ATELIER),
         // En el panel, los diseños Atelier solo si la web se compró con uno (no hay pago de mejora)
         'atelierPermitido' => !$editar || !empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier']),
@@ -103,7 +101,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <span class="overline overline-bronze">Arte y papelería</span>
         <h2>Elegid el estilo</h2>
         <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'Empezad por un diseño de autor de la Colección Atelier o montad el vuestro con paleta, letra y adornos. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
-        <div class="c-atelier-cab"><span class="overline">Colección Atelier</span><span class="c-atelier-precio">+<?= h(euros(PRECIO_ATELIER_CENT)) ?> + IVA</span></div>
+        <div class="c-atelier-cab"><span class="overline">Colección Atelier</span><span class="c-atelier-precio">Pack Atelier · <?= h(euros(PRECIO_PACK_ATELIER_CENT)) ?></span></div>
         <div class="c-atelier" id="atelier" role="radiogroup" aria-label="Diseños Atelier"></div>
         <div id="estiloPropio">
         <hr class="c-hr">
@@ -209,7 +207,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <li><?= il('check', 'i i-sm') ?>Editar la web cuando queráis y descargarla en ZIP</li>
           <li><?= il('check', 'i i-sm') ?>Online hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda</li>
         </ul>
-        <div class="c-precio"><b id="precioTotal"><?= h(euros(precio_total_cent())) ?></b><span id="precioDesglose"><?= h(euros(PRECIO_BASE_CENT)) ?> + IVA <?= (int) IVA_PCT ?> % · pago único</span></div>
+        <div class="c-precio"><b id="precioTotal"><?= h(euros(precio_total_cent())) ?></b><span id="precioDesglose">Pack Esencial · IVA incluido · pago único</span></div>
         <label class="c-check"><input type="checkbox" id="aceptoCond"> <span><?= h($L['check_condiciones'] ?? '') ?> <a href="/condiciones" target="_blank" rel="noopener">Leer condiciones</a></span></label>
         <label class="c-check"><input type="checkbox" id="aceptoDes"> <span><?= h($L['check_desistimiento'] ?? '') ?></span></label>
         <ul class="c-faltan" id="faltan" aria-live="polite"></ul>

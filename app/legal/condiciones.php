@@ -35,7 +35,7 @@
 <p>El contrato se celebra en castellano. Guardamos una copia de estas condiciones con su fecha de versión; si la necesitáis, pedídnosla por email.</p>
 
 <h2>5. Precio y pago</h2>
-<p><?= h(euros(precio_total_cent())) ?> (<?= h(euros(PRECIO_BASE_CENT)) ?> + IVA <?= (int) IVA_PCT ?> %), o <?= h(euros(con_iva(PRECIO_BASE_CENT + PRECIO_ATELIER_CENT))) ?> (<?= h(euros(PRECIO_BASE_CENT + PRECIO_ATELIER_CENT)) ?> + IVA) si elegís un diseño de la Colección Atelier. Pago único. No hay cuotas ni renovaciones. El pago se hace con tarjeta u otro medio que ofrezca Stripe en su página; nosotros no vemos ni guardamos los datos de la tarjeta. Recibiréis una factura simplificada por email.</p>
+<p>Dos packs, IVA incluido: Esencial, <?= h(euros(PRECIO_PACK_CENT)) ?>; y Atelier, con un diseño de autor de la colección y sus animaciones, <?= h(euros(PRECIO_PACK_ATELIER_CENT)) ?>. Pago único. No hay cuotas ni renovaciones. El pago se hace con tarjeta u otro medio que ofrezca Stripe en su página; nosotros no vemos ni guardamos los datos de la tarjeta. Recibiréis una factura simplificada por email.</p>
 
 <h2>6. Plazo de entrega</h2>
 <p>La web se publica en cuanto Stripe confirma el pago, normalmente en segundos. Si pasado un rato no la veis o no os llega el email, escribid a <?= h($E['email']) ?> y lo resolvemos.</p>

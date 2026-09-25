@@ -68,7 +68,7 @@ function stripe_verifica_webhook(string $payload, string $cabecera, ?int $ahora 
  * navegador solo llega el token del pedido pendiente.
  */
 function stripe_crea_checkout(string $token, string $slug, string $email, string $atelier = ''): array {
-    $taxRate = (string) secreto('stripe_tax_rate'); // Tax Rate 21 % exclusive creado en el dashboard
+    $taxRate = (string) secreto('stripe_tax_rate'); // Tax Rate 21 % INCLUSIVE creado en el dashboard
     $p = [
         'mode' => 'payment',
         'locale' => 'es',
@@ -80,8 +80,9 @@ function stripe_crea_checkout(string $token, string $slug, string $email, string
         'cancel_url' => url_creador('crear?cancelado=1'),
         'line_items[0][quantity]' => 1,
         'line_items[0][price_data][currency]' => 'eur',
-        'line_items[0][price_data][unit_amount]' => PRECIO_BASE_CENT,
-        'line_items[0][price_data][tax_behavior]' => 'exclusive',
+        // IVA incluido: el Tax Rate de secrets.php tiene que ser INCLUSIVE (BOD-3)
+        'line_items[0][price_data][unit_amount]' => PRECIO_PACK_CENT,
+        'line_items[0][price_data][tax_behavior]' => 'inclusive',
         'line_items[0][price_data][product_data][name]' => 'Web de boda — ' . $slug . '.' . BASE_DOMAIN,
         'line_items[0][price_data][product_data][description]' => 'Creación y alojamiento hasta ' . MESES_ALOJAMIENTO . ' meses después de la boda',
         'payment_intent_data[description]' => 'Web de boda ' . $slug,
@@ -99,8 +100,8 @@ function stripe_crea_checkout(string $token, string $slug, string $email, string
         $p += [
             'line_items[1][quantity]' => 1,
             'line_items[1][price_data][currency]' => 'eur',
-            'line_items[1][price_data][unit_amount]' => PRECIO_ATELIER_CENT,
-            'line_items[1][price_data][tax_behavior]' => 'exclusive',
+            'line_items[1][price_data][unit_amount]' => PRECIO_PACK_ATELIER_CENT - PRECIO_PACK_CENT,
+            'line_items[1][price_data][tax_behavior]' => 'inclusive',
             'line_items[1][price_data][product_data][name]' => 'Diseño Atelier «' . ATELIER[$atelier]['nombre'] . '»',
             'metadata[atelier]' => $atelier,
         ];

@@ -56,7 +56,9 @@ function alta_desde_sesion(array $s): ?array {
             'nombre' => (string) ($s['customer_details']['name'] ?? ''),
             'pais_facturacion' => (string) ($s['customer_details']['address']['country'] ?? ''),
             'pais_tarjeta' => (string) ($s['payment_intent']['latest_charge']['payment_method_details']['card']['country'] ?? ''),
-            'importe' => ['base' => (int) ($s['amount_subtotal'] ?? 0), 'iva' => (int) ($s['total_details']['amount_tax'] ?? 0), 'total' => (int) ($s['amount_total'] ?? 0)],
+            // IVA incluido: el subtotal de Stripe ya lleva la cuota dentro; base = total - cuota
+            'importe' => ['base' => (int) ($s['amount_total'] ?? 0) - (int) ($s['total_details']['amount_tax'] ?? 0),
+                'iva' => (int) ($s['total_details']['amount_tax'] ?? 0), 'total' => (int) ($s['amount_total'] ?? 0)],
             'aceptacion' => $meta['aceptacion'] ?? null,
             'estado' => 'cobrada',
         ];

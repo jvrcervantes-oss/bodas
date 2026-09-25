@@ -24,10 +24,10 @@ defined('SCHEME')       || define('SCHEME', 'https');
 // Stripe: la base de la API se puede apuntar a un simulador local para pruebas.
 defined('STRIPE_API')   || define('STRIPE_API', 'https://api.stripe.com');
 
-// Precio: fijado por el owner el 25-sep-2026 — 100 € + IVA. Nunca llega del cliente.
-const PRECIO_BASE_CENT = 10000;
-// Diseños de la Colección Atelier: +50 € sobre la base, IVA aparte como el resto (owner, 25-sep-2026)
-const PRECIO_ATELIER_CENT = 5000;
+// Precio: dos packs con IVA INCLUIDO, fijados por el owner el 25-sep-2026 (antes 100 € + IVA).
+// El total es el dato; la base y la cuota salen hacia atrás. Nunca llega del cliente.
+const PRECIO_PACK_CENT = 12500;          // Esencial
+const PRECIO_PACK_ATELIER_CENT = 19500;  // Atelier (diseño de autor + animaciones)
 const IVA_PCT = 21;
 // Tras la fecha de la boda: la web pasa a agradecimiento y se borran los datos de invitados.
 // 2 meses por decisión del owner (25-sep-2026; antes 4): menos tiempo guardando alergias (dato de salud).
@@ -230,9 +230,10 @@ function fecha_borrado(string $ymd): string {
     return $t ? $t->modify('+' . MESES_ALOJAMIENTO . ' months')->format('Y-m-d') : '';
 }
 function euros(int $cent): string { return number_format($cent / 100, 2, ',', '.') . ' €'; }
-/** Base imponible de una boda: la única fuente del precio (el navegador nunca lo manda). */
-function precio_base_cent(?array $c = null): int {
-    return PRECIO_BASE_CENT + (($c['atelier'] ?? '') !== '' ? PRECIO_ATELIER_CENT : 0);
+/** Total con IVA de una boda: la única fuente del precio. */
+function precio_total_cent(?array $c = null): int {
+    return (($c['atelier'] ?? '') !== '') ? PRECIO_PACK_ATELIER_CENT : PRECIO_PACK_CENT;
 }
-function con_iva(int $base): int { return $base + intdiv($base * IVA_PCT, 100); }
-function precio_total_cent(?array $c = null): int { return con_iva(precio_base_cent($c)); }
+/** Cuota de IVA contenida en un total (la misma cuenta que hace Stripe con IVA incluido, línea a línea). */
+function iva_de(int $total): int { return (int) round($total * IVA_PCT / (100 + IVA_PCT)); }
+function precio_base_cent(?array $c = null): int { return precio_total_cent($c) - iva_de(precio_total_cent($c)); }

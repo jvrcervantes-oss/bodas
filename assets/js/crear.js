@@ -77,7 +77,7 @@
     var t = document.getElementById('precioTotal');
     if (t) {
       t.textContent = st.atelier ? D.precio.totalAtelier : D.precio.total;
-      document.getElementById('precioDesglose').textContent = (st.atelier ? D.precio.baseAtelier : D.precio.base) + ' + IVA ' + D.precio.iva + ' % · pago único' + (st.atelier ? ' · incluye diseño Atelier' : '');
+      document.getElementById('precioDesglose').textContent = (st.atelier ? 'Pack Atelier' : 'Pack Esencial') + ' · IVA incluido · pago único';
       var pb = document.getElementById('pagar'); if (pb && !pb.disabled) pb.textContent = 'Pagar ' + t.textContent;
     }
   }

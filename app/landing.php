@@ -37,12 +37,12 @@ function il(string $n, string $cls = 'i'): string {
 
 function pagina_landing(): string {
     $total = euros(precio_total_cent());
-    $base = euros(PRECIO_BASE_CENT);
+    $totalAtelier = euros(PRECIO_PACK_ATELIER_CENT);
     $E = empresa();
     $paletas = array_map(fn($t) => $t[2], TEMAS);
     $ejemplo = 'lucia-y-marcos.' . BASE_DOMAIN;
     $faq = [
-        ['¿Cuánto cuesta?', "$total ($base + IVA), en un solo pago cuando publicáis la web. Crearla y verla en la vista previa no cuesta nada: podéis probar todo lo que queráis antes de pagar. No hay suscripción."],
+        ['¿Cuánto cuesta?', "Dos packs, IVA incluido: Esencial, $total; y Atelier, $totalAtelier, con un diseño de autor animado. Se paga una sola vez, cuando publicáis la web. Crearla y verla en la vista previa no cuesta nada: podéis probar todo lo que queráis antes de pagar. No hay suscripción."],
         ['¿Podemos cambiar la web después de publicarla?', 'Sí. Desde vuestro panel privado editáis textos, secciones, fotos y colores cuando queráis, y los cambios se ven al momento.'],
         ['¿Cómo llega la web a los invitados?', "Con un enlace del tipo $ejemplo que compartís por WhatsApp, email o donde queráis. No tienen que instalar nada ni registrarse."],
         ['¿Podemos usar nuestro propio dominio?', 'Por ahora la web vive en un subdominio nuestro. Desde el panel podéis descargarla en ZIP y subirla a vuestro dominio, aunque esa copia no recoge confirmaciones.'],
@@ -232,13 +232,13 @@ function pagina_landing(): string {
           <span class="overline">Colección Atelier</span>
           <h2>Diseños de autor, <em>como papelería fina</em>.</h2>
         </div>
-        <p>Seis diseños con su paleta, sus letras y su ilustración pintada a mano. Se eligen en el primer paso del constructor por <?= h(euros(PRECIO_ATELIER_CENT)) ?> + IVA más.</p>
+        <p>Seis diseños con su paleta, sus letras y su ilustración pintada a mano. Con animaciones propias y una entrada que se abre como una invitación. Pack Atelier: <?= h($totalAtelier) ?>, IVA incluido.</p>
       </div>
       <div class="l-atelier-grid">
 <?php foreach (ATELIER as $k => $a): ?>
         <article class="l-atelier-card">
           <div class="l-atelier-img"><img src="/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
-          <div class="l-atelier-meta"><span class="overline overline-bronze"><?= h($a['categoria']) ?></span><span class="l-atelier-precio"><?= h(euros(con_iva(PRECIO_BASE_CENT + PRECIO_ATELIER_CENT))) ?> <small>IVA incl.</small></span></div>
+          <div class="l-atelier-meta"><span class="overline overline-bronze"><?= h($a['categoria']) ?></span><span class="l-atelier-precio"><?= h($totalAtelier) ?> <small>IVA incl.</small></span></div>
           <h3><?= h($a['nombre']) ?></h3>
           <p><?= h($a['desc']) ?></p>
           <a class="b-btn b-dark l-atelier-btn" href="/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a>
@@ -259,23 +259,38 @@ function pagina_landing(): string {
   </section>
 
   <section class="l-sec" id="precio">
-    <div class="l-wrap l-precio">
-      <div>
+    <div class="l-wrap">
+      <div class="l-sec-cab l-centro">
         <span class="overline">Precio</span>
-        <h2>Un pago, <em>todo incluido</em>.</h2>
-        <p>Sin planes ni extras. Pagáis cuando la web está como queréis.</p>
+        <h2>Dos packs, <em>todo incluido</em>.</h2>
+        <p>Sin suscripciones ni extras. Pagáis una vez, cuando la web está como queréis.</p>
       </div>
-      <div class="l-precio-card">
-        <div class="l-precio-cifra"><b><?= h($total) ?></b><span><?= h($base) ?> + IVA · pago único</span></div>
-        <ul>
-          <li><?= il('check', 'i i-sm') ?>Web publicada al momento, con todas vuestras secciones</li>
-          <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
-          <li><?= il('check', 'i i-sm') ?>Panel privado con Excel para el catering</li>
-          <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
-          <li><?= il('check', 'i i-sm') ?>Diseño de la Colección Atelier: +<?= h(euros(PRECIO_ATELIER_CENT)) ?> + IVA</li>
-          <li><?= il('check', 'i i-sm') ?>Online hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda</li>
-        </ul>
-        <a class="b-btn b-rose" href="/crear">Empezar gratis <?= il('flecha', 'i i-sm i-arrow') ?></a>
+      <div class="l-packs">
+        <div class="l-precio-card">
+          <span class="overline overline-bronze">Esencial</span>
+          <div class="l-precio-cifra"><b><?= h($total) ?></b><span>IVA incluido · pago único</span></div>
+          <ul>
+            <li><?= il('check', 'i i-sm') ?>Web publicada al momento, con todas vuestras secciones</li>
+            <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
+            <li><?= il('check', 'i i-sm') ?>Panel privado con Excel para el catering</li>
+            <li><?= il('check', 'i i-sm') ?><?= count(TEMAS) ?> paletas, 4 tipografías y 4 decoraciones</li>
+            <li><?= il('check', 'i i-sm') ?>Galería y libro de invitados</li>
+            <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
+          </ul>
+          <a class="b-btn b-paper" href="/crear">Empezar gratis</a>
+        </div>
+        <div class="l-precio-card l-precio-atelier">
+          <span class="overline">Atelier · diseño de autor</span>
+          <div class="l-precio-cifra"><b><?= h($totalAtelier) ?></b><span>IVA incluido · pago único</span></div>
+          <ul>
+            <li><?= il('check', 'i i-sm') ?>Todo lo del pack Esencial</li>
+            <li><?= il('check', 'i i-sm') ?>Uno de los <?= count(ATELIER) ?> diseños de la Colección Atelier</li>
+            <li><?= il('check', 'i i-sm') ?>Entrada animada: la invitación se abre al llegar</li>
+            <li><?= il('check', 'i i-sm') ?>Ilustraciones y fotos que aparecen con movimiento</li>
+            <li><?= il('check', 'i i-sm') ?>Detalles animados propios de cada diseño</li>
+          </ul>
+          <a class="b-btn b-rose" href="/#atelier">Ver la Colección Atelier <?= il('flecha', 'i i-sm i-arrow') ?></a>
+        </div>
       </div>
     </div>
   </section>
