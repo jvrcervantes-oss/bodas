@@ -1,0 +1,50 @@
+# Webs de boda: una sola app. Todo lo que no sea un fichero real de /assets va a
+# index.php, que decide por el Host si es el creador o una boda.
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Nada de app/, cron/ ni ficheros ocultos por la web (el código no tiene
+  # secretos, pero tampoco tiene por qué servirse)
+  RewriteRule ^(app|cron|Backups|_dev)(/|$) - [R=404,L]
+  RewriteRule (^|/)\. - [R=404,L]
+
+  RewriteCond %{REQUEST_URI} ^/assets/
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.php [L,QSA]
+</IfModule>
+
+# En /assets nunca se ejecuta PHP
+<FilesMatch "\.(php|phtml|phar)$">
+  <If "%{REQUEST_URI} =~ m#^/assets/#">
+    Require all denied
+  </If>
+</FilesMatch>
+
+# La vista previa del creador vive en un iframe aislado (origen opaco): las fuentes
+# son peticiones CORS y sin esta cabecera no cargan. Son fuentes OFL públicas.
+<FilesMatch "\.woff2$">
+  <IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+  </IfModule>
+</FilesMatch>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 30 days"
+  ExpiresByType application/javascript "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>

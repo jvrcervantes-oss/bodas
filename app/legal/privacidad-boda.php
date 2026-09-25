@@ -1,0 +1,35 @@
+<?php
+// Privacidad para invitados de una boda (segunda capa). Version 2026-09-25.
+// Se incluye dentro de un <main> ya maquetado. $b (datos de la boda) y $E los define la app.
+$pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
+?>
+<h1>Privacidad para invitados</h1>
+<p>Este aviso explica qué pasa con los datos que das al confirmar tu asistencia o pedir canciones en esta web.</p>
+
+<h2>Quién usa tus datos</h2>
+<p>Los datos los recogen y los usan <?= h($pareja) ?>, para organizar su boda. Son los responsables. Contacto: <?= h($b['email']) ?>.</p>
+<p>La web la aloja AxisWorks (<?= h($E['titular']) ?>), que guarda los datos por encargo de <?= h($pareja) ?> y no los usa para nada propio.</p>
+
+<h2>Qué datos y para qué</h2>
+<ul>
+  <li>De cada persona del grupo: nombre, si es adulto o niño, y menú. Sirven para saber cuántos seréis y encargar la comida.</li>
+  <li>Alergias o intolerancias: son datos de salud. Solo se recogen si das tu consentimiento explícito en el formulario, y solo se usan para adaptar el menú. Pueden pasarse al servicio de catering para ese fin.</li>
+  <li>Del grupo: si asistís, si usáis el autobús y un dato de contacto. Sirven para organizar el transporte y poder avisaros si hay cambios.</li>
+  <li>Canciones que pides o votas: para preparar la música de la fiesta.</li>
+</ul>
+<p>Base legal: el consentimiento que das al enviar el formulario, que en el caso de las alergias es explícito. Puedes retirarlo cuando quieras escribiendo a <?= h($b['email']) ?>; lo que ya se hizo antes sigue siendo válido.</p>
+
+<h2>Si respondes por otras personas</h2>
+<p>Si das datos de otras personas de tu grupo, confirmas que se lo has contado y que están de acuerdo, o que eres su padre, madre o tutor si son menores. Enséñales este aviso.</p>
+
+<h2>Cuánto tiempo se guardan</h2>
+<p>Hasta el <?= h($b['borrado']) ?>. Ese día se borran automáticamente todas las respuestas y canciones de esta web.</p>
+<p><?= h($pareja) ?> pueden haber descargado antes una copia en Excel para organizar la boda. Esa copia la guardan y la borran ellos.</p>
+
+<h2>Quién más los ve</h2>
+<p>Solo <?= h($pareja) ?>, desde su panel privado con contraseña, y quienes les ayuden a organizar la boda (por ejemplo, el catering) en lo que necesiten. AxisWorks usa a Hostinger para alojar la web. Tus datos no se venden ni se ceden a nadie más.</p>
+<p>Esta web no usa cookies ni analítica para los invitados.</p>
+
+<h2>Tus derechos</h2>
+<p>Puedes pedir ver tus datos, corregirlos, borrarlos, limitar su uso, oponerte o recibirlos en un formato que puedas llevar a otro sitio. Escribe a <?= h($b['email']) ?>. Si no obtienes respuesta, puedes escribir a AxisWorks (<?= h($E['email']) ?>), que avisará a <?= h($pareja) ?> y les ayudará a atenderte.</p>
+<p>También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>

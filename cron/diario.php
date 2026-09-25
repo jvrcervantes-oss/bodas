@@ -1,0 +1,47 @@
+<?php
+// Tarea diaria (cron de Hostinger: php cron/diario.php). Solo por línea de comandos.
+//  1. Bodas cuya fecha + MESES_ALOJAMIENTO ya pasó: se BORRAN las respuestas de
+//     invitados, las canciones y la foto, y la web queda como página de agradecimiento.
+//     Es lo que prometen las condiciones, el encargo de tratamiento y la privacidad
+//     de cada boda (Legal, 25-sep): si esto no corre, los tres textos mienten.
+//  2. Pedidos pendientes de más de 2 h, reservas de nombre caducadas y contadores
+//     de límite viejos.
+declare(strict_types=1);
+if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+
+require __DIR__ . '/../app/core.php';
+require __DIR__ . '/../app/schema.php';
+require __DIR__ . '/../app/render.php';
+require __DIR__ . '/../app/alta.php';
+
+$hoy = date('Y-m-d');
+$n = ['archivadas' => 0, 'pendientes' => 0, 'reservas' => 0, 'rl' => 0];
+
+foreach (glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: [] as $d) {
+    $c = lee_json($d . '/config.json');
+    if (!$c || ($c['_estado'] ?? '') === 'archivada') continue;
+    $borrado = fecha_borrado((string) ($c['fecha'] ?? ''));
+    if ($borrado === '' || $borrado > $hoy) continue;
+    borra_arbol($d . '/guardado');
+    borra_arbol($d . '/historial');
+    @unlink($d . '/foto.webp');
+    $c['_estado'] = 'archivada';
+    $c['foto'] = false;
+    escribe_json($d . '/config.json', $c);
+    registra('boda archivada: datos de invitados borrados', ['slug' => basename($d), 'fecha' => $c['fecha']]);
+    $n['archivadas']++;
+}
+
+foreach (glob(dir_datos('pendientes', '*'), GLOB_ONLYDIR) ?: [] as $d) {
+    $m = lee_json($d . '/meta.json');
+    if (($m['creado'] ?? 0) < time() - 7200) { borra_arbol($d); $n['pendientes']++; }
+}
+foreach (glob(dir_datos('reservas', '*.json')) ?: [] as $f) {
+    if ((lee_json($f)['hasta'] ?? 0) < time()) { @unlink($f); $n['reservas']++; }
+}
+foreach (glob(dir_datos('rl', '*.json')) ?: [] as $f) {
+    $d = lee_json($f) ?? [];
+    // Cada contador sabe su ventana (los votos duran un año: "un voto por canción")
+    if (($d['desde'] ?? 0) + ($d['v'] ?? 86400) < time()) { @unlink($f); $n['rl']++; }
+}
+echo json_encode($n), "\n";

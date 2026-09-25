@@ -1,0 +1,570 @@
+<?php
+// El ÚNICO generador de HTML de una boda. Lo usan la web publicada, la vista previa
+// del creador y el ZIP descargable: si hubiera dos, la pareja vería una cosa y
+// descargaría otra. Todo texto de la pareja o de un invitado pasa por h(); no existe
+// ningún campo de HTML libre.
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/schema.php';
+
+/**
+ * $ctx:
+ *  modo    'live' | 'preview' | 'zip'
+ *  assets  prefijo de /assets (live: '/assets/', zip: 'assets/', preview: url absoluta del creador)
+ *  foto    url de la foto o '' si no hay (en preview la pone el creador por postMessage)
+ *  slug    nombre de la web (para el ZIP: enlaza a la versión alojada)
+ */
+function render_pagina(array $c, string $ruta, array $ctx): ?string {
+    $ctx += ['modo' => 'live', 'assets' => '/assets/', 'foto' => '', 'slug' => ''];
+    if ($ruta === '' || $ruta === 'inicio') {
+        $titulo = nombres($c) ?: 'Nuestra boda';
+        $cuerpo = pagina_inicio($c, $ctx);
+        $ruta = '';
+    } elseif ($ruta === 'privacidad') {
+        $titulo = 'Privacidad';
+        $cuerpo = pagina_privacidad($c, $ctx);
+    } else {
+        $s = seccion_por_ruta($c, $ruta);
+        if (!$s) return null;
+        $titulo = $s['titulo'];
+        $cuerpo = pagina_seccion($c, $s, $ctx);
+    }
+    return layout($c, $ruta, $titulo, $cuerpo, $ctx);
+}
+
+/** Enlace interno según el modo. */
+function enlace(string $ruta, array $ctx): string {
+    if ($ctx['modo'] === 'zip') return $ruta === '' ? 'index.html' : $ruta . '.html';
+    if ($ctx['modo'] === 'preview') return '#' . ($ruta === '' ? 'inicio' : $ruta);
+    return '/' . $ruta;
+}
+function a_interno(string $ruta, array $ctx, string $attrs = ''): string {
+    $extra = $ctx['modo'] === 'preview' ? ' data-ir="' . h($ruta === '' ? 'inicio' : $ruta) . '"' : '';
+    return '<a href="' . h(enlace($ruta, $ctx)) . '"' . $extra . ($attrs !== '' ? ' ' . $attrs : '') . '>';
+}
+
+function parrafos(string $t, string $clase = ''): string {
+    $out = '';
+    foreach (preg_split('/\n\s*\n|\n/', trim($t)) ?: [] as $p) {
+        $p = trim($p);
+        if ($p !== '') $out .= '<p' . ($clase !== '' ? ' class="' . $clase . '"' : '') . '>' . h($p) . '</p>';
+    }
+    return $out;
+}
+
+function ico(string $d, string $cls = 'ico'): string {
+    return '<svg class="' . $cls . '" viewBox="0 0 24 24" aria-hidden="true"><path d="' . $d . '"/></svg>';
+}
+const ICONOS = [
+    'rsvp' => 'M3 7h18v12H3zM3 7l9 6 9-6',
+    'informacion' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v6M12 7.5v.5',
+    'hoteles' => 'M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5',
+    'transporte' => 'M4 3h16v14H4zM4 11h16M7 17v3M17 17v3',
+    'regalos' => 'M3 8h18v4H3zM5 12v8h14v-8M12 8v12M12 8C10 4 6.5 4.5 7 7c.3 1.2 2.5 1 5 1zm0 0c2-4 5.5-3.5 5-1-.3 1.2-2.5 1-5 1z',
+    'musica' => 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
+    'dresscode' => 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z',
+    'libre' => 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',
+    'corazon' => 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
+    'flecha' => 'M5 12h14M13 6l6 6-6 6',
+    'mapa' => 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',
+    'casa' => 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+    'calendario' => 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4M9 15l2 2 4-4',
+];
+
+function tema_css(array $c): string {
+    $t = TEMAS[$c['tema']] ?? TEMAS['eucalipto'];
+    $rgb = function (string $hex): string {
+        return implode(' ', array_map('hexdec', str_split(ltrim($hex, '#'), 2)));
+    };
+    return ':root{--primary:' . $t[1] . ';--accent:' . $t[2] . ';--accent-hover:' . $t[3] . ';--secondary:' . $t[4]
+        . ';--sage:' . $t[5] . ';--sage-2:' . $t[6] . ';--sage-2-hover:' . $t[7] . ';--gold:' . $t[8]
+        . ';--on-dark:' . $t[9] . ';--on-dark-soft:' . $t[10]
+        . ';--primary-rgb:' . $rgb($t[1]) . ';--accent-rgb:' . $rgb($t[2]) . ';--on-dark-rgb:' . $rgb($t[9])
+        . ';--sage-2-rgb:' . $rgb($t[6]) . ';--sage-rgb:' . $rgb($t[5]) . '}';
+}
+
+function linea_fecha(array $c): string {
+    $partes = array_filter([fecha_puntos($c['fecha']), $c['ciudad']]);
+    return implode(' · ', $partes);
+}
+
+function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $ctx): string {
+    $A = $ctx['assets'];
+    $nom = nombres($c);
+    $secs = array_values(array_filter($c['secciones'], fn($s) => $s['on']));
+    $rsvp = seccion_tipo($c, 'rsvp');
+    $fechaTxt = $c['fecha'] !== '' ? ' — ' . fecha_larga($c['fecha'], false) : '';
+    ob_start(); ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><?= h($titulo === $nom ? $nom . $fechaTxt : $titulo . ' — ' . ($nom ?: 'Nuestra boda')) ?></title>
+<meta name="robots" content="noindex, nofollow">
+<?php if ($ctx['modo'] === 'preview'): ?><base href="<?= h($A) ?>"><?php endif; ?>
+<link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
+<style><?= tema_css($c) ?></style>
+</head>
+<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
+
+<nav class="site-nav" aria-label="Navegación principal">
+  <div class="nav-bar">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu" aria-label="Abrir menú"><?= ico('M4 7h16M4 12h16M4 17h16') ?></button>
+    <?= a_interno('', $ctx, 'class="nav-brand"') ?><span class="nav-names"><?= h($nom ?: 'Vuestros nombres') ?></span><span class="nav-sub">Nuestra boda</span></a>
+    <ul class="nav-links">
+<?php foreach ($secs as $s): if ($s['tipo'] === 'rsvp') continue; ?>
+      <li><?= a_interno($s['ruta'], $ctx, $ruta === $s['ruta'] ? 'aria-current="page"' : '') ?><?= h($s['titulo']) ?></a></li>
+<?php endforeach; ?>
+    </ul>
+<?php if ($rsvp): ?>
+    <?= a_interno($rsvp['ruta'], $ctx, 'class="btn nav-cta"') ?><?= h($rsvp['titulo']) ?></a>
+    <?= a_interno($rsvp['ruta'], $ctx, 'class="nav-heart" aria-label="' . h($rsvp['titulo']) . '"') ?><?= ico(ICONOS['corazon']) ?></a>
+<?php endif; ?>
+  </div>
+  <div class="nav-drawer" id="siteMenu">
+    <div class="drawer-head">
+      <span class="nav-names"><?= h($nom ?: 'Nuestra boda') ?></span>
+      <button class="nav-close" type="button" data-nav-close aria-label="Cerrar menú"><?= ico('M6 6l12 12M18 6 6 18') ?></button>
+    </div>
+    <ul>
+      <li><?= a_interno('', $ctx, $ruta === '' ? 'aria-current="page"' : '') ?><span>Inicio</span><?= ico(ICONOS['flecha']) ?></a></li>
+<?php foreach ($secs as $s): ?>
+      <li<?= $s['tipo'] === 'rsvp' ? ' class="drawer-rsvp"' : '' ?>><?= a_interno($s['ruta'], $ctx, $ruta === $s['ruta'] ? 'aria-current="page"' : '') ?><span><?= h($s['titulo']) ?></span><?= ico($s['tipo'] === 'rsvp' ? ICONOS['corazon'] : ICONOS['flecha']) ?></a></li>
+<?php endforeach; ?>
+    </ul>
+    <div class="drawer-foot">
+      <p class="mono"><?= h(iniciales($c)) ?></p>
+      <p class="kicker"><?= h(linea_fecha($c)) ?></p>
+    </div>
+  </div>
+</nav>
+<?= tab_bar($c, $ruta, $ctx) ?>
+
+<?= $cuerpo ?>
+
+<footer class="site-footer">
+  <div class="footer-mono" aria-hidden="true"><span class="rule"></span><span><?= h(iniciales($c)) ?></span><span class="rule"></span></div>
+<?php if ($c['portada']['pie'] !== ''): ?>
+  <p class="footer-thanks"><?= h($c['portada']['pie']) ?></p>
+<?php endif; ?>
+<?php if ($rsvp && $ruta !== $rsvp['ruta']): ?>
+  <?= a_interno($rsvp['ruta'], $ctx, 'class="btn"') ?><?= h($rsvp['titulo']) ?></a>
+<?php endif; ?>
+  <p class="kicker"><?= h(trim($nom . ' · ' . linea_fecha($c), ' ·')) ?></p>
+  <p class="footer-legal"><?= a_interno('privacidad', $ctx) ?>Privacidad</a></p>
+</footer>
+
+<?php if ($ctx['modo'] === 'preview'): ?>
+<script src="js/vista-previa.js?v=<?= h(ASSETS_V) ?>" defer></script>
+<?php endif; ?>
+<script src="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>js/boda.js?v=<?= h(ASSETS_V) ?>" defer></script>
+</body>
+</html>
+<?php
+    return (string) ob_get_clean();
+}
+
+function tab_bar(array $c, string $ruta, array $ctx): string {
+    $items = [['', 'Inicio', ICONOS['casa']]];
+    $rsvp = seccion_tipo($c, 'rsvp');
+    if ($rsvp) $items[] = [$rsvp['ruta'], 'RSVP', ICONOS['rsvp']];
+    foreach ($c['secciones'] as $s) {
+        if (!$s['on'] || $s['tipo'] === 'rsvp' || count($items) >= 5) continue;
+        $corto = ['regalos' => 'Regalos', 'informacion' => 'Info', 'dresscode' => 'Dress code'][$s['tipo']] ?? $s['titulo'];
+        $items[] = [$s['ruta'], mb_strimwidth($corto, 0, 11, '…', 'UTF-8'), ICONOS[$s['tipo']]];
+    }
+    $o = '<nav class="tab-bar" aria-label="Accesos rápidos"><ul>';
+    foreach ($items as [$r, $t, $i]) {
+        $o .= '<li>' . a_interno($r, $ctx, $ruta === $r ? 'aria-current="page"' : '') . ico($i) . h($t) . '</a></li>';
+    }
+    return $o . '</ul></nav>';
+}
+
+function mapa_q(array $lugar): string {
+    return trim($lugar['lugar'] . ' ' . $lugar['direccion']);
+}
+
+function pagina_inicio(array $c, array $ctx): string {
+    $A = $ctx['assets'];
+    $nom = nombres($c);
+    $po = $c['portada'];
+    $rsvp = seccion_tipo($c, 'rsvp');
+    $hayFoto = $c['foto'] && ($ctx['foto'] !== '' || $ctx['modo'] === 'preview');
+    $objetivo = $c['fecha'] !== '' ? $c['fecha'] . 'T' . ($c['ceremonia']['hora'] ?: '12:00') . ':00' : '';
+    ob_start(); ?>
+<main class="home">
+  <section class="hero<?= $hayFoto ? '' : ' hero--solo' ?>">
+    <div class="hero-left">
+      <img class="hero-sprig" src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140">
+      <div class="hero-text">
+<?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
+        <h1 class="hero-names"><?= h($nom ?: 'Vuestros nombres') ?></h1>
+        <div class="hero-date">
+          <span class="rule" aria-hidden="true"></span><span class="star" aria-hidden="true">✦</span>
+          <span class="kicker"><?= h(linea_fecha($c) ?: 'La fecha') ?></span>
+          <span class="star" aria-hidden="true">✦</span><span class="rule" aria-hidden="true"></span>
+        </div>
+      </div>
+    </div>
+<?php if ($hayFoto): ?>
+    <div class="mat rv">
+      <div class="mat-inner">
+        <div class="mat-photo"><img data-foto src="<?= h($ctx['foto']) ?>" alt="<?= h($nom) ?>" width="960" height="1280" loading="eager"></div>
+        <p class="mat-caption"><?= h(trim($nom . ' · ' . linea_fecha($c), ' ·')) ?></p>
+      </div>
+    </div>
+<?php endif; ?>
+  </section>
+
+<?php if ($po['titulo'] !== '' || $po['frase'] !== '' || $po['texto'] !== ''): ?>
+  <section class="letter rv">
+<?php if ($po['titulo'] !== ''): ?>    <h2 class="section-title"><?= h($po['titulo']) ?></h2>
+    <div class="mini-rule" aria-hidden="true"></div><?php endif; ?>
+<?php if ($po['frase'] !== ''): ?>    <p class="big"><?= h($po['frase']) ?></p><?php endif; ?>
+    <?= parrafos($po['texto']) ?>
+<?php if ($rsvp): ?>    <?= a_interno($rsvp['ruta'], $ctx, 'class="btn"') ?><?= ico(ICONOS['corazon'], 'ico ico-sm') ?><?= h($rsvp['titulo']) ?></a><?php endif; ?>
+  </section>
+<?php endif; ?>
+
+<?php if ($c['fecha'] !== ''): ?>
+  <section class="save-band">
+    <div class="save-card rv">
+      <span class="kicker">Guardad el momento</span>
+      <h2>Anotad la fecha</h2>
+      <p class="save-date-text"><?= h(ucfirst(fecha_larga($c['fecha']))) ?></p>
+      <div class="countdown" id="countdown" data-objetivo="<?= h($objetivo) ?>" aria-label="Cuenta atrás para la boda">
+        <div class="countdown-item"><b data-c="days">0</b><span>Días</span></div>
+        <div class="countdown-item"><b data-c="hours">0</b><span>Horas</span></div>
+        <div class="countdown-item"><b data-c="mins">0</b><span>Min</span></div>
+        <div class="countdown-item"><b data-c="secs">0</b><span>Seg</span></div>
+      </div>
+      <button class="btn cal-btn" type="button" id="calBtn" aria-expanded="false" aria-controls="calOptions"><?= ico(ICONOS['calendario'], 'ico ico-sm') ?>Añadir a mi calendario</button>
+      <div class="cal-options" id="calOptions" hidden>
+        <span class="kicker">Elige tu calendario</span>
+        <a href="<?= h(url_google_calendar($c)) ?>" target="_blank" rel="noopener noreferrer"><span><?= ico(ICONOS['calendario']) ?>Google Calendar</span><?= ico(ICONOS['flecha'], 'ico ico-sm') ?></a>
+        <a href="<?= h($ctx['modo'] === 'zip' ? 'boda.ics' : ($ctx['modo'] === 'preview' ? '#' : '/boda.ics')) ?>" download><span><?= ico('M6 2h12v20H6zM11 18h2') ?>Apple / Outlook (.ics)</span><?= ico('M12 4v11M7 10l5 5 5-5M5 20h14', 'ico ico-sm') ?></a>
+      </div>
+    </div>
+  </section>
+<?php endif; ?>
+
+  <section class="itinerary">
+    <div class="itinerary-head rv">
+      <span class="kicker">Itinerario</span>
+      <h2 class="section-title"><?= $c['convite']['lugar'] !== '' ? 'Ceremonia y convite' : 'Ceremonia' ?></h2>
+    </div>
+    <div class="event-list">
+<?php foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot):
+        $e = $c[$k];
+        if ($e['lugar'] === '' && $k === 'convite') continue; ?>
+      <article class="event-card rv">
+        <div class="event-top">
+          <div>
+            <span class="kicker"><?= h(trim(($e['hora'] !== '' ? $e['hora'] . ' · ' : '') . $rot)) ?></span>
+            <h3><?= h($e['lugar'] ?: 'Lugar de la ' . strtolower($rot)) ?></h3>
+<?php if ($e['direccion'] !== ''): ?>            <p class="where"><?= h($e['direccion']) ?></p><?php endif; ?>
+          </div>
+          <div class="icon-dot" aria-hidden="true"><?= ico($k === 'ceremonia' ? 'M12 2v4M10 4h4M6 21V11l6-4 6 4v10M3 21h18M10 21v-5h4v5' : 'M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6') ?></div>
+        </div>
+<?php if ($e['lugar'] !== ''): ?>
+        <a class="btn btn-soft" href="https://maps.google.com/?q=<?= h(rawurlencode(mapa_q($e))) ?>" target="_blank" rel="noopener noreferrer"><?= ico(ICONOS['mapa'], 'ico ico-sm') ?>Ver mapa · <?= h($rot) ?></a>
+<?php endif; ?>
+      </article>
+<?php endforeach; ?>
+    </div>
+  </section>
+
+  <section class="quick">
+    <div class="quick-grid">
+<?php foreach ($c['secciones'] as $s):
+        if (!$s['on'] || $s['tipo'] === 'informacion') continue;
+        $resumen = resumen($s['datos']['texto'] ?? '');
+        if ($s['tipo'] === 'rsvp'): ?>
+      <div class="q-card q-rsvp rv">
+        <div class="q-label"><?= ico(ICONOS['rsvp']) ?><span class="kicker" style="color:inherit">Confirmación</span></div>
+        <h3><?= h($s['titulo']) ?></h3>
+        <p><?= h($s['datos']['fecha_limite'] !== '' ? 'Por favor, confirmad antes del ' . fecha_larga($s['datos']['fecha_limite'], false) . '.' : ($resumen ?: 'Contadnos si venís y qué menú preferís.')) ?></p>
+        <?= a_interno($s['ruta'], $ctx, 'class="btn btn-light"') ?><?= h($s['titulo']) ?></a>
+      </div>
+<?php elseif ($s['tipo'] === 'musica'): ?>
+      <div class="q-card q-music rv">
+        <div>
+          <span class="kicker" style="margin-bottom:4px">¿Qué canción no puede faltar?</span>
+          <h3><?= h($s['titulo']) ?></h3>
+<?php if ($resumen !== ''): ?>          <p><?= h($resumen) ?></p><?php endif; ?>
+        </div>
+        <?= a_interno($s['ruta'], $ctx, 'class="round-btn" aria-label="Ir a ' . h($s['titulo']) . '"') ?><?= ico(ICONOS['musica']) ?></a>
+      </div>
+<?php else: ?>
+      <div class="q-card rv">
+        <div class="q-label"><?= ico(ICONOS[$s['tipo']]) ?><span class="kicker"><?= h(['hoteles' => 'Alojamiento', 'transporte' => 'Desplazamiento', 'regalos' => 'Detalle con nosotros', 'dresscode' => 'Código de vestimenta'][$s['tipo']] ?? 'Más información') ?></span></div>
+        <h3><?= h($s['titulo']) ?></h3>
+<?php if ($resumen !== ''): ?>        <p><?= h($resumen) ?></p><?php endif; ?>
+        <?= a_interno($s['ruta'], $ctx, 'class="link-arrow"') ?>Ver <?= h(mb_strtolower($s['titulo'], 'UTF-8')) ?> <?= ico(ICONOS['flecha'], 'ico ico-sm') ?></a>
+      </div>
+<?php endif; endforeach; ?>
+    </div>
+  </section>
+
+  <div class="sprig-foot" aria-hidden="true"><img src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140"></div>
+</main>
+<?php
+    return (string) ob_get_clean();
+}
+
+/** Primera frase de un texto, para las tarjetas de la portada. */
+function resumen(string $t, int $max = 140): string {
+    $t = trim((string) preg_replace('/\s+/', ' ', $t));
+    if ($t === '') return '';
+    if (preg_match('/^(.{20,}?[.!?])(\s|$)/u', $t, $m)) $t = $m[1];
+    return mb_strimwidth($t, 0, $max, '…', 'UTF-8');
+}
+
+function url_google_calendar(array $c): string {
+    if ($c['fecha'] === '') return '#';
+    $d = str_replace('-', '', $c['fecha']);
+    $fin = date('Ymd', strtotime($c['fecha'] . ' +1 day'));
+    $det = [];
+    foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $r) {
+        if ($c[$k]['lugar'] !== '') $det[] = $r . ($c[$k]['hora'] !== '' ? ' a las ' . $c[$k]['hora'] : '') . ' en ' . $c[$k]['lugar'] . '.';
+    }
+    return 'https://calendar.google.com/calendar/render?' . http_build_query([
+        'action' => 'TEMPLATE', 'text' => 'Boda de ' . nombres($c, ' y '), 'dates' => $d . '/' . $fin,
+        'details' => implode(' ', $det), 'location' => mapa_q($c['ceremonia']),
+    ]);
+}
+
+/** .ics de día completo: no hay hora de fin real (mismo criterio que EduCora, 24-sep). */
+function ics(array $c): string {
+    $esc = fn($s) => str_replace(["\\", ';', ',', "\n"], ["\\\\", '\;', '\,', '\n'], $s);
+    $d = str_replace('-', '', $c['fecha']);
+    $fin = date('Ymd', strtotime($c['fecha'] . ' +1 day'));
+    $det = [];
+    foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $r) {
+        if ($c[$k]['lugar'] !== '') $det[] = $r . ($c[$k]['hora'] !== '' ? ' a las ' . $c[$k]['hora'] : '') . ' en ' . $c[$k]['lugar'] . '.';
+    }
+    return "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//AxisWorks//Bodas//ES\r\nBEGIN:VEVENT\r\n"
+        . 'UID:' . $d . '-' . md5(nombres($c)) . "@axisworks.studio\r\n"
+        . 'DTSTAMP:' . gmdate('Ymd\THis\Z') . "\r\n"
+        . 'DTSTART;VALUE=DATE:' . $d . "\r\nDTEND;VALUE=DATE:" . $fin . "\r\n"
+        . 'SUMMARY:' . $esc('Boda de ' . nombres($c, ' y ')) . "\r\n"
+        . 'LOCATION:' . $esc(mapa_q($c['ceremonia'])) . "\r\n"
+        . 'DESCRIPTION:' . $esc(implode(' ', $det)) . "\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
+}
+
+function envoltorio(string $titulo, string $dentro, string $estilo = ''): string {
+    return '<main><div class="wrap"><section class="section rv"' . ($estilo !== '' ? ' style="' . $estilo . '"' : '') . '><h1>' . h($titulo) . '</h1><hr class="divider">' . $dentro . '</section></div></main>';
+}
+
+function pagina_seccion(array $c, array $s, array $ctx): string {
+    $d = $s['datos'];
+    $intro = parrafos($d['texto'] ?? '', 'lede');
+    switch ($s['tipo']) {
+        case 'rsvp': return envoltorio($s['titulo'], $intro . form_rsvp($c, $s, $ctx));
+        case 'informacion': return envoltorio($s['titulo'], $intro . pagina_informacion($c));
+        case 'hoteles': return envoltorio($s['titulo'], $intro . lista_hoteles($d));
+        case 'regalos': return envoltorio($s['titulo'], $intro . bloque_regalos($c, $d));
+        case 'musica': return envoltorio($s['titulo'], $intro . bloque_musica($ctx));
+        case 'dresscode': return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>', 'max-width:560px;margin:0 auto;');
+        default: return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>');
+    }
+}
+
+function pagina_informacion(array $c): string {
+    $o = '';
+    $tabs = [];
+    foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Banquete'] as $k => $r) {
+        if ($c[$k]['lugar'] !== '') $tabs[$k] = $r;
+    }
+    if (!$tabs) return '<div class="pending-note">Pronto os contamos dónde será.</div>';
+    $o .= '<div data-tabs>';
+    if (count($tabs) > 1) {
+        $o .= '<div class="tabs" role="tablist">';
+        $first = true;
+        foreach ($tabs as $k => $r) {
+            $o .= '<button class="tab-btn" type="button" role="tab" aria-selected="' . ($first ? 'true' : 'false') . '" data-target="tab-' . $k . '">' . h($r) . '</button>';
+            $first = false;
+        }
+        $o .= '</div>';
+    }
+    $first = true;
+    foreach ($tabs as $k => $r) {
+        $e = $c[$k];
+        $cuando = trim(($c['fecha'] !== '' ? fecha_larga($c['fecha'], false) : '') . ($e['hora'] !== '' ? ' — ' . $e['hora'] : ''), ' —');
+        $o .= '<div id="tab-' . $k . '" class="tab-panel' . ($first ? ' active' : '') . '" role="tabpanel">'
+            . '<div class="info-title">' . h(mb_strtoupper($r, 'UTF-8')) . '</div>'
+            . '<p class="info-text"><b>' . h($e['lugar']) . '</b>'
+            . ($e['direccion'] !== '' ? '<br>' . h($e['direccion']) : '')
+            . ($cuando !== '' ? '<br>' . h($cuando) : '') . '</p>'
+            . '<iframe class="map-frame" loading="lazy" referrerpolicy="no-referrer" title="Mapa: ' . h($e['lugar']) . '" src="https://maps.google.com/maps?q='
+            . h(rawurlencode(mapa_q($e))) . '&amp;z=15&amp;output=embed"></iframe></div>';
+        $first = false;
+    }
+    return $o . '</div>';
+}
+
+function lista_hoteles(array $d): string {
+    if (!$d['hoteles']) return '<div class="pending-note">Estamos cerrando los alojamientos. En cuanto los tengamos, los veréis aquí.</div>';
+    $o = '';
+    foreach ($d['hoteles'] as $ho) {
+        $o .= '<div class="hotel-card"><h3>' . h($ho['nombre']) . '</h3>';
+        if ($ho['zona'] !== '') $o .= '<p class="hotel-zona">' . h($ho['zona']) . '</p>';
+        if ($ho['nota'] !== '') $o .= parrafos($ho['nota']);
+        $links = [];
+        if ($ho['web'] !== '') $links[] = '<a class="btn btn-soft" href="' . h($ho['web']) . '" target="_blank" rel="noopener noreferrer nofollow">Ver web</a>';
+        if ($ho['telefono'] !== '') $links[] = '<a class="btn btn-soft" href="tel:' . h(preg_replace('/[^0-9+]/', '', $ho['telefono'])) . '">' . h($ho['telefono']) . '</a>';
+        if ($links) $o .= '<p class="hotel-links">' . implode(' ', $links) . '</p>';
+        $o .= '</div>';
+    }
+    return $o;
+}
+
+function bloque_regalos(array $c, array $d): string {
+    $o = '';
+    if ($d['iban'] !== '') {
+        $o .= '<div class="iban-box">';
+        if ($d['titular'] !== '') $o .= '<p><b>Titular:</b> ' . h($d['titular']) . '</p>';
+        $o .= '<p class="iban"><b>IBAN:</b> <span class="iban-num">' . h($d['iban']) . '</span></p>'
+            . '<button type="button" class="btn btn-soft copy-btn" data-copiar="' . h(str_replace(' ', '', $d['iban'])) . '">Copiar IBAN</button></div>';
+    }
+    if ($d['otro'] !== '') $o .= parrafos($d['otro'], 'lede');
+    $o .= '<p class="thanks-script">Muchísimas gracias</p>';
+    return $o;
+}
+
+function bloque_musica(array $ctx): string {
+    if ($ctx['modo'] === 'zip') return aviso_alojada($ctx, 'Proponed y votad canciones en nuestra web');
+    return '<form id="musicForm" class="stack" novalidate>'
+        . '<input type="text" name="web" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">'
+        . '<div class="field"><label for="musicArtista">Artista</label><input type="text" id="musicArtista" name="artista" maxlength="120" required></div>'
+        . '<div class="field"><label for="musicCancion">Canción</label><input type="text" id="musicCancion" name="cancion" maxlength="120" required></div>'
+        . '<div class="form-actions"><button type="submit" class="btn">Añadir canción</button></div>'
+        . '<div class="form-msg" role="alert" id="musicAddMsg"></div></form>'
+        . '<p class="lede" style="margin-top:var(--s5);margin-bottom:0;">Esta es la lista hasta el momento:</p>'
+        . '<div class="song-list" id="songList"><p class="song-empty" id="songListEmpty">Aún no hay canciones. ¿Rompes el hielo?</p></div>';
+}
+
+function aviso_alojada(array $ctx, string $txt): string {
+    $url = url_boda($ctx['slug'], '');
+    return '<div class="pending-note"><p>' . h($txt) . ':</p><p><a class="btn" href="' . h($url) . '">' . h(preg_replace('~^https?://~', '', rtrim($url, '/'))) . '</a></p></div>';
+}
+
+function textos_legales(): array {
+    static $t = null;
+    if ($t === null) {
+        $f = __DIR__ . '/legal/textos.php';
+        $t = is_file($f) ? (array) require $f : [];
+    }
+    return $t;
+}
+
+function form_rsvp(array $c, array $s, array $ctx): string {
+    if ($ctx['modo'] === 'zip') return aviso_alojada($ctx, 'Confirmad vuestra asistencia en nuestra web');
+    $d = $s['datos'];
+    $L = textos_legales();
+    $menus = '';
+    $menuTpl = '';
+    foreach ($d['menus'] as $i => $m) {
+        $menus .= '<label><input type="radio" data-f="menu" name="invitados[0][menu]" value="' . h($m) . '"' . ($i === 0 ? ' checked' : '') . '> ' . h(MENUS[$m]) . '</label>';
+        $menuTpl .= '<label><input type="radio" data-f="menu" value="' . h($m) . '"> ' . h(MENUS[$m]) . '</label>';
+    }
+    $menuField = fn($radios) => count($d['menus']) > 1
+        ? '<div class="field"><span class="field-label">Menú</span><div class="radio-group">' . $radios . '</div></div>'
+        : '<input type="hidden" data-f="menu" value="' . h($d['menus'][0]) . '">';
+    $capa1 = strtr((string) ($L['rsvp_capa1'] ?? ''), [
+        '{pareja}' => nombres($c, ' y '), '{email}' => $c['pareja']['email'],
+        '{borrado}' => $c['fecha'] !== '' ? fecha_larga(fecha_borrado($c['fecha']), false) : '',
+    ]);
+    $conv = $c['convite']['lugar'] !== '';
+    ob_start(); ?>
+<form id="rsvpForm" class="stack" novalidate data-menu-nino="<?= in_array('infantil', $d['menus'], true) ? 'infantil' : h($d['menus'][0]) ?>" data-menu-adulto="<?= h($d['menus'][0] === 'infantil' && count($d['menus']) > 1 ? $d['menus'][1] : $d['menus'][0]) ?>">
+  <input type="text" name="web" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+  <div class="guests-head">
+    <span class="kicker">Quiénes venís</span>
+    <p class="guests-hint">Uno confirma por todos: añadid a cada adulto y a cada peque.</p>
+  </div>
+  <div class="guest-list" id="guestList">
+    <fieldset class="guest" data-kind="adulto">
+      <legend class="guest-head"><span class="guest-tag">Tú</span></legend>
+      <input type="hidden" data-f="tipo" name="invitados[0][tipo]" value="adulto">
+      <div class="field"><label for="g0-nombre">Nombre y apellidos</label><input type="text" id="g0-nombre" data-f="nombre" name="invitados[0][nombre]" autocomplete="name" maxlength="120" required></div>
+      <?= $menuField($menus) ?>
+      <div class="field"><label for="g0-alergias">Alergias o intolerancias</label><input type="text" id="g0-alergias" data-f="alergias" name="invitados[0][alergias]" maxlength="300" placeholder="Déjalo en blanco si comes de todo"></div>
+    </fieldset>
+  </div>
+  <div class="guest-add">
+    <button type="button" class="btn btn-add" data-add-guest="adulto"><span aria-hidden="true">+</span> Añadir adulto</button>
+    <button type="button" class="btn btn-add" data-add-guest="nino"><span aria-hidden="true">+</span> Añadir niño/a</button>
+  </div>
+  <template id="guestTpl">
+    <fieldset class="guest">
+      <legend class="guest-head"><span class="guest-tag"></span><button type="button" class="guest-remove" aria-label="Quitar a esta persona">Quitar</button></legend>
+      <input type="hidden" data-f="tipo" value="adulto">
+      <div class="field"><label data-for="nombre">Nombre y apellidos</label><input type="text" data-f="nombre" data-id="nombre" autocomplete="off" maxlength="120" required></div>
+      <?= $menuField($menuTpl) ?>
+      <div class="field"><label data-for="alergias">Alergias o intolerancias</label><input type="text" data-f="alergias" data-id="alergias" maxlength="300" placeholder="Déjalo en blanco si come de todo"></div>
+    </fieldset>
+  </template>
+<?php if ($d['asistencia'] && $conv): ?>
+  <div class="field">
+    <span class="field-label">¿A qué asistís?</span>
+    <div class="check-group">
+      <label><input type="checkbox" name="asiste_ceremonia" value="si" checked> Ceremonia</label>
+      <label><input type="checkbox" name="asiste_banquete" value="si" checked> Banquete</label>
+    </div>
+    <p class="guests-note">Vale para todo el grupo. Si alguien no va a todo, que confirme por su cuenta.</p>
+  </div>
+<?php else: ?>
+  <input type="hidden" name="asiste_ceremonia" value="si"><input type="hidden" name="asiste_banquete" value="si">
+<?php endif; ?>
+<?php if ($d['bus']): ?>
+  <div class="field"><label class="check-group"><input type="checkbox" name="necesita_bus" value="si"> Necesitamos autobús</label></div>
+<?php endif; ?>
+  <div class="field"><label for="rsvpContacto">Teléfono o email de contacto</label><input type="text" id="rsvpContacto" name="contacto" maxlength="120" data-validate="email-or-phone" required></div>
+  <div class="field"><label for="rsvpCancion">La canción que no puede faltar (opcional)</label><input type="text" id="rsvpCancion" name="cancion" maxlength="150"></div>
+
+  <div class="rsvp-legal">
+<?php if ($capa1 !== ''):
+    // La última frase del texto de Legal ("Más información en el aviso de privacidad.") es el enlace
+    $frase = 'Más información en el aviso de privacidad.';
+    $antes = strpos($capa1, $frase) !== false ? trim(str_replace($frase, '', $capa1)) : $capa1; ?>
+    <p class="rsvp-capa1"><?= h($antes) ?> <?= a_interno('privacidad', $ctx) ?>Más información en el aviso de privacidad</a>.</p><?php endif; ?>
+    <div class="field" data-si-alergias hidden><label class="check-group"><input type="checkbox" name="consent_alergias" value="si"> <?= h($L['check_alergias'] ?? 'Consiento que se traten los datos de alergias e intolerancias para organizar el menú.') ?></label></div>
+    <div class="field" data-si-grupo hidden><label class="check-group"><input type="checkbox" name="consent_acompanantes" value="si"> <?= h($L['check_acompanantes'] ?? 'Tengo permiso de las personas que apunto para facilitar sus datos.') ?></label></div>
+  </div>
+
+  <div class="form-actions"><button type="submit" class="btn" id="rsvpSubmit">¡Allí estaré!</button></div>
+  <div class="form-msg" role="alert"></div>
+</form>
+<div class="modal-overlay" id="rsvpSuccessModal">
+  <div class="modal">
+    <h2>¡Apuntado!</h2>
+    <p>Gracias por confirmar. ¡Nos vemos<?= $c['fecha'] !== '' ? ' el ' . h(fecha_larga($c['fecha'], false)) : ' pronto' ?>!</p>
+    <button type="button" class="btn" data-close-modal>Cerrar</button>
+  </div>
+</div>
+<?php
+    return (string) ob_get_clean();
+}
+
+function pagina_privacidad(array $c, array $ctx): string {
+    $f = __DIR__ . '/legal/privacidad-boda.php';
+    if (!is_file($f)) return envoltorio('Privacidad', '<p class="lede">Texto en preparación.</p>');
+    $b = ['nombre1' => $c['pareja']['nombre1'], 'nombre2' => $c['pareja']['nombre2'], 'email' => $c['pareja']['email'],
+        'borrado' => $c['fecha'] !== '' ? fecha_larga(fecha_borrado($c['fecha']), false) : ''];
+    $E = empresa();
+    ob_start();
+    include $f;
+    return '<main><div class="wrap"><section class="section legal-text">' . ob_get_clean() . '</section></div></main>';
+}
+
+/** Página que queda cuando termina el alojamiento: sin formularios, sin datos de invitados. */
+function render_archivada(array $c, array $ctx): string {
+    $cuerpo = '<main><div class="wrap"><section class="section" style="text-align:center"><h1>' . h(nombres($c)) . '</h1><hr class="divider">'
+        . '<p class="lede">Gracias a todos por acompañarnos' . ($c['fecha'] !== '' ? ' el ' . h(fecha_larga($c['fecha'], false)) : '') . '.</p></section></div></main>';
+    $c2 = $c;
+    $c2['secciones'] = [];
+    return layout($c2, '', nombres($c), $cuerpo, $ctx);
+}
