@@ -411,7 +411,8 @@ function panel_zip(string $slug, array $c): void {
     $z->addFile(WEB_DIR . '/assets/js/boda.js', 'assets/js/boda.js');
     $z->addFile(WEB_DIR . '/assets/img/eucalipto.webp', 'assets/img/eucalipto.webp');
     foreach (glob(WEB_DIR . '/assets/img/deco/*.webp') ?: [] as $f) $z->addFile($f, 'assets/img/deco/' . basename($f));
-    foreach (array_merge(glob(WEB_DIR . '/assets/fonts/Manrope*.woff2') ?: [], glob(WEB_DIR . '/assets/fonts/PlayfairDisplay*.woff2') ?: []) ?: [] as $f) $z->addFile($f, 'assets/fonts/' . basename($f));
+    foreach (glob(WEB_DIR . '/assets/fonts/*.woff2') ?: [] as $f) $z->addFile($f, 'assets/fonts/' . basename($f));
+    foreach (glob(WEB_DIR . '/assets/img/atelier/*.webp') ?: [] as $f) $z->addFile($f, 'assets/img/atelier/' . basename($f));
     $z->close();
     header('Content-Type: application/zip');
     header('Content-Disposition: attachment; filename="web-boda-' . $slug . '.zip"');
@@ -428,6 +429,9 @@ function panel_guardar(string $slug, array $actual, string $metodo): void {
     $c = normaliza_config(json_decode((string) ($_POST['config'] ?? ''), true));
     $f = faltan($c);
     if ($f) json_response(['ok' => false, 'error' => 'Faltan datos.', 'faltan' => $f], 422);
+    if ($c['atelier'] !== '' && empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier'])) {
+        json_response(['ok' => false, 'error' => 'Los diseños Atelier solo están disponibles si la web se compró con uno.'], 422);
+    }
     $d = dir_boda($slug);
     if (($_POST['quitar_foto'] ?? '') === 'si') @unlink($d . '/foto.webp');
     $fr = guarda_foto('foto', $d . '/foto.webp');

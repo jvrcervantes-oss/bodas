@@ -61,7 +61,11 @@ function alta_desde_sesion(array $s): ?array {
             'estado' => 'cobrada',
         ];
         // El importe cobrado manda en la factura; si no cuadra con el precio, se avisa (no se "arregla").
-        if ($ped['importe']['total'] !== precio_total_cent() || $ped['importe']['base'] !== PRECIO_BASE_CENT) {
+        // Diseño Atelier comprado: lo dice la sesión de Stripe (se marcó al crearla); el pendiente, de respaldo
+        $cfgPend = ($pend !== '' ? lee_json($pend . '/config.json') : null) ?? [];
+        $at = (string) ($s['metadata']['atelier'] ?? $cfgPend['atelier'] ?? '');
+        $ped['atelier'] = isset(ATELIER[$at]) ? $at : '';
+        if ($ped['importe']['total'] !== precio_total_cent($ped) || $ped['importe']['base'] !== precio_base_cent($ped)) {
             registra('ALERTA importe cobrado distinto del precio', ['sid' => $sid, 'importe' => $ped['importe']]);
         }
         if (empty($ped['factura'])) {
@@ -92,7 +96,8 @@ function alta_desde_sesion(array $s): ?array {
         $cfg['_estado'] = 'activa';
         escribe_json($d . '/config.json', $cfg);
         if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
-        escribe_json($d . '/pedido.json', ['session_id' => $sid, 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c')]);
+        // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
+        escribe_json($d . '/pedido.json', ['session_id' => $sid, 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
         $enlace = panel_nuevo_enlace($slug);
         $ped['estado'] = 'creada';
         escribe_json($fPedido, $ped);

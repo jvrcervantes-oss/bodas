@@ -74,6 +74,7 @@ function pagina_landing(): string {
       <a href="#incluye">Qué incluye</a>
       <a href="#pasos">Cómo funciona</a>
       <a href="#constructor">Constructor</a>
+      <a href="#atelier">Atelier</a>
       <a href="#precio">Precio</a>
       <a href="#preguntas">Preguntas</a>
     </nav>
@@ -224,6 +225,29 @@ function pagina_landing(): string {
     </div>
   </section>
 
+  <section class="l-sec l-atelier" id="atelier">
+    <div class="l-wrap">
+      <div class="l-sec-cab">
+        <div>
+          <span class="overline">Colección Atelier</span>
+          <h2>Diseños de autor, <em>como papelería fina</em>.</h2>
+        </div>
+        <p>Seis diseños con su paleta, sus letras y su ilustración pintada a mano. Se eligen en el primer paso del constructor por <?= h(euros(PRECIO_ATELIER_CENT)) ?> + IVA más.</p>
+      </div>
+      <div class="l-atelier-grid">
+<?php foreach (ATELIER as $k => $a): ?>
+        <article class="l-atelier-card">
+          <div class="l-atelier-img"><img src="/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
+          <div class="l-atelier-meta"><span class="overline overline-bronze"><?= h($a['categoria']) ?></span><span class="l-atelier-precio"><?= h(euros(con_iva(PRECIO_BASE_CENT + PRECIO_ATELIER_CENT))) ?> <small>IVA incl.</small></span></div>
+          <h3><?= h($a['nombre']) ?></h3>
+          <p><?= h($a['desc']) ?></p>
+          <a class="b-btn b-dark l-atelier-btn" href="/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a>
+        </article>
+<?php endforeach; ?>
+      </div>
+    </div>
+  </section>
+
   <section class="l-sec l-confianza">
     <div class="l-wrap">
       <ul class="l-confianza-lista">
@@ -248,6 +272,7 @@ function pagina_landing(): string {
           <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
           <li><?= il('check', 'i i-sm') ?>Panel privado con Excel para el catering</li>
           <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
+          <li><?= il('check', 'i i-sm') ?>Diseño de la Colección Atelier: +<?= h(euros(PRECIO_ATELIER_CENT)) ?> + IVA</li>
           <li><?= il('check', 'i i-sm') ?>Online hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda</li>
         </ul>
         <a class="b-btn b-rose" href="/crear">Empezar gratis <?= il('flecha', 'i i-sm i-arrow') ?></a>

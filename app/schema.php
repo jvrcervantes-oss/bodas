@@ -31,6 +31,31 @@ const FUENTES = [
     'moderna'     => ['Moderna',     "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", 'normal'],
 ];
 
+// Colección Atelier (owner, 25-sep-2026; diseño de Stitch «Creatividades de autor»). Cada diseño
+// trae su paleta, sus letras y su ilustración, y sustituye a paleta/tipografía/decoración.
+// colores: mismo orden que TEMAS (primary, accent, accent-hover, secondary, sage, sage-2, sage-2-hover, gold, on-dark, on-dark-soft)
+// fuentes: títulos, textos, nombres, estilo de los nombres
+const ATELIER = [
+    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Limones y olivo en acuarela sobre papel verjurado.',
+        'colores' => ['#3F4A3B', '#5C6B57', '#4D5A49', '#6E6A55', '#FAF7F2', '#F1E8C9', '#E9DEB8', '#B98E1F', '#F4ECCB', '#DCD3AE'],
+        'fuentes' => ["'Playfair Display', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Alex Brush', cursive", 'normal']],
+    'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Marco de azulejo azul cobalto y oro para vuestra foto.',
+        'colores' => ['#183B75', '#1F4C94', '#183B75', '#3E5A86', '#F5F3ED', '#DCE6F0', '#CCDAE8', '#A8864A', '#DCE7F4', '#A9C2D8'],
+        'fuentes' => ["'Cinzel', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Pinyon Script', cursive", 'normal']],
+    'herbario' => ['nombre' => 'Herbario y lavanda', 'categoria' => 'Botánica', 'desc' => 'Pliego de flores prensadas y lavanda silvestre.',
+        'colores' => ['#4A3E4C', '#645166', '#54445A', '#5A674E', '#F3EFE6', '#E6DECE', '#DCD2BE', '#5A674E', '#EDE3EE', '#D2C4D4'],
+        'fuentes' => ["'Italiana', Georgia, serif", "'Newsreader', Georgia, serif", "'Italiana', Georgia, serif", 'normal']],
+    'lacre' => ['nombre' => 'Sello de lacre', 'categoria' => 'Editorial', 'desc' => 'Lino, tinta y un sello de cera con vuestras iniciales.',
+        'colores' => ['#3A2A20', '#9C694E', '#85573F', '#6B5A4B', '#EFE8DE', '#E3D7C5', '#D8CAB4', '#B39355', '#F2E3D4', '#DCC6AE'],
+        'fuentes' => ["'Libre Baskerville', Georgia, serif", "'Manrope', system-ui, sans-serif", "'Playfair Display', Georgia, serif", 'italic']],
+    'masia' => ['nombre' => 'Boceto de masía', 'categoria' => 'Tinta y arquitectura', 'desc' => 'Grabado a plumilla de una masía, como un cuaderno de viaje.',
+        'colores' => ['#38312B', '#A6634B', '#8E533E', '#4A5844', '#F8F4EC', '#EADFCD', '#E1D4BE', '#A6634B', '#F3E2D6', '#DDC3B3'],
+        'fuentes' => ["'Cinzel', Georgia, serif", "'EB Garamond', Georgia, serif", "'EB Garamond', Georgia, serif", 'italic']],
+    'atardecer' => ['nombre' => 'Atardecer en cala', 'categoria' => 'Acuarela costera', 'desc' => 'Acuarela de puesta de sol y foto en ventana redonda.',
+        'colores' => ['#8C4A3C', '#C9706C', '#B25E5A', '#A0705E', '#F9F3EB', '#F6DCCB', '#F0CFBA', '#B8912A', '#FCE6DA', '#F0C4B0'],
+        'fuentes' => ["'Cormorant Infant', Georgia, serif", "'Montserrat', system-ui, sans-serif", "'Cormorant Infant', Georgia, serif", 'italic']],
+];
+
 // Decoración (estructura visual), independiente de la paleta. Owner, 25-sep-2026.
 // Las acuarelas son las de su maqueta de Stitch (assets/img/deco/).
 const DECORACIONES = [
@@ -97,6 +122,7 @@ function config_inicial(): array {
         'tema' => 'rosa',
         'decoracion' => 'flores',
         'fuente' => 'clasica',
+        'atelier' => '',
         'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
         'convite' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'mismo' => false],
         'portada' => [
@@ -250,6 +276,7 @@ function normaliza_config($in): array {
     // Las bodas de antes de existir la decoración conservan su rama de eucalipto
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
     $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
+    $c['atelier'] = isset(ATELIER[$in['atelier'] ?? '']) ? $in['atelier'] : '';
     foreach (['ceremonia', 'convite'] as $k) {
         $e = is_array($in[$k] ?? null) ? $in[$k] : [];
         $c[$k] = ['lugar' => clean_str($e['lugar'] ?? '', 120), 'direccion' => clean_str($e['direccion'] ?? '', 160), 'hora' => norm_hora($e['hora'] ?? '')];

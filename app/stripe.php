@@ -67,7 +67,7 @@ function stripe_verifica_webhook(string $payload, string $cabecera, ?int $ahora 
  * Crea la Checkout Session. El importe sale de las constantes del servidor; del
  * navegador solo llega el token del pedido pendiente.
  */
-function stripe_crea_checkout(string $token, string $slug, string $email): array {
+function stripe_crea_checkout(string $token, string $slug, string $email, string $atelier = ''): array {
     $taxRate = (string) secreto('stripe_tax_rate'); // Tax Rate 21 % exclusive creado en el dashboard
     $p = [
         'mode' => 'payment',
@@ -95,6 +95,17 @@ function stripe_crea_checkout(string $token, string $slug, string $email): array
         'metadata[bot]' => PRODUCTO,
     ];
     if ($taxRate !== '') $p['line_items[0][tax_rates][0]'] = $taxRate;
+    if ($atelier !== '' && isset(ATELIER[$atelier])) {
+        $p += [
+            'line_items[1][quantity]' => 1,
+            'line_items[1][price_data][currency]' => 'eur',
+            'line_items[1][price_data][unit_amount]' => PRECIO_ATELIER_CENT,
+            'line_items[1][price_data][tax_behavior]' => 'exclusive',
+            'line_items[1][price_data][product_data][name]' => 'Diseño Atelier «' . ATELIER[$atelier]['nombre'] . '»',
+            'metadata[atelier]' => $atelier,
+        ];
+        if ($taxRate !== '') $p['line_items[1][tax_rates][0]'] = $taxRate;
+    }
     return stripe_api('POST', '/v1/checkout/sessions', $p);
 }
 

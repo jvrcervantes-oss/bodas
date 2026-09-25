@@ -26,6 +26,8 @@ defined('STRIPE_API')   || define('STRIPE_API', 'https://api.stripe.com');
 
 // Precio: fijado por el owner el 25-sep-2026 — 100 € + IVA. Nunca llega del cliente.
 const PRECIO_BASE_CENT = 10000;
+// Diseños de la Colección Atelier: +50 € sobre la base, IVA aparte como el resto (owner, 25-sep-2026)
+const PRECIO_ATELIER_CENT = 5000;
 const IVA_PCT = 21;
 // Tras la fecha de la boda: la web pasa a agradecimiento y se borran los datos de invitados.
 // 2 meses por decisión del owner (25-sep-2026; antes 4): menos tiempo guardando alergias (dato de salud).
@@ -228,4 +230,9 @@ function fecha_borrado(string $ymd): string {
     return $t ? $t->modify('+' . MESES_ALOJAMIENTO . ' months')->format('Y-m-d') : '';
 }
 function euros(int $cent): string { return number_format($cent / 100, 2, ',', '.') . ' €'; }
-function precio_total_cent(): int { return PRECIO_BASE_CENT + intdiv(PRECIO_BASE_CENT * IVA_PCT, 100); }
+/** Base imponible de una boda: la única fuente del precio (el navegador nunca lo manda). */
+function precio_base_cent(?array $c = null): int {
+    return PRECIO_BASE_CENT + (($c['atelier'] ?? '') !== '' ? PRECIO_ATELIER_CENT : 0);
+}
+function con_iva(int $base): int { return $base + intdiv($base * IVA_PCT, 100); }
+function precio_total_cent(?array $c = null): int { return con_iva(precio_base_cent($c)); }

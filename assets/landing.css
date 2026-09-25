@@ -112,6 +112,20 @@
 .l-demo-pie p { margin: 0; flex: 1; font-size: 14px; color: var(--ink-2); }
 .l-demo-pie b { color: var(--ink); font-weight: 600; }
 
+/* Colección Atelier */
+.l-atelier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.l-atelier-card { display: flex; flex-direction: column; padding: 12px 12px 18px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); transition: box-shadow .25s, border-color .25s, transform .25s; }
+.l-atelier-card:hover { box-shadow: var(--e2); border-color: rgba(197, 160, 89, .5); transform: translateY(-2px); }
+.l-atelier-img { position: relative; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-c); }
+.l-atelier-img img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; }
+.l-atelier-img .l-ejemplo { right: 10px; bottom: 10px; }
+.l-atelier-meta { display: flex; justify-content: space-between; align-items: center; margin: 16px 6px 4px; }
+.l-atelier-precio { font-family: var(--serif); font-size: 18px; }
+.l-atelier-precio small { font-family: var(--sans); font-size: 11px; color: var(--ink-3); }
+.l-atelier-card h3 { margin: 0 6px 6px; font-family: var(--serif); font-weight: 400; font-size: 22px; }
+.l-atelier-card p { margin: 0 6px 16px; font-size: 14px; color: var(--ink-2); flex: 1; }
+.l-atelier-btn { margin: 0 6px; min-height: 44px; font-size: 14px; border-radius: var(--r); }
+
 /* confianza */
 .l-confianza { padding: 40px 0; }
 .l-confianza-lista { list-style: none; margin: 0; padding: 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; border-radius: var(--r-xl);
@@ -165,6 +179,7 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 1080px) {
+  .l-atelier-grid { grid-template-columns: repeat(2, 1fr); }
   .l-nav { display: none; }
   .l-cards { grid-template-columns: repeat(2, 1fr); }
   .l-precio { grid-template-columns: 1fr; gap: 32px; }
@@ -183,6 +198,7 @@
   .l-final { flex-direction: column; align-items: flex-start; padding: 36px 28px; }
 }
 @media (max-width: 560px) {
+  .l-atelier-grid { grid-template-columns: 1fr; }
   .l-wrap, .l-top-in { padding: 0 16px; }
   .l-top-in { height: 64px; }
   .l-logo { font-size: 18px; }

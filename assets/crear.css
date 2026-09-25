@@ -109,6 +109,27 @@
 
 @font-face { font-family: 'Cormorant Garamond'; font-style: normal; font-weight: 400 500; font-display: swap; src: url(fonts/CormorantGaramond.woff2) format('woff2'); }
 @font-face { font-family: 'Great Vibes'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/GreatVibes.woff2) format('woff2'); }
+/* Colección Atelier */
+.c-atelier-cab { display: flex; justify-content: space-between; align-items: baseline; }
+.c-atelier-precio { font-size: 12px; font-weight: 600; color: var(--bronze); }
+.c-atelier { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-atelier-card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
+  border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.c-atelier-card input { position: absolute; opacity: 0; pointer-events: none; }
+.c-atelier-card:hover { border-color: var(--line); }
+.c-atelier-card:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--e1); background: #fffdf8; }
+.c-atelier-card:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
+.c-atelier-card.is-bloq { opacity: .5; cursor: not-allowed; }
+.c-atelier-img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; border-radius: 10px; background: var(--surface-c); }
+.c-atelier-propio { display: grid; place-items: center; font-family: var(--serif); font-style: italic; font-size: 34px; color: var(--ink-3); background: linear-gradient(135deg, #fff, var(--surface-c)); }
+.c-atelier-txt { display: flex; flex-direction: column; gap: 1px; padding: 0 2px; }
+.c-atelier-txt small { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--bronze); }
+.c-atelier-txt b { font-family: var(--serif); font-weight: 400; font-size: 15px; }
+.c-atelier-txt span { font-size: 11px; line-height: 1.4; color: var(--ink-3); }
+.c-atelier-nota { grid-column: 1 / -1; }
+#estiloPropio.is-off { opacity: .4; pointer-events: none; filter: grayscale(.4); }
+#estiloPropio.is-off::before { content: 'Este diseño Atelier trae su propia paleta, letra y adornos.'; display: block; margin-top: 14px; font-size: 12px; color: var(--ink-2); }
+
 /* tipografía: muestra con los nombres */
 .c-fuentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .c-fuente { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px 10px; border-radius: var(--r-lg);

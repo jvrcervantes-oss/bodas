@@ -125,7 +125,7 @@ function api_pagar(string $metodo): void {
         'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $L['check_condiciones'] ?? '', 'desistimiento' => $L['check_desistimiento'] ?? '',
     ]]);
 
-    [$st, $s] = stripe_crea_checkout($token, $slug, $c['pareja']['email']);
+    [$st, $s] = stripe_crea_checkout($token, $slug, $c['pareja']['email'], $c['atelier']);
     if ($st !== 200 || empty($s['url'])) {
         registra('stripe: no se pudo crear la sesión', ['status' => $st, 'error' => $s['error']['message'] ?? '']);
         borra_arbol($pend);

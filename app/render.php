@@ -76,6 +76,7 @@ const ICONOS = [
 
 function tema_css(array $c): string {
     $t = TEMAS[$c['tema']] ?? TEMAS['eucalipto'];
+    if (($c['atelier'] ?? '') !== '') $t = array_merge([ATELIER[$c['atelier']]['nombre']], ATELIER[$c['atelier']]['colores']);
     $rgb = function (string $hex): string {
         return implode(' ', array_map('hexdec', str_split(ltrim($hex, '#'), 2)));
     };
@@ -89,7 +90,21 @@ function tema_css(array $c): string {
 
 function fuente_css(array $c): string {
     $f = FUENTES[$c['fuente'] ?? 'clasica'] ?? FUENTES['clasica'];
+    if (($c['atelier'] ?? '') !== '') $f = array_merge([ATELIER[$c['atelier']]['nombre']], ATELIER[$c['atelier']]['fuentes']);
     return '--serif:' . $f[1] . ';--sans:' . $f[2] . ';--nombres:' . $f[3] . ';--nombres-estilo:' . $f[4];
+}
+
+/** Ilustración de cabecera de cada diseño Atelier. El sello lleva encima las iniciales de ESTA pareja. */
+function arte_atelier(array $c, string $A): string {
+    $img = fn($f, $cls) => '<img class="atelier-arte ' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '.webp" alt="" aria-hidden="true">';
+    switch ($c['atelier']) {
+        case 'citricos': return $img('limones', 'arte-limones');
+        case 'herbario': return '<div class="arte-herbario-marco">' . $img('herbario', 'arte-herbario') . '</div>';
+        case 'masia': return $img('masia', 'arte-masia');
+        case 'lacre': return '<div class="arte-sello" aria-hidden="true"><img src="' . h($A) . 'img/atelier/sello.webp" alt=""><span>' . h(iniciales($c) ?: '♥') . '</span></div>';
+        case 'ceramica': return '<p class="arte-monograma" aria-hidden="true">' . h(iniciales($c)) . '</p>';
+        default: return '';
+    }
 }
 
 function linea_fecha(array $c): string {
@@ -115,7 +130,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
 <style><?= tema_css($c) ?></style>
 </head>
-<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?> deco-<?= h($c['decoracion']) ?> fuente-<?= h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
+<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
 <?php if ($ctx['modo'] === 'preview'): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep) ?>
 <div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(MARCA) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
 <?php endif; ?>
@@ -208,13 +223,15 @@ function pagina_inicio(array $c, array $ctx): string {
 <main class="home">
   <section class="hero<?= $hayFoto ? '' : ' hero--solo' ?>">
     <div class="hero-left">
-<?php if ($c['decoracion'] === 'eucalipto'): ?>
+<?php if ($c['atelier'] !== ''): ?>
+      <?= arte_atelier($c, $A) ?>
+<?php elseif ($c['decoracion'] === 'eucalipto'): ?>
       <img class="hero-sprig" src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140">
 <?php elseif ($c['decoracion'] === 'flores'): ?>
       <img class="deco-guirnalda" src="<?= h($A) ?>img/deco/guirnalda.webp" alt="" width="1376" height="768">
 <?php endif; ?>
       <div class="hero-text">
-<?php if ($c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
+<?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
         <h1 class="hero-names"><?= h($nom ?: 'Vuestros nombres') ?></h1>
@@ -329,7 +346,9 @@ function pagina_inicio(array $c, array $ctx): string {
     </div>
   </section>
 
-<?php if ($c['decoracion'] === 'eucalipto'): ?>
+<?php if ($c['atelier'] !== ''): ?>
+  <div class="atelier-pie" aria-hidden="true"></div>
+<?php elseif ($c['decoracion'] === 'eucalipto'): ?>
   <div class="sprig-foot" aria-hidden="true"><img src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140"></div>
 <?php elseif ($c['decoracion'] === 'flores'): ?>
   <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/enredadera.webp" alt="" width="896" height="1200"><img src="<?= h($A) ?>img/deco/enredadera-2.webp" alt="" width="896" height="1200"></div>

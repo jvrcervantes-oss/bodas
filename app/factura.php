@@ -22,7 +22,8 @@ function emite_factura(array $ped): string {
         'fecha' => date('Y-m-d'),
         'emisor' => empresa(),
         'cliente' => ['nombre' => $ped['nombre'], 'email' => $ped['email'], 'pais' => $ped['pais_facturacion']],
-        'concepto' => 'Web de boda ' . $ped['slug'] . '.' . BASE_DOMAIN . ': creación y alojamiento',
+        'concepto' => 'Web de boda ' . $ped['slug'] . '.' . BASE_DOMAIN . ': creación y alojamiento'
+            . (($ped['atelier'] ?? '') !== '' ? ', con diseño Atelier «' . ATELIER[$ped['atelier']]['nombre'] . '»' : ''),
         'base' => $ped['importe']['base'],
         'iva_pct' => IVA_PCT,
         'iva' => $ped['importe']['iva'],

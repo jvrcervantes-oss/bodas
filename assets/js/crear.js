@@ -66,6 +66,40 @@
   });
 
   // ------------------------------------------------------------ temas
+  // ------------------------------------------------------------ Colección Atelier (+50 €)
+  // Un diseño Atelier trae su paleta, letras e ilustración: mientras hay uno elegido, las
+  // opciones de estilo propio se atenúan. El precio lo calcula el servidor; aquí solo se enseña.
+  var atelierEl = document.getElementById('atelier');
+  var propioEl = document.getElementById('estiloPropio');
+  function pintaAtelier() {
+    atelierEl.querySelectorAll('input').forEach(function (r) { r.checked = (st.atelier || '') === r.value; });
+    propioEl.classList.toggle('is-off', !!st.atelier);
+    var t = document.getElementById('precioTotal');
+    if (t) {
+      t.textContent = st.atelier ? D.precio.totalAtelier : D.precio.total;
+      document.getElementById('precioDesglose').textContent = (st.atelier ? D.precio.baseAtelier : D.precio.base) + ' + IVA ' + D.precio.iva + ' % · pago único' + (st.atelier ? ' · incluye diseño Atelier' : '');
+      var pb = document.getElementById('pagar'); if (pb && !pb.disabled) pb.textContent = 'Pagar ' + t.textContent;
+    }
+  }
+  function tarjetaAtelier(k, a) {
+    var r = el('input', { type: 'radio', name: 'atelier', value: k, disabled: k !== '' && !D.atelierPermitido });
+    r.addEventListener('change', function () { st.atelier = k; pintaAtelier(); cambio(); });
+    var muestra = k ? el('img', { class: 'c-atelier-img', src: '/assets/img/atelier/muestra-' + k + '.webp', alt: '', loading: 'lazy' })
+      : el('span', { class: 'c-atelier-img c-atelier-propio', text: 'Aa' });
+    return el('label', { class: 'c-atelier-card' + (r.disabled ? ' is-bloq' : '') }, [r, muestra,
+      el('span', { class: 'c-atelier-txt' }, [
+        el('small', { text: a.categoria }),
+        el('b', { text: a.nombre }),
+        el('span', { text: a.desc })
+      ])]);
+  }
+  var pedido = (location.search.match(/[?&]atelier=([a-z]+)/) || [])[1];
+  if (MODO === 'crear' && pedido && D.atelier[pedido]) st.atelier = pedido;
+  atelierEl.appendChild(tarjetaAtelier('', { nombre: 'Vuestro estilo', categoria: 'Incluido', desc: 'Paleta, letra y adornos a vuestro gusto.' }));
+  Object.keys(D.atelier).forEach(function (k) { atelierEl.appendChild(tarjetaAtelier(k, D.atelier[k])); });
+  if (!D.atelierPermitido) atelierEl.appendChild(el('p', { class: 'c-ayuda c-atelier-nota', text: 'Los diseños Atelier se eligen al crear la web. Si queréis cambiar a uno, escribidnos.' }));
+  pintaAtelier();
+
   var temasEl = document.getElementById('temas');
   Object.keys(D.temas).forEach(function (k) {
     var tm = D.temas[k];
