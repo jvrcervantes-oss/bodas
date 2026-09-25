@@ -55,6 +55,11 @@
 .c-disp button[aria-pressed="true"] { background: var(--espresso); color: #fff; }
 .c-tabs { display: flex; gap: 4px; margin-top: 14px; overflow-x: auto; scrollbar-width: none; }
 .c-tabs::-webkit-scrollbar { display: none; }
+/* Al crear, en escritorio los pasos ya están en el carril: sin menú duplicado arriba */
+@media (min-width: 901px) {
+  body[data-modo="crear"] .c-tabs { display: none; }
+  body[data-modo="crear"] .c-proyecto { padding-bottom: 16px; }
+}
 .c-tabs button { border: 0; background: none; padding: 12px 14px; font-size: 14px; font-weight: 500; color: var(--ink-2); cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent; }
 .c-tabs button:hover { color: var(--ink); }

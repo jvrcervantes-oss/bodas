@@ -19,7 +19,8 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $json = json_encode($datos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
     $editar = $modo === 'editar';
     $titulo = $editar ? 'Editar la web' : 'Crea la web de vuestra boda';
-    $tabs = ['pareja' => 'Vosotros', 'lugares' => 'Ceremonia y convite', 'portada' => 'Portada y estilo', 'secciones' => 'Secciones'];
+    // Orden (owner, 25-sep): primero el estilo, luego los datos
+    $tabs = ['estilo' => 'Estilo', 'pareja' => 'Vosotros', 'lugares' => 'Ceremonia y convite', 'portada' => 'Portada', 'secciones' => 'Secciones'];
     if (!$editar) $tabs['publicar'] = 'Publicar';
     $rail = $editar
         ? [['/panel/editar', 'lapiz', 'Editar la web', true], ['/panel', 'sobre', 'Invitados y respuestas', false],
@@ -27,8 +28,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         : [];
     // Al crear, el carril son los pasos del propio constructor: antes enlazaba a la landing
     // y sacaba a la pareja a media edición (queja del owner, 25-sep-2026)
-    $pasos = ['pareja' => ['corazon', 'Vosotros'], 'lugares' => ['mapa', 'Ceremonia y convite'], 'portada' => ['flor', 'Portada y estilo'],
-        'secciones' => ['sobre', 'Secciones'], 'publicar' => ['enlace', 'Publicar']];
+    $pasos = $tabs;
     ob_start(); ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -48,7 +48,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
   <nav>
 <?php if ($editar): foreach ($rail as [$href, $ico, $txt, $on]): ?>
     <a href="<?= h($href) ?>"<?= $on ? ' aria-current="page"' : '' ?><?= $href === '/panel/factura' ? ' target="_blank" rel="noopener"' : '' ?>><?= il($ico) ?><?= h($txt) ?></a>
-<?php endforeach; else: $n = 0; foreach ($pasos as $k => [$ico, $txt]): ?>
+<?php endforeach; else: $n = 0; foreach ($pasos as $k => $txt): ?>
     <button type="button" class="c-paso" data-tab="<?= $k ?>" aria-selected="<?= $n++ === 0 ? 'true' : 'false' ?>"><span class="c-paso-num"><?= $n ?></span><?= h($txt) ?></button>
 <?php endforeach; endif; ?>
   </nav>
@@ -91,10 +91,16 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 
   <div class="c-grid">
     <section class="c-editor" aria-label="Editor">
-      <div class="c-panel" role="tabpanel" id="panel-pareja" data-panel="pareja" aria-labelledby="tab-pareja">
+      <div class="c-panel" role="tabpanel" id="panel-estilo" data-panel="estilo" aria-labelledby="tab-estilo">
+        <span class="overline overline-bronze">Arte y papelería</span>
+        <h2>Elegid el estilo</h2>
+        <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'La paleta cambia los colores de toda la web y podéis cambiarla cuando queráis. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
+        <div class="c-temas" id="temas" role="radiogroup" aria-label="Paleta"></div>
+      </div>
+
+      <div class="c-panel" role="tabpanel" id="panel-pareja" data-panel="pareja" aria-labelledby="tab-pareja" hidden>
         <span class="overline overline-bronze">Los protagonistas</span>
         <h2>Vosotros y la fecha</h2>
-        <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'Rellenad los datos y mirad la vista previa. Lo que escribís se guarda en este navegador hasta que publiquéis.' ?></p>
         <div class="c-fila">
           <label class="c-campo"><span>Nombre</span><input data-k="pareja.nombre1" maxlength="40" autocomplete="off"></label>
           <label class="c-campo"><span>Nombre</span><input data-k="pareja.nombre2" maxlength="40" autocomplete="off"></label>
@@ -129,11 +135,8 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
       </div>
 
       <div class="c-panel" role="tabpanel" id="panel-portada" data-panel="portada" aria-labelledby="tab-portada" hidden>
-        <span class="overline overline-bronze">Arte y papelería</span>
-        <h2>Colores de la web</h2>
-        <p class="c-ayuda">La paleta cambia los colores de toda la web.</p>
-        <div class="c-temas" id="temas" role="radiogroup" aria-label="Paleta"></div>
-        <hr class="c-hr">
+        <span class="overline overline-bronze">La portada</span>
+        <h2>Foto y bienvenida</h2>
         <span class="overline overline-bronze">Fotografía de portada</span>
         <div class="c-foto">
           <div class="c-foto-marco" id="fotoMarco"><img id="fotoImg" alt="" hidden><span id="fotoVacia"><?= il('flor') ?></span></div>

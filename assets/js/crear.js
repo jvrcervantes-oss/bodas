@@ -443,7 +443,7 @@
     } else if (ruta === 'inicio') {
       var actual = document.querySelector('[data-tab][aria-selected="true"]');
       var k = actual && actual.getAttribute('data-tab');
-      if (k !== 'pareja' && k !== 'lugares' && k !== 'portada') muestraTab('portada', true);
+      if (['estilo', 'pareja', 'lugares', 'portada'].indexOf(k) < 0) muestraTab('portada', true);
     }
   }
 
@@ -485,7 +485,7 @@
   function paginaDeTab(k) {
     if (k === 'lugares') { var inf = st.secciones.filter(function (x) { return x.tipo === 'informacion' && x.on !== false; })[0]; return inf && rutaDe[inf.id] || 'inicio'; }
     if (k === 'secciones') return abierta && rutaDe[abierta] || null;
-    if (k === 'pareja' || k === 'portada') return 'inicio';
+    if (k === 'estilo' || k === 'pareja' || k === 'portada') return 'inicio';
     return null;
   }
   // Pestañas de arriba y pasos del carril (al crear) manejan lo mismo
@@ -502,7 +502,11 @@
     });
   });
   var irPublicar = document.getElementById('irPublicar');
-  if (irPublicar) irPublicar.addEventListener('click', function () { muestraTab('publicar'); document.getElementById('tab-publicar').focus(); });
+  if (irPublicar) irPublicar.addEventListener('click', function () {
+    muestraTab('publicar');
+    var destino = [document.querySelector('.c-paso[data-tab="publicar"]'), document.getElementById('tab-publicar')].filter(function (x) { return x && x.offsetParent; })[0];
+    if (destino) destino.focus();
+  });
   var guardarTop = document.getElementById('guardarTop');
   if (guardarTop) guardarTop.addEventListener('click', function () { document.getElementById('guardar').click(); });
 
