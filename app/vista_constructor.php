@@ -41,8 +41,10 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     if (!$editar) $tabs['publicar'] = 'Publicar';
     $rail = $editar
         ? [['/panel/editar', 'lapiz', 'Editar la web', true], ['/panel', 'sobre', 'Invitados y respuestas', false],
-           ['/panel/excel', 'excel', 'Descargar Excel', false], ['/panel/zip', 'regalo', 'Descargar ZIP', false], ['/panel/factura', 'check', 'Factura', false]]
+           ['/panel/excel', 'excel', 'Descargar Excel', false], ['/panel/zip', 'regalo', 'Descargar ZIP', false]]
         : [];
+    // Una web regalada con código de cortesía no tiene factura
+    if ($editar && ((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '') $rail[] = ['/panel/factura', 'check', 'Factura', false];
     // Al crear, el carril son los pasos del propio constructor: antes enlazaba a la landing
     // y sacaba a la pareja a media edición (queja del owner, 25-sep-2026)
     $pasos = $tabs;
@@ -213,11 +215,13 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <li><?= il('check', 'i i-sm') ?>Online hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda</li>
         </ul>
         <div class="c-precio"><b id="precioTotal"><?= h(euros(precio_total_cent())) ?></b><span id="precioDesglose">Pack Esencial · IVA incluido · pago único</span></div>
+        <label class="c-campo c-codigo"><span>Código de regalo <small>(solo si os lo hemos dado)</small></span>
+          <input id="codigo" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="XXXXX-XXXXX-XXXXX"></label>
         <label class="c-check"><input type="checkbox" id="aceptoCond"> <span><?= h($L['check_condiciones'] ?? '') ?> <a href="<?= BASE_PATH ?>/condiciones" target="_blank" rel="noopener">Leer condiciones</a></span></label>
-        <label class="c-check"><input type="checkbox" id="aceptoDes"> <span><?= h($L['check_desistimiento'] ?? '') ?></span></label>
+        <label class="c-check" id="filaDes"><input type="checkbox" id="aceptoDes"> <span><?= h($L['check_desistimiento'] ?? '') ?></span></label>
         <ul class="c-faltan" id="faltan" aria-live="polite"></ul>
         <button type="button" class="b-btn b-dark c-btn-pagar" id="pagar">Pagar <?= h(euros(precio_total_cent())) ?></button>
-        <p class="c-nota">Pago seguro con Stripe. Recibiréis la factura por email.</p>
+        <p class="c-nota" id="notaPago">Pago seguro con Stripe. Recibiréis la factura por email.</p>
       </div>
 <?php else: ?>
       <div class="c-guardar">

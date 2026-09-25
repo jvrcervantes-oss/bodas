@@ -307,7 +307,7 @@ function panel_inicio(string $slug, array $c): string {
     $o = '<header class="panel-head"><div><span class="kicker">Panel privado</span><h1>' . h(nombres($c)) . '</h1>'
         . '<p><a href="/" target="_blank" rel="noopener">' . h(preg_replace('~^https?://~', '', rtrim(url_boda($slug), '/'))) . '</a> · se mantiene hasta el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '</p></div>'
         . '<nav class="panel-acc"><a class="btn" href="/panel/editar">Editar la web</a><a class="btn btn-soft" href="/panel/excel">Descargar Excel</a>'
-        . '<a class="btn btn-soft" href="/panel/zip">Descargar ZIP</a><a class="btn btn-soft" href="/panel/factura" target="_blank" rel="noopener">Factura</a>'
+        . '<a class="btn btn-soft" href="/panel/zip">Descargar ZIP</a>' . (((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '' ? '<a class="btn btn-soft" href="/panel/factura" target="_blank" rel="noopener">Factura</a>' : '')
         . '<a class="panel-salir" href="/panel/salir">Salir</a></nav></header>';
     $o .= '<section class="section"><div class="stat-row">';
     foreach ([['personas', 'personas'], ['adultos', 'adultos'], ['ninos', 'niños/as'], ['ceremonia', 'van a ceremonia'], ['banquete', 'van a banquete']] as [$k, $t]) {

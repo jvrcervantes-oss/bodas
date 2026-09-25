@@ -798,21 +798,33 @@
 
   // ------------------------------------------------------------ pagar / guardar
   var pagar = document.getElementById('pagar');
+  // Código de regalo: sin pago, así que no hay desistimiento que aceptar y el botón publica directamente
+  var codigoEl = document.getElementById('codigo');
+  var txtPagar = pagar ? pagar.textContent : '';
+  function pintaCodigo() {
+    if (!pagar || !codigoEl) return;
+    var hay = codigoEl.value.trim() !== '';
+    pagar.textContent = hay ? 'Publicar con el código de regalo' : txtPagar;
+    document.getElementById('filaDes').hidden = hay;
+    document.getElementById('notaPago').textContent = hay ? 'Con un código válido la web se publica sin pagar nada.' : 'Pago seguro con Stripe. Recibiréis la factura por email.';
+  }
+  if (codigoEl) codigoEl.addEventListener('input', pintaCodigo);
   if (pagar) pagar.addEventListener('click', function () {
     var extra = [];
+    var conCodigo = codigoEl && codigoEl.value.trim() !== '';
     if (!slugEl.value || slugEstado.className === 'mal') extra.push('Elegid una dirección libre para vuestra web.');
     var c1 = document.getElementById('aceptoCond'), c2 = document.getElementById('aceptoDes');
-    if (!c1.checked || !c2.checked) extra.push('Marcad las dos casillas para continuar.');
+    if (!c1.checked || (!conCodigo && !c2.checked)) extra.push(conCodigo ? 'Marcad la casilla de las condiciones para continuar.' : 'Marcad las dos casillas para continuar.');
     if (Object.keys(ultimasFaltas).length || extra.length) { muestraFaltan(ultimasFaltas, extra); return; }
     var fd = new FormData();
     fd.append('config', JSON.stringify(st));
     fd.append('slug', slugEl.value);
     fd.append('acepto_condiciones', 'si');
-    fd.append('acepto_desistimiento', 'si');
+    if (conCodigo) fd.append('codigo', codigoEl.value.trim()); else fd.append('acepto_desistimiento', 'si');
     if (foto.src) fd.append('foto', foto.blob || dataUrlABlob(foto.src), 'foto.webp');
     pagar.disabled = true;
     var txt = pagar.textContent;
-    pagar.textContent = 'Abriendo el pago…';
+    pagar.textContent = conCodigo ? 'Publicando…' : 'Abriendo el pago…';
     fetch(BASE + '/api/pagar', { method: 'POST', body: fd })
       .then(function (r) { return r.json(); })
       .then(function (j) {

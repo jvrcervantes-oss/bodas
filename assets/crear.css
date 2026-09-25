@@ -335,3 +335,7 @@
 .c-fuente.is-bloq .c-fuente-img { filter: grayscale(1); opacity: .6; }
 .c-candado { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold, #A8864A); }
 .c-candado::before { content: '🔒 '; }
+
+/* Código de regalo (cortesía) */
+.c-check[hidden] { display: none; }
+.c-codigo input { text-transform: uppercase; letter-spacing: .12em; font-variant-numeric: tabular-nums; }

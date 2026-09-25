@@ -92,11 +92,29 @@ function api_pagar(string $metodo): void {
     if (!limite('pagar|' . ip_cliente(), 20, 3600)) json_response(['ok' => false, 'error' => 'Demasiados intentos. Prueba dentro de un rato.'], 429);
     // En LIVE no se vende sin los datos del titular en los textos legales y la factura
     // Sin el Tax Rate, Stripe cobraría 100 € con un botón que dice 121 €: no se abre el pago.
+    // Código de cortesía: sin Stripe, pero con los mismos datos, reserva de nombre y condiciones
+    $codigo = clean_str($_POST['codigo'] ?? '', 40);
+    $cortesia = null;
+    if ($codigo !== '') {
+        if (cortesia_bloqueada() || !limite('cortesia|' . ip_cliente(), 10, 3600, true)) {
+            json_response(['ok' => false, 'error' => 'Demasiados intentos con códigos. Prueba dentro de un rato.'], 429);
+        }
+        // Sin titular en los textos legales no se publica ninguna web, ni regalada (BOD-1)
+        if (!empresa_completa()) {
+            json_response(['ok' => false, 'error' => 'Los códigos de regalo se activan en cuanto terminemos los datos legales del servicio. Os avisamos.'], 503);
+        }
+        $cortesia = cortesia_busca($codigo);
+        if (!$cortesia) {
+            cortesia_fallo();
+            registra('cortesía: código no válido', ['ip' => ip_cliente()]);
+            json_response(['ok' => false, 'error' => 'Ese código no es válido o ha caducado.', 'faltan' => ['codigo' => 'Código no válido.']], 422);
+        }
+    }
     // Escondido y sin Stripe configurado (BOD-3): se puede montar y ver la web, no comprarla
-    if (secreto('stripe_secret') === '') {
+    if (!$cortesia && secreto('stripe_secret') === '') {
         json_response(['ok' => false, 'error' => 'Todavía no está a la venta. Podéis montar vuestra web y verla tal cual; abrimos la contratación muy pronto.'], 503);
     }
-    if (secreto('stripe_tax_rate') === '') {
+    if (!$cortesia && secreto('stripe_tax_rate') === '') {
         registra('ALERTA pago bloqueado: falta stripe_tax_rate');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
     }
@@ -104,12 +122,16 @@ function api_pagar(string $metodo): void {
         registra('ALERTA pago bloqueado: faltan datos del titular');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
     }
-    if (($_POST['acepto_condiciones'] ?? '') !== 'si' || ($_POST['acepto_desistimiento'] ?? '') !== 'si') {
+    // Regalada no hay pago que desistir: solo se aceptan las condiciones
+    if (($_POST['acepto_condiciones'] ?? '') !== 'si' || (!$cortesia && ($_POST['acepto_desistimiento'] ?? '') !== 'si')) {
         json_response(['ok' => false, 'error' => 'Marca las dos casillas para continuar.'], 422);
     }
     $c = normaliza_config(json_decode((string) ($_POST['config'] ?? ''), true));
     $f = faltan($c);
     if ($f) json_response(['ok' => false, 'error' => 'Faltan datos.', 'faltan' => $f], 422);
+    if ($cortesia && $c['atelier'] !== '' && empty($cortesia[1]['atelier'])) {
+        json_response(['ok' => false, 'error' => 'Este código es del Pack Esencial: elegid «Vuestro estilo» en el paso Estilo o pedid un código Atelier.'], 422);
+    }
     $slug = strtolower(clean_str($_POST['slug'] ?? '', 60));
     if (!slug_valido($slug)) json_response(['ok' => false, 'error' => 'El nombre de la web no es válido.'], 422);
 
@@ -136,8 +158,20 @@ function api_pagar(string $metodo): void {
     escribe_json($pend . '/config.json', $c);
     $L = textos_legales();
     escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'aceptacion' => [
-        'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $L['check_condiciones'] ?? '', 'desistimiento' => $L['check_desistimiento'] ?? '',
+        'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $L['check_condiciones'] ?? '',
+        'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
     ]]);
+
+    if ($cortesia) {
+        $ped = alta_cortesia($token, $cortesia[0], $cortesia[1]);
+        if (($ped['estado'] ?? '') === 'agotado') {
+            borra_arbol($pend);
+            @unlink(dir_datos('reservas', $slug . '.json'));
+            json_response(['ok' => false, 'error' => 'Este código ya se ha usado.', 'faltan' => ['codigo' => 'Código ya usado.']], 422);
+        }
+        if (!$ped) json_response(['ok' => false, 'error' => 'No hemos podido publicar la web. Inténtalo de nuevo.'], 500);
+        json_response(['ok' => true, 'url' => url_creador('listo?c=' . $token)]);
+    }
 
     [$st, $s] = stripe_crea_checkout($token, $slug, $c['pareja']['email'], $c['atelier']);
     if ($st !== 200 || empty($s['url'])) {
@@ -178,6 +212,14 @@ function pagina_listo(): void {
     cabeceras_privadas();
     // Cada visita consulta la API de Stripe: sin límite sería un amplificador gratis
     if (!limite('listo|' . ip_cliente(), 30, 3600)) { http_response_code(429); echo pagina_simple('Demasiadas visitas', '<p>Espera un rato y vuelve a cargar la página.</p>'); return; }
+    // Cortesía: el token del pedido (128 bits aleatorios) es la llave; el enlace del panel sale una vez
+    $tok = (string) ($_GET['c'] ?? '');
+    if (preg_match('/^[a-f0-9]{32}$/', $tok)) {
+        $ped = lee_json(dir_datos('pedidos', 'cortesia_' . $tok . '.json'));
+        if (!$ped || ($ped['estado'] ?? '') !== 'creada') { echo pagina_simple('No encontrada', '<p>No encontramos esta web. Escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }
+        listo_muestra($ped);
+        return;
+    }
     $sid = clean_str($_GET['sid'] ?? '', 250);
     $s = stripe_lee_sesion($sid);
     if (!$s || ($s['metadata']['producto'] ?? '') !== PRODUCTO) { echo pagina_simple('Pago no encontrado', '<p>No encontramos este pago. Si te han cobrado, escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }
@@ -187,6 +229,11 @@ function pagina_listo(): void {
         echo pagina_simple('Pago recibido', '<p>Hemos recibido el pago, pero no hemos podido crear la web automáticamente. Ya nos ha llegado el aviso y te escribimos en breve a ' . h($ped['email'] ?? '') . '.</p>');
         return;
     }
+    listo_muestra($ped);
+}
+
+/** Web publicada: dirección y, la primera vez que se abre, el enlace para elegir la contraseña del panel. */
+function listo_muestra(array $ped): void {
     $slug = $ped['slug'];
     $url = url_boda($slug);
     $enlace = '';
@@ -205,7 +252,7 @@ function pagina_listo(): void {
     if ($enlace !== '') {
         $o .= '<p>Ahora elegid la contraseña de vuestro panel, desde donde veréis las respuestas, editaréis la web y descargaréis el ZIP:</p><p><a class="btn btn-sec" href="' . h($enlace) . '">Elegir contraseña</a></p>';
     }
-    $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel, la factura (' . h($ped['factura']) . ') y las condiciones.</p>';
+    $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel' . (($ped['factura'] ?? '') !== '' ? ', la factura (' . h($ped['factura']) . ')' : '') . ' y las condiciones.</p>';
     echo pagina_simple('¡Enhorabuena!', $o);
 }
 
@@ -214,7 +261,7 @@ function pagina_simple(string $titulo, string $cuerpo): string {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — ' . h(MARCA) . '</title><meta name="robots" content="noindex">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
-        . '<header class="s-top"><a class="c-marca" href="/">' . il('flor') . '<span>' . h(MARCA) . '</span></a></header>'
+        . '<header class="s-top"><a class="c-marca" href="' . BASE_PATH . '/">' . il('flor') . '<span>' . h(MARCA) . '</span></a></header>'
         . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main>' . pie_creador() . '</body></html>';
 }
 

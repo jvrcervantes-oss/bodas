@@ -57,16 +57,15 @@ function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
         . "Dirección: $url\n\n"
         . "Para entrar en vuestro panel (respuestas de invitados, Excel, editar la web y descargar el ZIP), elegid vuestra contraseña con este enlace. Sirve una sola vez y caduca en 14 días:\n$enlace\n\n"
         . "La web y las respuestas de vuestros invitados se mantienen hasta el $borrado. Ese día se borran las respuestas y la web pasa a una página de agradecimiento. Exportad el Excel antes si queréis conservarlas.\n\n"
-        . "Factura: {$ped['factura']} (adjunta).\n"
+        . (($ped['factura'] ?? '') !== '' ? "Factura: {$ped['factura']} (adjunta).\n" : "Esta web os la regala AxisWorks: no hay nada que pagar.\n")
         . "Condiciones de contratación y encargo de tratamiento: adjuntas.\n\n"
-        . "Al comprar" . ($acept !== '' ? ' (' . date('d/m/Y H:i', strtotime($acept)) . ')' : '') . " marcasteis lo siguiente:\n"
+        . (($ped['factura'] ?? '') !== '' ? "Al comprar" : "Al publicar") . ($acept !== '' ? ' (' . date('d/m/Y H:i', strtotime($acept)) . ')' : '') . " marcasteis lo siguiente:\n"
         . '«' . ($L['check_condiciones'] ?? '') . "»\n"
-        . '«' . ($L['check_desistimiento'] ?? '') . "»\n\n"
+        . (($ped['aceptacion']['desistimiento'] ?? '') !== '' ? '«' . $ped['aceptacion']['desistimiento'] . "»\n" : '') . "\n"
         . "Cualquier duda: " . empresa()['email'] . "\n\nAxisWorks";
-    envia_correo($ped['email'], 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), $texto, [
-        'condiciones.html' => documento_legal('condiciones', 'Condiciones de contratación'),
-        $ped['factura'] . '.html' => (string) render_factura($ped['factura']),
-    ]);
+    $adjuntos = ['condiciones.html' => documento_legal('condiciones', 'Condiciones de contratación')];
+    if (($ped['factura'] ?? '') !== '') $adjuntos[$ped['factura'] . '.html'] = (string) render_factura($ped['factura']);
+    envia_correo($ped['email'], 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), $texto, $adjuntos);
 }
 
 function correo_enlace_panel(string $slug, string $email, string $enlace): void {

@@ -75,40 +75,80 @@ function alta_desde_sesion(array $s): ?array {
             escribe_json($fPedido, $ped);
         }
 
-        if (!$meta || !is_file($pend . '/config.json')) {
-            registra('ALERTA pago sin pedido pendiente', ['sid' => $sid, 'slug' => $slug]);
-            $ped['estado'] = 'sin-datos';
-            escribe_json($fPedido, $ped);
-            avisa_estudio('Pago de web de boda sin datos del creador', "Sesión $sid ($slug). Cobrado y facturado ({$ped['factura']}); la web no se ha podido crear. Contactar con {$ped['email']}.");
-            return $ped;
-        }
+        return alta_publica($ped, $pend, $meta, $fPedido, $sid, $token, $slug);
+    });
+}
 
-        // Si el nombre lo ha cogido otro (reserva caducada y pago tardío), se busca uno libre.
-        if (!slug_valido($slug) || (boda_existe($slug) && (lee_json(dir_boda($slug) . '/pedido.json')['session_id'] ?? '') !== $sid)) {
-            $base = slug_valido($slug) ? $slug : 'boda';
-            for ($i = 2; $i < 100 && !slug_libre($base . '-' . $i, $token); $i++);
-            registra('slug ocupado al dar de alta, se usa otro', ['sid' => $sid, 'pedido' => $slug, 'nuevo' => $base . '-' . $i]);
-            $slug = $base . '-' . $i;
-            $ped['slug'] = $slug;
-        }
-
-        $d = dir_boda($slug);
-        asegura_dir($d . '/guardado');
-        $cfg = lee_json($pend . '/config.json');
-        $cfg['_estado'] = 'activa';
-        escribe_json($d . '/config.json', $cfg);
-        if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
-        // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
-        escribe_json($d . '/pedido.json', ['session_id' => $sid, 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
-        mapa_actualiza($slug, normaliza_config($cfg)); // si falla, queda pendiente para el cron
-        $enlace = panel_nuevo_enlace($slug);
-        $ped['estado'] = 'creada';
+/**
+ * Lo común a toda alta (pagada o de cortesía): crea la web con el pedido pendiente, el enlace
+ * del panel y el email. Llamar SOLO dentro de con_cerrojo().
+ */
+function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, string $sid, string $token, string $slug): array {
+    if (!$meta || !is_file($pend . '/config.json')) {
+        registra('ALERTA pago sin pedido pendiente', ['sid' => $sid, 'slug' => $slug]);
+        $ped['estado'] = 'sin-datos';
         escribe_json($fPedido, $ped);
-        @unlink(dir_datos('reservas', $ped['slug'] . '.json'));
-        borra_arbol($pend);
+        avisa_estudio('Pago de web de boda sin datos del creador', "Sesión $sid ($slug). Cobrado y facturado ({$ped['factura']}); la web no se ha podido crear. Contactar con {$ped['email']}.");
+        return $ped;
+    }
 
-        correo_bienvenida($ped, $cfg, $enlace);
-        registra('boda creada', ['slug' => $slug, 'sid' => $sid, 'factura' => $ped['factura']]);
+    // Si el nombre lo ha cogido otro (reserva caducada y pago tardío), se busca uno libre.
+    if (!slug_valido($slug) || (boda_existe($slug) && (lee_json(dir_boda($slug) . '/pedido.json')['session_id'] ?? '') !== $sid)) {
+        $base = slug_valido($slug) ? $slug : 'boda';
+        for ($i = 2; $i < 100 && !slug_libre($base . '-' . $i, $token); $i++);
+        registra('slug ocupado al dar de alta, se usa otro', ['sid' => $sid, 'pedido' => $slug, 'nuevo' => $base . '-' . $i]);
+        $slug = $base . '-' . $i;
+        $ped['slug'] = $slug;
+    }
+
+    $d = dir_boda($slug);
+    asegura_dir($d . '/guardado');
+    $cfg = lee_json($pend . '/config.json');
+    $cfg['_estado'] = 'activa';
+    escribe_json($d . '/config.json', $cfg);
+    if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
+    // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
+    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
+    mapa_actualiza($slug, normaliza_config($cfg)); // si falla, queda pendiente para el cron
+    $enlace = panel_nuevo_enlace($slug);
+    $ped['estado'] = 'creada';
+    escribe_json($fPedido, $ped);
+    @unlink(dir_datos('reservas', $ped['slug'] . '.json'));
+    borra_arbol($pend);
+
+    correo_bienvenida($ped, $cfg, $enlace);
+    registra('boda creada', ['slug' => $slug, 'sid' => $sid, 'factura' => $ped['factura']]);
+    return $ped;
+}
+
+/**
+ * Alta con un código de cortesía (100 %, sin Stripe). Idempotente por token: la página de
+ * éxito puede recargarse sin crear otra web ni gastar otro uso del código.
+ */
+function alta_cortesia(string $token, string $hash, array $cod): ?array {
+    $sid = 'cortesia_' . $token;
+    $fPedido = dir_datos('pedidos', $sid . '.json');
+    return con_cerrojo(function () use ($token, $hash, $cod, $sid, $fPedido) {
+        $ped = lee_json($fPedido);
+        if ($ped && ($ped['estado'] ?? '') === 'creada') return $ped;
+        $pend = dir_datos('pendientes', $token);
+        $meta = lee_json($pend . '/meta.json');
+        $cfg = lee_json($pend . '/config.json');
+        if (!$meta || !$cfg) return null;
+        if (!cortesia_consume($hash, $cod, $sid)) return ['estado' => 'agotado'];
+        $slug = (string) ($meta['slug'] ?? '');
+        $ped = $ped ?: [
+            'session_id' => $sid, 'slug' => $slug, 'token' => $token, 'creado' => date('c'),
+            'email' => (string) ($cfg['pareja']['email'] ?? ''), 'nombre' => nombres(normaliza_config($cfg)),
+            'importe' => ['base' => 0, 'iva' => 0, 'total' => 0], 'aceptacion' => $meta['aceptacion'] ?? null,
+            'estado' => 'cortesia', 'cortesia' => (string) ($cod['id'] ?? ''), 'factura' => '',
+            'atelier' => isset(ATELIER[$cfg['atelier'] ?? '']) ? $cfg['atelier'] : '',
+        ];
+        escribe_json($fPedido, $ped);
+        $ped = alta_publica($ped, $pend, $meta, $fPedido, $sid, $token, $slug);
+        cortesia_registra(['codigo' => $cod['id'] ?? '', 'hash' => substr($hash, 0, 12), 'slug' => $ped['slug'], 'pareja' => $ped['nombre'],
+            'email' => $ped['email'], 'pack' => $ped['atelier'] !== '' ? 'Atelier' : 'Esencial', 'precio_catalogo_cent' => precio_total_cent($ped),
+            'fin_alojamiento' => fecha_borrado((string) ($cfg['fecha'] ?? '')), 'ip' => ip_cliente(), 'estado' => $ped['estado'] ?? '']);
         return $ped;
     });
 }
