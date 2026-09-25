@@ -107,7 +107,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
 <style><?= tema_css($c) ?></style>
 </head>
-<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
+<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?> deco-<?= h($c['decoracion']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
 <?php if ($ctx['modo'] === 'preview'): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep) ?>
 <div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(MARCA) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
 <?php endif; ?>
@@ -200,8 +200,14 @@ function pagina_inicio(array $c, array $ctx): string {
 <main class="home">
   <section class="hero<?= $hayFoto ? '' : ' hero--solo' ?>">
     <div class="hero-left">
+<?php if ($c['decoracion'] === 'eucalipto'): ?>
       <img class="hero-sprig" src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140">
+<?php elseif ($c['decoracion'] === 'flores'): ?>
+      <img class="deco-guirnalda" src="<?= h($A) ?>img/deco/guirnalda.webp" alt="" width="1376" height="768">
+<?php endif; ?>
       <div class="hero-text">
+<?php if ($c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
+<?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
         <h1 class="hero-names"><?= h($nom ?: 'Vuestros nombres') ?></h1>
         <div class="hero-date">
@@ -315,7 +321,11 @@ function pagina_inicio(array $c, array $ctx): string {
     </div>
   </section>
 
+<?php if ($c['decoracion'] === 'eucalipto'): ?>
   <div class="sprig-foot" aria-hidden="true"><img src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140"></div>
+<?php elseif ($c['decoracion'] === 'flores'): ?>
+  <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/enredadera.webp" alt="" width="896" height="1200"><img src="<?= h($A) ?>img/deco/enredadera-2.webp" alt="" width="896" height="1200"></div>
+<?php endif; ?>
 </main>
 <?php
     return (string) ob_get_clean();

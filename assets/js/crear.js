@@ -80,6 +80,17 @@
     temasEl.appendChild(el('label', { class: 'c-tema' }, [r, muestra, el('span', { class: 'c-tema-nom' }, [sw, el('span', { text: tm.nombre })])]));
   });
 
+  // ------------------------------------------------------------ decoración
+  var decosEl = document.getElementById('decos');
+  Object.keys(D.decoraciones).forEach(function (k) {
+    var dc = D.decoraciones[k];
+    var r = el('input', { type: 'radio', name: 'deco', value: k });
+    r.checked = (st.decoracion || 'eucalipto') === k;
+    r.addEventListener('change', function () { st.decoracion = k; cambio(); });
+    decosEl.appendChild(el('label', { class: 'c-deco' }, [r, el('span', { class: 'c-deco-muestra c-deco-' + k }),
+      el('span', { class: 'c-deco-txt' }, [el('b', { text: dc.nombre }), el('small', { text: dc.desc })])]));
+  });
+
   // ------------------------------------------------------------ foto
   var fotoInput = document.getElementById('fotoInput');
   var fotoImg = document.getElementById('fotoImg');
@@ -346,7 +357,12 @@
       abrir.addEventListener('click', function () {
         abierta = abierta === s.id ? null : s.id;
         pintaSecciones();
-        if (abierta) irAPagina(rutaDe[s.id]);   // la vista previa enseña la página que se edita
+        if (abierta) {
+          irAPagina(rutaDe[s.id]);   // la vista previa enseña la página que se edita
+          // y el editor se desplaza a la sección abierta para verla entera (owner, 25-sep)
+          var n = li(s);
+          if (n) n.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       });
       var item = el('li', { class: 'c-sec' + (s.on === false ? ' is-off' : ''), 'data-id': s.id }, [
         el('div', { class: 'c-sec-fila' }, [abrir, on]),
@@ -517,7 +533,7 @@
   function pintaCabecera() {
     var a = (st.pareja.nombre1 || '').trim(), b = (st.pareja.nombre2 || '').trim();
     var nom = a && b ? a + ' & ' + b : (a || b);
-    document.getElementById('proyNom').textContent = nom ? 'Boda de ' + nom : 'Vuestra boda';
+    document.getElementById('proyNom').textContent = nom ? 'Boda de ' + nom : (MODO === 'editar' ? 'Vuestra web' : 'Estudio de edición');
     document.getElementById('railNom').textContent = nom || 'Vuestra boda';
     document.getElementById('railIni').textContent = ((a[0] || '') + (b[0] || '')).toUpperCase() || '·';
     var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(st.fecha || '');

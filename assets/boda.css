@@ -830,3 +830,35 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
   padding: 10px 0; background: rgb(var(--primary-rgb) / .10); color: rgb(var(--primary-rgb) / .45); pointer-events: none; text-align: center;
   font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 .marca-previa span + span{ font-size: 10px; font-weight: 500; letter-spacing: .1em; }
+
+/* ============================================================
+   Decoración (25-sep-2026): estructura visual elegida en «Estilo»,
+   independiente de la paleta. body.deco-{flores|eucalipto|sobre|ninguna}
+   ============================================================ */
+/* Flores de acuarela: guirnalda sobre los nombres y enredaderas al pie; en
+   las páginas interiores, guirnalda en lo alto de la tarjeta */
+.deco-guirnalda{ display: block; width: min(520px, 118%); height: 150px; margin: -8px 0 -18px; object-fit: cover; object-position: top; mix-blend-mode: multiply; pointer-events: none; }
+.deco-pie{ display: flex; justify-content: space-between; height: 170px; overflow: hidden; margin-top: var(--s-md); pointer-events: none; }
+.deco-pie img{ width: auto; height: 260px; mix-blend-mode: multiply; opacity: .75; }
+.deco-pie img:first-child{ transform: scaleY(-1); }
+.deco-pie img:last-child{ transform: scale(-1, -1); }
+.deco-flores main > .wrap{ position: relative; overflow: hidden; }
+.deco-flores main > .wrap::before{ content: ''; display: block; height: 120px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 0;
+  background: url(img/deco/guirnalda.webp) top center / cover no-repeat; mix-blend-mode: multiply; opacity: .9; pointer-events: none; }
+@media (min-width: 901px){
+  .deco-flores main > .wrap::before{ height: 160px; margin: -56px -64px 0; }
+  .deco-guirnalda{ height: 190px; }
+}
+
+/* Sobre: los nombres dentro de un sobre con solapa y lacre con las iniciales */
+.deco-sobre .hero-text{ position: relative; overflow: hidden; margin-top: 8px; padding: 104px 28px 32px; background: var(--card); border-radius: 6px;
+  box-shadow: var(--shadow); border: 1px solid rgb(var(--sage-2-rgb) / .9); }
+.deco-solapa{ position: absolute; left: 0; right: 0; top: 0; height: 64px;
+  background: linear-gradient(180deg, var(--sage-2), rgb(var(--sage-2-rgb) / .55)); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.deco-lacre{ position: absolute; left: 50%; top: 34px; width: 58px; height: 58px; transform: translateX(-50%); border-radius: 50%;
+  display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, var(--accent), var(--primary)); color: var(--on-dark);
+  font-family: var(--serif); font-style: italic; font-size: 17px; box-shadow: 0 4px 10px rgb(var(--primary-rgb) / .3), inset 0 0 0 3px rgb(255 255 255 / .12); }
+.deco-sobre main > .wrap{ position: relative; border-top: 6px double rgb(var(--sage-2-rgb) / .9); }
+.deco-sobre main > .wrap::before{ content: '♥'; position: absolute; left: 50%; top: -22px; transform: translateX(-50%); width: 38px; height: 38px; border-radius: 50%;
+  display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, var(--accent), var(--primary)); color: var(--on-dark); font-size: 15px; }
+@media (min-width: 901px){ .deco-sobre .hero-text{ padding: 112px 48px 40px; } }

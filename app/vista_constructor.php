@@ -11,6 +11,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $L = textos_legales();
     $datos = ['modo' => $modo, 'config' => $c, 'slug' => $slug, 'csrf' => $csrf,
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
+        'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
         'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
         'precio' => ['base' => euros(PRECIO_BASE_CENT), 'iva' => IVA_PCT, 'total' => euros(precio_total_cent())],
@@ -63,7 +64,10 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <div class="c-main">
   <header class="c-top">
     <a class="c-marca c-marca-movil" href="<?= $editar ? '/panel' : '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
-    <div class="c-top-tit"><h1><?= h($editar ? 'Edición de vuestra web' : 'Estudio de edición') ?></h1><span class="c-badge"><?= $editar ? 'Publicada' : 'Borrador' ?></span></div>
+    <div class="c-top-tit">
+      <div class="c-top-txt"><h1 id="proyNom">Vuestra boda</h1><small><i class="c-punto"></i><?= $editar ? 'Los cambios se publican al guardar' : 'Guardado en este navegador' ?></small></div>
+      <span class="c-badge"><?= $editar ? 'Publicada' : 'Borrador' ?></span>
+    </div>
     <div class="c-top-acc">
       <button type="button" class="b-btn b-paper c-btn-sm c-solo-movil c-ver-previa" data-ver="previa"><?= il('ojo', 'i i-sm') ?><span>Vista previa</span></button>
       <button type="button" class="b-btn b-paper c-btn-sm c-solo-movil c-ver-editor" data-ver="editor"><?= il('lapiz', 'i i-sm') ?><span>Editar</span></button>
@@ -71,24 +75,13 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     </div>
   </header>
 
-  <section class="c-proyecto">
-    <div class="c-proyecto-fila">
-      <span class="c-proyecto-ico"><?= il('corazon') ?></span>
-      <div class="c-proyecto-txt">
-        <b id="proyNom">Vuestra boda</b>
-        <small><i class="c-punto"></i><?= $editar ? 'Los cambios se publican al guardar' : 'Guardado en este navegador' ?></small>
-      </div>
-      <div class="c-disp" role="group" aria-label="Dispositivo de la vista previa">
-        <button type="button" data-disp="escritorio" aria-pressed="false">Escritorio</button>
-        <button type="button" data-disp="movil" aria-pressed="true">Móvil</button>
-      </div>
-    </div>
-    <div class="c-tabs" role="tablist" aria-label="Partes del constructor">
+  <!-- Sin tarjeta de proyecto (owner, 25-sep: «el constructor queda muy abajo»): el nombre va
+       en la cabecera y el selector de dispositivo en la barra de la vista previa -->
+  <nav class="c-tabs" role="tablist" aria-label="Partes del constructor">
 <?php $n = 0; foreach ($tabs as $k => $t): ?>
       <button type="button" role="tab" id="tab-<?= $k ?>" data-tab="<?= $k ?>" aria-controls="panel-<?= $k ?>" aria-selected="<?= $n++ === 0 ? 'true' : 'false' ?>"><?= h($t) ?></button>
 <?php endforeach; ?>
-    </div>
-  </section>
+  </nav>
 
   <div class="c-grid">
     <section class="c-editor" aria-label="Editor">
@@ -97,6 +90,10 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <h2>Elegid el estilo</h2>
         <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'La paleta cambia los colores de toda la web y podéis cambiarla cuando queráis. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
         <div class="c-temas" id="temas" role="radiogroup" aria-label="Paleta"></div>
+        <hr class="c-hr">
+        <span class="overline overline-bronze">Decoración</span>
+        <p class="c-ayuda">La estructura de adornos de vuestra web. Combina con cualquier paleta.</p>
+        <div class="c-decos" id="decos" role="radiogroup" aria-label="Decoración"></div>
       </div>
 
       <div class="c-panel" role="tabpanel" id="panel-pareja" data-panel="pareja" aria-labelledby="tab-pareja" hidden>
@@ -210,7 +207,10 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <span class="c-dots" aria-hidden="true"><i></i><i></i><i></i></span>
           <span class="c-url" id="urlPrevia"><?= h(($slug !== '' ? $slug : 'vuestra-web') . '.' . BASE_DOMAIN) ?></span>
           <select id="paginaSel" aria-label="Página de la vista previa"></select>
-          <span class="c-envivo"><i></i>En vivo</span>
+          <div class="c-disp" role="group" aria-label="Dispositivo de la vista previa">
+            <button type="button" data-disp="escritorio" aria-pressed="false">Escritorio</button>
+            <button type="button" data-disp="movil" aria-pressed="true">Móvil</button>
+          </div>
         </div>
         <div class="c-marco" id="marco" data-disp="movil">
           <iframe id="previa" title="Vista previa de la web" sandbox="allow-scripts"></iframe>

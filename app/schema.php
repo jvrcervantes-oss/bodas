@@ -20,6 +20,15 @@ const TEMAS = [
 // Menús: desde el 25-sep-2026 cada boda define los suyos ({id, nombre, descripcion, infantil}).
 // Esta tabla es solo la de antes (claves fijas): convierte los config y las respuestas viejos,
 // cuyo id de menú ES esa clave, para que sigan casando.
+// Decoración (estructura visual), independiente de la paleta. Owner, 25-sep-2026.
+// Las acuarelas son las de su maqueta de Stitch (assets/img/deco/).
+const DECORACIONES = [
+    'flores'    => ['Flores de acuarela', 'Guirnalda y enredaderas en pastel'],
+    'eucalipto' => ['Eucalipto', 'Una rama sobre los nombres'],
+    'sobre'     => ['Sobre', 'La invitación en un sobre con lacre'],
+    'ninguna'   => ['Sin adornos', 'Solo tipografía y color'],
+];
+
 const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
 const MAX_MENUS = 8;
 const MAX_TRAYECTOS = 6;
@@ -71,6 +80,7 @@ function config_inicial(): array {
         'fecha' => '',
         'ciudad' => '',
         'tema' => 'rosa',
+        'decoracion' => 'flores',
         'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
         'convite' => ['lugar' => '', 'direccion' => '', 'hora' => ''],
         'portada' => [
@@ -210,6 +220,8 @@ function normaliza_config($in): array {
     $c['fecha'] = norm_fecha($in['fecha'] ?? '');
     $c['ciudad'] = clean_str($in['ciudad'] ?? '', 60);
     $c['tema'] = isset(TEMAS[$in['tema'] ?? '']) ? $in['tema'] : 'eucalipto';
+    // Las bodas de antes de existir la decoración conservan su rama de eucalipto
+    $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
     foreach (['ceremonia', 'convite'] as $k) {
         $e = is_array($in[$k] ?? null) ? $in[$k] : [];
         $c[$k] = ['lugar' => clean_str($e['lugar'] ?? '', 120), 'direccion' => clean_str($e['direccion'] ?? '', 160), 'hora' => norm_hora($e['hora'] ?? '')];
