@@ -33,6 +33,10 @@ function rutas_boda(string $slug, string $ruta, string $metodo): void {
         return;
     }
     if ($ruta === 'api/rsvp') { api_rsvp($slug, $c, $metodo); return; }
+    if ($ruta === 'api/libro') { api_libro($slug, $c, $metodo); return; }
+    if ($ruta === 'acceso') { api_acceso($slug, $c, $metodo); return; }
+    if (preg_match('~^g/([a-f0-9]{16})\.webp$~', $ruta, $m)) { sirve_galeria($slug, $c, $m[1]); }
+    if (preg_match('~^l/([a-f0-9]{16})\.webp$~', $ruta, $m)) { sirve_libro_foto($slug, $c, $m[1]); }
     if ($ruta === 'api/musica') { api_musica($slug, $c, $metodo); return; }
     if ($ruta === 'boda.ics' && $c['fecha'] !== '') {
         header('Content-Type: text/calendar; charset=utf-8');
@@ -41,7 +45,13 @@ function rutas_boda(string $slug, string $ruta, string $metodo): void {
         return;
     }
     if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }
-    $html = render_pagina($c, $ruta, ctx_live($slug));
+    // Galería y libro: detrás del código de la boda (owner, 25-sep)
+    $sec = seccion_por_ruta($c, $ruta);
+    if ($sec && in_array($sec['tipo'], ['galeria', 'libro'], true)) {
+        header('Cache-Control: private, no-store');
+        if (!acceso_ok($slug, $c) && !panel_autenticado($slug)) { echo render_codigo($c, $sec, ctx_live($slug), (string) ($_GET['codigo'] ?? '')); return; }
+    }
+    $html = render_pagina($c, $ruta, ctx_live($slug) + ['libro' => $sec && $sec['tipo'] === 'libro' ? libro_entradas($slug) : []]);
     if ($html === null) no_existe();
     echo $html;
 }
@@ -172,7 +182,9 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
             echo vista_constructor('editar', $c, $slug, panel_csrf());
             return;
         case 'guardar': panel_guardar($slug, $c, $metodo); return;
-        case 'vista-previa': api_vista_previa($metodo, url_boda($slug, 'assets/')); return;
+        case 'vista-previa': api_vista_previa($metodo, url_boda($slug, 'assets/'), $slug); return;
+        case 'galeria': if ($metodo !== 'POST') no_existe(); panel_galeria_subir($slug); return;
+        case 'libro': if ($metodo !== 'POST') no_existe(); panel_libro_accion($slug); return;
     }
     no_existe();
 }
@@ -324,6 +336,22 @@ function panel_inicio(string $slug, array $c): string {
     }
     $o .= '</tbody></table></div></section>';
 
+    $libro = libro_entradas($slug);
+    if (seccion_tipo($c, 'libro') || $libro) {
+        $o .= '<section class="section" id="libro"><h2 class="panel-h2">Libro de invitados</h2>'
+            . '<p class="panel-nota">Se publica al momento. Podéis ocultar o borrar cualquier mensaje; si alguien os pide retirar algo, hacedlo aquí.</p>';
+        if (!$libro) $o .= '<p class="vacio">Todavía no hay mensajes.</p>';
+        foreach (array_reverse($libro) as $e) {
+            $o .= '<div class="panel-libro' . (!empty($e['oculto']) ? ' is-oculto' : '') . '">'
+                . (!empty($e['foto']) ? '<img src="/l/' . h($e['foto']) . '.webp?t=' . h(firma_img($slug, (string) $e['foto'])) . '" alt="" loading="lazy">' : '')
+                . '<div><b>' . h($e['nombre']) . '</b> <span class="muted">· ' . h(date('d/m/Y H:i', strtotime((string) $e['fecha']))) . (!empty($e['oculto']) ? ' · oculto' : '') . '</span>'
+                . parrafos((string) $e['mensaje'])
+                . '<form method="post" action="/panel/libro" class="panel-libro-acc"><input type="hidden" name="csrf" value="' . h(panel_csrf()) . '"><input type="hidden" name="id" value="' . h($e['id']) . '">'
+                . '<button class="btn btn-soft" name="accion" value="' . (!empty($e['oculto']) ? 'mostrar' : 'ocultar') . '">' . (!empty($e['oculto']) ? 'Mostrar' : 'Ocultar') . '</button>'
+                . '<button class="btn btn-soft" name="accion" value="borrar">Borrar</button></form></div></div>';
+        }
+        $o .= '</section>';
+    }
     if (seccion_tipo($c, 'musica')) {
         $o .= '<section class="section"><h2 class="panel-h2">Canciones propuestas</h2><div class="table-wrap"><table><thead><tr><th>Canción</th><th>Artista</th><th>Votos</th></tr></thead><tbody>';
         if (!$canciones) $o .= '<tr><td colspan="3" class="vacio">Todavía no hay canciones.</td></tr>';
@@ -370,6 +398,12 @@ function panel_zip(string $slug, array $c): void {
     $ctx = ['modo' => 'zip', 'assets' => 'assets/', 'slug' => $slug, 'foto' => is_file($foto) ? 'foto.webp' : ''];
     $z->addFromString('index.html', (string) render_pagina($c, '', $ctx));
     foreach ($c['secciones'] as $s) if ($s['on']) $z->addFromString($s['ruta'] . '.html', (string) render_pagina($c, $s['ruta'], $ctx));
+    // La galería sí va en el ZIP (son fotos de la pareja); el libro no (contenido de terceros, Legal #87)
+    $g = seccion_tipo($c, 'galeria');
+    foreach ($g ? $g['datos']['fotos'] : [] as $f) {
+        $file = dir_galeria($slug) . '/' . $f['id'] . '.webp';
+        if (is_file($file)) $z->addFile($file, 'galeria/' . $f['id'] . '.webp');
+    }
     $z->addFromString('privacidad.html', (string) render_pagina($c, 'privacidad', $ctx));
     if ($c['fecha'] !== '') $z->addFromString('boda.ics', ics($c));
     if (is_file($foto)) $z->addFile($foto, 'foto.webp');
@@ -406,6 +440,8 @@ function panel_guardar(string $slug, array $actual, string $metodo): void {
     sort($h);
     foreach (array_slice($h, 0, max(0, count($h) - 5)) as $viejo) @unlink($viejo);
     $c['_estado'] = $actual['_estado'] ?? 'activa';
+    $c = galeria_filtra_existentes($slug, $c);
     escribe_json($d . '/config.json', $c);
+    galeria_limpia_huerfanas($slug, $c);
     json_response(['ok' => true]);
 }

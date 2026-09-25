@@ -15,6 +15,7 @@ require __DIR__ . '/app/creador.php';
 require __DIR__ . '/app/landing.php';
 require __DIR__ . '/app/vista_constructor.php';
 require __DIR__ . '/app/boda.php';
+require __DIR__ . '/app/galeria.php';
 
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');

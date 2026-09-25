@@ -24,6 +24,8 @@ foreach (glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: [] as $d) {
     if ($borrado === '' || $borrado > $hoy) continue;
     borra_arbol($d . '/guardado');
     borra_arbol($d . '/historial');
+    borra_arbol($d . '/galeria');     // fotos de la pareja
+    borra_arbol($d . '/libro');       // mensajes, fotos e IP de los invitados
     @unlink($d . '/foto.webp');
     $c['_estado'] = 'archivada';
     $c['foto'] = false;

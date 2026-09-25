@@ -65,6 +65,8 @@ const ICONOS = [
     'musica' => 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
     'dresscode' => 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z',
     'libre' => 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',
+    'galeria' => 'M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6M15 9.5a1.5 1.5 0 1 0 0-.01',
+    'libro' => 'M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3zM18 20a2 2 0 0 0 2-2V6M8 9h6M8 13h4',
     'corazon' => 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
     'flecha' => 'M5 12h14M13 6l6 6-6 6',
     'mapa' => 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14',
@@ -391,6 +393,8 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
         case 'hoteles': return envoltorio($s['titulo'], $intro . lista_hoteles($d));
         case 'regalos': return envoltorio($s['titulo'], $intro . bloque_regalos($c, $d));
         case 'musica': return envoltorio($s['titulo'], $intro . bloque_musica($ctx));
+        case 'galeria': return envoltorio($s['titulo'], $intro . bloque_galeria($s, $ctx), 'max-width:1000px;margin:0 auto;');
+        case 'libro': return envoltorio($s['titulo'], $intro . bloque_libro($c, $s, $ctx));
         case 'dresscode': return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>', 'max-width:560px;margin:0 auto;');
         default: return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>');
     }
@@ -518,6 +522,89 @@ function bloque_musica(array $ctx): string {
         . '<div class="form-msg" role="alert" id="musicAddMsg"></div></form>'
         . '<p class="lede" style="margin-top:var(--s5);margin-bottom:0;">Esta es la lista hasta el momento:</p>'
         . '<div class="song-list" id="songList"><p class="song-empty" id="songListEmpty">Aún no hay canciones. ¿Rompes el hielo?</p></div>';
+}
+
+/** URL de una foto de galería o libro según el modo (en el ZIP van en carpeta propia; en la vista previa del panel, firmadas). */
+function src_privada(string $tipo, string $id, array $ctx): string {
+    if ($ctx['modo'] === 'zip') return 'galeria/' . $id . '.webp';
+    $u = '/' . $tipo . '/' . $id . '.webp';
+    if (!empty($ctx['firma_slug'])) $u .= '?t=' . firma_img($ctx['firma_slug'], $id);
+    return $u;
+}
+
+function bloque_galeria(array $s, array $ctx): string {
+    $fotos = $s['datos']['fotos'];
+    if (!$fotos) {
+        return '<div class="pending-note">' . ($ctx['modo'] === 'preview' && empty($ctx['firma_slug'])
+            ? 'Las fotos de la galería se suben desde vuestro panel en cuanto publiquéis la web.'
+            : 'Pronto compartiremos aquí nuestras fotos.') . '</div>';
+    }
+    $o = '<div class="galeria">';
+    foreach ($fotos as $f) {
+        $src = src_privada('g', $f['id'], $ctx);
+        $o .= '<figure class="galeria-foto"><a href="' . h($src) . '" target="_blank" rel="noopener"><img src="' . h($src) . '" alt="' . h($f['pie']) . '" loading="lazy"></a>'
+            . ($f['pie'] !== '' ? '<figcaption>' . h($f['pie']) . '</figcaption>' : '') . '</figure>';
+    }
+    return $o . '</div>';
+}
+
+function bloque_libro(array $c, array $s, array $ctx): string {
+    if ($ctx['modo'] === 'zip') return aviso_alojada($ctx, 'Dejad vuestro mensaje en el libro de invitados de nuestra web');
+    $L = textos_legales();
+    $capa1 = strtr((string) ($L['libro_capa1'] ?? ''), [
+        '{pareja}' => nombres($c, ' y '), '{email}' => $c['pareja']['email'],
+        '{borrado}' => $c['fecha'] !== '' ? fecha_larga(fecha_borrado($c['fecha']), false) : '',
+    ]);
+    $frase = 'Más información en el aviso de privacidad.';
+    $capa1 = trim(str_replace($frase, '', $capa1));
+    $fotos = !empty($s['datos']['fotos']);
+    $retirar = 'mailto:' . rawurlencode($c['pareja']['email']) . '?cc=' . rawurlencode(empresa()['email'])
+        . '&subject=' . rawurlencode('Retirar un mensaje o una foto del libro de invitados');
+    ob_start(); ?>
+<form id="libroForm" class="stack libro-form" novalidate enctype="multipart/form-data">
+  <input type="text" name="web" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+  <div class="field"><label for="libroNombre">Tu nombre</label><input type="text" id="libroNombre" name="nombre" maxlength="80" required></div>
+  <div class="field"><label for="libroMensaje">Tu mensaje</label><textarea id="libroMensaje" name="mensaje" maxlength="600" rows="4" required></textarea></div>
+<?php if ($fotos): ?>
+  <div class="field"><label for="libroFoto">Una foto (opcional)</label><input type="file" id="libroFoto" name="foto" accept="image/jpeg,image/png,image/webp"></div>
+<?php endif; ?>
+  <div class="rsvp-legal">
+<?php if ($capa1 !== ''): ?>    <p class="rsvp-capa1"><?= h($capa1) ?> <?= a_interno('privacidad', $ctx) ?>Más información en el aviso de privacidad</a>.</p><?php endif; ?>
+    <div class="field"><label class="check-group"><input type="checkbox" name="acepto_publicar" value="si" required> <?= h($L['check_libro_publicar'] ?? 'Entiendo que mi nombre y mi mensaje se publican en la web de la boda.') ?></label></div>
+<?php if ($fotos): ?>
+    <div class="field" data-si-foto hidden><label class="check-group"><input type="checkbox" name="acepto_foto" value="si"> <?= h($L['check_foto_libro'] ?? '') ?></label></div>
+<?php endif; ?>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn">Dejar mi mensaje</button></div>
+  <div class="form-msg" role="alert"></div>
+</form>
+<div class="libro-lista">
+<?php $vis = array_reverse(array_values(array_filter($ctx['libro'] ?? [], fn($e) => empty($e['oculto']))));
+    if (!$vis): ?>
+  <p class="song-empty">Aún no hay mensajes. ¿Escribes el primero?</p>
+<?php endif; foreach ($vis as $e): ?>
+  <article class="libro-entrada">
+<?php if (!empty($e['foto'])): ?>    <img src="<?= h(src_privada('l', (string) $e['foto'], $ctx)) ?>" alt="Foto de <?= h($e['nombre']) ?>" loading="lazy"><?php endif; ?>
+    <?= parrafos((string) $e['mensaje']) ?>
+    <p class="libro-firma">— <?= h($e['nombre']) ?></p>
+  </article>
+<?php endforeach; ?>
+</div>
+<p class="libro-retirar"><a href="<?= h($retirar) ?>">Pedir que se retire un mensaje o una foto</a></p>
+<?php
+    return (string) ob_get_clean();
+}
+
+/** Página para escribir el código de la boda (galería y libro). */
+function render_codigo(array $c, array $s, array $ctx, string $aviso): string {
+    $msg = ['mal' => 'Ese código no es. Lo tenéis en la invitación.', 'espera' => 'Demasiados intentos. Prueba dentro de un rato.'][$aviso] ?? '';
+    $cuerpo = envoltorio($s['titulo'], '<form method="post" action="/acceso" class="stack codigo-form">'
+        . '<p class="lede">Para ver ' . ($s['tipo'] === 'libro' ? 'y escribir en el libro' : 'la galería') . ', escribe el código que viene en la invitación.</p>'
+        . '<input type="hidden" name="volver" value="/' . h($s['ruta']) . '">'
+        . '<div class="field"><label for="codigo">Código de la boda</label><input type="text" id="codigo" name="codigo" maxlength="40" autocomplete="off" autocapitalize="off" required autofocus></div>'
+        . ($msg !== '' ? '<div class="form-msg">' . h($msg) . '</div>' : '')
+        . '<div class="form-actions"><button type="submit" class="btn">Entrar</button></div></form>', 'max-width:520px;margin:0 auto;');
+    return layout($c, $s['ruta'], $s['titulo'], $cuerpo, $ctx);
 }
 
 function aviso_alojada(array $ctx, string $txt): string {

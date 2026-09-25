@@ -162,7 +162,11 @@ function ip_cliente(): string { return (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0
  * Límite de peticiones por ventana: $clave ya incluye lo que acota (IP, boda…).
  * Devuelve false si se ha superado. Ficheros en DATA_DIR/rl, los barre el cron diario.
  */
-function limite(string $clave, int $max, int $ventana): bool {
+/**
+ * Límite de peticiones por ventana. $estricto = true falla en cerrado (si el disco no
+ * responde, se rechaza): obligatorio en subidas anónimas (Seguridad, #87).
+ */
+function limite(string $clave, int $max, int $ventana, bool $estricto = false): bool {
     $f = dir_datos('rl', hash('sha256', $clave) . '.json');
     $ok = muta_json($f, function (array &$d) use ($max, $ventana) {
         $ahora = time();
@@ -170,7 +174,8 @@ function limite(string $clave, int $max, int $ventana): bool {
         $d['n'] = ($d['n'] ?? 0) + 1;
         return $d['n'] <= $max;
     });
-    return $ok !== false; // si el disco falla no se bloquea a nadie; el tope de bytes sigue
+    if ($ok === null) return !$estricto; // disco caído: el RSVP no se bloquea; una subida sí
+    return $ok !== false;
 }
 
 function registra(string $msg, array $ctx = []): void {
@@ -179,6 +184,16 @@ function registra(string $msg, array $ctx = []): void {
         $linea = date('c') . ' ' . $msg . ($ctx ? ' ' . json_encode($ctx, JSON_UNESCAPED_UNICODE) : '') . "\n";
         file_put_contents(dir_datos('log', 'app-' . date('Y-m') . '.log'), $linea, FILE_APPEND | LOCK_EX);
     } catch (Throwable $e) { /* el log nunca tumba la petición */ }
+}
+
+/** Clave propia de la app para firmar cookies y enlaces (se crea sola la primera vez, fuera de git). */
+function clave_app(): string {
+    $f = dir_datos('clave_app');
+    if (!is_file($f)) {
+        asegura_dir(DATA_DIR);
+        @file_put_contents($f, bin2hex(random_bytes(32)), LOCK_EX);
+    }
+    return trim((string) file_get_contents($f));
 }
 
 function url_boda(string $slug, string $ruta = ''): string {

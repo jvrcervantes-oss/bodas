@@ -48,7 +48,7 @@ function rutas_creador(string $ruta, string $metodo): void {
 
 /** Vista previa: se renderiza con el MISMO generador, no se guarda nada, y solo por POST
  *  (un POST no se puede enlazar: nadie puede montar con esto una página falsa en nuestro dominio). */
-function api_vista_previa(string $metodo, string $assets): void {
+function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''): void {
     if ($metodo !== 'POST') json_response(['ok' => false], 405);
     if (!limite('vp|' . ip_cliente(), 1500, 3600)) json_response(['ok' => false, 'error' => 'Demasiadas peticiones.'], 429);
     $raw = file_get_contents('php://input', false, null, 0, 200000);
@@ -56,8 +56,10 @@ function api_vista_previa(string $metodo, string $assets): void {
     if (!is_array($in)) json_response(['ok' => false], 400);
     $c = normaliza_config($in['config'] ?? []);
     $pagina = clean_str($in['pagina'] ?? '', 40);
-    $html = render_pagina($c, $pagina === 'inicio' ? '' : $pagina, ['modo' => 'preview', 'assets' => $assets, 'foto' => '']);
-    if ($html === null) $html = render_pagina($c, '', ['modo' => 'preview', 'assets' => $assets, 'foto' => '']);
+    $ctx = ['modo' => 'preview', 'assets' => $assets, 'foto' => '', 'firma_slug' => $firmaSlug,
+        'libro' => $firmaSlug !== '' ? libro_entradas($firmaSlug) : []];
+    $html = render_pagina($c, $pagina === 'inicio' ? '' : $pagina, $ctx);
+    if ($html === null) $html = render_pagina($c, '', $ctx);
     $paginas = [['inicio', 'Inicio']];
     // [ruta, título, id de la sección]: el creador sincroniza vista previa y configurador por el id
     foreach ($c['secciones'] as $s) if ($s['on']) $paginas[] = [$s['ruta'], $s['titulo'], $s['id']];

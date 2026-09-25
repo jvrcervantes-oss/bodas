@@ -11,19 +11,20 @@ const FOTO_MAX_BYTES = 4 * 1024 * 1024;
 const FOTO_LADO_MAX = 1400;
 
 /** Procesa $_FILES[$campo] y escribe $destino (webp). Devuelve '' si ok o el motivo. */
-function guarda_foto(string $campo, string $destino): string {
+function guarda_foto(string $campo, string $destino, int $maxBytes = FOTO_MAX_BYTES, int $maxPx = 40000000, int $lado = FOTO_LADO_MAX): string {
     $f = $_FILES[$campo] ?? null;
     if (!is_array($f) || ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) return 'sin-foto';
     if (($f['error'] ?? 1) !== UPLOAD_ERR_OK || !is_uploaded_file((string) $f['tmp_name'])) return 'La foto no ha llegado bien.';
-    if ((int) $f['size'] > FOTO_MAX_BYTES) return 'La foto pesa demasiado (máximo 4 MB).';
+    if ((int) $f['size'] > $maxBytes) return 'La foto pesa demasiado (máximo ' . (int) round($maxBytes / 1048576) . ' MB).';
     $mime = (new finfo(FILEINFO_MIME_TYPE))->file((string) $f['tmp_name']);
     if (!in_array($mime, ['image/webp', 'image/jpeg', 'image/png'], true)) return 'La foto tiene que ser JPG, PNG o WebP.';
     $info = @getimagesize((string) $f['tmp_name']);
-    if (!$info || $info[0] < 200 || $info[1] < 200 || $info[0] * $info[1] > 40000000) return 'La foto no tiene un tamaño válido.';
+    // El tope de píxeles se mira ANTES de decodificar: 40 MP en GD son ~160 MB de RAM (Seguridad, #87)
+    if (!$info || $info[0] < 200 || $info[1] < 200 || $info[0] * $info[1] > $maxPx) return 'La foto no tiene un tamaño válido.';
     $img = @imagecreatefromstring((string) file_get_contents((string) $f['tmp_name']));
     if (!$img) return 'No hemos podido leer la foto.';
     [$w, $h] = [imagesx($img), imagesy($img)];
-    $k = min(1, FOTO_LADO_MAX / max($w, $h));
+    $k = min(1, $lado / max($w, $h));
     if ($k < 1) {
         $nw = (int) round($w * $k);
         $nh = (int) round($h * $k);

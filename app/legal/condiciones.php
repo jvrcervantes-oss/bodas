@@ -15,9 +15,10 @@
   <li>Un formulario de confirmación de asistencia por grupo. Por cada invitado: nombre, si es adulto o niño, menú y alergias. Por cada grupo: si asiste, si usa el autobús, un dato de contacto y una canción.</li>
   <li>Peticiones y votos de canciones.</li>
   <li>Un panel privado con contraseña para ver las respuestas, exportarlas a Excel, editar la web y descargar un ZIP.</li>
+  <li>Si las activáis: una galería de hasta 24 fotos que subís desde el panel, y un libro de invitados donde quien tenga el enlace y el código de la boda puede dejar su nombre, un mensaje y una foto. Ambas van detrás de un código de acceso que elegís vosotros.</li>
   <li>Alojamiento de la web hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda (apartado 7).</li>
 </ul>
-<p>El ZIP contiene el HTML estático de vuestra web, sin datos de invitados. Es una copia de lo que se ve, no de lo que funciona: fuera de nuestro alojamiento, el formulario de asistencia, las canciones y el panel no funcionan. Se abre en cualquier navegador actual.</p>
+<p>El ZIP contiene el HTML estático de vuestra web y las fotos de la galería, sin datos de invitados ni el libro de invitados. Es una copia de lo que se ve, no de lo que funciona: fuera de nuestro alojamiento, el formulario de asistencia, las canciones y el panel no funcionan. Se abre en cualquier navegador actual.</p>
 <p>Las webs de boda no aparecen en buscadores: están marcadas para que Google y similares no las indexen. Cualquiera que tenga el enlace puede verlas.</p>
 
 <h2>3. Quién puede comprar</h2>
@@ -43,9 +44,10 @@
 <p>La web y las respuestas de los invitados se mantienen hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda que figure en la web. Ese día, de forma automática:</p>
 <ul>
   <li>se borran todas las respuestas de asistencia (nombres, menús, alergias, contactos) y las canciones;</li>
+  <li>se borran las fotos de la galería y los mensajes y fotos del libro de invitados;</li>
   <li>la web deja de mostrar su contenido y pasa a una página de agradecimiento.</li>
 </ul>
-<p>Lo borrado no se puede recuperar. Si queréis conservar las respuestas, exportad el Excel antes de esa fecha. Podéis pedirnos que borremos antes la web entera escribiendo a <?= h($E['email']) ?>.</p>
+<p>Lo borrado no se puede recuperar. Si queréis conservar las respuestas, exportad el Excel y guardad las fotos antes de esa fecha. Podéis pedirnos que borremos antes la web entera escribiendo a <?= h($E['email']) ?>.</p>
 
 <h2>8. Derecho de desistimiento</h2>
 <p>Como consumidores, tenéis 14 días naturales desde la compra para desistir sin dar motivos.</p>
@@ -56,10 +58,13 @@
 <h2>9. Garantía</h2>
 <p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos y lo arreglaremos sin coste. Si no lo arreglamos en un plazo razonable, podéis pedir una rebaja del precio o, si el fallo es importante, resolver el contrato y recuperar lo pagado. Es la garantía legal que os da la ley y no la limitamos.</p>
 
-<h2>10. Vuestros textos y vuestra foto</h2>
+<h2>10. Vuestros textos y vuestras fotos</h2>
 <p>Los textos y la foto que ponéis en la web son vuestros y seguís siendo sus titulares. Al subirlos nos dais permiso para alojarlos y mostrarlos en vuestra web mientras dure el servicio, y para nada más.</p>
-<p>Al subir la foto garantizáis que tenéis derecho a usarla: que la hicisteis vosotros o que el fotógrafo os permite publicarla, y que las personas que aparecen están de acuerdo. Si un tercero nos reclama por la foto o por vuestros textos, responderéis vosotros de esa reclamación.</p>
+<p>Al subir las fotos (la de portada y las de la galería) garantizáis que tenéis derecho a usarlas: que la hicisteis vosotros o que el fotógrafo os permite publicarla, y que las personas que aparecen están de acuerdo. Si un tercero nos reclama por la foto o por vuestros textos, responderéis vosotros de esa reclamación.</p>
 <p>No se puede publicar contenido ilegal, ofensivo o que vulnere derechos de otras personas. Si recibimos un aviso fundado sobre ello, podremos retirar ese contenido y os avisaremos.</p>
+
+<h2>10 bis. Libro de invitados</h2>
+<p>Los mensajes y fotos del libro los publican vuestros invitados y aparecen al momento. Vosotros decidís qué se queda: podéis ocultar o borrar cualquiera desde el panel. La página del libro incluye un enlace para pedir la retirada de un contenido. Si nos llega un aviso fundado de que un mensaje o una foto es ilegal o vulnera derechos de alguien (por ejemplo, la imagen de un menor sin permiso), lo retiraremos sin esperar y os avisaremos.</p>
 
 <h2>11. Licencia del ZIP</h2>
 <p>El diseño, el código y la plantilla son de <?= h($E['titular']) ?>. Con la compra recibís una licencia para usar el ZIP de vuestra web:</p>
@@ -108,9 +113,9 @@
 
 <h2>II.2. Qué se trata</h2>
 <ul>
-  <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel.</li>
-  <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños).</li>
-  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas.</li>
+  <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel; publicar los mensajes y fotos del libro de invitados y las fotos de la galería.</li>
+  <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños); quienes escriben en el libro y las personas que aparecen en las fotos, incluidos menores.</li>
+  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos.</li>
   <li>Categoría especial: las alergias e intolerancias son datos de salud (artículo 9 del RGPD). La web solo las recoge si quien responde da su consentimiento explícito en el formulario.</li>
   <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda.</li>
 </ul>
@@ -120,7 +125,7 @@
   <li>Tratar los datos solo para prestar este servicio y siguiendo las instrucciones de la pareja, que son las de este contrato y las que dé por escrito después. Si una instrucción nos parece contraria a la ley, lo diremos.</li>
   <li>No usar los datos para nada propio: ni publicidad, ni estadísticas, ni cederlos a nadie, salvo obligación legal.</li>
   <li>Garantizar que quien pueda acceder a ellos está obligado a guardar confidencialidad.</li>
-  <li>Aplicar medidas de seguridad adecuadas: los datos se guardan fuera de la parte pública del servidor, el panel está protegido con una contraseña que guardamos de forma que nadie, ni nosotros, puede leerla, y la conexión con la web va cifrada.</li>
+  <li>Aplicar medidas de seguridad adecuadas: los datos se guardan fuera de la parte pública del servidor, el panel está protegido con una contraseña que guardamos de forma que nadie, ni nosotros, puede leerla, y la conexión con la web va cifrada. Los mensajes y fotos del libro y de la galería no están detrás de la contraseña: los ve quien tenga el enlace y el código de la boda, porque ese es su fin.</li>
   <li>Ayudar a la pareja a atender las peticiones de los invitados (ver, corregir o borrar sus datos) y, si procede, en las evaluaciones de impacto o consultas a la autoridad de control.</li>
   <li>Al terminar el encargo, borrar los datos de invitados. Antes de esa fecha, la pareja puede llevarse una copia exportando el Excel. No guardamos copias después.</li>
   <li>Poner a disposición de la pareja la información necesaria para demostrar que cumplimos este anexo y permitir, con aviso razonable, las comprobaciones que pida.</li>

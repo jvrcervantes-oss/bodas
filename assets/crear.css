@@ -192,6 +192,13 @@
 .c-mini { width: 28px; height: 28px; border: 1px solid var(--line-soft); background: var(--paper); border-radius: 6px; cursor: pointer; color: var(--ink-2); font-size: 12px; }
 .c-mini:disabled { opacity: .35; cursor: default; }
 .c-fs .c-ayuda { margin: -2px 0 10px; }
+.c-aviso { margin: 0; padding: 12px 14px; border-radius: var(--r); background: var(--blush); font-size: 13px; color: var(--ink-2); }
+.c-galeria { display: flex; flex-direction: column; gap: 10px; }
+.c-galeria > .b-btn { align-self: flex-start; cursor: pointer; }
+.c-galeria-lista { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-galeria-item { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: var(--r); border: 1px solid var(--line-soft); background: var(--surface-low); }
+.c-galeria-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; background: var(--surface-c); }
+.c-galeria-item input { width: 100%; min-height: 34px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; }
 
 /* publicar */
 .c-slug { display: flex; align-items: center; padding: 0 12px 0 0; }

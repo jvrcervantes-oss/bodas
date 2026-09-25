@@ -331,6 +331,17 @@
         ]));
         w.appendChild(casilla(s.datos.preguntar, 'Preguntar en la confirmación si necesitan autobús', function (v) { s.datos.preguntar = v; }));
         break;
+      case 'galeria':
+        w.appendChild(campoCodigo());
+        w.appendChild(campoTexto(s, 'texto', 'Introducción (opcional)', { area: true, max: 600, rows: 2 }));
+        w.appendChild(editorGaleria(s));
+        break;
+      case 'libro':
+        w.appendChild(campoCodigo());
+        w.appendChild(campoTexto(s, 'texto', 'Introducción', { area: true, max: 600, rows: 2 }));
+        w.appendChild(casilla(s.datos.fotos, 'Los invitados pueden subir una foto con su mensaje', function (v) { s.datos.fotos = v; }));
+        w.appendChild(el('p', { class: 'c-ayuda', text: 'Los mensajes se publican al momento. Desde vuestro panel podéis ocultar o borrar cualquiera.' }));
+        break;
       case 'informacion':
         w.appendChild(el('p', { class: 'c-ayuda', text: 'Muestra la ceremonia y el convite con su mapa (los datos del paso 2).' }));
         w.appendChild(campoTexto(s, 'texto', 'Texto adicional (aparcamiento, accesos…)', { area: true, max: 2000 }));
@@ -351,7 +362,8 @@
     rsvp: 'M3 6h18v12H3zM3 7l9 6 9-6', informacion: 'M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10zM12 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4z',
     hoteles: 'M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5', transporte: 'M4 3h16v14H4zM4 11h16M7 17v3M17 17v3',
     regalos: 'M3 8h18v4H3zM5 12v8h14v-8M12 8v12', musica: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
-    dresscode: 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z', libre: 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5'
+    dresscode: 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z', libre: 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',
+    galeria: 'M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6', libro: 'M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3zM8 9h6M8 13h4'
   };
   function icono(tipo) {
     var n = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -360,6 +372,79 @@
     n.appendChild(p);
     return n;
   }
+  // Código de acceso a galería y libro: uno por boda, compartido por las dos secciones
+  function campoCodigo() {
+    var inp = el('input', { maxlength: 20, placeholder: 'Ej.: 1205 o LUCIAYMARCOS', autocomplete: 'off', spellcheck: 'false' });
+    inp.value = st.codigo || '';
+    inp.addEventListener('input', function () {
+      inp.value = inp.value.replace(/[^A-Za-z0-9-]/g, '');
+      st.codigo = inp.value;
+      document.querySelectorAll('.c-codigo input').forEach(function (o) { if (o !== inp) o.value = inp.value; });
+      cambio();
+    });
+    return el('label', { class: 'c-campo c-codigo' }, [el('span', { text: 'Código para los invitados' }), inp,
+      el('small', { text: 'Ponedlo en la invitación. Lo piden la galería y el libro, para que solo entren vuestros invitados. Mínimo 4 caracteres.' })]);
+  }
+
+  // Galería: solo se sube desde el panel (tras publicar); en el creador no se sube nada
+  function editorGaleria(s) {
+    var caja = el('div', { class: 'c-galeria' });
+    if (MODO !== 'editar') {
+      caja.appendChild(el('p', { class: 'c-aviso', text: 'Las fotos de la galería se suben desde vuestro panel en cuanto publiquéis la web.' }));
+      return caja;
+    }
+    var aviso = el('p', { class: 'c-nota', 'aria-live': 'polite' });
+    var consent = null;
+    if (!s.datos.consentido) {
+      consent = el('input', { type: 'checkbox' });
+      caja.appendChild(el('label', { class: 'c-check' }, [consent, el('span', { text: D.checkGaleria })]));
+    }
+    var lista = el('div', { class: 'c-galeria-lista' });
+    function pinta() {
+      lista.textContent = '';
+      s.datos.fotos.forEach(function (f, i) {
+        var pie = el('input', { maxlength: 140, placeholder: 'Pie de foto (opcional)' });
+        pie.value = f.pie || '';
+        pie.addEventListener('input', function () { f.pie = pie.value; cambio(); });
+        var mover = function (d) { return function () { var j = i + d; if (j < 0 || j >= s.datos.fotos.length) return; var x = s.datos.fotos[i]; s.datos.fotos[i] = s.datos.fotos[j]; s.datos.fotos[j] = x; pinta(); cambio(); }; };
+        lista.appendChild(el('div', { class: 'c-galeria-item' }, [
+          el('img', { src: '/g/' + f.id + '.webp?t=' + (f.t || ''), alt: '' }),
+          pie,
+          el('span', { class: 'c-item-acc' }, [
+            el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Antes', disabled: i === 0, text: '←', onclick: mover(-1) }),
+            el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Después', disabled: i === s.datos.fotos.length - 1, text: '→', onclick: mover(1) }),
+            el('button', { type: 'button', class: 'c-link c-link-mal', text: 'Quitar', onclick: function () { s.datos.fotos.splice(i, 1); pinta(); cambio(); aviso.textContent = 'Pulsad «Guardar» para quitarla de la web.'; } })
+          ])
+        ]));
+      });
+    }
+    var input = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', multiple: true, hidden: true });
+    input.addEventListener('change', function () {
+      var files = Array.prototype.slice.call(input.files);
+      input.value = '';
+      if (consent && !consent.checked) { aviso.textContent = 'Marcad antes la casilla de permisos.'; return; }
+      (function sube() {
+        var f = files.shift();
+        if (!f) { aviso.textContent = 'Fotos subidas. Ya están en la web.'; return; }
+        if (s.datos.fotos.length >= D.maxGaleria) { aviso.textContent = 'La galería admite ' + D.maxGaleria + ' fotos como máximo.'; return; }
+        aviso.textContent = 'Subiendo ' + f.name + '…';
+        var fd = new FormData();
+        fd.append('csrf', D.csrf); fd.append('foto', f); fd.append('consentido', 'si');
+        fetch('/panel/galeria', { method: 'POST', body: fd }).then(function (r) { return r.json(); }).then(function (j) {
+          if (!j.ok) { aviso.textContent = j.error || 'No se ha podido subir.'; return; }
+          s.datos.consentido = true;
+          s.datos.fotos.push({ id: j.id, pie: '', t: (j.src.split('t=')[1] || '') });
+          pinta(); cambio(); sube();
+        }).catch(function () { aviso.textContent = 'Sin conexión. Inténtalo de nuevo.'; });
+      })();
+    });
+    caja.appendChild(lista);
+    caja.appendChild(el('label', { class: 'b-btn b-paper c-btn-sm' }, [document.createTextNode('+ Subir fotos'), input]));
+    caja.appendChild(aviso);
+    pinta();
+    return caja;
+  }
+
   function li(s) { return secEl.querySelector('[data-id="' + s.id + '"]'); }
 
   function pintaSecciones() {

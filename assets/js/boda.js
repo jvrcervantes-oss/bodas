@@ -256,7 +256,7 @@
         }
       }
 
-      form.querySelectorAll('[data-si-grupo]:not([hidden]) input, [data-si-alergias]:not([hidden]) input').forEach(function (cb) {
+      form.querySelectorAll('[data-si-grupo]:not([hidden]) input, [data-si-alergias]:not([hidden]) input, [data-si-foto]:not([hidden]) input, input[type="checkbox"][required]').forEach(function (cb) {
         clearFieldError(cb);
         if (!cb.checked) { showFieldError(cb, 'Marca esta casilla para poder enviar.'); valid = false; }
       });
@@ -410,6 +410,13 @@
 
     var rsvpModal = initModal('rsvpSuccessModal');
     initCopy();
+    // Libro de invitados: la casilla de permisos de la foto aparece al elegir una
+    var libroFoto = document.getElementById('libroFoto');
+    if (libroFoto) libroFoto.addEventListener('change', function () {
+      var box = document.querySelector('#libroForm [data-si-foto]');
+      if (box) box.hidden = !libroFoto.files.length;
+    });
+    initAjaxForm('libroForm', '/api/libro', { onSuccess: function () { location.reload(); } });
     initAjaxForm('rsvpForm', '/api/rsvp', { onSuccess: function (json) {
       var h = document.querySelector('#rsvpSuccessModal h2');
       if (h) h.textContent = json && json.personas > 1 ? '¡Apuntados los ' + json.personas + '!' : '¡Apuntado!';

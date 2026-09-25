@@ -43,6 +43,7 @@ const DECORACIONES = [
 const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
 const MAX_MENUS = 8;
 const MAX_TRAYECTOS = 6;
+const MAX_GALERIA = 24;
 
 // tipo => [título por defecto, ruta fija (null = libre, sale del título), única]
 const SECCIONES = [
@@ -53,11 +54,13 @@ const SECCIONES = [
     'regalos'     => ['Lista de bodas', 'lista-de-bodas', true],
     'musica'      => ['Música', 'musica', true],
     'dresscode'   => ['Dress code', 'dress-code', true],
+    'galeria'     => ['Galería', 'galeria', true],
+    'libro'       => ['Libro de invitados', 'libro-de-invitados', true],
     'libre'       => ['Nueva sección', null, false],
 ];
 const MAX_LIBRES = 3;
 // Rutas que una sección libre nunca puede ocupar
-const RUTAS_RESERVADAS = ['api', 'panel', 'privacidad', 'foto', 'boda', 'assets', 'inicio', 'index', 'crear', 'listo', 'legal'];
+const RUTAS_RESERVADAS = ['api', 'panel', 'privacidad', 'foto', 'boda', 'assets', 'inicio', 'index', 'crear', 'listo', 'legal', 'acceso', 'g', 'l'];
 
 // Nombres de web que no se venden: técnicos del estudio o que se prestan a suplantación
 const SLUGS_RESERVADOS = ['www', 'api', 'admin', 'panel', 'mail', 'correo', 'smtp', 'ftp', 'bodas', 'crear', 'static',
@@ -82,8 +85,9 @@ function slugify(string $s, int $max = 40): string {
 function config_inicial(): array {
     $sec = [];
     $n = 0;
-    foreach (['rsvp', 'informacion', 'hoteles', 'transporte', 'regalos', 'musica', 'dresscode'] as $t) {
-        $sec[] = ['id' => 's' . (++$n), 'tipo' => $t, 'on' => true, 'titulo' => SECCIONES[$t][0], 'datos' => datos_iniciales($t)];
+    foreach (['rsvp', 'informacion', 'hoteles', 'transporte', 'regalos', 'musica', 'dresscode', 'galeria', 'libro'] as $t) {
+        // Galería y libro, apagadas de inicio: piden código de acceso y la galería se llena desde el panel
+        $sec[] = ['id' => 's' . (++$n), 'tipo' => $t, 'on' => !in_array($t, ['galeria', 'libro'], true), 'titulo' => SECCIONES[$t][0], 'datos' => datos_iniciales($t)];
     }
     return [
         'v' => 1,
@@ -103,6 +107,7 @@ function config_inicial(): array {
             'pie' => 'Gracias por formar parte de nuestra historia.',
         ],
         'foto' => false,
+        'codigo' => '',
         'secciones' => $sec,
     ];
 }
@@ -117,6 +122,8 @@ function datos_iniciales(string $tipo): array {
         case 'regalos': return ['texto' => 'Vuestra compañía es el mejor regalo. Si además queréis tener un detalle con nosotros, podéis hacerlo aquí.', 'titular' => '', 'iban' => '', 'otro' => ''];
         case 'musica': return ['texto' => 'Proponed la canción que os hace saltar a la pista y votad las de los demás.'];
         case 'dresscode': return ['texto' => ''];
+        case 'galeria': return ['texto' => '', 'fotos' => [], 'consentido' => false];
+        case 'libro': return ['texto' => 'Dejadnos un mensaje, un recuerdo o una foto de la boda.', 'fotos' => true];
         default: return ['texto' => ''];
     }
 }
@@ -198,6 +205,14 @@ function norm_datos(string $tipo, $d): array {
             // La pregunta del autobús vivía aquí hasta el 25-sep: se conserva solo para migrarla a Transporte
             if (array_key_exists('bus', $d)) $r['_bus_antiguo'] = norm_bool($d['bus']);
             return $r;
+        case 'galeria':
+            $fs = [];
+            foreach (array_slice(is_array($d['fotos'] ?? null) ? array_values($d['fotos']) : [], 0, MAX_GALERIA) as $f) {
+                if (is_array($f) && preg_match('/^[a-f0-9]{16}$/', (string) ($f['id'] ?? ''))) $fs[] = ['id' => $f['id'], 'pie' => clean_str($f['pie'] ?? '', 140)];
+            }
+            return ['texto' => clean_str($d['texto'] ?? '', 600), 'fotos' => $fs, 'consentido' => norm_bool($d['consentido'] ?? false)];
+        case 'libro':
+            return ['texto' => clean_str($d['texto'] ?? '', 600), 'fotos' => norm_bool($d['fotos'] ?? true)];
         case 'transporte':
             return ['texto' => $texto, 'trayectos' => norm_trayectos($d['trayectos'] ?? null),
                 'preguntar' => array_key_exists('preguntar', $d) ? norm_bool($d['preguntar']) : null];
@@ -250,6 +265,8 @@ function normaliza_config($in): array {
     $c['portada'] = ['invitacion' => clean_str($po['invitacion'] ?? '', 120), 'titulo' => clean_str($po['titulo'] ?? '', 80),
         'frase' => clean_str($po['frase'] ?? '', 240), 'texto' => clean_str($po['texto'] ?? '', 1200), 'pie' => clean_str($po['pie'] ?? '', 200)];
     $c['foto'] = norm_bool($in['foto'] ?? false);
+    // Código de acceso a la galería y al libro (owner, 25-sep): lo reparte la pareja en la invitación
+    $c['codigo'] = (string) preg_replace('/[^A-Za-z0-9-]/', '', clean_str($in['codigo'] ?? '', 20));
 
     $sec = [];
     $vistos = [];
@@ -276,6 +293,12 @@ function normaliza_config($in): array {
         $rutas[$ruta] = true;
         $sec[] = ['id' => $id, 'tipo' => $tipo, 'on' => norm_bool($s['on'] ?? true), 'titulo' => $titulo, 'ruta' => $ruta,
             'datos' => norm_datos($tipo, $s['datos'] ?? [])];
+    }
+    // Secciones que la boda aún no tiene (creadas antes de existir): se añaden apagadas para
+    // que aparezcan en «Más secciones»
+    foreach (SECCIONES as $tipo => [$tit, $ruta, $unica]) {
+        if (!$unica || isset($vistos[$tipo])) continue;
+        $sec[] = ['id' => 's' . substr(md5($tipo), 0, 6), 'tipo' => $tipo, 'on' => false, 'titulo' => $tit, 'ruta' => $ruta, 'datos' => norm_datos($tipo, datos_iniciales($tipo))];
     }
     // Migración (25-sep-2026): «¿Necesitáis autobús?» pasa de la confirmación a Transporte.
     // Si Transporte no dice nada, hereda lo que tenía la confirmación; si no hay nada, se pregunta.
@@ -334,6 +357,9 @@ function faltan(array $c): array {
             foreach ($s['datos']['trayectos'] as $i => $t) {
                 if ($t['salida'] === '') $f['sec.' . $s['id'] . '.trayecto' . $i] = 'Hay un trayecto sin punto de salida en «' . $s['titulo'] . '».';
             }
+        }
+        if (in_array($s['tipo'], ['galeria', 'libro'], true) && mb_strlen($c['codigo']) < 4) {
+            $f['codigo'] = 'La galería y el libro de invitados necesitan un código de acceso para los invitados (mínimo 4 caracteres).';
         }
         if ($s['tipo'] === 'libre' && $s['datos']['texto'] === '') {
             $f['sec.' . $s['id']] = 'La sección «' . $s['titulo'] . '» está vacía: escribid su texto o quitadla.';

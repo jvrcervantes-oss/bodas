@@ -13,11 +13,19 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
         'fuentes' => array_map(fn($f) => ['nombre' => $f[0], 'titulos' => $f[1], 'nombres' => $f[3], 'estilo' => $f[4]], FUENTES),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
+        'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
         'precio' => ['base' => euros(PRECIO_BASE_CENT), 'iva' => IVA_PCT, 'total' => euros(precio_total_cent())],
         'fotoUrl' => $modo === 'editar' && is_file(dir_boda($slug) . '/foto.webp') ? '/foto?v=' . filemtime(dir_boda($slug) . '/foto.webp') : '',
     ];
+    // Fotos de la galería con su firma para verlas en el editor (el navegador no manda la cookie al iframe)
+    if ($editar) {
+        foreach ($datos['config']['secciones'] as &$sx) {
+            if ($sx['tipo'] === 'galeria') foreach ($sx['datos']['fotos'] as &$fx) $fx['t'] = firma_img($slug, $fx['id']);
+        }
+        unset($sx, $fx);
+    }
     $json = json_encode($datos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
     $editar = $modo === 'editar';
     $titulo = $editar ? 'Editar la web' : 'Crea la web de vuestra boda';
