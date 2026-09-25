@@ -339,3 +339,30 @@
 /* Código de regalo (cortesía) */
 .c-check[hidden] { display: none; }
 .c-codigo input { text-transform: uppercase; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+
+/* Panel del estudio (app/estudio.php) */
+.estudio .est-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.est-nav { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; }
+.est-nav a { color: var(--ink-2, #555); text-decoration: none; }
+.est-nav a:hover { color: var(--ink, #191C1D); text-decoration: underline; }
+.est-main { max-width: 1180px; }
+.est-login { display: grid; gap: 14px; max-width: 380px; }
+.est-error { color: #B3261E; margin: 0; }
+.est-ok { padding: 10px 14px; border-radius: 10px; background: #EEF6EE; color: #1E5B2A; }
+.est-aviso { padding: 10px 14px; border-radius: 10px; background: #FFF6E5; }
+.est-resumen { color: var(--ink-2, #555); }
+.est-tabla-wrap { overflow-x: auto; border: 1px solid var(--line, #E5E0D8); border-radius: 14px; background: #fff; }
+.est-tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.est-tabla th, .est-tabla td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line-soft, #F0ECE6); }
+.est-tabla th { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2, #666); background: #FBF9F6; }
+.est-tabla tr:last-child td { border-bottom: 0; }
+.est-tabla small { color: var(--ink-2, #777); }
+.est-tabla form { margin: 0; }
+.est-num { text-align: right; font-variant-numeric: tabular-nums; }
+.est-archivada td, .est-apagado td { color: #999; }
+.est-nota { font-size: 13px; color: var(--ink-2, #777); }
+.est-crear { display: grid; grid-template-columns: 90px 170px 1fr; gap: 12px; align-items: end; margin-bottom: 20px; }
+.est-crear .c-check, .est-crear button { grid-column: 1 / -1; justify-self: start; }
+.est-codigo-nuevo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; padding: 16px 18px; border-radius: 14px; background: #FBF4E4; border: 1px solid #E8D5A8; }
+.est-codigo-nuevo b { font-size: 24px; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+@media (max-width: 700px) { .est-crear { grid-template-columns: 1fr; } }

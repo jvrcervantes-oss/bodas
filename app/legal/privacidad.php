@@ -24,6 +24,10 @@
   <li>Factura: los datos que exige la ley para emitirla y guardarla. Base legal: obligación legal.</li>
   <li>Mensajes que nos enviéis: para responderos. Base legal: la ejecución del contrato o, si no sois clientes, nuestro interés legítimo en atender a quien nos escribe.</li>
 </ul>
+<ul>
+  <li>Gestión interna del servicio y atención al cliente: vuestros nombres, email, pedido y estado de vuestra web los ve solo el titular del estudio, en un panel interno, para atenderos y llevar el servicio. Base legal: la ejecución del contrato.</li>
+  <li>Códigos de regalo: si la web os la regalamos, guardamos el código usado y una nota interna mínima, sin apellidos ni datos de contacto. Base legal: nuestro interés legítimo en gestionar el regalo; al publicar la web pasáis a ser clientes como cualquier otra pareja.</li>
+</ul>
 <p>No usamos vuestros datos para enviaros publicidad, no hacemos perfiles y no tomamos decisiones automatizadas sobre vosotros.</p>
 
 <h2>Cuánto tiempo los guardamos</h2>

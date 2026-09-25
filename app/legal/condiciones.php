@@ -110,6 +110,7 @@
 <h2>II.1. Partes y papel de cada una</h2>
 <p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?= h($E['titular']) ?> (AxisWorks) es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar.</p>
 <p>Aunque la pareja trate esos datos para una actividad personal, AxisWorks cumple igualmente todo lo que dice este anexo.</p>
+<p>Para dar soporte y llevar el servicio, AxisWorks solo ve cifras agregadas y anónimas de cada web, como el número total de personas que han confirmado. Nunca ve los datos de un invitado concreto ni cifras por menú o por alergia.</p>
 
 <h2>II.2. Qué se trata</h2>
 <ul>

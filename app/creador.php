@@ -9,6 +9,8 @@ const CSP_CREADOR = "default-src 'self'; img-src 'self' data: blob:; style-src '
     . "form-action 'self' https://checkout.stripe.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
 function rutas_creador(string $ruta, string $metodo): void {
+    // Panel del estudio (solo el owner): app/estudio.php
+    if ($ruta === 'estudio' || strpos($ruta, 'estudio/') === 0) { rutas_estudio(trim(substr($ruta, 7), '/'), $metodo); return; }
     switch ($ruta) {
         case '':
             header('Content-Security-Policy: ' . CSP_CREADOR);

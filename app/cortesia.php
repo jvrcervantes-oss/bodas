@@ -22,11 +22,57 @@ function cortesia_normaliza(string $c): string {
     return strtr($c, ['O' => '0', 'I' => '1', 'L' => '1', 'U' => 'V']);
 }
 
-/** Los códigos vigentes: [sha256 => ['id', 'usos', 'atelier', 'caduca']]. */
-function cortesia_codigos(): array {
+/**
+ * Todos los códigos: los del repo (tools/bodas_cortesia.py) y los creados desde el panel del
+ * estudio (DATA_DIR/cortesia/codigos.json, con su nota), menos los anulados.
+ * [sha256 => ['id', 'usos', 'atelier', 'caduca', 'nota'?]]
+ */
+function cortesia_codigos(bool $conAnulados = false): array {
     $f = APP_DIR . '/cortesia_codigos.php';
     $d = is_file($f) ? require $f : [];
-    return is_array($d) ? $d : [];
+    $d = (is_array($d) ? $d : []) + (lee_json(dir_datos('cortesia', 'codigos.json')) ?? []);
+    if ($conAnulados) return $d;
+    $anulados = lee_json(dir_datos('cortesia', 'anulados.json')) ?? [];
+    return array_diff_key($d, array_flip($anulados));
+}
+
+/** Crea un código desde el panel del estudio. Devuelve [id, código en claro] (se enseña una vez). */
+function cortesia_crea(int $usos, bool $atelier, string $caduca, string $nota): array {
+    $codigo = '';
+    for ($i = 0; $i < 15; $i++) $codigo .= CORTESIA_ALFABETO[random_int(0, 31)];
+    $h = hash('sha256', $codigo);
+    asegura_dir(dir_datos('cortesia'));
+    $id = muta_json(dir_datos('cortesia', 'codigos.json'), function (array &$d) use ($h, $usos, $atelier, $caduca, $nota) {
+        $n = 1;
+        foreach ($d as $x) $n = max($n, (int) substr((string) ($x['id'] ?? 'E-0'), 2) + 1);
+        $id = sprintf('E-%03d', $n);
+        $d[$h] = ['id' => $id, 'usos' => $usos, 'atelier' => $atelier, 'caduca' => $caduca, 'nota' => $nota, 'creado' => date('c')];
+        return $id;
+    });
+    return [(string) $id, implode('-', str_split($codigo, 5))];
+}
+
+function cortesia_anula(string $id): bool {
+    foreach (cortesia_codigos(true) as $h => $d) {
+        if (($d['id'] ?? '') === $id) {
+            muta_json(dir_datos('cortesia', 'anulados.json'), function (array &$a) use ($h) { if (!in_array($h, $a, true)) $a[] = $h; });
+            return true;
+        }
+    }
+    return false;
+}
+
+/** Para el panel del estudio: cada código con sus usos gastados y su estado. */
+function cortesia_listado(): array {
+    $anulados = lee_json(dir_datos('cortesia', 'anulados.json')) ?? [];
+    $o = [];
+    foreach (cortesia_codigos(true) as $h => $d) {
+        $usados = count((lee_json(dir_datos('cortesia', 'usos', $h . '.json')) ?? [])['pedidos'] ?? []);
+        $estado = in_array($h, $anulados, true) ? 'Anulado' : ($usados >= (int) $d['usos'] ? 'Gastado' : ((string) $d['caduca'] < date('Y-m-d') ? 'Caducado' : 'Activo'));
+        $o[] = ['id' => (string) $d['id'], 'atelier' => !empty($d['atelier']), 'usos' => (int) $d['usos'], 'usados' => $usados, 'caduca' => (string) $d['caduca'], 'nota' => (string) ($d['nota'] ?? ''), 'estado' => $estado];
+    }
+    usort($o, fn($a, $b) => strcmp($b['id'], $a['id']));
+    return $o;
 }
 
 /** Código válido y vigente → [hash, datos]; si no, null. */
