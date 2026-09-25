@@ -46,6 +46,12 @@ foreach (glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: [] as $d) {
     if (mapa_actualiza(basename($d), normaliza_config($c)) === 'ok') $n['mapas']++;
 }
 
+// 5. Borradores compartidos entre dispositivos: 30 días (privacidad del creador) y fuera
+foreach (glob(dir_datos('borradores', '*.json')) ?: [] as $f) {
+    $b = lee_json($f);
+    if (!$b || ($b['caduca'] ?? 0) < time()) { @unlink($f); @unlink(substr($f, 0, -5) . '.webp'); }
+}
+
 // 4. Panel del estudio: el log de acciones se guarda 12 meses (Legal, #96) y las sesiones, 12 h
 foreach (glob(dir_datos('estudio', 'log-*.jsonl')) ?: [] as $f) {
     if (preg_match('/log-(\d{4}-\d{2})\.jsonl$/', $f, $m) && $m[1] < date('Y-m', strtotime('-12 months'))) @unlink($f);

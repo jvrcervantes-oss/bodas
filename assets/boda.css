@@ -1350,3 +1350,25 @@ html:has(> body.is-preview)::-webkit-scrollbar{ display: none; }
 .atelier-citricos .hero-text{ margin-top: 84px; }
 @media (min-width: 901px){ .atelier-citricos .hero{ padding: 64px max(24px, calc(50vw - 570px)) 56px; } .atelier-citricos .hero-text{ margin-top: 104px; } }
 .atelier-citricos .hero-text > .kicker{ display: block; padding: 0 16%; }
+
+/* ============================================================
+   Panel de la pareja: compartir (QR y WhatsApp) y lista de invitados (25-sep-2026)
+   ============================================================ */
+.compartir-grid{ display: grid; grid-template-columns: 220px 1fr; gap: var(--s-md); align-items: start; }
+.qr-caja{ width: 200px; aspect-ratio: 1; padding: 8px; background: #fff; border: 1px solid var(--line); border-radius: 12px; }
+.qr-caja img{ display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.compartir-bot{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.compartir-txt label{ display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; }
+.compartir-txt textarea, .inv-form textarea{ width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; font: inherit; font-size: 14px; resize: vertical; }
+.inv-label{ display: block; margin-bottom: 8px; font-size: 13px; color: var(--ink-muted); }
+.stat.stat-pend b{ color: var(--accent); }
+.inv-tabla td{ vertical-align: middle; }
+.inv-pend .inv-estado{ color: var(--accent); font-weight: 600; }
+.inv-no .inv-estado{ color: var(--ink-muted); }
+.inv-viene .inv-estado{ color: #2F6B3A; font-weight: 600; }
+.inv-marcar{ display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+.inv-btn{ padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-size: 11.5px; color: var(--ink-muted); cursor: pointer; }
+.inv-btn:hover{ border-color: var(--primary); color: var(--primary); }
+.inv-editar{ margin-top: var(--s-sm); }
+.inv-editar summary{ cursor: pointer; font-weight: 600; }
+@media (max-width: 700px){ .compartir-grid{ grid-template-columns: 1fr; } .qr-caja{ margin: 0 auto; } }

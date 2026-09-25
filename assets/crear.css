@@ -366,3 +366,18 @@
 .est-codigo-nuevo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; padding: 16px 18px; border-radius: 14px; background: #FBF4E4; border: 1px solid #E8D5A8; }
 .est-codigo-nuevo b { font-size: 24px; letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 @media (max-width: 700px) { .est-crear { grid-template-columns: 1fr; } }
+
+/* Seguir en otro dispositivo (borrador por enlace, 25-sep) */
+.c-pasar { padding: 0; border: 0; background: none; font: inherit; color: var(--gold-ink, #8A6A2E); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.c-dlg { width: min(520px, calc(100vw - 32px)); padding: 0; border: 0; border-radius: 18px; box-shadow: 0 30px 80px -20px rgb(0 0 0 / .35); }
+.c-dlg::backdrop { background: rgb(25 28 29 / .45); }
+.c-dlg-cuerpo { display: grid; gap: 12px; padding: 26px 26px 20px; }
+.c-dlg-cuerpo h2 { margin: 0; font-size: 22px; }
+.c-dlg-cuerpo p { margin: 0; }
+.c-dlg-cuerpo > .b-btn { justify-self: start; }
+.c-dlg-zona { display: grid; gap: 10px; }
+.c-dlg-url { width: 100%; padding: 10px 12px; border: 1px solid var(--line, #E5E0D8); border-radius: 10px; font-size: 13px; }
+.c-dlg-bot { display: flex; gap: 10px; flex-wrap: wrap; }
+.c-dlg-error { color: #B3261E; }
+.c-dlg-cerrar { justify-self: end; }
+.c-dlg-zona .c-link-mal { justify-self: start; }

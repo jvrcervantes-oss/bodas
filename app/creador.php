@@ -22,6 +22,7 @@ function rutas_creador(string $ruta, string $metodo): void {
         return;
     }
     if (strpos($ruta, 'api/padrino/') === 0) { rutas_padrino(substr($ruta, 12), $metodo); return; }
+    if ($ruta === 'api/borrador') { api_borrador($metodo); return; }
     switch ($ruta) {
         case '':
             header('Content-Security-Policy: ' . CSP_CREADOR);

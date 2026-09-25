@@ -26,7 +26,7 @@
 
 <h2>4. Cómo se contrata</h2>
 <ul>
-  <li>Montáis la web en el creador. El borrador se guarda solo en vuestro navegador; nosotros no lo recibimos hasta que pagáis.</li>
+  <li>Montáis la web en el creador. El borrador se guarda en vuestro navegador; nosotros no lo recibimos hasta que pagáis, salvo que pulséis «Seguir en otro dispositivo» (os guardamos una copia 30 días, como explica la política de privacidad).</li>
   <li>Revisáis la vista previa. Hasta pulsar el botón de pago podéis cambiar cualquier dato o corregir errores.</li>
   <li>Aceptáis estas condiciones y el encargo de tratamiento (anexo II), y pedís que la web se cree ya (apartado 8).</li>
   <li>Pagáis en la página de Stripe. Al confirmarse el pago, la web se publica al momento.</li>
@@ -115,8 +115,8 @@
 <h2>II.2. Qué se trata</h2>
 <ul>
   <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel; publicar los mensajes y fotos del libro de invitados y las fotos de la galería.</li>
-  <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños); quienes escriben en el libro y las personas que aparecen en las fotos, incluidos menores.</li>
-  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos.</li>
+  <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños); quienes escriben en el libro y las personas que aparecen en las fotos, incluidos menores; y las personas que la pareja incluye en su lista de invitados aunque no respondan.</li>
+  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, solo nombre y grupo, que tampoco ve AxisWorks.</li>
   <li>Categoría especial: las alergias e intolerancias son datos de salud (artículo 9 del RGPD). La web solo las recoge si quien responde da su consentimiento explícito en el formulario.</li>
   <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda.</li>
 </ul>
@@ -145,4 +145,5 @@
   <li>Usar los datos de los invitados solo para organizar la boda.</li>
   <li>Dar un email de contacto que funcione para que los invitados puedan ejercer sus derechos, y atender esas peticiones.</li>
   <li>Guardar con cuidado la contraseña del panel y el Excel exportado (apartado 13 de las condiciones).</li>
+  <li>En la lista de invitados, poner solo nombres y grupos: ni datos de contacto, ni de salud, ni notas sobre las personas.</li>
 </ul>

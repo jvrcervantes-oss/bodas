@@ -15,7 +15,8 @@
 </ul>
 
 <h2>Mientras montáis la web en el creador</h2>
-<p>El borrador (textos, fechas, lugares, foto) se guarda solo en el almacenamiento local de vuestro navegador. No nos llega nada hasta que pagáis. Si borráis los datos del navegador o usáis otro dispositivo, el borrador se pierde.</p>
+<p>El borrador (textos, fechas, lugares, foto) se guarda en el almacenamiento local de vuestro navegador, salvo que pulséis «Seguir en otro dispositivo». No nos llega nada más hasta que publicáis. Si borráis los datos del navegador, el borrador que solo esté ahí se pierde.</p>
+<p>Si pulsáis «Seguir en otro dispositivo», guardamos en nuestro servidor una copia del borrador (con la foto, si la hay) bajo un enlace secreto, para que lo abráis en otro móvil u ordenador. Quien tenga el enlace puede verlo. La responsable de esa copia es AxisWorks; la base legal son las medidas precontractuales que nos pedís (art. 6.1.b del RGPD). La guardamos 30 días y después se borra sola, también la foto; podéis borrarla antes desde el mismo aviso. El email que haya en el borrador no lo usamos para recordatorios ni publicidad.</p>
 
 <h2>Qué datos tratamos al comprar y para qué</h2>
 <ul>
@@ -49,7 +50,7 @@
 <p>No usamos cookies de analítica ni de publicidad. Medimos las visitas sin cookies, como se explica abajo.</p>
 <ul>
   <li>Cookie de sesión del panel: se crea al entrar en el panel privado para mantener la sesión abierta. Es técnica y necesaria para el servicio que pedís, por eso no requiere consentimiento.</li>
-  <li>Almacenamiento local del creador: guarda el borrador en vuestro navegador mientras lo montáis. También es necesario para el servicio que pedís. Podéis borrarlo desde la configuración del navegador.</li>
+  <li>Almacenamiento local del creador: guarda el borrador en vuestro navegador mientras lo montáis (salvo la copia que decidáis pasar a otro dispositivo, explicada arriba). También es necesario para el servicio que pedís. Podéis borrarlo desde la configuración del navegador.</li>
 </ul>
 <p>La página de pago es de Stripe y usa sus propias cookies, que explica su política.</p>
 

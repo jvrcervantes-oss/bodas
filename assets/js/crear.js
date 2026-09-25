@@ -872,6 +872,69 @@
   if (/[?&]cancelado=1/.test(location.search)) muestraFaltan({}, ['Pago cancelado. Vuestro borrador sigue aquí.']);
 
   pintaFoto();
+
+  // ------------------------------------------------------------ seguir en otro dispositivo
+  // Enlace con una COPIA del borrador (30 días). El token va en #b=…: el fragmento no llega a los
+  // logs del servidor ni al Referer, y se lee por POST (revisión previa #101).
+  function abrePanelBorrador() {
+    var dlg = document.getElementById('dlgBorrador');
+    if (!dlg) { dlg = el('dialog', { id: 'dlgBorrador', class: 'c-dlg', 'aria-labelledby': 'dlgBorradorTit' }); document.body.appendChild(dlg); }
+    dlg.textContent = '';
+    var zona = el('div', { class: 'c-dlg-zona' });
+    var crear = el('button', { type: 'button', class: 'b-btn b-dark', text: 'Crear enlace' });
+    var cerrar = el('button', { type: 'button', class: 'c-link c-dlg-cerrar', text: 'Cerrar' });
+    cerrar.addEventListener('click', function () { dlg.close(); });
+    crear.addEventListener('click', function () {
+      crear.disabled = true; crear.textContent = 'Creando…';
+      persiste();
+      var fd = new FormData();
+      fd.append('accion', 'guardar'); fd.append('config', JSON.stringify(st)); fd.append('slug', slugEl ? slugEl.value : '');
+      if (foto.src) fd.append('foto', foto.blob || dataUrlABlob(foto.src), 'foto.webp');
+      fetch(BASE + '/api/borrador', { method: 'POST', body: fd }).then(function (r) { return r.json(); }).then(function (j) {
+        crear.remove();
+        if (!j.ok) { zona.appendChild(el('p', { class: 'c-dlg-error', text: j.error || 'No se ha podido crear el enlace.' })); return; }
+        var url = el('input', { class: 'c-dlg-url', readonly: true, value: j.url, 'aria-label': 'Enlace del borrador' });
+        var copiar = el('button', { type: 'button', class: 'b-btn b-dark', text: 'Copiar enlace' });
+        copiar.addEventListener('click', function () {
+          if (navigator.clipboard) navigator.clipboard.writeText(j.url).then(function () { copiar.textContent = 'Copiado'; });
+          else { url.select(); }
+        });
+        var wa = el('a', { class: 'b-btn b-paper', href: 'https://wa.me/?text=' + encodeURIComponent('Nuestro borrador de la web de la boda: ' + j.url), target: '_blank', rel: 'noopener', text: 'Mandar por WhatsApp' });
+        var borrar = el('button', { type: 'button', class: 'c-link c-link-mal', text: 'Borrar este enlace ya' });
+        borrar.addEventListener('click', function () {
+          var fb = new FormData(); fb.append('accion', 'borrar'); fb.append('b', j.b);
+          fetch(BASE + '/api/borrador', { method: 'POST', body: fb }).then(function () { zona.textContent = ''; zona.appendChild(el('p', { text: 'Enlace borrado: ya no abre nada.' })); });
+        });
+        zona.appendChild(url);
+        zona.appendChild(el('div', { class: 'c-dlg-bot' }, [copiar, wa]));
+        zona.appendChild(el('p', { class: 'c-nota', text: 'Caduca el ' + j.caduca + '. Es una copia: lo que cambiéis después aquí no se pasa solo; si seguís editando, cread otro enlace.' }));
+        zona.appendChild(borrar);
+      }).catch(function () { crear.disabled = false; crear.textContent = 'Crear enlace'; zona.appendChild(el('p', { class: 'c-dlg-error', text: 'Sin conexión. Inténtalo de nuevo.' })); });
+    });
+    dlg.appendChild(el('div', { class: 'c-dlg-cuerpo' }, [
+      el('h2', { id: 'dlgBorradorTit', text: 'Seguir en otro dispositivo' }),
+      el('p', { text: 'Creamos un enlace con vuestro borrador tal como está ahora: textos, estilo y foto. Abridlo en otro móvil u ordenador, o mandádselo a vuestra pareja.' }),
+      el('p', { class: 'c-nota', text: 'Quien tenga el enlace puede ver el borrador. Lo guardamos 30 días y después se borra solo.' }),
+      crear, zona, cerrar]));
+    dlg.showModal();
+  }
+  if (MODO === 'crear') {
+    var bPasar = document.getElementById('pasarDisp');
+    if (bPasar) bPasar.addEventListener('click', abrePanelBorrador);
+    var mB = location.hash.match(/^#b=([A-Za-z0-9_-]{22})$/);
+    if (mB) {
+      history.replaceState(null, '', location.pathname + location.search);
+      if (!lee(CLAVE) || window.confirm('¿Cargar el borrador que os han pasado? Sustituirá el que tenéis en este navegador.')) {
+        var fl = new FormData(); fl.append('accion', 'leer'); fl.append('b', mB[1]);
+        fetch(BASE + '/api/borrador', { method: 'POST', body: fl }).then(function (r) { return r.json(); }).then(function (j) {
+          if (!j.ok) { window.alert(j.error || 'No se ha podido abrir el borrador.'); return; }
+          guarda(CLAVE, JSON.stringify({ config: j.config, slug: j.slug || '', slugTocado: !!j.slug, foto: j.foto || '' }));
+          location.reload();
+        }).catch(function () { window.alert('Sin conexión. Volved a abrir el enlace.'); });
+      }
+    }
+  }
+
   pintaSecciones();
   pintaCabecera();
   pintaUrl();

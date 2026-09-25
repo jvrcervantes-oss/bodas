@@ -172,6 +172,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
     switch ($sub) {
         case '': echo panel_inicio($slug, $c); return;
         case 'excel': panel_excel($slug, $c); return;
+        case 'invitados': panel_invitados_accion($slug, $metodo); return;
         case 'zip': panel_zip($slug, $c); return;
         case 'factura':
             $p = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
@@ -197,11 +198,13 @@ const CSP_CREADOR_PANEL = "default-src 'self'; img-src 'self' data: blob:; style
     . "script-src 'self'; connect-src 'self'; frame-src 'self'; "
     . "form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
-function panel_marco(array $c, string $titulo, string $cuerpo, bool $ancho = false): string {
+function panel_marco(array $c, string $titulo, string $cuerpo, bool $ancho = false, bool $js = false): string {
+    // $js: el panel principal carga el QR y los botones de copiar (assets/js/panel.js)
+    $scripts = $js ? '<script src="/assets/js/vendor/qrcode.js?v=' . h(ASSETS_V) . '" defer></script><script src="/assets/js/panel.js?v=' . h(ASSETS_V) . '" defer></script>' : '';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — ' . h(nombres($c)) . '</title><meta name="robots" content="noindex, nofollow">'
         . '<link rel="stylesheet" href="/assets/boda.css?v=' . h(ASSETS_V) . '"><style>' . tema_css($c) . '</style></head>'
-        . '<body class="panel-body"><main><div class="wrap' . ($ancho ? ' wrap-ancho' : '') . '">' . $cuerpo . '</div></main></body></html>';
+        . '<body class="panel-body"><main><div class="wrap' . ($ancho ? ' wrap-ancho' : '') . '">' . $cuerpo . '</div></main>' . $scripts . '</body></html>';
 }
 
 function panel_entrar(string $slug, array $c, string $metodo): void {
@@ -309,6 +312,7 @@ function panel_inicio(string $slug, array $c): string {
         . '<nav class="panel-acc"><a class="btn" href="/panel/editar">Editar la web</a><a class="btn btn-soft" href="/panel/excel">Descargar Excel</a>'
         . '<a class="btn btn-soft" href="/panel/zip">Descargar ZIP</a>' . (((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '' ? '<a class="btn btn-soft" href="/panel/factura" target="_blank" rel="noopener">Factura</a>' : '')
         . '<a class="panel-salir" href="/panel/salir">Salir</a></nav></header>';
+    $o .= bloque_compartir($slug, $c);
     $o .= '<section class="section"><div class="stat-row">';
     foreach ([['personas', 'personas'], ['adultos', 'adultos'], ['ninos', 'niños/as'], ['ceremonia', 'van a ceremonia'], ['banquete', 'van a banquete']] as [$k, $t]) {
         $o .= '<div class="stat"><b>' . $st[$k] . '</b><span>' . $t . '</span></div>';
@@ -319,6 +323,7 @@ function panel_inicio(string $slug, array $c): string {
     foreach ($menus as $m) $o .= '<div class="stat"><b>' . $m['n'] . '</b><span>' . h(mb_strtolower($m['nombre'], 'UTF-8')) . '</span></div>';
     $o .= '</div></section>';
 
+    $o .= bloque_invitados($slug, $c);
     $o .= '<section class="section"><h2 class="panel-h2">Confirmaciones</h2>';
     if ($rep) $o .= '<p class="panel-aviso">Hay nombres que aparecen en más de una respuesta (marcados con «repetido»). Puede que alguien haya confirmado dos veces.</p>';
     $o .= '<div class="table-wrap"><table><thead><tr><th>Quién viene</th><th>Ceremonia</th><th>Banquete</th>' . ($bus ? '<th>Bus</th>' : '') . '<th>Contacto</th><th>Canción</th><th>Enviado</th></tr></thead><tbody>';
@@ -362,7 +367,22 @@ function panel_inicio(string $slug, array $c): string {
         $o .= '</tbody></table></div></section>';
     }
     $o .= '<p class="panel-nota">Las respuestas de vuestros invitados se borran el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '. El Excel que descarguéis queda bajo vuestra responsabilidad.</p>';
-    return panel_marco($c, 'Panel privado', $o, true);
+    return panel_marco($c, 'Panel privado', $o, true, true);
+}
+
+/** Compartir la web: enlace, mensaje de WhatsApp ya escrito y QR para las invitaciones en papel. */
+function bloque_compartir(string $slug, array $c): string {
+    $url = url_boda($slug);
+    $msg = '¡Nos casamos! Aquí tenéis toda la información de nuestra boda y la confirmación de asistencia: ' . $url;
+    if ((seccion_tipo($c, 'galeria') || seccion_tipo($c, 'libro')) && ($c['codigo'] ?? '') !== '') $msg .= "\nPara la galería y el libro de invitados, el código es " . $c['codigo'] . '.';
+    return '<section class="section panel-compartir" id="compartir"><h2 class="panel-h2">Compartir vuestra web</h2><div class="compartir-grid">'
+        . '<div class="compartir-qr"><div id="qr" class="qr-caja" data-url="' . h($url) . '" data-slug="' . h($slug) . '"></div>'
+        . '<div class="compartir-bot"><button type="button" class="btn btn-soft" data-qr-png>QR en PNG</button><button type="button" class="btn btn-soft" data-qr-svg>QR para imprenta (SVG)</button></div>'
+        . '<p class="panel-nota">Para las invitaciones en papel: al escanearlo se abre vuestra web. El SVG no pierde calidad a ningún tamaño.</p></div>'
+        . '<div class="compartir-txt"><label for="msgWa">Mensaje para WhatsApp</label><textarea id="msgWa" rows="5">' . h($msg) . '</textarea>'
+        . '<div class="compartir-bot"><a class="btn" id="btnWa" href="https://wa.me/?text=' . h(rawurlencode($msg)) . '" target="_blank" rel="noopener">Compartir por WhatsApp</a>'
+        . '<button type="button" class="btn btn-soft" data-copiar-enlace="' . h($url) . '">Copiar enlace</button><span class="panel-nota copiado" hidden>Copiado</span></div></div>'
+        . '</div></section>';
 }
 
 /** Excel: una fila por persona. `;` + BOM para el Excel en español; celdas = + - @ neutralizadas (las escribe un invitado). */

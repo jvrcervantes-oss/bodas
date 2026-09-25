@@ -19,6 +19,7 @@ $pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
   <li>Libro de invitados: tu nombre, tu mensaje y, si la subes, una foto. Se publican al momento en la página del libro y los puede ver cualquiera que tenga el enlace y el código de la boda. Quitamos de la foto los datos internos (como el lugar donde se hizo). Junto a cada mensaje guardamos la dirección IP desde la que se envió, solo para poder atender un aviso de abuso; no se muestra a nadie y se borra con el resto.</li>
   <li>Galería: fotos que suben <?= h($pareja) ?>, en las que puedes aparecer. Las ve cualquiera que tenga el enlace y el código de la boda.</li>
   <li>Para evitar abusos, guardamos durante un día como máximo un código derivado de tu dirección IP. No se usa para nada más y se borra solo.</li>
+  <li>Lista de invitados: <?= h($pareja) ?> pueden haber anotado tu nombre y un grupo (por ejemplo, «familia de la novia») en una lista privada, solo para ver quién falta por contestar. Nadie más la ve y se borra con el resto de los datos de la boda.</li>
 </ul>
 <p>Base legal: el consentimiento que das al enviar el formulario, que en el caso de las alergias es explícito. Puedes retirarlo cuando quieras escribiendo a <?= h($b['email']) ?>; lo que ya se hizo antes sigue siendo válido. Si quieres que se retire un mensaje o una foto tuya del libro o de la galería, escribe a <?= h($b['email']) ?> y se quitará.</p>
 
