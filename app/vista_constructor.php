@@ -105,7 +105,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
       <div class="c-panel" role="tabpanel" id="panel-estilo" data-panel="estilo" aria-labelledby="tab-estilo">
         <span class="overline overline-bronze">Arte y papelería</span>
         <h2>Elegid el estilo</h2>
-        <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'Empezad por un diseño de autor de la Colección Atelier o montad el vuestro con paleta, letra y adornos. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
+        <p class="c-ayuda"><?= $editar ? 'Cambiad lo que queráis: se publica al pulsar «Guardar».' : 'Empezad por un diseño ilustrado de la Colección Atelier o montad el vuestro con paleta, letra y adornos. Lo que hagáis se guarda en este navegador hasta que publiquéis.' ?></p>
         <div class="c-atelier" id="atelier" role="radiogroup" aria-label="Pack y diseño"></div>
         <div id="estiloPropio">
         <p class="c-modo-nota">Pack Esencial: vosotros elegís la paleta, la letra y los adornos.</p>

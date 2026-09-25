@@ -60,7 +60,7 @@
 .l-sec-cab.l-centro p { max-width: 520px; margin-top: 10px; }
 .l h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.2; letter-spacing: -.01em; margin: 10px 0 0; }
 
-.l-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.l-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .l-card { display: flex; flex-direction: column; padding: 28px 24px 24px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6);
   box-shadow: var(--e1); transition: box-shadow .25s, border-color .25s, transform .25s; }
 .l-card:hover { box-shadow: var(--e2); border-color: rgba(197, 160, 89, .5); transform: translateY(-2px); }

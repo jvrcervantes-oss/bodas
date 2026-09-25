@@ -42,8 +42,10 @@ function pagina_landing(): string {
     $paletas = array_map(fn($t) => $t[2], TEMAS);
     $ejemplo = 'lucia-y-marcos.' . BASE_DOMAIN;
     $faq = [
-        ['¿Cuánto cuesta?', "Dos packs, IVA incluido: Esencial, $total; y Atelier, $totalAtelier, con un diseño de autor animado. Se paga una sola vez, cuando publicáis la web. Crearla y verla en la vista previa no cuesta nada: podéis probar todo lo que queráis antes de pagar. No hay suscripción."],
-        ['¿Podemos cambiar la web después de publicarla?', 'Sí. Desde vuestro panel privado editáis textos, secciones, fotos y colores cuando queráis, y los cambios se ven al momento.'],
+        ['¿Cuánto cuesta?', "Dos packs, IVA incluido: Esencial, $total; y Atelier, $totalAtelier, con un diseño ilustrado y animado. Se paga una sola vez, cuando publicáis la web. Crearla y verla en la vista previa no cuesta nada: podéis probar todo lo que queráis antes de pagar. No hay suscripción."],
+        ['¿Podemos cambiar la web después de publicarla?', 'Sí. Desde vuestro panel privado editáis textos, secciones, fotos y colores cuando queráis, también desde el móvil, y los cambios se ven al momento.'],
+        ['¿Quién ve la galería y el libro de invitados?', 'Solo quien tenga el enlace y el código de vuestra boda, que elegís vosotros. En el libro, vuestros invitados os dejan mensajes y fotos, y desde el panel podéis ocultar lo que no queráis que se vea.'],
+        ['Nos han regalado la web, ¿dónde ponemos el código?', 'Montad la web como cualquier otra pareja y, en el último paso, «Publicar», escribid el código de regalo. La web se publica sin pagar nada.'],
         ['¿Cómo llega la web a los invitados?', "Con un enlace del tipo $ejemplo que compartís por WhatsApp, email o donde queráis. No tienen que instalar nada ni registrarse."],
         ['¿Podemos usar nuestro propio dominio?', 'Por ahora la web vive en un subdominio nuestro. Desde el panel podéis descargarla en ZIP y subirla a vuestro dominio, aunque esa copia no recoge confirmaciones.'],
         ['¿Se ve bien en el móvil?', 'Está pensada primero para el móvil, que es donde la van a abrir casi todos vuestros invitados. En la vista previa podéis verla en móvil y en ordenador.'],
@@ -57,7 +59,7 @@ function pagina_landing(): string {
 <?php if (OCULTO): ?><meta name="robots" content="noindex, nofollow">
 <?php endif; ?><meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h(MARCA) ?> — La web de vuestra boda con confirmación de asistencia</title>
-<meta name="description" content="Cread la web de vuestra boda en un rato: confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. <?= h($total) ?> en un pago único.">
+<meta name="description" content="Cread la web de vuestra boda en un rato: confirmación de asistencia con menú y alergias, mapa de la ceremonia y el convite, galería, libro de invitados, música y lista de bodas. Desde <?= h($total) ?> en un pago único.">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
 <meta property="og:title" content="<?= h(MARCA) ?> — La web de vuestra boda">
 <meta property="og:description" content="Confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Pago único de <?= h($total) ?>.">
@@ -91,13 +93,13 @@ function pagina_landing(): string {
       <div class="l-hero-txt">
         <span class="l-chip"><?= il('flor', 'i i-sm') ?>Web de boda con confirmación de asistencia</span>
         <h1>La web de vuestra boda, <em>tan bonita</em> como el gran día.</h1>
-        <p class="l-lede">Montadla en un rato, desde el móvil o el ordenador: confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Sin tocar código.</p>
+        <p class="l-lede">Montadla en un rato, desde el móvil o el ordenador: confirmación de asistencia con menú y alergias, mapa de la ceremonia y el convite, galería, libro de invitados, música y lista de bodas. Sin tocar código.</p>
         <div class="l-ctas">
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
           <a class="b-btn b-paper" href="#pasos">Cómo funciona</a>
         </div>
         <dl class="l-datos">
-          <div><dt><?= h($total) ?></dt><dd>Pago único al publicar</dd></div>
+          <div><dt><?= h($total) ?></dt><dd>Desde, pago único al publicar</dd></div>
           <div><dt>0 €</dt><dd>Crear y probar la web</dd></div>
           <div><dt><?= (int) MESES_ALOJAMIENTO ?> meses</dt><dd>Online después de la boda</dd></div>
         </dl>
@@ -146,8 +148,8 @@ function pagina_landing(): string {
         </article>
         <article class="l-card">
           <span class="l-card-ico"><?= il('mapa') ?></span>
-          <h3>Cómo llegar</h3>
-          <p>Ceremonia, convite y hoteles, cada uno con su enlace a Google Maps, y la fecha lista para añadir al calendario del móvil.</p>
+          <h3>Un mapa con los dos sitios</h3>
+          <p>La ceremonia y el convite en un solo mapa, con los colores de vuestra web, y botón para abrir cada uno en Google Maps. La fecha, lista para el calendario del móvil.</p>
           <span class="l-card-pie">Añadir al calendario <?= il('calendario', 'i i-sm') ?></span>
         </article>
         <article class="l-card">
@@ -155,6 +157,18 @@ function pagina_landing(): string {
           <h3>Lista de bodas</h3>
           <p>Vuestro número de cuenta con botón para copiarlo. Comprobamos que el IBAN esté bien escrito antes de publicarlo.</p>
           <span class="l-card-pie">IBAN comprobado <?= il('check', 'i i-sm') ?></span>
+        </article>
+        <article class="l-card">
+          <span class="l-card-ico"><?= il('ojo') ?></span>
+          <h3>Galería y libro de invitados</h3>
+          <p>Vuestras fotos, y un libro donde los invitados os dejan mensajes y fotos. Todo protegido con un código que solo tienen ellos.</p>
+          <span class="l-card-pie">Protegido con código <?= il('escudo', 'i i-sm') ?></span>
+        </article>
+        <article class="l-card">
+          <span class="l-card-ico"><?= il('lapiz') ?></span>
+          <h3>Menús y transporte a medida</h3>
+          <p>Los menús que tengáis (carne, pescado, vegetariano, infantil…) y, si ponéis autobús, sus trayectos y horarios. Cada invitado elige al confirmar.</p>
+          <span class="l-card-pie">Cada invitado elige <?= il('check', 'i i-sm') ?></span>
         </article>
       </div>
     </div>
@@ -172,7 +186,7 @@ function pagina_landing(): string {
         <li>
           <span class="l-num">01</span>
           <h3>Elegid el estilo</h3>
-          <p><?= count(TEMAS) ?> paletas, desde el verde eucalipto hasta el rosa empolvado, con tipografía de papelería fina.</p>
+          <p><?= count(TEMAS) ?> paletas, 4 tipografías y 4 decoraciones para montar el vuestro, o uno de los <?= count(ATELIER) ?> diseños ilustrados de la Colección Atelier.</p>
           <span class="l-swatches"><?php foreach ($paletas as $col): ?><i style="background:<?= h($col) ?>"></i><?php endforeach; ?></span>
         </li>
         <li>
@@ -231,9 +245,9 @@ function pagina_landing(): string {
       <div class="l-sec-cab">
         <div>
           <span class="overline">Colección Atelier</span>
-          <h2>Diseños de autor, <em>como papelería fina</em>.</h2>
+          <h2>Diseños ilustrados, <em>como papelería fina</em>.</h2>
         </div>
-        <p>Seis diseños con su paleta, sus letras y su ilustración pintada a mano. Con animaciones propias y una entrada que se abre como una invitación. Pack Atelier: <?= h($totalAtelier) ?>, IVA incluido.</p>
+        <p><?= count(ATELIER) ?> diseños, cada uno con su paleta, sus letras y su ilustración. La invitación llega en un sobre cerrado: vuestros invitados rompen el sello, se abre la solapa y aparece la web. Pack Atelier: <?= h($totalAtelier) ?>, IVA incluido.</p>
       </div>
       <div class="l-atelier-grid">
 <?php foreach (ATELIER as $k => $a): ?>
@@ -275,18 +289,19 @@ function pagina_landing(): string {
             <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
             <li><?= il('check', 'i i-sm') ?>Panel privado con Excel para el catering</li>
             <li><?= il('check', 'i i-sm') ?><?= count(TEMAS) ?> paletas, 4 tipografías y 4 decoraciones</li>
+            <li><?= il('check', 'i i-sm') ?>Mapa de la ceremonia y el convite</li>
             <li><?= il('check', 'i i-sm') ?>Galería y libro de invitados</li>
             <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
           </ul>
           <a class="b-btn b-paper" href="<?= BASE_PATH ?>/crear">Empezar gratis</a>
         </div>
         <div class="l-precio-card l-precio-atelier">
-          <span class="overline">Atelier · diseño de autor</span>
+          <span class="overline">Atelier · diseño ilustrado</span>
           <div class="l-precio-cifra"><b><?= h($totalAtelier) ?></b><span>IVA incluido · pago único</span></div>
           <ul>
             <li><?= il('check', 'i i-sm') ?>Todo lo del pack Esencial</li>
             <li><?= il('check', 'i i-sm') ?>Uno de los <?= count(ATELIER) ?> diseños de la Colección Atelier</li>
-            <li><?= il('check', 'i i-sm') ?>Entrada animada: la invitación llega en un sobre que se abre</li>
+            <li><?= il('check', 'i i-sm') ?>Entrada animada: la invitación llega en un sobre con sello de cera</li>
             <li><?= il('check', 'i i-sm') ?>Ilustraciones y fotos que aparecen con movimiento</li>
             <li><?= il('check', 'i i-sm') ?>Detalles animados propios de cada diseño</li>
 <?php if (fuentes_autor()): ?>            <li><?= il('check', 'i i-sm') ?>Tipografías de autor, solo en este pack</li>
