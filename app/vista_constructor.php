@@ -24,8 +24,11 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
     $rail = $editar
         ? [['/panel/editar', 'lapiz', 'Editar la web', true], ['/panel', 'sobre', 'Invitados y respuestas', false],
            ['/panel/excel', 'excel', 'Descargar Excel', false], ['/panel/zip', 'regalo', 'Descargar ZIP', false], ['/panel/factura', 'check', 'Factura', false]]
-        : [['/crear', 'lapiz', 'Constructor en vivo', true], ['/#incluye', 'flor', 'Qué incluye', false],
-           ['/#precio', 'regalo', 'Precio', false], ['/#preguntas', 'sobre', 'Preguntas', false]];
+        : [];
+    // Al crear, el carril son los pasos del propio constructor: antes enlazaba a la landing
+    // y sacaba a la pareja a media edición (queja del owner, 25-sep-2026)
+    $pasos = ['pareja' => ['corazon', 'Vosotros'], 'lugares' => ['mapa', 'Ceremonia y convite'], 'portada' => ['flor', 'Portada y estilo'],
+        'secciones' => ['sobre', 'Secciones'], 'publicar' => ['enlace', 'Publicar']];
     ob_start(); ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -43,9 +46,11 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <aside class="c-rail" aria-label="Menú">
   <a class="c-marca" href="<?= $editar ? '/panel' : '/' ?>"><?= il('flor') ?><span><?= h(MARCA) ?></span></a>
   <nav>
-<?php foreach ($rail as [$href, $ico, $txt, $on]): ?>
+<?php if ($editar): foreach ($rail as [$href, $ico, $txt, $on]): ?>
     <a href="<?= h($href) ?>"<?= $on ? ' aria-current="page"' : '' ?><?= $href === '/panel/factura' ? ' target="_blank" rel="noopener"' : '' ?>><?= il($ico) ?><?= h($txt) ?></a>
-<?php endforeach; ?>
+<?php endforeach; else: $n = 0; foreach ($pasos as $k => [$ico, $txt]): ?>
+    <button type="button" class="c-paso" data-tab="<?= $k ?>" aria-selected="<?= $n++ === 0 ? 'true' : 'false' ?>"><span class="c-paso-num"><?= $n ?></span><?= h($txt) ?></button>
+<?php endforeach; endif; ?>
   </nav>
   <div class="c-pareja">
     <span class="c-pareja-ini" id="railIni" aria-hidden="true">·</span>

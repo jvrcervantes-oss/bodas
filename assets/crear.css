@@ -15,6 +15,12 @@
 .c-rail nav a:hover { background: var(--surface-high); color: var(--ink); }
 .c-rail nav a[aria-current="page"] { background: var(--bronze-c); color: #4e3700; }
 .c-rail nav a[aria-current="page"] .i { color: var(--bronze); }
+/* pasos del constructor en el carril (modo crear) */
+.c-paso { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 0; border-radius: var(--r); background: none; font-size: 14px; font-weight: 500; color: var(--ink-2); text-align: left; cursor: pointer; transition: background .15s, color .15s; }
+.c-paso:hover { background: var(--surface-high); color: var(--ink); }
+.c-paso[aria-selected="true"] { background: var(--bronze-c); color: #4e3700; }
+.c-paso-num { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; border: 1px solid var(--line); font-size: 12px; color: var(--ink-3); background: var(--paper); }
+.c-paso[aria-selected="true"] .c-paso-num { border-color: var(--bronze); color: var(--bronze); }
 .c-pareja { display: flex; align-items: center; gap: 10px; padding: 14px 10px 0; border-top: 1px solid var(--line-soft); }
 .c-pareja-ini { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: var(--rose-c); color: var(--rose);
   font-family: var(--serif); font-size: 14px; }
@@ -209,7 +215,9 @@
 /* ---------- pantallas medianas y móvil ---------- */
 @media (max-width: 1180px) {
   .c-rail { width: 76px; padding: 20px 10px; }
-  .c-rail .c-marca span, .c-rail nav a { font-size: 0; }
+  .c-rail .c-marca span, .c-rail nav a, .c-paso { font-size: 0; }
+  .c-paso { justify-content: center; padding: 10px; }
+  .c-paso-num { font-size: 12px; }
   .c-rail nav a { justify-content: center; padding: 12px; }
   .c-rail .c-marca { justify-content: center; padding: 0; }
   .c-pareja { justify-content: center; }

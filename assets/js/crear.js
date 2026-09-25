@@ -488,12 +488,16 @@
     if (k === 'pareja' || k === 'portada') return 'inicio';
     return null;
   }
-  tabs.forEach(function (t, i) {
+  // Pestañas de arriba y pasos del carril (al crear) manejan lo mismo
+  tabs.forEach(function (t) {
     t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); });
+  });
+  var tabsArriba = document.querySelectorAll('[role="tab"][data-tab]');
+  tabsArriba.forEach(function (t, i) {
     t.addEventListener('keydown', function (e) {
       var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
       if (!d) return;
-      var n = tabs[(i + d + tabs.length) % tabs.length];
+      var n = tabsArriba[(i + d + tabsArriba.length) % tabsArriba.length];
       n.focus(); n.click();
     });
   });
