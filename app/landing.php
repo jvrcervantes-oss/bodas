@@ -107,9 +107,9 @@ function pagina_landing(): string {
       <div class="l-hero-vis">
         <div class="l-marco">
           <img class="l-marco-fondo" src="<?= BASE_PATH ?>/assets/img/landing/papel.webp" alt="" width="1376" height="768">
-          <figure class="l-movil">
-            <img src="<?= BASE_PATH ?>/assets/img/landing/demo-movil.webp" alt="Ejemplo de web de boda creada con <?= h(marca()) ?>: portada con los nombres, la fecha y la cuenta atrás" width="390" height="780">
-          </figure>
+          <?php // Spot v8 (infraestructura/remotion, Spot-Bodas-ES) recodificado para web: 540×960, sin audio ?>
+          <video class="l-spot" src="<?= BASE_PATH ?>/assets/img/landing/spot-v8.mp4" poster="<?= BASE_PATH ?>/assets/img/landing/spot-v8-poster.webp" width="540" height="960" autoplay muted loop playsinline preload="metadata" aria-label="Vídeo de ejemplo: cómo se crea una web de boda con <?= h(marca()) ?>, sus paletas, los diseños Atelier, la confirmación de asistencia y los dos packs"></video>
+          <script src="<?= BASE_PATH ?>/assets/js/landing.js?v=<?= h(ASSETS_V) ?>"></script>
           <span class="l-ejemplo">Ejemplo</span>
         </div>
         <div class="l-flota l-flota-a" aria-hidden="true">
