@@ -11,6 +11,7 @@ declare(strict_types=1);
 const ICONOS_L = [
     'flor' => 'M12 7.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zM12 7.5V21M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zm0 3c3 0 5-2 5-5-3 0-5 2-5 5z',
     'flecha' => 'M5 12h14M13 6l6 6-6 6',
+    'anillos' => 'M9 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11zM15 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11z',
     'corazon' => 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
     'sobre' => 'M3 6h18v12H3zM3 7l9 6 9-6',
     'reloj' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
@@ -36,8 +37,9 @@ function il(string $n, string $cls = 'i'): string {
 }
 
 function pagina_landing(): string {
-    $total = euros(precio_total_cent());
-    $totalAtelier = euros(precio_atelier_cent());
+    $total = euros_escaparate(precio_total_cent());
+    $totalAtelier = euros_escaparate(precio_atelier_cent());
+    [$webNombre, $webTld] = array_pad(explode('.', MARCA_WEB, 2), 2, '');
     $E = empresa();
     $paletas = array_map(fn($t) => $t[2], TEMAS);
     $ejemplo = 'lucia-y-marcos.' . BASE_DOMAIN;
@@ -72,7 +74,7 @@ function pagina_landing(): string {
 
 <header class="l-top">
   <div class="l-top-in">
-    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
+    <a class="l-logo l-logo-web" href="<?= BASE_PATH ?>/" aria-label="<?= h(MARCA_WEB) ?>, inicio"><?= il('anillos', 'i i-anillos') ?><span><?= h($webNombre) ?><em>.<?= h($webTld) ?></em></span></a>
     <nav class="l-nav" aria-label="Secciones">
       <a href="#incluye">Qué incluye</a>
       <a href="#pasos">Cómo funciona</a>
@@ -346,7 +348,7 @@ function pagina_landing(): string {
 
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
-    <a class="l-logo" href="<?= BASE_PATH ?>/"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
+    <a class="l-logo l-logo-pie" href="<?= BASE_PATH ?>/"><?= il('anillos', 'i i-anillos') ?><span><?= h($webNombre) ?> <small>by AxisWorks</small></span></a>
     <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>

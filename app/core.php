@@ -62,6 +62,8 @@ const PRODUCTO = 'bodas';              // marca de propiedad en la metadata de S
 // competidores directos (25-sep-2026). Desde el 25-sep la elige El Padrino (owner con veto) y vive
 // en DATA_DIR/padrino/marca.json: se lee con marca(); esta constante es solo el valor por defecto.
 const MARCA = 'Bodas by AxisWorks';
+// Dominio del producto tal como se enseña en la portada (owner, 26-sep-2026: comprado, ver BOD-7)
+const MARCA_WEB = 'bodaenlace.com';
 
 $__dd = str_replace('\\', '/', realpath(DATA_DIR) ?: DATA_DIR) . '/';
 $__dr = str_replace('\\', '/', (string) (realpath((string) ($_SERVER['DOCUMENT_ROOT'] ?? '')) ?: '')) . '/';
@@ -258,6 +260,8 @@ function fecha_borrado(string $ymd): string {
     return $t ? $t->modify('+' . MESES_ALOJAMIENTO . ' months')->format('Y-m-d') : '';
 }
 function euros(int $cent): string { return number_format($cent / 100, 2, ',', '.') . ' €'; }
+/** Precio para escaparate (portada): sin «,00» si es redondo. Facturas y cobro siguen con euros(). */
+function euros_escaparate(int $cent): string { return $cent % 100 === 0 ? number_format($cent / 100, 0, ',', '.') . ' €' : euros($cent); }
 /** Total con IVA de una boda: la única fuente del precio. */
 function precio_total_cent(?array $c = null): int {
     return (($c['atelier'] ?? '') !== '') ? precio_atelier_cent() : precio_esencial_cent();
