@@ -244,7 +244,7 @@
       var fr = new FileReader();
       fr.onload = function () { foto.src = fr.result; pintaFoto(); enviaFoto(); };
       fr.readAsDataURL(b);
-    }).catch(function () {});
+    }).catch(function () { /* MUDO A PROPOSITO: la foto guardada solo se precarga para verla en el editor; si no llega, el hueco queda vacío y se puede volver a subir */ });
   }
 
   // ------------------------------------------------------------ secciones
@@ -611,7 +611,7 @@
         if (!existe) pagina = 'inicio';
         pintaFaltan(j.faltan || {});
       })
-      .catch(function () {});
+      .catch(function () { /* MUDO A PROPOSITO: se queda la vista previa anterior y el siguiente cambio vuelve a pedirla */ });
   }
   function enviaFoto() {
     if (iframe.contentWindow) iframe.contentWindow.postMessage({ tipo: 'foto', src: foto.src }, '*');
@@ -779,7 +779,7 @@
         if (slugEl.value !== v) return;
         slugEstado.textContent = j.libre ? '✓ Disponible' : (j.motivo || 'No disponible');
         slugEstado.className = j.libre ? 'ok' : 'mal';
-      }).catch(function () {});
+      }).catch(function () { /* MUDO A PROPOSITO: es solo una ayuda mientras se escribe: la dirección la valida el servidor al dar de alta */ });
     }, 400);
   }
   if (slugEl) {
