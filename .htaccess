@@ -31,6 +31,8 @@ DirectoryIndex index.php
 
 # La vista previa del creador vive en un iframe aislado (origen opaco): las fuentes
 # son peticiones CORS y sin esta cabecera no cargan. Son fuentes OFL públicas.
+# cors-publico: el iframe tiene origen opaco (Origin: null), no hay dominio al que restringir;
+# solo .woff2 de fuentes OFL públicas, sin datos ni cookies.
 <FilesMatch "\.woff2$">
   <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"
