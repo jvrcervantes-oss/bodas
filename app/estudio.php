@@ -314,6 +314,6 @@ function estudio_pagina(string $titulo, string $cuerpo, bool $menu = true): stri
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — Estudio · ' . h(marca()) . '</title><meta name="robots" content="noindex, nofollow">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple estudio">'
-        . '<header class="s-top est-top"><a class="c-marca" href="' . h(estudio_url()) . '">' . il('flor') . '<span>Estudio · ' . h(marca()) . '</span></a>' . $nav . '</header>'
+        . '<header class="s-top est-top">' . logo_marca('c-marca', estudio_url(), 'Estudio · ', false) . $nav . '</header>'
         . '<main class="simple-main est-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main></body></html>';
 }

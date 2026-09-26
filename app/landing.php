@@ -26,6 +26,17 @@ const ICONOS_L = [
     'ojo' => 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
     'mas' => 'M12 5v14M5 12h14',
 ];
+/**
+ * Logo de la marca: anillos + dominio (MARCA_WEB), con el .com en cursiva. ÚNICO sitio donde se
+ * compone: portada, creador, legales, guías y estudio lo llaman, así que cambiarlo aquí lo cambia en
+ * todas partes (owner, 26-sep-2026). $antes va delante del nombre (p. ej. «Estudio · »).
+ */
+function logo_marca(string $cls, string $href, string $antes = '', bool $tld = true, string $despuesHtml = ''): string {
+    [$nombre, $dom] = array_pad(explode('.', MARCA_WEB, 2), 2, '');
+    return '<a class="' . $cls . '" href="' . h($href) . '" aria-label="' . h($antes . MARCA_WEB) . '">' . il('anillos', 'i i-anillos')
+        . '<span>' . h($antes . $nombre) . ($tld && $dom !== '' ? '<em>.' . h($dom) . '</em>' : '') . $despuesHtml . '</span></a>';
+}
+
 function il(string $n, string $cls = 'i'): string {
     if ($n === 'anillos') {   // logo de la marca: dos anillos enlazados y un corazón (SVG de la owner, 26-sep-2026), relleno
         return '<svg class="' . $cls . '" viewBox="26 80 1027 918" aria-hidden="true">'
@@ -44,7 +55,6 @@ function il(string $n, string $cls = 'i'): string {
 function pagina_landing(): string {
     $total = euros_escaparate(precio_total_cent());
     $totalAtelier = euros_escaparate(precio_atelier_cent());
-    [$webNombre, $webTld] = array_pad(explode('.', MARCA_WEB, 2), 2, '');
     $E = empresa();
     $paletas = array_map(fn($t) => $t[2], TEMAS);
     $ejemplo = 'lucia-y-marcos.' . BASE_DOMAIN;
@@ -79,7 +89,7 @@ function pagina_landing(): string {
 
 <header class="l-top">
   <div class="l-top-in">
-    <a class="l-logo l-logo-web" href="<?= BASE_PATH ?>/" aria-label="<?= h(MARCA_WEB) ?>, inicio"><?= il('anillos', 'i i-anillos') ?><span><?= h($webNombre) ?><em>.<?= h($webTld) ?></em></span></a>
+    <?= logo_marca('l-logo l-logo-web', BASE_PATH . '/') ?>
     <nav class="l-nav" aria-label="Secciones">
       <a href="#incluye">Qué incluye</a>
       <a href="#pasos">Cómo funciona</a>
@@ -353,7 +363,7 @@ function pagina_landing(): string {
 
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
-    <a class="l-logo l-logo-pie" href="<?= BASE_PATH ?>/"><?= il('anillos', 'i i-anillos') ?><span><?= h($webNombre) ?> <small>by AxisWorks</small></span></a>
+    <?= logo_marca('l-logo l-logo-pie', BASE_PATH . '/', '', false, ' <small>by AxisWorks</small>') ?>
     <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>

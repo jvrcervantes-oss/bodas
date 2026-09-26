@@ -219,7 +219,7 @@ function guia_pagina(string $titulo, string $desc, string $cuerpo, bool $indexab
         . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="description" content="' . h($desc) . '"><meta name="robots" content="' . $robots . '">'
         . '<link rel="canonical" href="' . h($url) . '">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
-        . '<header class="s-top"><a class="c-marca" href="' . BASE_PATH . '/">' . il('flor') . '<span>' . h(marca()) . '</span></a></header>'
+        . '<header class="s-top">' . logo_marca('c-marca', BASE_PATH . '/') . '</header>'
         . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo
         . '<p class="g-cta"><a class="c-btn" href="' . BASE_PATH . '/crear">Crear la web de vuestra boda</a></p></main>' . pie_creador() . '</body></html>';
 }

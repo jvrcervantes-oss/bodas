@@ -9,6 +9,9 @@
   background: var(--surface-low); border-right: 1px solid var(--line-soft); }
 .c-marca { display: inline-flex; align-items: center; gap: 10px; padding: 0 10px; text-decoration: none; font-family: var(--serif); font-size: 17px; color: var(--ink); white-space: nowrap; }
 .c-marca .i { color: var(--rose); width: 22px; height: 22px; }
+/* Logo de la marca (logo_marca en app/landing.php): mismas proporciones que en la portada */
+.c-marca .i-anillos { width: 26px; height: 23px; fill: currentColor; stroke: none; margin-right: -2px; }
+.c-marca em { font-style: italic; color: var(--rose); }
 .c-rail nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .c-rail nav a { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: var(--r); font-size: 14px; font-weight: 500; color: var(--ink-2); text-decoration: none; transition: background .15s, color .15s; }
 .c-rail nav a .i { width: 18px; height: 18px; color: var(--ink-3); }

@@ -282,7 +282,7 @@ function pagina_simple(string $titulo, string $cuerpo): string {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="robots" content="noindex">'
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
-        . '<header class="s-top"><a class="c-marca" href="' . BASE_PATH . '/">' . il('flor') . '<span>' . h(marca()) . '</span></a></header>'
+        . '<header class="s-top">' . logo_marca('c-marca', BASE_PATH . '/') . '</header>'
         . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main>' . pie_creador() . '</body></html>';
 }
 

@@ -63,7 +63,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <script type="application/json" id="datos"><?= $json ?></script>
 
 <aside class="c-rail" aria-label="Menú">
-  <a class="c-marca" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
+  <?= logo_marca('c-marca', $editar ? '/panel' : BASE_PATH . '/') ?>
   <nav>
 <?php if ($editar): foreach ($rail as [$href, $ico, $txt, $on]): ?>
     <a href="<?= h($href) ?>"<?= $on ? ' aria-current="page"' : '' ?><?= $href === '/panel/factura' ? ' target="_blank" rel="noopener"' : '' ?>><?= il($ico) ?><?= h($txt) ?></a>
@@ -80,7 +80,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 
 <div class="c-main">
   <header class="c-top">
-    <a class="c-marca c-marca-movil" href="<?= $editar ? '/panel' : BASE_PATH . '/' ?>"><?= il('flor') ?><span><?= h(marca()) ?></span></a>
+    <?= logo_marca('c-marca c-marca-movil', $editar ? '/panel' : BASE_PATH . '/') ?>
     <div class="c-top-tit">
       <div class="c-top-txt"><h1 id="proyNom">Vuestra boda</h1><small><i class="c-punto"></i><?= $editar ? 'Los cambios se publican al guardar' : 'Guardado en este navegador' ?><?php if (!$editar): ?> · <button type="button" class="c-pasar" id="pasarDisp">Seguir en otro dispositivo</button><?php endif; ?></small></div>
       <span class="c-badge"><?= $editar ? 'Publicada' : 'Borrador' ?></span>
