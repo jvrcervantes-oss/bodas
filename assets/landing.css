@@ -209,6 +209,11 @@
   .l-final { flex-direction: column; align-items: flex-start; padding: 36px 28px; }
 }
 @media (max-width: 560px) {
+  /* Móvil (26-sep-2026): botones de la cabecera a todo el ancho y cifras con aire */
+  .l-hero .l-ctas .b-btn { flex: 1 1 100%; justify-content: center; }
+  .l-datos { gap: 12px; }
+  .l-datos dt { font-size: 24px; }
+  .l-datos dd { font-size: 12px; line-height: 1.4; }
   .l-atelier-grid { grid-template-columns: 1fr; }
   .l-wrap, .l-top-in { padding: 0 16px; }
   .l-top-in { height: 64px; }
@@ -230,6 +235,7 @@
   .l-guirnalda { height: 120px; }
 }
 @media (max-width: 400px) {
+  .l-top-cta { font-size: 12px; min-height: 36px; }
   .l-logo span { font-size: 16px; }
   .l-top-cta { padding: 0 12px; }
 }

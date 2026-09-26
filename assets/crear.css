@@ -99,7 +99,7 @@
 .c-borrar { align-self: flex-start; }
 
 /* paletas en tarjeta */
-.c-temas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.c-temas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .c-tema { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px 8px 10px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-tema input { position: absolute; opacity: 0; pointer-events: none; }
@@ -124,7 +124,7 @@
 /* Colección Atelier */
 .c-atelier-cab { display: flex; justify-content: space-between; align-items: baseline; }
 .c-atelier-precio { font-size: 12px; font-weight: 600; color: var(--bronze); }
-.c-atelier { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-atelier { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-atelier-card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-atelier-card input { position: absolute; opacity: 0; pointer-events: none; }
@@ -151,11 +151,11 @@
 
 
 /* tipografía: muestra con los nombres */
-.c-fuentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-fuentes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-fuente { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px 10px; border-radius: var(--r-lg);
   background: var(--surface-low); border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-fuente input { position: absolute; opacity: 0; pointer-events: none; }
-.c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; }
+.c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; max-width: 100%; overflow: hidden; }
 /* Petit Formal Script (Sobria) ocupa ~190 px a 22 px frente a 120-165 de las demás: se iguala el ancho */
 .c-fuente-sobria .c-fuente-muestra { font-size: 17px; }
 .c-fuente small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
@@ -165,7 +165,7 @@
 [data-si-otro-sitio][hidden] { display: none; }
 
 /* decoración en tarjeta con miniatura */
-.c-decos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-decos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-deco { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-deco input { position: absolute; opacity: 0; pointer-events: none; }
@@ -238,7 +238,7 @@
 .c-aviso { margin: 0; padding: 12px 14px; border-radius: var(--r); background: var(--blush); font-size: 13px; color: var(--ink-2); }
 .c-galeria { display: flex; flex-direction: column; gap: 10px; }
 .c-galeria > .b-btn { align-self: flex-start; cursor: pointer; }
-.c-galeria-lista { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-galeria-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-galeria-item { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: var(--r); border: 1px solid var(--line-soft); background: var(--surface-low); }
 .c-galeria-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; background: var(--surface-c); }
 .c-galeria-item input { width: 100%; min-height: 34px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; }
@@ -278,7 +278,9 @@
 @keyframes latido { 50% { opacity: .35; } }
 .c-marco { flex: 1; min-height: 0; position: relative; overflow: hidden; display: flex; justify-content: center; padding: 18px; }
 .c-marco iframe { border: 0; background: #fff; display: block; transform-origin: top left; }
-.c-marco[data-disp="movil"] iframe { width: 390px; max-width: 100%; height: 100%; border-radius: 26px; box-shadow: var(--e3); border: 6px solid #1f1b19; }
+/* Vista previa «Móvil»: proporción de teléfono (390×844) aunque el panel sea ancho o bajo; antes llenaba el alto con 390 px de ancho y parecía una tablet */
+.c-marco[data-disp="movil"] { container-type: size; align-items: center; }
+.c-marco[data-disp="movil"] iframe { box-sizing: border-box; width: min(402px, 100cqw, 100cqh * 0.4621); height: min(856px, 100cqh, 100cqw * 2.1641); border-radius: 30px; box-shadow: var(--e3); border: 6px solid #1f1b19; }
 .c-marco[data-disp="escritorio"] { padding: 0; justify-content: flex-start; }
 .c-marco[data-disp="escritorio"] iframe { position: absolute; top: 0; left: 0; }
 
@@ -335,9 +337,12 @@
 @media (max-width: 460px) {
   .c-fila { flex-direction: column; }
   .c-hora { flex-basis: auto; }
-  .c-temas { grid-template-columns: repeat(2, 1fr); }
+  .c-temas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .c-editor { padding: 20px 16px; }
   .c-top-tit h1 { font-size: 15px; }
+  /* En un teléfono la muestra de 22 px no cabe en media columna y empujaba todo el editor (26-sep-2026) */
+  .c-fuente-muestra { font-size: 17px; }
+  .c-fuente-sobria .c-fuente-muestra { font-size: 13px; }
 }
 
 /* Tipografías de autor (Pack Atelier): muestras en imagen; en el Esencial, bloqueadas */
