@@ -657,13 +657,19 @@
     }
   }
 
-  // Móvil / escritorio: el escritorio se pinta a 1280 px y se escala al hueco
+  // Móvil / escritorio. El escritorio es siempre la misma pantalla de portátil (1440×900) reducida
+  // entera al hueco y centrada: antes tomaba la forma del panel y en un monitor ancho salía una web
+  // ancha y achatada, distinta en cada resolución (owner, 26-sep-2026). El móvil lo resuelve el CSS.
+  var PANT_W = 1440, PANT_H = 900, MARGEN = 18;
   function ajustaMarco() {
-    if (marco.getAttribute('data-disp') !== 'escritorio') { iframe.style.transform = ''; iframe.style.width = ''; iframe.style.height = ''; return; }
-    var k = Math.min(1, marco.clientWidth / 1280);
-    iframe.style.width = '1280px';
-    iframe.style.height = (marco.clientHeight / k) + 'px';
+    if (marco.getAttribute('data-disp') !== 'escritorio') { iframe.style.transform = ''; iframe.style.width = ''; iframe.style.height = ''; iframe.style.left = ''; iframe.style.top = ''; return; }
+    var w = marco.clientWidth - 2 * MARGEN, h = marco.clientHeight - 2 * MARGEN;
+    var k = Math.min(1, w / PANT_W, h / PANT_H);
+    iframe.style.width = PANT_W + 'px';
+    iframe.style.height = PANT_H + 'px';
     iframe.style.transform = 'scale(' + k + ')';
+    iframe.style.left = Math.round((marco.clientWidth - PANT_W * k) / 2) + 'px';
+    iframe.style.top = Math.round((marco.clientHeight - PANT_H * k) / 2) + 'px';
   }
   document.querySelectorAll('[data-disp]').forEach(function (b) {
     if (b === marco) return;

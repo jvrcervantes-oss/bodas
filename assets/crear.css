@@ -63,7 +63,7 @@
 .c-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
 
 /* ---------- rejilla editor / vista previa ---------- */
-.c-grid { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; gap: 24px; padding: 16px 28px 32px; align-items: start; }
+.c-grid { display: grid; grid-template-columns: clamp(360px, 30vw, 580px) 1fr; gap: 24px; padding: 16px 28px 32px; align-items: start; }   /* el editor crece con el monitor (antes fijo en 460 px) */
 .c-editor { padding: 26px 24px 28px; border-radius: var(--r-lg); background: var(--paper); border: 1px solid var(--line-soft); box-shadow: var(--e1); }
 .c-panel { display: flex; flex-direction: column; gap: 16px; }
 .c-panel[hidden] { display: none; }
@@ -282,7 +282,7 @@
 .c-marco[data-disp="movil"] { container-type: size; align-items: center; }
 .c-marco[data-disp="movil"] iframe { box-sizing: border-box; width: min(402px, 100cqw, 100cqh * 0.4621); height: min(856px, 100cqh, 100cqw * 2.1641); border-radius: 30px; box-shadow: var(--e3); border: 6px solid #1f1b19; }
 .c-marco[data-disp="escritorio"] { padding: 0; justify-content: flex-start; }
-.c-marco[data-disp="escritorio"] iframe { position: absolute; top: 0; left: 0; }
+.c-marco[data-disp="escritorio"] iframe { position: absolute; top: 0; left: 0; border-radius: 10px; box-shadow: var(--e3); outline: 1px solid var(--line); }
 
 /* ---------- pie y páginas simples ---------- */
 .c-pie { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center; padding: 20px 16px 28px; font-size: 13px; color: var(--ink-3); }
