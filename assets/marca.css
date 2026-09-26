@@ -8,6 +8,16 @@
 @font-face { font-family: 'Playfair Display'; font-style: normal; font-weight: 400 500; font-display: swap; src: url(fonts/PlayfairDisplay.woff2) format('woff2'); }
 @font-face { font-family: 'Playfair Display'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/PlayfairDisplay-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Cormorant Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/CormorantGaramond-italic.woff2) format('woff2'); }
+/* Tipografía de la marca desde el 26-sep-2026 (owner): titulares en Instrument Serif y su cursiva,
+   texto en Poppins, en portada, creador, legales y guías. Las de arriba se quedan: el selector del
+   creador las usa para enseñar cada combinación. */
+@font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/InstrumentSerif.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Serif'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/InstrumentSerif-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 300; font-display: swap; src: url(fonts/Poppins-300.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Poppins-400.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 500; font-display: swap; src: url(fonts/Poppins-500.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/Poppins-600.woff2) format('woff2'); }
+@font-face { font-family: 'Poppins'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/Poppins-italic.woff2) format('woff2'); }
 
 :root {
   --surface: #fdfbf9;
@@ -33,9 +43,9 @@
   --espresso-2: #3b3430;
   --ok: #4f7a60;
   --mal: #b3413a;
-  --serif: 'Playfair Display', Georgia, serif;
-  --editorial: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
-  --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --editorial: 'Instrument Serif', Georgia, serif;
+  --sans: 'Poppins', system-ui, sans-serif;
   --r: 8px;
   --r-lg: 16px;
   --r-xl: 24px;
