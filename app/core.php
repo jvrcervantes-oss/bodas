@@ -186,8 +186,10 @@ function clean_str($v, int $max = 500): string {
     return mb_substr($v, 0, $max, 'UTF-8');
 }
 
-/** IP del cliente. Hostinger entrega REMOTE_ADDR real; no se confía en X-Forwarded-For. */
-function ip_cliente(): string { return (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'); }
+/** IP del cliente. Hostinger entrega REMOTE_ADDR real también detrás de Cloudflare (verificado el 26-sep-2026,
+ *  y una CF-Connecting-IP falsa directa al origen se ignora); no se confía en X-Forwarded-For. Detrás del
+ *  Worker de las bodas la IP del invitado llega firmada (IP_PROXY, app/proxy.php). */
+function ip_cliente(): string { return defined('IP_PROXY') ? (string) IP_PROXY : (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'); }
 
 /**
  * Límite de peticiones por ventana: $clave ya incluye lo que acota (IP, boda…).

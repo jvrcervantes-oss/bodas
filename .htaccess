@@ -17,7 +17,7 @@ DirectoryIndex index.php
 
   # Nada de app/, cron/ ni ficheros ocultos por la web (el código no tiene
   # secretos, pero tampoco tiene por qué servirse)
-  RewriteRule ^(app|cron|Backups|_dev)(/|$) - [R=404,L]
+  RewriteRule ^(app|cron|Backups|_dev|worker)(/|$) - [R=404,L]
   # .well-known queda fuera: Hostinger emite el SSL de cada subdominio por HTTP-01
   RewriteCond %{REQUEST_URI} !^/\.well-known/
   RewriteRule (^|/)\. - [R=404,L]

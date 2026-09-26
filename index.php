@@ -21,12 +21,17 @@ require __DIR__ . '/app/landing.php';
 require __DIR__ . '/app/vista_constructor.php';
 require __DIR__ . '/app/boda.php';
 require __DIR__ . '/app/galeria.php';
+require __DIR__ . '/app/proxy.php';
 
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
 
 $host = strtolower((string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
+// <slug>.bodaenlace.com llega a través del Worker de Cloudflare, firmado (app/proxy.php, rev. #116)
+$proxy = $host === CREATOR_HOST ? proxy_boda($_SERVER) : null;
+if ($proxy === '') no_existe();
+if ($proxy !== null) $host = $proxy . '.' . BASE_DOMAIN;
 $ruta = (string) parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
 if (BASE_PATH !== '' && strpos($ruta . '/', BASE_PATH . '/') === 0) $ruta = substr($ruta, strlen(BASE_PATH));
 $ruta = trim($ruta, '/');
