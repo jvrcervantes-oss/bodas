@@ -117,6 +117,7 @@
 @font-face { font-family: 'Ms Madi'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/MsMadi.woff2) format('woff2'); }
 @font-face { font-family: 'EB Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/EBGaramond-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Alex Brush'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/AlexBrush.woff2) format('woff2'); }
+@font-face { font-family: 'Petit Formal Script'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/PetitFormalScript.woff2) format('woff2'); }
 /* Colección Atelier */
 .c-atelier-cab { display: flex; justify-content: space-between; align-items: baseline; }
 .c-atelier-precio { font-size: 12px; font-weight: 600; color: var(--bronze); }

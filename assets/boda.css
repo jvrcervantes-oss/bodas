@@ -942,15 +942,19 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
   display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, var(--accent), var(--primary)); color: var(--on-dark); font-size: 15px; }
 @media (min-width: 901px){ .deco-sobre .hero-text{ padding: 112px 48px 40px; } }
 
-/* Nombres en letra de pluma (Formal, Jardín, Botánica, Ciudad): necesitan más cuerpo para leerse igual.
+/* Nombres en letra de pluma (Formal, Jardín, Botánica, Sobria, Ciudad): necesitan más cuerpo para leerse igual.
    Ms Madi (Ciudad) es aún más pequeña a igual tamaño. */
 .fuente-formal .hero-names, .fuente-jardin .hero-names, .fuente-botanica .hero-names{ font-size: 42px; line-height: 50px; }
 .fuente-formal .nav-names, .fuente-jardin .nav-names, .fuente-botanica .nav-names{ font-size: 28px; }
 .fuente-ciudad .hero-names{ font-size: 48px; line-height: 54px; }
+/* Petit Formal Script (Sobria) es ancha: algo menos de cuerpo para que un nombre largo no llene la línea */
+.fuente-sobria .hero-names{ font-size: 36px; line-height: 46px; }
+.fuente-sobria .nav-names{ font-size: 24px; }
 .fuente-ciudad .nav-names{ font-size: 32px; }
 @media (min-width: 901px){
   .fuente-formal .hero-names, .fuente-jardin .hero-names, .fuente-botanica .hero-names{ font-size: 76px; line-height: 88px; }
   .fuente-ciudad .hero-names{ font-size: 88px; line-height: 96px; }
+  .fuente-sobria .hero-names{ font-size: 62px; line-height: 76px; }
 }
 .fuente-moderna .hero-names{ font-weight: 300; letter-spacing: .01em; }
 
