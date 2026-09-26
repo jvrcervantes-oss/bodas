@@ -89,7 +89,7 @@ function empresa(): array {
         'titular' => (string) ($e['titular'] ?? ''),
         'nif' => (string) ($e['nif'] ?? ''),
         'domicilio' => (string) ($e['domicilio'] ?? ''),
-        'email' => (string) ($e['email'] ?? 'hello@axisworks.studio'),
+        'email' => (string) ($e['email'] ?? 'hola@bodaenlace.com'),   // buzón de la marca (owner, 26-sep-2026)
     ];
 }
 function empresa_completa(): bool {
