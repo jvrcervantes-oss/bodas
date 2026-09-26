@@ -68,6 +68,22 @@
 @font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/Poppins-600.woff2) format('woff2'); }
 @font-face { font-family: 'Poppins'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/Poppins-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Sacramento'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Sacramento.woff2) format('woff2'); }
+@font-face { font-family: 'Vibur'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Vibur.woff2) format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/Fraunces.woff2) format('woff2'); }
+@font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 300 700; font-display: swap; src: url(fonts/Fraunces-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/BricolageGrotesque.woff2) format('woff2'); }
+@font-face { font-family: 'Ballet'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Ballet.woff2) format('woff2'); }
+@font-face { font-family: 'Crimson Pro'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/CrimsonPro.woff2) format('woff2'); }
+@font-face { font-family: 'Crimson Pro'; font-style: italic; font-weight: 300 700; font-display: swap; src: url(fonts/CrimsonPro-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Tenor Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/TenorSans.woff2) format('woff2'); }
+@font-face { font-family: 'Petit Formal Script'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/PetitFormalScript.woff2) format('woff2'); }
+@font-face { font-family: 'Forum'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Forum.woff2) format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/HankenGrotesk.woff2) format('woff2'); }
+@font-face { font-family: 'Hanken Grotesk'; font-style: italic; font-weight: 300 700; font-display: swap; src: url(fonts/HankenGrotesk-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/Cormorant.woff2) format('woff2'); }
+@font-face { font-family: 'Cormorant'; font-style: italic; font-weight: 300 700; font-display: swap; src: url(fonts/Cormorant-italic.woff2) format('woff2'); }
+@font-face { font-family: 'Host Grotesk'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/HostGrotesk.woff2) format('woff2'); }
+@font-face { font-family: 'Host Grotesk'; font-style: italic; font-weight: 300 700; font-display: swap; src: url(fonts/HostGrotesk-italic.woff2) format('woff2'); }
 
 :root{
   /* Color */
