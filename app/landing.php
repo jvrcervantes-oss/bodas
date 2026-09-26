@@ -94,7 +94,7 @@ function pagina_landing(): string {
     <div class="l-wrap l-hero-grid">
       <div class="l-hero-txt">
         <span class="l-chip"><?= il('flor', 'i i-sm') ?>Web de boda con confirmación de asistencia</span>
-        <h1>La web de vuestra boda, <em>tan bonita</em> como el gran día.</h1>
+        <h1>La web de vuestra boda, <em>tan bonita</em> como el gran día</h1>
         <p class="l-lede">Montadla en un rato, desde el móvil o el ordenador: confirmación de asistencia con menú y alergias, mapa de la ceremonia y el convite, galería, libro de invitados, música y lista de bodas. Sin tocar código.</p>
         <div class="l-ctas">
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
@@ -131,7 +131,7 @@ function pagina_landing(): string {
       <div class="l-sec-cab">
         <div>
           <span class="overline">Todo en una web</span>
-          <h2>Cada detalle resuelto, antes de decir el <em>«sí, quiero»</em>.</h2>
+          <h2>Cada detalle resuelto, antes de decir el <em>«sí, quiero»</em></h2>
         </div>
         <p>Lo que vuestros invitados necesitan saber y lo que vosotros necesitáis recoger, en un solo enlace.</p>
       </div>
@@ -188,7 +188,7 @@ function pagina_landing(): string {
         <li>
           <span class="l-num">01</span>
           <h3>Elegid el estilo</h3>
-          <p><?= count(TEMAS) ?> paletas, 4 tipografías y 4 decoraciones para montar el vuestro, o uno de los <?= count(ATELIER) ?> diseños ilustrados de la Colección Atelier.</p>
+          <p><?= count(TEMAS) ?> paletas, <?= count(FUENTES) ?> tipografías y <?= count(DECORACIONES) ?> decoraciones para montar el vuestro, o uno de los <?= count(ATELIER) ?> diseños ilustrados de la Colección Atelier.</p>
           <span class="l-swatches"><?php foreach ($paletas as $col): ?><i style="background:<?= h($col) ?>"></i><?php endforeach; ?></span>
         </li>
         <li>
@@ -247,7 +247,7 @@ function pagina_landing(): string {
       <div class="l-sec-cab">
         <div>
           <span class="overline">Colección Atelier</span>
-          <h2>Diseños ilustrados, <em>como papelería fina</em>.</h2>
+          <h2>Diseños ilustrados, <em>como papelería fina</em></h2>
         </div>
         <p><?= count(ATELIER) ?> diseños, cada uno con su paleta, sus letras y su ilustración. La invitación llega en un sobre cerrado: vuestros invitados rompen el sello, se abre la solapa y aparece la web. Pack Atelier: <?= h($totalAtelier) ?>, IVA incluido.</p>
       </div>
@@ -279,7 +279,7 @@ function pagina_landing(): string {
     <div class="l-wrap">
       <div class="l-sec-cab l-centro">
         <span class="overline">Precio</span>
-        <h2>Dos packs, <em>todo incluido</em>.</h2>
+        <h2>Dos packs, <em>todo incluido</em></h2>
         <p>Sin suscripciones ni extras. Pagáis una vez, cuando la web está como queréis.</p>
       </div>
       <div class="l-packs">
@@ -290,7 +290,7 @@ function pagina_landing(): string {
             <li><?= il('check', 'i i-sm') ?>Web publicada al momento, con todas vuestras secciones</li>
             <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
             <li><?= il('check', 'i i-sm') ?>Panel privado con Excel para el catering</li>
-            <li><?= il('check', 'i i-sm') ?><?= count(TEMAS) ?> paletas, 4 tipografías y 4 decoraciones</li>
+            <li><?= il('check', 'i i-sm') ?><?= count(TEMAS) ?> paletas, <?= count(FUENTES) ?> tipografías y <?= count(DECORACIONES) ?> decoraciones</li>
             <li><?= il('check', 'i i-sm') ?>Mapa de la ceremonia y el convite</li>
             <li><?= il('check', 'i i-sm') ?>Galería y libro de invitados</li>
             <li><?= il('check', 'i i-sm') ?>Cambios ilimitados y descarga en ZIP</li>
@@ -334,7 +334,7 @@ function pagina_landing(): string {
       <div class="l-final">
         <div>
           <span class="l-chip l-chip-dark"><?= il('flor', 'i i-sm') ?>Vuestro momento es ahora</span>
-          <h2>Cread hoy la web que vuestros invitados van a abrir una y otra vez.</h2>
+          <h2>Cread hoy la web que vuestros invitados van a abrir una y otra vez</h2>
           <p>Sin suscripciones. Un único pago al publicar, y la web vuestra hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</p>
         </div>
         <div class="l-final-ctas">
