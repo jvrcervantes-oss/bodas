@@ -7,6 +7,10 @@
    ============================================================ */
 
 /* Fuentes alojadas aquí (OFL), no en Google: sin terceros en la web de los invitados (Legal, 25-sep) */
+/* Las que tienen Reserved Font Name (Playfair Display, Italiana, Cinzel Decorative, Forum, Tenor Sans,
+   Petit Formal Script, Sacramento) van con el archivo ORIGINAL de google/fonts, solo pasado a woff2:
+   recortarlas es «Modified Version» y la OFL (cl. 3) prohíbe entonces usar el nombre (Legal, 26-sep-2026).
+   Las demás sí van recortadas a latino. */
 @font-face {
   font-family: 'Manrope';
   font-style: normal;
