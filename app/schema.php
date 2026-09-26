@@ -25,6 +25,8 @@ const TEMAS = [
 // cuyo id de menú ES esa clave, para que sigan casando.
 // Tipografías (owner, 26-sep-2026: 10, elegidas sobre la muestra; fuera Romántica y Caligráfica, que
 // Botánica y Jardín cubren mejor). Una clave que ya no existe cae a 'clasica' al normalizar.
+// La clave no cambia aunque cambie el nombre visible (configs guardados y clases .fuente-<clave>):
+// 'ciudad' se ve como «Manuscrita» y 'jardin' como «Artística» (owner, 26-sep-2026).
 // clave => [nombre, títulos, textos, nombres de la pareja, estilo de los nombres]
 const FUENTES = [
     'clasica'   => ['Clásica',   "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",          "'Playfair Display', Georgia, serif",   'italic'],
@@ -32,9 +34,9 @@ const FUENTES = [
     'formal'    => ['Formal',    "'Bodoni Moda', Georgia, serif",        "'Crimson Pro', Georgia, serif",             "'Pinyon Script', cursive",             'normal'],
     'editorial' => ['Editorial', "'Fraunces', Georgia, serif",           "'Hanken Grotesk', system-ui, sans-serif",   "'Fraunces', Georgia, serif",           'italic'],
     'revista'   => ['Revista',   "'Instrument Serif', Georgia, serif",   "'Instrument Sans', system-ui, sans-serif",  "'Instrument Serif', Georgia, serif",   'italic'],
-    'ciudad'    => ['Ciudad',    "'Instrument Serif', Georgia, serif",   "'Public Sans', system-ui, sans-serif",      "'Ms Madi', cursive",                   'normal'],
+    'ciudad'    => ['Manuscrita',    "'Instrument Serif', Georgia, serif",   "'Public Sans', system-ui, sans-serif",      "'Ms Madi', cursive",                   'normal'],
     'grabado'   => ['Grabado',   "'Aboreto', Georgia, serif",            "'Rethink Sans', system-ui, sans-serif",     "'EB Garamond', Georgia, serif",        'italic'],
-    'jardin'    => ['Jardín',    "'Playfair Display', Georgia, serif",   "'Inclusive Sans', system-ui, sans-serif",   "'Alex Brush', cursive",                'normal'],
+    'jardin'    => ['Artística',    "'Playfair Display', Georgia, serif",   "'Inclusive Sans', system-ui, sans-serif",   "'Alex Brush', cursive",                'normal'],
     'botanica'  => ['Botánica',  "'Cormorant Infant', Georgia, serif",   "'Montserrat', system-ui, sans-serif",       "'Alex Brush', cursive",                'normal'],    'sobria'    => ['Sobria',    "'Cinzel', Georgia, serif",             "'Host Grotesk', system-ui, sans-serif",     "'Petit Formal Script', cursive",       'normal'],
 ];
 
@@ -126,7 +128,10 @@ const RUTAS_RESERVADAS = ['api', 'panel', 'privacidad', 'foto', 'boda', 'assets'
 // Nombres de web que no se venden: técnicos del estudio o que se prestan a suplantación
 const SLUGS_RESERVADOS = ['www', 'api', 'admin', 'panel', 'mail', 'correo', 'smtp', 'ftp', 'bodas', 'crear', 'static',
     'assets', 'cdn', 'app', 'demo', 'test', 'dev', 'staging', 'soporte', 'support', 'ayuda', 'help', 'login', 'pago',
-    'pagos', 'stripe', 'factura', 'facturas', 'axisworks', 'lawang', 'eduycora', 'b2k', 'sumba', 'blog', 'shop', 'tienda'];
+    'pagos', 'stripe', 'factura', 'facturas', 'axisworks', 'lawang', 'eduycora', 'b2k', 'sumba', 'blog', 'shop', 'tienda',
+    // Seguridad #105 (26-sep): la marca, el panel y los nombres de correo/infraestructura no se venden
+    'estudio', 'bodaenlace', 'hola', 'guia', 'guias', 'cuenta', 'seguridad', 'legal', 'privacidad', 'condiciones',
+    'webmail', 'autodiscover', 'autoconfig', 'imap', 'pop', 'mta-sts', 'ns1', 'ns2', 'cpanel', 'hpanel', 'lemon'];
 const SLUG_RE = '/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])$/';
 
 function slug_valido(string $s): bool {
