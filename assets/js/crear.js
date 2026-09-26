@@ -657,19 +657,13 @@
     }
   }
 
-  // Móvil / escritorio. El escritorio es siempre la misma pantalla de portátil (1440×900) reducida
-  // entera al hueco y centrada: antes tomaba la forma del panel y en un monitor ancho salía una web
-  // ancha y achatada, distinta en cada resolución (owner, 26-sep-2026). El móvil lo resuelve el CSS.
-  var PANT_W = 1440, PANT_H = 900, MARGEN = 18;
+  // Móvil / escritorio: el escritorio se pinta a 1280 px y se escala al hueco
   function ajustaMarco() {
-    if (marco.getAttribute('data-disp') !== 'escritorio') { iframe.style.transform = ''; iframe.style.width = ''; iframe.style.height = ''; iframe.style.left = ''; iframe.style.top = ''; return; }
-    var w = marco.clientWidth - 2 * MARGEN, h = marco.clientHeight - 2 * MARGEN;
-    var k = Math.min(1, w / PANT_W, h / PANT_H);
-    iframe.style.width = PANT_W + 'px';
-    iframe.style.height = PANT_H + 'px';
+    if (marco.getAttribute('data-disp') !== 'escritorio') { iframe.style.transform = ''; iframe.style.width = ''; iframe.style.height = ''; return; }
+    var k = Math.min(1, marco.clientWidth / 1280);
+    iframe.style.width = '1280px';
+    iframe.style.height = (marco.clientHeight / k) + 'px';
     iframe.style.transform = 'scale(' + k + ')';
-    iframe.style.left = Math.round((marco.clientWidth - PANT_W * k) / 2) + 'px';
-    iframe.style.top = Math.round((marco.clientHeight - PANT_H * k) / 2) + 'px';
   }
   document.querySelectorAll('[data-disp]').forEach(function (b) {
     if (b === marco) return;
@@ -696,9 +690,6 @@
     tabs.forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === k ? 'true' : 'false'); });
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
     if (!sinCambiarVista) document.body.setAttribute('data-ver', 'editor');
-    // En el móvil las pestañas no caben: se desliza la fila para que la activa quede a la vista
-    var activa = document.getElementById('tab-' + k), fila = activa && activa.parentElement;
-    if (fila && fila.scrollWidth > fila.clientWidth) fila.scrollTo({ left: activa.offsetLeft - (fila.clientWidth - activa.offsetWidth) / 2, behavior: 'smooth' });
   }
   // Y al revés: cambiar de pestaña lleva la vista previa a la página que esa pestaña edita
   function paginaDeTab(k) {
@@ -710,11 +701,7 @@
   }
   // Pestañas de arriba y pasos del carril (al crear) manejan lo mismo
   tabs.forEach(function (t) {
-    t.addEventListener('click', function () {
-      var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k));
-      // En el móvil el menú está fijo arriba: el paso nuevo se empieza a leer desde su principio
-      if (window.matchMedia('(max-width: 900px)').matches && window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
+    t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); });
   });
   var tabsArriba = document.querySelectorAll('[role="tab"][data-tab]');
   tabsArriba.forEach(function (t, i) {

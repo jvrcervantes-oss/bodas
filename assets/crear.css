@@ -63,7 +63,7 @@
 .c-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
 
 /* ---------- rejilla editor / vista previa ---------- */
-.c-grid { display: grid; grid-template-columns: clamp(360px, 30vw, 580px) 1fr; gap: 24px; padding: 16px 28px 32px; align-items: start; }   /* el editor crece con el monitor (antes fijo en 460 px) */
+.c-grid { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; gap: 24px; padding: 16px 28px 32px; align-items: start; }
 .c-editor { padding: 26px 24px 28px; border-radius: var(--r-lg); background: var(--paper); border: 1px solid var(--line-soft); box-shadow: var(--e1); }
 .c-panel { display: flex; flex-direction: column; gap: 16px; }
 .c-panel[hidden] { display: none; }
@@ -99,7 +99,7 @@
 .c-borrar { align-self: flex-start; }
 
 /* paletas en tarjeta */
-.c-temas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.c-temas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .c-tema { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px 8px 10px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-tema input { position: absolute; opacity: 0; pointer-events: none; }
@@ -124,7 +124,7 @@
 /* Colección Atelier */
 .c-atelier-cab { display: flex; justify-content: space-between; align-items: baseline; }
 .c-atelier-precio { font-size: 12px; font-weight: 600; color: var(--bronze); }
-.c-atelier { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.c-atelier { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .c-atelier-card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-atelier-card input { position: absolute; opacity: 0; pointer-events: none; }
@@ -151,11 +151,11 @@
 
 
 /* tipografía: muestra con los nombres */
-.c-fuentes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.c-fuentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .c-fuente { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px 10px; border-radius: var(--r-lg);
   background: var(--surface-low); border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-fuente input { position: absolute; opacity: 0; pointer-events: none; }
-.c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; max-width: 100%; overflow: hidden; }
+.c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; }
 /* Petit Formal Script (Sobria) ocupa ~190 px a 22 px frente a 120-165 de las demás: se iguala el ancho */
 .c-fuente-sobria .c-fuente-muestra { font-size: 17px; }
 .c-fuente small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
@@ -165,7 +165,7 @@
 [data-si-otro-sitio][hidden] { display: none; }
 
 /* decoración en tarjeta con miniatura */
-.c-decos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.c-decos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .c-deco { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-deco input { position: absolute; opacity: 0; pointer-events: none; }
@@ -238,7 +238,7 @@
 .c-aviso { margin: 0; padding: 12px 14px; border-radius: var(--r); background: var(--blush); font-size: 13px; color: var(--ink-2); }
 .c-galeria { display: flex; flex-direction: column; gap: 10px; }
 .c-galeria > .b-btn { align-self: flex-start; cursor: pointer; }
-.c-galeria-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.c-galeria-lista { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .c-galeria-item { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: var(--r); border: 1px solid var(--line-soft); background: var(--surface-low); }
 .c-galeria-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; background: var(--surface-c); }
 .c-galeria-item input { width: 100%; min-height: 34px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; }
@@ -278,11 +278,9 @@
 @keyframes latido { 50% { opacity: .35; } }
 .c-marco { flex: 1; min-height: 0; position: relative; overflow: hidden; display: flex; justify-content: center; padding: 18px; }
 .c-marco iframe { border: 0; background: #fff; display: block; transform-origin: top left; }
-/* Vista previa «Móvil»: proporción de teléfono (390×844) aunque el panel sea ancho o bajo; antes llenaba el alto con 390 px de ancho y parecía una tablet */
-.c-marco[data-disp="movil"] { container-type: size; align-items: center; }
-.c-marco[data-disp="movil"] iframe { box-sizing: border-box; width: min(402px, 100cqw, 100cqh * 0.4621); height: min(856px, 100cqh, 100cqw * 2.1641); border-radius: 30px; box-shadow: var(--e3); border: 6px solid #1f1b19; }
+.c-marco[data-disp="movil"] iframe { width: 390px; max-width: 100%; height: 100%; border-radius: 26px; box-shadow: var(--e3); border: 6px solid #1f1b19; }
 .c-marco[data-disp="escritorio"] { padding: 0; justify-content: flex-start; }
-.c-marco[data-disp="escritorio"] iframe { position: absolute; top: 0; left: 0; border-radius: 10px; box-shadow: var(--e3); outline: 1px solid var(--line); }
+.c-marco[data-disp="escritorio"] iframe { position: absolute; top: 0; left: 0; }
 
 /* ---------- pie y páginas simples ---------- */
 .c-pie { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: center; padding: 20px 16px 28px; font-size: 13px; color: var(--ink-3); }
@@ -324,42 +322,22 @@
   body[data-ver="editor"] .c-ver-editor, body[data-ver="previa"] .c-ver-previa { display: none; }
   .c-top-acc .b-btn span { display: none; }
   .c-top-acc .b-btn { padding: 0 12px; }
-  /* Menú de pasos en el móvil (26-sep-2026): fijo bajo la cabecera, numerado y con los bordes
-     difuminados para que se vea que hay más pasos a los lados */
-  .c-tabs { position: sticky; top: 60px; z-index: 14; margin: 0; padding: 0 12px; counter-reset: paso;
-    background: rgba(253, 251, 249, .96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 28px), transparent);
-            mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 28px), transparent); }
-  .c-tabs button { display: inline-flex; align-items: center; gap: 7px; padding: 12px 10px; }
-  .c-tabs button::before { counter-increment: paso; content: counter(paso); display: inline-grid; place-items: center;
-    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 600; background: var(--surface-high); color: var(--ink-3); }
-  .c-tabs button[aria-selected="true"]::before { background: var(--gold); color: #fff; }
+  .c-tabs { margin: 0 16px; }
   .c-disp { display: none; }
   .c-grid { grid-template-columns: 1fr; padding: 12px 16px 24px; }
   .c-previa { display: none; position: static; }
   body[data-ver="previa"] .c-editor, body[data-ver="previa"] .c-pie { display: none; }
   body[data-ver="previa"] .c-previa { display: block; }
-  /* Vista previa en el teléfono (26-sep-2026): de borde a borde y a su ancho real. Antes metía un
-     teléfono dibujado dentro de una ventana de navegador falsa: la web salía a ~250 px (chata) y la
-     ventana medía 444 px en un móvil de 390, así que se cortaba. */
-  .c-grid { grid-template-columns: minmax(0, 1fr); }
-  body[data-ver="previa"] .c-grid { padding: 0; }
-  .c-navegador { height: calc(100vh - 107px); height: calc(100dvh - 107px); min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
-  .c-dots, .c-url { display: none; }
-  .c-nav-barra { padding: 8px 16px; }
-  .c-previa select { flex: 1; max-width: none; min-height: 36px; font-size: 13px; }
-  .c-marco, .c-marco[data-disp="movil"] { padding: 0; }
-  .c-marco[data-disp="movil"] iframe { width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+  .c-navegador { height: calc(100vh - 210px); min-height: 480px; }
+    .c-previa select { max-width: 130px; }
+  .c-marco { padding: 10px; }
 }
 @media (max-width: 460px) {
   .c-fila { flex-direction: column; }
   .c-hora { flex-basis: auto; }
-  .c-temas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .c-temas { grid-template-columns: repeat(2, 1fr); }
   .c-editor { padding: 20px 16px; }
   .c-top-tit h1 { font-size: 15px; }
-  /* En un teléfono la muestra de 22 px no cabe en media columna y empujaba todo el editor (26-sep-2026) */
-  .c-fuente-muestra { font-size: 17px; }
-  .c-fuente-sobria .c-fuente-muestra { font-size: 13px; }
 }
 
 /* Tipografías de autor (Pack Atelier): muestras en imagen; en el Esencial, bloqueadas */
