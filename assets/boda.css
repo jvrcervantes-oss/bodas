@@ -8,7 +8,7 @@
 
 /* Fuentes alojadas aquí (OFL), no en Google: sin terceros en la web de los invitados (Legal, 25-sep) */
 /* Las que tienen Reserved Font Name (Playfair Display, Italiana, Cinzel Decorative, Forum, Tenor Sans,
-   Petit Formal Script, Sacramento) van con el archivo ORIGINAL de google/fonts, solo pasado a woff2:
+   Petit Formal Script, Sacramento, Mrs Saint Delafield) van con el archivo ORIGINAL de google/fonts, solo pasado a woff2:
    recortarlas es «Modified Version» y la OFL (cl. 3) prohíbe entonces usar el nombre (Legal, 26-sep-2026).
    Las demás sí van recortadas a latino. */
 @font-face {
@@ -72,6 +72,7 @@
 @font-face { font-family: 'Poppins'; font-style: normal; font-weight: 600; font-display: swap; src: url(fonts/Poppins-600.woff2) format('woff2'); }
 @font-face { font-family: 'Poppins'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/Poppins-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Sacramento'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Sacramento.woff2) format('woff2'); }
+@font-face { font-family: 'Mrs Saint Delafield'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/MrsSaintDelafield.woff2) format('woff2'); }
 @font-face { font-family: 'Vibur'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Vibur.woff2) format('woff2'); }
 @font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 300 700; font-display: swap; src: url(fonts/Fraunces.woff2) format('woff2'); }
 @font-face { font-family: 'Fraunces'; font-style: italic; font-weight: 300 700; font-display: swap; src: url(fonts/Fraunces-italic.woff2) format('woff2'); }

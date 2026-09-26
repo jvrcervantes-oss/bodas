@@ -68,6 +68,8 @@ Manrope.woff2
   Copyright 2019 The Manrope Project Authors (https://github.com/sharanda/manrope)
 Montserrat.woff2
   Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)
+MrsSaintDelafield.woff2
+  Copyright (c) 2011 Alejandro Paul (sudtipos@sudtipos.com), with Reserved Font Name "Mrs Saint Delafield"
 Newsreader-italic.woff2
   Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)
 Newsreader.woff2
