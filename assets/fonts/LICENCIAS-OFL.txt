@@ -2,6 +2,10 @@ Tipografías incluidas en esta web (carpeta assets/fonts/)
 Todas se distribuyen bajo la SIL Open Font License, versión 1.1, cuyo texto va debajo.
 Se pueden usar, estudiar, modificar y redistribuir; no se pueden vender por separado.
 
+AlbertSans-italic.woff2
+  Copyright 2021 The Albert Sans Project Authors (https://github.com/usted/Albert-Sans)
+AlbertSans.woff2
+  Copyright 2021 The Albert Sans Project Authors (https://github.com/usted/Albert-Sans)
 AlexBrush.woff2
   Copyright 2011 The Alex Brush Project Authors (https://github.com/googlefonts/alex-brush)
 BodoniModa.woff2
