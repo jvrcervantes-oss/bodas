@@ -24,6 +24,10 @@ EBGaramond.woff2
   Copyright 2017 The EB Garamond Project Authors (https://github.com/octaviopardo/EBGaramond12)
 GreatVibes.woff2
   Copyright 2010 The Great Vibes Pro Project Authors (https://github.com/googlefonts/great-vibes)
+Inter-italic.woff2
+  Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
+Inter.woff2
+  Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 Italiana.woff2
   Copyright (c) 2011 by Santiago Orozco (hi@typemade.mx) with reserved name Italiana
 LibreBaskerville-italic.woff2
@@ -38,6 +42,10 @@ Newsreader-italic.woff2
   Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)
 Newsreader.woff2
   Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)
+OpenSans-italic.woff2
+  Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans)
+OpenSans.woff2
+  Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans)
 PinyonScript.woff2
   Copyright 2022 The PinyonScript Project Authors (https://github.com/SorkinType/Pinyon)
 PlayfairDisplay-italic.woff2
@@ -46,6 +54,18 @@ PlayfairDisplay.woff2
   Copyright 2017 The Playfair Display Project Authors (https://github.com/clauseggers/Playfair-Display), with Reserved Font Name "Playfair Display".
 PlusJakartaSans.woff2
   Copyright 2020 The Plus Jakarta Sans Project Authors (https://github.com/tokotype/PlusJakartaSans)
+Poppins-300.woff2
+  Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+Poppins-400.woff2
+  Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+Poppins-500.woff2
+  Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+Poppins-600.woff2
+  Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+Poppins-italic.woff2
+  Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+Sacramento.woff2
+  Copyright (c) 2012, Brian J. Bonislawsky DBA Astigmatic (AOETI) (astigma@astigmatic.com), with Reserved Font Names 'Sacramento'
 
 ------------------------------------------------------------------------
 
