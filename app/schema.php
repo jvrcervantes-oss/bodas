@@ -23,12 +23,19 @@ const TEMAS = [
 // Menús: desde el 25-sep-2026 cada boda define los suyos ({id, nombre, descripcion, infantil}).
 // Esta tabla es solo la de antes (claves fijas): convierte los config y las respuestas viejos,
 // cuyo id de menú ES esa clave, para que sigan casando.
-// Tipografías (owner, 25-sep-2026): clave => [nombre, títulos, textos, nombres de la pareja, estilo de los nombres]
+// Tipografías (owner, 26-sep-2026: 9, elegidas sobre la muestra; fuera Romántica y Caligráfica, que
+// Botánica y Jardín cubren mejor). Una clave que ya no existe cae a 'clasica' al normalizar.
+// clave => [nombre, títulos, textos, nombres de la pareja, estilo de los nombres]
 const FUENTES = [
-    'clasica'     => ['Clásica',     "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",           "'Playfair Display', Georgia, serif",   'italic'],
-    'romantica'   => ['Romántica',   "'Cormorant Garamond', Georgia, serif", "'Manrope', system-ui, sans-serif",           "'Cormorant Garamond', Georgia, serif", 'italic'],
-    'caligrafica' => ['Caligráfica', "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",           "'Great Vibes', cursive",               'normal'],
-    'moderna'     => ['Moderna',     "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", 'normal'],
+    'clasica'   => ['Clásica',   "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",          "'Playfair Display', Georgia, serif",   'italic'],
+    'moderna'   => ['Moderna',   "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", "'Plus Jakarta Sans', system-ui, sans-serif", 'normal'],
+    'formal'    => ['Formal',    "'Bodoni Moda', Georgia, serif",        "'Crimson Pro', Georgia, serif",             "'Pinyon Script', cursive",             'normal'],
+    'editorial' => ['Editorial', "'Fraunces', Georgia, serif",           "'Hanken Grotesk', system-ui, sans-serif",   "'Fraunces', Georgia, serif",           'italic'],
+    'revista'   => ['Revista',   "'Instrument Serif', Georgia, serif",   "'Instrument Sans', system-ui, sans-serif",  "'Instrument Serif', Georgia, serif",   'italic'],
+    'ciudad'    => ['Ciudad',    "'Instrument Serif', Georgia, serif",   "'Public Sans', system-ui, sans-serif",      "'Ms Madi', cursive",                   'normal'],
+    'grabado'   => ['Grabado',   "'Aboreto', Georgia, serif",            "'Rethink Sans', system-ui, sans-serif",     "'EB Garamond', Georgia, serif",        'italic'],
+    'jardin'    => ['Jardín',    "'Playfair Display', Georgia, serif",   "'Inclusive Sans', system-ui, sans-serif",   "'Alex Brush', cursive",                'normal'],
+    'botanica'  => ['Botánica',  "'Cormorant Infant', Georgia, serif",   "'Montserrat', system-ui, sans-serif",       "'Alex Brush', cursive",                'normal'],
 ];
 
 // Tipografías de autor: SOLO en el Pack Atelier. Vacío desde el 25-sep-2026: el owner mandó quitar
