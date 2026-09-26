@@ -2,12 +2,16 @@ Tipografías incluidas en esta web (carpeta assets/fonts/)
 Todas se distribuyen bajo la SIL Open Font License, versión 1.1, cuyo texto va debajo.
 Se pueden usar, estudiar, modificar y redistribuir; no se pueden vender por separado.
 
+Aboreto.woff2
+  Copyright 2022 The Aboreto Project Authors (https://github.com/domija/Aboreto)
 AlbertSans-italic.woff2
   Copyright 2021 The Albert Sans Project Authors (https://github.com/usted/Albert-Sans)
 AlbertSans.woff2
   Copyright 2021 The Albert Sans Project Authors (https://github.com/usted/Albert-Sans)
 AlexBrush.woff2
   Copyright 2011 The Alex Brush Project Authors (https://github.com/googlefonts/alex-brush)
+BacasimeAntique.woff2
+  Copyright 2023 The Bacasime Antique Project Authors (https://github.com/docrepair-fonts/bacasime-antique-fonts), with Reserved Font Name "Playfair".
 Ballet.woff2
   Copyright 2020 The Ballet Project Authors (https://github.com/Omnibus-Type/Ballet)
 BodoniModa.woff2
@@ -76,6 +80,8 @@ Inter.woff2
   Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter)
 Italiana.woff2
   Copyright (c) 2011 by Santiago Orozco (hi@typemade.mx) with reserved name Italiana
+Lexend.woff2
+  Copyright 2018 The Lexend Project Authors (https://github.com/googlefonts/lexend), with Reserved Font Name "RevReading Lexend".
 LibreBaskerville-italic.woff2
   Copyright 2012 The Libre Baskerville Project Authors (https://github.com/impallari/Libre-Baskerville)
 LibreBaskerville.woff2
@@ -86,6 +92,8 @@ Montserrat.woff2
   Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)
 MrsSaintDelafield.woff2
   Copyright (c) 2011 Alejandro Paul (sudtipos@sudtipos.com), with Reserved Font Name "Mrs Saint Delafield"
+MsMadi.woff2
+  Copyright 2018 The Ms Madi Project Authors (https://github.com/googlefonts/ms-madi)
 Newsreader-italic.woff2
   Copyright 2020 The Newsreader Project Authors (http://github.com/productiontype/Newsreader)
 Newsreader.woff2
@@ -116,6 +124,8 @@ Poppins-600.woff2
   Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
 Poppins-italic.woff2
   Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)
+Prata.woff2
+  Copyright 2011 The Prata Project Authors (https://github.com/cyrealtype/Prata)
 PublicSans-italic.woff2
   Copyright 2015 The Public Sans Project Authors (https://github.com/uswds/public-sans)
 PublicSans.woff2
