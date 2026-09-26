@@ -138,7 +138,7 @@
     var muestra = el('span', { class: 'c-fuente-muestra', text: 'Lucía & Marcos' });
     muestra.style.fontFamily = f.nombres;
     muestra.style.fontStyle = f.estilo;
-    fuentesEl.appendChild(el('label', { class: 'c-fuente' }, [r, muestra, el('small', { text: f.nombre })]));
+    fuentesEl.appendChild(el('label', { class: 'c-fuente c-fuente-' + k }, [r, muestra, el('small', { text: f.nombre })]));
   });
 
   // ------------------------------------------------------------ tipografías de autor (solo Pack Atelier)

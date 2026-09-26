@@ -153,6 +153,8 @@
   background: var(--surface-low); border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-fuente input { position: absolute; opacity: 0; pointer-events: none; }
 .c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; }
+/* Petit Formal Script (Sobria) ocupa ~190 px a 22 px frente a 120-165 de las demás: se iguala el ancho */
+.c-fuente-sobria .c-fuente-muestra { font-size: 17px; }
 .c-fuente small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
 .c-fuente:hover { border-color: var(--line); }
 .c-fuente:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--e1); background: #fffdf8; }
