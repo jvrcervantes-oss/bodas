@@ -339,9 +339,17 @@
   .c-previa { display: none; position: static; }
   body[data-ver="previa"] .c-editor, body[data-ver="previa"] .c-pie { display: none; }
   body[data-ver="previa"] .c-previa { display: block; }
-  .c-navegador { height: calc(100vh - 210px); min-height: 480px; }
-    .c-previa select { max-width: 130px; }
-  .c-marco { padding: 10px; }
+  /* Vista previa en el teléfono (26-sep-2026): de borde a borde y a su ancho real. Antes metía un
+     teléfono dibujado dentro de una ventana de navegador falsa: la web salía a ~250 px (chata) y la
+     ventana medía 444 px en un móvil de 390, así que se cortaba. */
+  .c-grid { grid-template-columns: minmax(0, 1fr); }
+  body[data-ver="previa"] .c-grid { padding: 0; }
+  .c-navegador { height: calc(100vh - 107px); height: calc(100dvh - 107px); min-height: 0; border: 0; border-radius: 0; box-shadow: none; }
+  .c-dots, .c-url { display: none; }
+  .c-nav-barra { padding: 8px 16px; }
+  .c-previa select { flex: 1; max-width: none; min-height: 36px; font-size: 13px; }
+  .c-marco, .c-marco[data-disp="movil"] { padding: 0; }
+  .c-marco[data-disp="movil"] iframe { width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
 }
 @media (max-width: 460px) {
   .c-fila { flex-direction: column; }
