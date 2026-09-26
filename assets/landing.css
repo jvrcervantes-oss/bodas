@@ -164,7 +164,7 @@
 .l-faq { max-width: 800px; }
 .l-faq-item { border-radius: var(--r-lg); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); margin-bottom: 12px; }
 .l-faq-item summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 24px;
-  font-family: var(--serif); font-size: 17px; }
+  font-family: var(--sans); font-weight: 500; font-size: 16px; }   /* preguntas en Poppins semigruesa (owner, 26-sep-2026) */
 .l-faq-item summary::-webkit-details-marker { display: none; }
 .l-faq-item summary .i { color: var(--ink-3); transition: transform .2s; }
 .l-faq-item[open] summary .i { transform: rotate(180deg); }
