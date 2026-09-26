@@ -11,7 +11,7 @@
 //    total; los canjes buenos no cuentan para el tope global.
 //  - Regalar el servicio es autoconsumo (art. 12.3 LIVA): lleva IVA sobre el coste y no se
 //    hace factura BODA-. Por eso cada canje queda en un registro para el gestor (BOD-4).
-// Los códigos se crean con tools/bodas_cortesia.py (repo del estudio), que añade la línea aquí.
+// Los códigos se crean con `tools/bodas.py cortesia` (repo del estudio), que añade la línea aquí.
 declare(strict_types=1);
 
 const CORTESIA_ALFABETO = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -23,7 +23,7 @@ function cortesia_normaliza(string $c): string {
 }
 
 /**
- * Todos los códigos: los del repo (tools/bodas_cortesia.py) y los creados desde el panel del
+ * Todos los códigos: los del repo (`tools/bodas.py cortesia`) y los creados desde el panel del
  * estudio (DATA_DIR/cortesia/codigos.json, con su nota), menos los anulados.
  * [sha256 => ['id', 'usos', 'atelier', 'caduca', 'nota'?]]
  */

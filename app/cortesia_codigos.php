@@ -1,5 +1,5 @@
 <?php
-// Códigos de cortesía vigentes (los crea tools/bodas_cortesia.py del repo del estudio).
+// Códigos de cortesía vigentes (los crea `tools/bodas.py cortesia` del repo del estudio).
 // Solo el sha256 del código normalizado: el código en claro y a quién se dio NUNCA van aquí.
 // Revocar un código = borrar su línea. Lógica: app/cortesia.php.
 return [
