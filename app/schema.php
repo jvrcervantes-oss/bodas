@@ -26,7 +26,7 @@ const TEMAS = [
 // Tipografías (owner, 26-sep-2026: 10, elegidas sobre la muestra; fuera Romántica y Caligráfica, que
 // Botánica y Jardín cubren mejor). Una clave que ya no existe cae a 'clasica' al normalizar.
 // La clave no cambia aunque cambie el nombre visible (configs guardados y clases .fuente-<clave>):
-// 'ciudad' se ve como «Manuscrita» y 'jardin' como «Artística» (owner, 26-sep-2026).
+// 'ciudad' se ve como «Manuscrita», 'jardin' como «Artística» y 'sobria' como «Caligráfica» (owner, 26-sep-2026).
 // clave => [nombre, títulos, textos, nombres de la pareja, estilo de los nombres]
 const FUENTES = [
     'clasica'   => ['Clásica',   "'Playfair Display', Georgia, serif",   "'Manrope', system-ui, sans-serif",          "'Playfair Display', Georgia, serif",   'italic'],
@@ -37,7 +37,7 @@ const FUENTES = [
     'ciudad'    => ['Manuscrita',    "'Instrument Serif', Georgia, serif",   "'Public Sans', system-ui, sans-serif",      "'Ms Madi', cursive",                   'normal'],
     'grabado'   => ['Grabado',   "'Aboreto', Georgia, serif",            "'Rethink Sans', system-ui, sans-serif",     "'EB Garamond', Georgia, serif",        'italic'],
     'jardin'    => ['Artística',    "'Playfair Display', Georgia, serif",   "'Inclusive Sans', system-ui, sans-serif",   "'Alex Brush', cursive",                'normal'],
-    'botanica'  => ['Botánica',  "'Cormorant Infant', Georgia, serif",   "'Montserrat', system-ui, sans-serif",       "'Alex Brush', cursive",                'normal'],    'sobria'    => ['Sobria',    "'Cinzel', Georgia, serif",             "'Host Grotesk', system-ui, sans-serif",     "'Petit Formal Script', cursive",       'normal'],
+    'botanica'  => ['Botánica',  "'Cormorant Infant', Georgia, serif",   "'Montserrat', system-ui, sans-serif",       "'Alex Brush', cursive",                'normal'],    'sobria'    => ['Caligráfica',    "'Cinzel', Georgia, serif",             "'Host Grotesk', system-ui, sans-serif",     "'Petit Formal Script', cursive",       'normal'],
 ];
 
 // Tipografías de autor: SOLO en el Pack Atelier. Vacío desde el 25-sep-2026: el owner mandó quitar
