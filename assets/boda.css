@@ -8,7 +8,7 @@
 
 /* Fuentes alojadas aquí (OFL), no en Google: sin terceros en la web de los invitados (Legal, 25-sep) */
 /* Las que tienen Reserved Font Name (Playfair Display, Italiana, Cinzel Decorative, Forum, Tenor Sans,
-   Petit Formal Script, Sacramento, Mrs Saint Delafield, Lexend, Bacasime Antique) van con el archivo ORIGINAL de google/fonts, solo pasado a woff2:
+   Petit Formal Script, Sacramento, Mrs Saint Delafield, Lexend, Bacasime Antique, Arapey) van con el archivo ORIGINAL de google/fonts, solo pasado a woff2:
    recortarlas es «Modified Version» y la OFL (cl. 3) prohíbe entonces usar el nombre (Legal, 26-sep-2026).
    Las demás sí van recortadas a latino. */
 @font-face {
@@ -87,6 +87,8 @@
 @font-face { font-family: 'Rethink Sans'; font-style: normal; font-weight: 400 700; font-display: swap; src: url(fonts/RethinkSans.woff2) format('woff2'); }
 @font-face { font-family: 'Rethink Sans'; font-style: italic; font-weight: 400 700; font-display: swap; src: url(fonts/RethinkSans-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Syne'; font-style: normal; font-weight: 400 700; font-display: swap; src: url(fonts/Syne.woff2) format('woff2'); }
+@font-face { font-family: 'Arapey'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Arapey.woff2) format('woff2'); }
+@font-face { font-family: 'Arapey'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/Arapey-italic.woff2) format('woff2'); }
 @font-face { font-family: 'Prata'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/Prata.woff2) format('woff2'); }
 @font-face { font-family: 'Lexend'; font-style: normal; font-weight: 100 900; font-display: swap; src: url(fonts/Lexend.woff2) format('woff2'); }
 @font-face { font-family: 'Bacasime Antique'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/BacasimeAntique.woff2) format('woff2'); }
