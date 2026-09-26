@@ -363,7 +363,7 @@ function pagina_landing(): string {
 
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
-    <?= logo_marca('l-logo l-logo-pie', BASE_PATH . '/', '', false, ' <small>by AxisWorks</small>') ?>
+    <span class="l-pie-marca"><?= logo_marca('l-logo l-logo-pie', BASE_PATH . '/', '', false) ?><a class="l-pie-by" href="https://axisworks.studio/" target="_blank" rel="noopener">by AxisWorks</a></span>
     <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>

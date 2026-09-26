@@ -690,6 +690,9 @@
     tabs.forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === k ? 'true' : 'false'); });
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
     if (!sinCambiarVista) document.body.setAttribute('data-ver', 'editor');
+    // En el móvil las pestañas no caben: se desliza la fila para que la activa quede a la vista
+    var activa = document.getElementById('tab-' + k), fila = activa && activa.parentElement;
+    if (fila && fila.scrollWidth > fila.clientWidth) fila.scrollTo({ left: activa.offsetLeft - (fila.clientWidth - activa.offsetWidth) / 2, behavior: 'smooth' });
   }
   // Y al revés: cambiar de pestaña lleva la vista previa a la página que esa pestaña edita
   function paginaDeTab(k) {
@@ -701,7 +704,11 @@
   }
   // Pestañas de arriba y pasos del carril (al crear) manejan lo mismo
   tabs.forEach(function (t) {
-    t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); });
+    t.addEventListener('click', function () {
+      var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k));
+      // En el móvil el menú está fijo arriba: el paso nuevo se empieza a leer desde su principio
+      if (window.matchMedia('(max-width: 900px)').matches && window.scrollY > 0) window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   });
   var tabsArriba = document.querySelectorAll('[role="tab"][data-tab]');
   tabsArriba.forEach(function (t, i) {

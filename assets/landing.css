@@ -13,7 +13,10 @@
 .l-logo .i-anillos { width: 29px; height: 26px; fill: currentColor; stroke: none; margin-right: -2px; }   /* a la altura de las letras altas de «bodaenlace» */
 .l-logo-web span { letter-spacing: -.01em; }
 .l-logo-web em { font-style: italic; color: var(--rose); }
-.l-logo-pie small { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-left: 4px; }
+.l-pie-marca { display: inline-flex; align-items: center; gap: 10px; }
+/* «by AxisWorks» enlaza a la web del estudio (owner, 26-sep-2026); va fuera del logo porque un enlace no puede ir dentro de otro */
+.l-pie-by { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); text-decoration: none; padding-top: 3px; }
+.l-pie-by:hover { color: var(--rose); }
 .l-nav { display: flex; gap: 28px; }
 .l-nav a { font-size: 14px; font-weight: 500; color: var(--ink-2); text-decoration: none; padding: 6px 0; position: relative; }
 .l-nav a:hover { color: var(--rose); }

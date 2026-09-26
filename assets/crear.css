@@ -324,7 +324,16 @@
   body[data-ver="editor"] .c-ver-editor, body[data-ver="previa"] .c-ver-previa { display: none; }
   .c-top-acc .b-btn span { display: none; }
   .c-top-acc .b-btn { padding: 0 12px; }
-  .c-tabs { margin: 0 16px; }
+  /* Menú de pasos en el móvil (26-sep-2026): fijo bajo la cabecera, numerado y con los bordes
+     difuminados para que se vea que hay más pasos a los lados */
+  .c-tabs { position: sticky; top: 60px; z-index: 14; margin: 0; padding: 0 12px; counter-reset: paso;
+    background: rgba(253, 251, 249, .96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 28px), transparent);
+            mask-image: linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 28px), transparent); }
+  .c-tabs button { display: inline-flex; align-items: center; gap: 7px; padding: 12px 10px; }
+  .c-tabs button::before { counter-increment: paso; content: counter(paso); display: inline-grid; place-items: center;
+    width: 20px; height: 20px; border-radius: 50%; font-size: 11px; font-weight: 600; background: var(--surface-high); color: var(--ink-3); }
+  .c-tabs button[aria-selected="true"]::before { background: var(--gold); color: #fff; }
   .c-disp { display: none; }
   .c-grid { grid-template-columns: 1fr; padding: 12px 16px 24px; }
   .c-previa { display: none; position: static; }
