@@ -10,7 +10,7 @@
 .l-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--serif); font-size: 21px; color: var(--ink); white-space: nowrap; }
 .l-logo .i { color: var(--rose); width: 22px; height: 22px; }
 /* Marca como dominio (26-sep-2026): anillos con corazón (SVG de la owner) + bodaenlace.com, con el .com en cursiva rosa */
-.l-logo .i-anillos { width: 34px; height: 30px; fill: currentColor; stroke: none; }
+.l-logo .i-anillos { width: 25px; height: 22px; fill: currentColor; stroke: none; margin-right: -2px; }   /* a la altura de las letras altas de «bodaenlace» */
 .l-logo-web span { letter-spacing: -.01em; }
 .l-logo-web em { font-style: italic; color: var(--rose); }
 .l-logo-pie small { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-left: 4px; }
@@ -213,6 +213,7 @@
   .l-wrap, .l-top-in { padding: 0 16px; }
   .l-top-in { height: 64px; }
   .l-logo { font-size: 18px; }
+  .l-logo .i-anillos { width: 21px; height: 19px; }
   .l-top-cta { min-height: 40px; padding: 0 16px; font-size: 13px; }
   .l-cards { grid-template-columns: 1fr; }
   .l-datos { gap: 12px; }
