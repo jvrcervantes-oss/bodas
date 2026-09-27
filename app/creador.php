@@ -134,7 +134,8 @@ function api_pagar(string $metodo): void {
     }
     // Pasarela de secrets.php (Lemon Squeezy por defecto). Sin configurar: se puede montar y ver la web, no comprarla
     $pasarela = pasarela();
-    $configurada = $pasarela === 'lemon' ? lemon_configurada() : secreto('stripe_secret') !== '';
+    // En modo test de LS solo el estudio puede abrir el pago (tarjeta de prueba pública = web gratis)
+    $configurada = $pasarela === 'lemon' ? lemon_configurada() && lemon_checkout_permitido() : secreto('stripe_secret') !== '';
     if (!$cortesia && !$configurada) {
         json_response(['ok' => false, 'error' => 'Todavía no está a la venta. Podéis montar vuestra web y verla tal cual; abrimos la contratación muy pronto.'], 503);
     }
@@ -142,8 +143,9 @@ function api_pagar(string $metodo): void {
         registra('ALERTA pago bloqueado: falta stripe_tax_rate');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
     }
-    $live = $pasarela === 'lemon' ? !lemon_test() : stripe_modo_live();
-    if (!$cortesia && $live && !empresa_completa()) {
+    // Sin titular en los textos legales no se publica nada: con LS también en test (como los códigos, BOD-1)
+    $exigeTitular = $pasarela === 'lemon' ? true : stripe_modo_live();
+    if (!$cortesia && $exigeTitular && !empresa_completa()) {
         registra('ALERTA pago bloqueado: faltan datos del titular');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
     }

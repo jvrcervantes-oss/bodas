@@ -261,8 +261,10 @@ function estudio_pedidos(): string {
     usort($peds, fn($a, $b) => strcmp((string) ($b['creado'] ?? ''), (string) ($a['creado'] ?? '')));
     if (!$peds) return '<p>Todavía no hay pedidos.</p>';
     // Solo lo que se quedó cobrado: fuera reembolsos, cobros que no cuadran y duplicados (se devuelven)
-    $total = array_sum(array_map(fn($p) => in_array($p['estado'] ?? '', ['reembolsado', 'no-conforme', 'duplicado'], true) ? 0 : (int) ($p['importe']['total'] ?? 0), $peds));
-    $o = '<p class="est-resumen"><b>' . count($peds) . '</b> pedidos · <b>' . h(euros($total)) . '</b> cobrados (IVA incluido)</p>'
+    // Pedidos de prueba de LS fuera; reembolsos parciales, restados
+    $total = array_sum(array_map(fn($p) => in_array($p['estado'] ?? '', ['reembolsado', 'no-conforme', 'duplicado'], true) || !empty($p['ls']['test'])
+        ? 0 : (int) ($p['importe']['total'] ?? 0) - (int) ($p['reembolso']['importe_cent'] ?? 0), $peds));
+    $o = '<p class="est-resumen"><b>' . count($peds) . '</b> pedidos · <b>' . h(euros($total)) . '</b> cobrados (IVA incluido, sin pruebas ni devoluciones)</p>'
         . '<div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th>Fecha</th><th>Web</th><th>Estado</th><th>Importe</th><th>Factura / código</th></tr></thead><tbody>';
     foreach ($peds as $p) {
         $esRegalo = str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_');

@@ -173,6 +173,10 @@ function padrino_resumen(): array {
             'total_cent' => (int) ($p['importe']['total'] ?? 0),
             'estado' => (string) ($p['estado'] ?? ''),
             'regalo' => str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_'),
+            // Con LS el IVA lo liquida LS y los pedidos de prueba no son ingresos (Tesorero: encargo aparte)
+            'pasarela' => (string) ($p['pasarela'] ?? (str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_') ? '' : 'stripe')),
+            'test' => !empty($p['ls']['test']),
+            'reembolsado_cent' => (int) ($p['reembolso']['importe_cent'] ?? 0),
         ];
     }
     $guias = array_map(fn($g) => ['slug' => $g['slug'], 'version' => (int) $g['version'], 'publicada' => (string) $g['publicada'], 'retirada' => !empty($g['retirada'])], guias_todas(true));

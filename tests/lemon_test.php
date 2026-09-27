@@ -155,6 +155,24 @@ ok(strpos($tf, 'BODA-2026-0001') !== false && stripos($tf, 'regala') === false, 
 
 // 9. Pasarela: por defecto Lemon; configuración incompleta = no a la venta
 ok(pasarela() === 'lemon' && lemon_configurada() && lemon_test(), 'pasarela lemon configurada en test');
+// Candado del modo test: una IP cualquiera sin sesión del estudio no abre el pago (tarjeta de prueba = web gratis)
+$_SERVER['REMOTE_ADDR'] = '203.0.113.9';
+ok(!lemon_checkout_permitido(), 'modo test: IP desconocida sin sesión del estudio no abre checkout');
+
+// 10. Corte a mitad del alta: la web ya escrita (pedido.json + config.json) y el pedido en 'cobrada'.
+//     El reintento la reconoce como suya: nada de «-2», y el correo acaba saliendo.
+$t = pendiente('corte', $precio);
+$ped = ['session_id' => 'ls_700', 'pasarela' => 'lemon', 'slug' => 'corte', 'token' => $t, 'creado' => date('c'), 'email' => 'p@example.com',
+    'nombre' => '', 'importe' => ['base' => 0, 'iva' => 0, 'total' => $precio], 'ls' => ['test' => true], 'aceptacion' => null, 'atelier' => '', 'factura' => '', 'estado' => 'cobrada'];
+escribe_json(dir_datos('pedidos', 'ls_700.json'), $ped);
+escribe_json(dir_datos('ls_tokens', $t . '.json'), ['order_id' => '700']);
+escribe_json(dir_boda('corte') . '/pedido.json', ['session_id' => 'ls_700']);
+escribe_json(dir_boda('corte') . '/config.json', lee_json(dir_datos('pendientes', $t, 'config.json')));
+$correos = count(glob(dir_datos('correos', '*')) ?: []);
+[$st, $r] = lemon_procesa_evento(evento('order_created', '700', $t, 'corte'), lector(['700' => pedido_ls($precio)]));
+ok($r === 'creada' && !boda_existe('corte-2'), 'reintento tras corte: misma web, sin «-2»');
+ok(count(glob(dir_datos('correos', '*')) ?: []) === $correos + 1, 'reintento tras corte: el correo sale');
+ok(!empty((lee_json(dir_boda('corte') . '/pedido.json') ?? [])['test']), 'la web de un pedido de prueba queda marcada como test');
 
 // Limpieza
 borra_arbol_test($tmp);

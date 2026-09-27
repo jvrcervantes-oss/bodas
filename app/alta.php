@@ -105,22 +105,28 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
         $ped['slug'] = $slug;
     }
 
+    // Orden pensado para que un corte a mitad se pueda reintentar (revisor, 27-sep-2026):
+    //  1. pedido.json de la boda ANTES que config.json: si el reintento encuentra la web, la reconoce
+    //     como suya por el session_id y no abre otra con «-2»;
+    //  2. 'creada' DESPUÉS del correo: un corte antes del envío reintenta y el correo sale (como mucho,
+    //     dos veces); al revés, no saldría nunca;
+    //  3. el pendiente se borra al final: sin él, un reintento no tendría datos (quedaría «sin-datos»).
     $d = dir_boda($slug);
     asegura_dir($d . '/guardado');
     $cfg = lee_json($pend . '/config.json');
     $cfg['_estado'] = 'activa';
+    // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
+    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'pasarela' => (string) ($ped['pasarela'] ?? ''), 'test' => !empty($ped['ls']['test']),
+        'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
     escribe_json($d . '/config.json', $cfg);
     if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
-    // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
-    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'pasarela' => (string) ($ped['pasarela'] ?? ''), 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
     mapa_actualiza($slug, normaliza_config($cfg)); // si falla, queda pendiente para el cron
     $enlace = panel_nuevo_enlace($slug);
+    correo_bienvenida($ped, $cfg, $enlace);
     $ped['estado'] = 'creada';
     escribe_json($fPedido, $ped);
     @unlink(dir_datos('reservas', $ped['slug'] . '.json'));
     borra_arbol($pend);
-
-    correo_bienvenida($ped, $cfg, $enlace);
     registra('boda creada', ['slug' => $slug, 'sid' => $sid, 'factura' => $ped['factura']]);
     return $ped;
 }

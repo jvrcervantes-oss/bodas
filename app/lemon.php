@@ -42,6 +42,16 @@ function lemon_configurada(): bool {
 }
 /** Modo esperado de los pedidos. Por defecto TEST: pasar a live es decisión del owner (hard stop). */
 function lemon_test(): bool { return secreto('lemon_test', true) !== false; }
+/**
+ * ¿Puede esta petición abrir un checkout? En modo TEST el pago es con la tarjeta de prueba pública
+ * de LS, así que abrirlo a cualquiera sería regalar webs de verdad (revisor, 27-sep-2026): solo con
+ * la sesión del panel del estudio o desde una IP de `lemon_test_ips` (secrets.php). En live, todos.
+ */
+function lemon_checkout_permitido(): bool {
+    if (!lemon_test()) return true;
+    if (in_array(ip_cliente(), (array) secreto('lemon_test_ips', []), true)) return true;
+    return function_exists('estudio_dentro') && estudio_dentro();
+}
 
 /** Llamada a la API (JSON:API). Devuelve [status, cuerpo decodificado]. Nunca lanza. */
 function lemon_api(string $metodo, string $ruta, ?array $cuerpo = null): array {
@@ -226,11 +236,10 @@ function lemon_alta(string $id, array $o, array $custom): array {
             avisa_estudio('Pago de web de boda que no cuadra', "Pedido LS $id ($slug) cobrado pero no cuadra con lo vendido: " . implode(', ', $motivos) . ". No se ha creado la web. Revisar en Lemon Squeezy y devolver o publicar a mano.");
             return $ped;
         }
-        if (($ped['estado'] ?? '') === 'cobrada' && empty($ped['_analitica'])) {
-            analitica_evento('alta');   // una vez por pedido
-            $ped['_analitica'] = 1;
-        }
+        $contar = ($ped['estado'] ?? '') === 'cobrada' && empty($ped['_analitica']);
+        $ped['_analitica'] = 1;
         escribe_json($fPedido, $ped);
+        if ($contar) analitica_evento('alta');   // una vez por pedido: la marca ya está escrita antes de contar
         return alta_publica($ped, $pend, $meta, $fPedido, $sid, $token, $slug);
     });
 }
@@ -291,5 +300,6 @@ function listo_lemon(string $token): void {
         return;
     }
     if (($ped['estado'] ?? '') === 'creada') { listo_muestra($ped); return; }
+    if (($ped['estado'] ?? '') === 'reembolsado') { echo pagina_simple('Pago devuelto', '<p>Este pago se ha devuelto. Para cualquier duda, escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }
     echo pagina_simple('Pago recibido', '<p>Hemos recibido el pago, pero tenemos que revisarlo antes de publicar la web. Ya nos ha llegado el aviso y te escribimos en breve a ' . h((string) ($ped['email'] ?? '')) . '.</p>');
 }
