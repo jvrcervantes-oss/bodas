@@ -24,7 +24,7 @@ asegura_dir(dir_boda($slug) . '/guardado');
 // --- personas(): id propio, id derivado estable para lo antiguo, '' sin id de registro
 $viejo = ['id' => 'aaaa000011112222', 'invitados' => [['nombre' => 'Ana'], ['nombre' => 'Leo']]];
 $p1 = personas($viejo);
-ok($p1[0]['id'] !== '' && $p1[0]['id'][0] === 'd' && $p1[0]['id'] !== $p1[1]['id'], 'respuesta antigua: id derivado, con «d» y distinto por persona');
+ok($p1[0]['id'] !== '' && !preg_match('/^[a-f0-9]{16}$/', $p1[0]['id']) && $p1[0]['id'] !== $p1[1]['id'], 'respuesta antigua: id derivado, nunca confundible con uno aleatorio, distinto por persona');
 ok(personas($viejo)[1]['id'] === $p1[1]['id'], 'el id derivado es estable entre lecturas');
 ok(personas(['invitados' => [['nombre' => 'X']]])[0]['id'] === '', 'sin id de registro: id vacío (sin mesa)');
 ok(personas(['id' => 'r', 'invitados' => [['id' => 'abcdef0123456789', 'nombre' => 'Y']]])[0]['id'] === 'abcdef0123456789', 'id aleatorio guardado se conserva');

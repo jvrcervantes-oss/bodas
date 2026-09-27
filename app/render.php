@@ -864,7 +864,10 @@ function form_rsvp(array $c, array $s, array $ctx): string {
             $radios .= '<label><input type="radio" data-f="menu" name="invitados[' . $i . '][menu]" value="' . h($m['id']) . '"' . ($m['id'] === $defAdulto ? ' checked' : '') . '> <span>' . h($m['nombre']) . $desc . '</span></label>';
         }
         // Misma ficha que #guestTpl, ya rellena; boda.js le pone el «Quitar» y la renumera
-        $extra .= '<fieldset class="guest" data-kind="adulto"><legend class="guest-head"><span class="guest-tag"></span><button type="button" class="guest-remove" aria-label="Quitar a esta persona">Quitar</button></legend>'
+        // La lista de la pareja no dice quién es niño: salen como adultos y «Es niño/a» lo cambia (tipo y menú)
+        $extra .= '<fieldset class="guest" data-kind="adulto" data-pre><legend class="guest-head"><span class="guest-tag"></span><span class="guest-acc">'
+            . '<button type="button" class="guest-remove guest-tipo" data-cambia-tipo>Es niño/a</button>'
+            . '<button type="button" class="guest-remove" aria-label="Quitar a esta persona">Quitar</button></span></legend>'
             . '<input type="hidden" data-f="tipo" name="invitados[' . $i . '][tipo]" value="adulto">'
             . '<div class="field"><label for="p' . $i . '-nombre">Nombre y apellidos</label><input type="text" id="p' . $i . '-nombre" data-f="nombre" name="invitados[' . $i . '][nombre]" autocomplete="off" maxlength="120" required value="' . h($nombre) . '"></div>'
             . $menuField($radios)
@@ -879,6 +882,9 @@ function form_rsvp(array $c, array $s, array $ctx): string {
   <div class="guests-head">
     <span class="kicker">Quiénes venís</span>
     <p class="guests-hint">Uno confirma por todos: añadid a cada adulto y a cada peque.</p>
+<?php if ($grupo): // un reenvío por este enlace SUSTITUYE al anterior entero: que nadie mande medio grupo para cambiar un teléfono ?>
+    <p class="guests-hint">Si ya confirmasteis y queréis cambiar algo, enviad de nuevo al grupo completo, con menús y alergias: la respuesta nueva sustituye a la anterior.</p>
+<?php endif; ?>
   </div>
   <div class="guest-list" id="guestList">
     <fieldset class="guest" data-kind="adulto">

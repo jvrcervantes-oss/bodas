@@ -330,7 +330,7 @@ function panel_recuperar(string $slug, array $c, string $metodo): void {
 /**
  * Única lectura de quién viene (igual que personas() de EduCora). Cada persona sale con su `id`: el
  * aleatorio que recibe al guardarse (desde el 27-sep-2026, Seguridad #133) o, en respuestas de
- * antes, uno derivado del id del registro y de su posición, con «d» delante para distinguirlo.
+ * antes, uno derivado del id del registro y de su posición, con «v» delante (no es hex): así nunca se confunde con uno real.
  * Es estable porque una respuesta guardada no se reescribe nunca (un reenvío añade otra). Sin id
  * de registro no hay nada estable de donde sacarlo: '' («sin mesa» cuando existan las mesas).
  */
@@ -338,7 +338,7 @@ function personas(array $r): array {
     $o = [];
     foreach (array_values(array_filter((array) ($r['invitados'] ?? []), 'is_array')) as $i => $g) {
         $id = (string) ($g['id'] ?? '');
-        if (!preg_match('/^[a-f0-9]{16}$/', $id)) $id = (string) ($r['id'] ?? '') !== '' ? 'd' . substr(sha1((string) $r['id'] . '|' . $i), 0, 15) : '';
+        if (!preg_match('/^[a-f0-9]{16}$/', $id)) $id = (string) ($r['id'] ?? '') !== '' ? 'v' . substr(sha1((string) $r['id'] . '|' . $i), 0, 15) : '';
         $o[] = ['id' => $id, 'nombre' => (string) ($g['nombre'] ?? ''), 'tipo' => ($g['tipo'] ?? '') === 'nino' ? 'nino' : 'adulto',
             'menu' => (string) ($g['menu'] ?? ''), 'menu_nombre' => (string) ($g['menu_nombre'] ?? ''), 'alergias' => (string) ($g['alergias'] ?? '')];
     }

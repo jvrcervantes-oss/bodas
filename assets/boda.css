@@ -1458,3 +1458,4 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .panel-body .table-wrap tr{ break-inside: avoid; }
   .panel-body .alergia{ color: #000; font-weight: 600; }
 }
+.guest-acc{ display: flex; gap: 6px; }

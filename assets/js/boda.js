@@ -149,7 +149,7 @@
       card.querySelector('[data-f="nombre"]').focus();
     }
     function bindRemove(card) {
-      card.querySelector('.guest-remove').addEventListener('click', function () {
+      card.querySelector('.guest-remove:not([data-cambia-tipo])').addEventListener('click', function () {
         card.remove();
         renumber();
         var last = list.querySelectorAll('.guest');
@@ -157,7 +157,20 @@
       });
     }
     // Enlace de grupo: el servidor ya pinta una ficha por persona de la lista; se les da su «Quitar»
-    list.querySelectorAll('.guest .guest-remove').forEach(function (b) { bindRemove(b.closest('.guest')); });
+    // y «Es niño/a» (la lista de la pareja no lo dice): cambia el tipo y pone el menú por defecto de ese tipo
+    list.querySelectorAll('.guest[data-pre]').forEach(function (card) {
+      bindRemove(card);
+      var t = card.querySelector('[data-cambia-tipo]');
+      if (t) t.addEventListener('click', function () {
+        var kind = card.getAttribute('data-kind') === 'nino' ? 'adulto' : 'nino';
+        card.setAttribute('data-kind', kind);
+        card.querySelector('[data-f="tipo"]').value = kind;
+        var def = card.querySelector('input[type="radio"][data-f="menu"][value="' + menuDef[kind] + '"]');
+        if (def) def.checked = true;
+        t.textContent = kind === 'nino' ? 'Es adulto' : 'Es niño/a';
+        renumber();
+      });
+    });
 
     document.querySelectorAll('[data-add-guest]').forEach(function (b) {
       b.addEventListener('click', function () { add(b.getAttribute('data-add-guest')); });
@@ -465,6 +478,15 @@
       var h = document.querySelector('#rsvpSuccessModal h2');
       if (h) h.textContent = json && json.personas > 1 ? '¡Apuntados los ' + json.personas + '!' : '¡Apuntado!';
       rsvpModal.open();
+      // Enlace de grupo: el reset deja solo la primera ficha y un segundo envío con el mismo token
+      // sustituiría la respuesta del grupo entero por la de una persona. Se retira el formulario.
+      var f = document.getElementById('rsvpForm');
+      if (f && f.querySelector('input[name="i"]')) {
+        var p = document.createElement('p');
+        p.className = 'lede';
+        p.textContent = 'Respuesta guardada. Si queréis cambiar algo, volved a abrir vuestro enlace y enviad de nuevo al grupo completo.';
+        f.replaceWith(p);
+      }
     } });
 
     var musicMsg = document.getElementById('musicAddMsg');
