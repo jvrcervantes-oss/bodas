@@ -47,6 +47,7 @@
   var t;
   function cambio() {
     pintaCabecera();
+    webPendiente();
     clearTimeout(t);
     t = setTimeout(function () { persiste(); previa(); }, 350);
   }
@@ -719,6 +720,7 @@
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
     if (!sinCambiarVista) document.body.setAttribute('data-ver', 'editor');
     centraTab(k);
+    pintaPasoMovil(k);
   }
   // Móvil: la fila de pestañas se desplaza sola hasta la activa y avisa si quedan más a la derecha
   var barraTabs = document.querySelector('.c-tabs');
@@ -748,8 +750,9 @@
   }
   // Pestañas de arriba y pasos del carril (al crear) manejan lo mismo
   tabs.forEach(function (t) {
-    t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); subeAlPaso(k); });
+    t.addEventListener('click', function () { vaAPaso(t.getAttribute('data-tab')); });
   });
+  function vaAPaso(k) { muestraTab(k); irAPagina(paginaDeTab(k)); subeAlPaso(k); }
   // Anterior / Siguiente al pie de cada paso (solo se ven en pantalla estrecha, ver crear.css)
   var ordenTabs = Array.prototype.map.call(document.querySelectorAll('[role="tab"][data-tab]'), function (t, i) {
     t.setAttribute('data-num', i + 1);
@@ -763,11 +766,162 @@
       if (!x[0]) return;
       var dest = x[0];
       var bt = el('button', { type: 'button', class: x[1], text: x[2] || 'Siguiente: ' + dest.txt + ' →' });
-      bt.addEventListener('click', function () { muestraTab(dest.k); irAPagina(paginaDeTab(dest.k)); subeAlPaso(dest.k); });
+      bt.addEventListener('click', function () { vaAPaso(dest.k); });
       nav.appendChild(bt);
     });
     panel.appendChild(nav);
   });
+
+  // ------------------------------------------------------------ móvil: el paso a la vista (27-sep-2026)
+  // Prototipo aprobado por el owner: tarjeta fija con el paso actual y una barra de tramos (abre
+  // la lista de pasos), marcas de lo que falta del estilo, y al completarlo la vista previa sube
+  // sola con «Seguir». Solo se ve en pantalla estrecha (crear.css); en escritorio no cambia nada.
+  var pasoActual = ordenTabs.length ? ordenTabs[0].k : '';
+  var vistos = {};
+  var tarjetaPaso = el('div', { class: 'c-pm' });
+  var botonPaso = el('button', { type: 'button', class: 'c-pm-btn', 'aria-haspopup': 'dialog', 'aria-controls': 'hojaPasos' });
+  var arco = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  arco.setAttribute('viewBox', '0 0 38 38'); arco.setAttribute('aria-hidden', 'true');
+  ['c-pm-fondo', 'c-pm-arco'].forEach(function (c) {
+    var ci = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    ci.setAttribute('class', c); ci.setAttribute('cx', '19'); ci.setAttribute('cy', '19'); ci.setAttribute('r', '16'); ci.setAttribute('pathLength', '100');
+    arco.appendChild(ci);
+  });
+  var numPaso = el('b'), dePasos = el('small'), nomPaso = el('span', { class: 'c-pm-nom' });
+  var numCaja = el('span', { class: 'c-pm-num' }, [numPaso]);
+  numCaja.insertBefore(arco, numPaso);
+  botonPaso.appendChild(numCaja);
+  botonPaso.appendChild(el('span', { class: 'c-pm-txt' }, [dePasos, nomPaso]));
+  botonPaso.appendChild(el('span', { class: 'c-pm-todos', text: 'Pasos' }));
+  var barraPasos = el('div', { class: 'c-pm-barra', 'aria-hidden': 'true' });
+  ordenTabs.forEach(function () { barraPasos.appendChild(el('i')); });
+  tarjetaPaso.appendChild(botonPaso); tarjetaPaso.appendChild(barraPasos);
+  var cabecera = document.querySelector('.c-top');
+  cabecera.parentNode.insertBefore(tarjetaPaso, cabecera.nextSibling);
+
+  var velo = el('div', { class: 'c-velo' });
+  var listaPasos = el('ol');
+  var hoja = el('div', { class: 'c-hoja', id: 'hojaPasos', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Pasos', hidden: true }, [el('h2', { text: 'Los pasos' }), listaPasos]);
+  document.body.appendChild(velo); document.body.appendChild(hoja);
+  function abreHoja() {
+    pintaHoja(); hoja.hidden = false; void hoja.offsetWidth;
+    hoja.classList.add('ve'); velo.classList.add('ve');
+    var b = listaPasos.querySelector('[aria-current]'); if (b) b.focus({ preventScroll: true });
+  }
+  function cierraHoja() {
+    if (hoja.hidden) return;
+    hoja.classList.remove('ve'); velo.classList.remove('ve');
+    setTimeout(function () { if (!hoja.classList.contains('ve')) hoja.hidden = true; }, 350);
+  }
+  botonPaso.addEventListener('click', abreHoja);
+  velo.addEventListener('click', cierraHoja);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !hoja.hidden) { cierraHoja(); botonPaso.focus({ preventScroll: true }); } });
+  function pintaHoja() {
+    listaPasos.textContent = '';
+    ordenTabs.forEach(function (o, i) {
+      var hecho = o.k === 'estilo' && estiloListo;
+      var b = el('button', { type: 'button', class: hecho ? 'hecho' : '' }, [
+        el('span', { class: 'c-hoja-n', text: hecho ? '✓' : String(i + 1) }),
+        el('span', { text: o.txt }),
+        el('span', { class: 'c-hoja-estado', text: o.k === pasoActual ? 'Aquí' : hecho ? 'Hecho' : vistos[o.k] ? 'Visto' : '' })]);
+      if (o.k === pasoActual) b.setAttribute('aria-current', 'step');
+      b.addEventListener('click', function () { cierraHoja(); vaAPaso(o.k); });
+      listaPasos.appendChild(el('li', {}, [b]));
+    });
+  }
+  function pintaPasoMovil(k) {
+    if (!numPaso || !ordenTabs.length) return;
+    var i = Math.max(0, ordenTabs.map(function (o) { return o.k; }).indexOf(k));
+    var cambia = ordenTabs[i].k !== pasoActual;
+    pasoActual = ordenTabs[i].k; vistos[pasoActual] = true;
+    numPaso.textContent = i + 1;
+    dePasos.textContent = 'Paso ' + (i + 1) + ' de ' + ordenTabs.length;
+    nomPaso.textContent = ordenTabs[i].txt;
+    if (cambia) { nomPaso.classList.remove('c-pm-entra'); void nomPaso.offsetWidth; nomPaso.classList.add('c-pm-entra'); }
+    arco.lastChild.style.strokeDashoffset = 100 - (i + 1) / ordenTabs.length * 100;
+    Array.prototype.forEach.call(barraPasos.children, function (t, j) { t.className = j < i ? 'hecho' : j === i ? 'actual' : ''; });
+  }
+  // Altura de lo que queda fijo arriba: la usan la vista previa y el salto al siguiente bloque
+  function mideTope() { document.body.style.setProperty('--tope', (cabecera.offsetHeight + tarjetaPaso.offsetHeight) + 'px'); }
+  window.addEventListener('resize', mideTope);
+
+  // «Ver mi web»: un punto que late mientras hay cambios sin ver
+  var botonVer = document.querySelector('.c-ver-previa');
+  function webPendiente() {
+    if (!botonVer || document.body.getAttribute('data-ver') === 'previa') return;
+    botonVer.classList.add('pendiente');
+    botonVer.classList.remove('brilla'); void botonVer.offsetWidth; botonVer.classList.add('brilla');
+  }
+
+  // Lo que falta del estilo. La configuración siempre trae paleta, letra y adornos por defecto,
+  // así que «hecho» es «elegido en esta visita»; con un borrador guardado o al editar ya lo está.
+  var ESTILO = [['tema', 'Paleta', temasEl], ['fuente', 'Letra', fuentesEl], ['deco', 'Adornos', decosEl]];
+  var yaElegido = MODO === 'editar' || !!lee(CLAVE);
+  var elegido = { tema: yaElegido, fuente: yaElegido, deco: yaElegido };
+  var estiloListo = yaElegido || !!st.atelier;
+  var falta = el('div', { class: 'c-falta', role: 'group', 'aria-label': 'Lo que falta del estilo' });
+  ESTILO.forEach(function (x) {
+    falta.appendChild(el('span', { class: elegido[x[0]] ? 'si' : '', 'data-k': x[0] }, [el('i', { 'aria-hidden': 'true' }), el('span', { text: x[1] })]));
+  });
+  var notaModo = propioEl.querySelector('.c-modo-nota');
+  propioEl.insertBefore(falta, notaModo ? notaModo.nextSibling : propioEl.firstChild);
+  var avisoListo = el('div', { class: 'c-toast', role: 'status' }, [el('i', { 'aria-hidden': 'true' }), el('span', { text: 'Estilo listo. Así queda vuestra web' })]);
+  document.body.appendChild(avisoListo);
+
+  ESTILO.forEach(function (x) {
+    // «click» y no «change»: tocar la opción que ya venía marcada por defecto también cuenta como elegirla
+    x[2].addEventListener('click', function (e) {
+      if (!e.target.matches('input[type="radio"]')) return;
+      var primera = !elegido[x[0]];
+      elegido[x[0]] = true;
+      falta.querySelector('[data-k="' + x[0] + '"]').classList.add('si');
+      if (compruebaEstilo()) return;
+      // Baja sola al siguiente bloque que falta, solo la primera vez que se elige en este
+      var sig = ESTILO.filter(function (y) { return !elegido[y[0]]; })[0];
+      if (primera && sig && ESTRECHO.matches) {
+        var destino = sig[2].previousElementSibling || sig[2];
+        setTimeout(function () {
+          var tope = cabecera.offsetHeight + tarjetaPaso.offsetHeight + falta.offsetHeight + 16;
+          window.scrollTo({ top: destino.getBoundingClientRect().top + window.pageYOffset - tope, behavior: 'smooth' });
+        }, 350);
+      }
+    });
+  });
+  atelierEl.addEventListener('change', compruebaEstilo);
+  function compruebaEstilo() {
+    var ahora = !!st.atelier || (elegido.tema && elegido.fuente && elegido.deco);
+    if (!ahora || estiloListo) return ahora;
+    estiloListo = true;
+    if (!ESTRECHO.matches) return true;
+    avisoListo.classList.add('ve');
+    setTimeout(function () { avisoListo.classList.remove('ve'); abrePrevia(); }, 1100);
+    return true;
+  }
+
+  // Vista previa en el móvil: al pie, «Cambiar» vuelve al editor y «Seguir» pasa al paso siguiente
+  var piePrevia = el('div', { class: 'c-previa-pie' });
+  var btnCambiar = el('button', { type: 'button', class: 'b-btn b-paper', text: 'Cambiar' });
+  var btnSeguir = el('button', { type: 'button', class: 'b-btn b-dark' });
+  piePrevia.appendChild(btnCambiar); piePrevia.appendChild(btnSeguir);
+  document.querySelector('.c-previa').appendChild(piePrevia);
+  function siguienteDe(k) { var i = ordenTabs.map(function (o) { return o.k; }).indexOf(k); return i < 0 ? null : ordenTabs[i + 1] || null; }
+  function pintaPiePrevia() {
+    var sig = siguienteDe(pasoActual);
+    btnSeguir.textContent = sig ? 'Seguir: ' + sig.txt + ' →' : 'Volver a editar';
+  }
+  function abrePrevia() {
+    if (botonVer) botonVer.classList.remove('pendiente');
+    pintaPiePrevia();
+    document.body.setAttribute('data-ver', 'previa');
+    ajustaMarco(); window.scrollTo(0, 0);
+  }
+  if (botonVer) botonVer.addEventListener('click', function () { botonVer.classList.remove('pendiente'); pintaPiePrevia(); });
+  btnCambiar.addEventListener('click', function () { document.body.setAttribute('data-ver', 'editor'); ajustaMarco(); subeAlPaso(pasoActual); });
+  btnSeguir.addEventListener('click', function () {
+    var sig = siguienteDe(pasoActual);
+    if (sig) vaAPaso(sig.k); else { document.body.setAttribute('data-ver', 'editor'); ajustaMarco(); }
+  });
+  pintaPasoMovil(pasoActual); mideTope();
   var tabsArriba = document.querySelectorAll('[role="tab"][data-tab]');
   tabsArriba.forEach(function (t, i) {
     t.addEventListener('keydown', function (e) {

@@ -90,7 +90,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
       <span class="c-badge"><?= $editar ? 'Publicada' : 'Borrador' ?></span>
     </div>
     <div class="c-top-acc">
-      <button type="button" class="b-btn b-paper c-btn-sm c-solo-movil c-ver-previa" data-ver="previa"><?= il('ojo', 'i i-sm') ?><span>Vista previa</span></button>
+      <button type="button" class="b-btn b-paper c-btn-sm c-solo-movil c-ver-previa" data-ver="previa"><?= il('ojo', 'i i-sm') ?><span>Ver mi web</span><i class="c-ver-punto" aria-hidden="true"></i></button>
       <button type="button" class="b-btn b-paper c-btn-sm c-solo-movil c-ver-editor" data-ver="editor"><?= il('lapiz', 'i i-sm') ?><span>Editar</span></button>
       <button type="button" class="b-btn b-gold c-btn-sm" id="<?= $editar ? 'guardarTop' : 'irPublicar' ?>"><?= il($editar ? 'check' : 'enlace', 'i i-sm') ?><span><?= $editar ? 'Guardar' : 'Publicar' ?></span></button>
     </div>
