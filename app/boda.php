@@ -4,6 +4,11 @@
 
 declare(strict_types=1);
 
+// Extras de pago y plano de mesas (F1c/F1d). Se cargan aquí, con el panel que los usa: así los tests que
+// cargan boda.php (catering, por ejemplo) los tienen sin tocar su lista de módulos
+require_once __DIR__ . '/extras.php';
+require_once __DIR__ . '/mesas.php';
+
 const CSP_BODA = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; "
     . "connect-src 'self'; frame-src 'none'; form-action 'self'; "
     . "frame-ancestors 'none'; base-uri 'none'; object-src 'none'";
@@ -245,6 +250,9 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
             return;
         case 'guardar': panel_guardar($slug, $c, $metodo); return;
         case 'mejora': panel_mejora($slug, $metodo); return;   // Esencial → Atelier (app/lemon.php)
+        case 'extra': panel_extra($slug, $metodo); return;     // compra de un extra de pago (app/extras.php)
+        case 'mesas': panel_mesas($slug, $c, $metodo); return;   // plano de mesas (app/mesas.php), solo con el extra
+        case 'mesas/imprimir': panel_mesas_imprimir($slug, $c); return;
         case 'vista-previa': api_vista_previa($metodo, url_boda($slug, 'assets/'), $slug); return;
         case 'galeria': if ($metodo !== 'POST') no_existe(); panel_galeria_subir($slug); return;
         case 'libro': if ($metodo !== 'POST') no_existe(); panel_libro_accion($slug); return;
@@ -402,6 +410,7 @@ function panel_inicio(string $slug, array $c): string {
         . '<p><a href="/" target="_blank" rel="noopener">' . h(preg_replace('~^https?://~', '', rtrim(url_boda($slug), '/'))) . '</a> · se mantiene hasta el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '</p></div>'
         . '<nav class="panel-acc"><a class="btn" href="/panel/editar">Editar la web</a><a class="btn btn-soft" href="/panel/excel">Descargar Excel</a>'
         . '<a class="btn btn-soft" href="/panel/catering">Resumen para el catering</a>'
+        . '<a class="btn btn-soft" href="/panel/mesas">Plano de mesas</a>'
         . '<a class="btn btn-soft" href="/panel/zip">Descargar ZIP</a>' . (((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '' ? '<a class="btn btn-soft" href="/panel/factura" target="_blank" rel="noopener">Factura</a>' : '')
         . '<a class="panel-salir" href="/panel/salir">Salir</a></nav></header>';
     $o .= bloque_compartir($slug, $c);
@@ -505,8 +514,8 @@ function panel_excel(string $slug, array $c): void {
  * sesión del panel (rutas_panel ya la exige) y sin caché en ningún sitio: lleva nombres con sus
  * alergias, que son datos de salud (art. 9 RGPD). Cuenta a quienes van al BANQUETE con la misma
  * cuenta por menú que el panel (panel_datos, sin respuestas sustituidas): el Excel filtrado por
- * Banquete = Sí da lo mismo. La columna Mesa se añade con el plano de mesas (F1d),
- * que la rellenará por el `id` de persona, nunca por nombre.
+ * Banquete = Sí da lo mismo. La columna Mesa sale solo con el plano de mesas activo (F1d) y se
+ * rellena por el `id` de persona (mesas_de_personas), nunca por nombre.
  */
 function panel_catering(string $slug, array $c): void {
     header('Cache-Control: private, no-store');
@@ -522,6 +531,8 @@ function panel_catering(string $slug, array $c): void {
         }
     }
     usort($alergias, fn($a, $b) => clave_nombre($a['nombre']) <=> clave_nombre($b['nombre']));
+    $conMesa = extra_activo($slug, 'mesas');
+    $mesaDe = $conMesa ? mesas_de_personas($slug) : [];
     $lugar = (string) ($c['convite']['lugar'] ?? '');
     $cuando = trim(($c['fecha'] !== '' ? fecha_larga($c['fecha'], false) : '') . ($lugar !== '' ? ' · ' . $lugar : ''), ' ·');
     $o = '<header class="panel-head"><div><span class="kicker">Resumen para el catering</span><h1>' . h(nombres($c)) . '</h1>'
@@ -534,10 +545,11 @@ function panel_catering(string $slug, array $c): void {
     $o .= '</div><h2 class="panel-h2">Por menú</h2><div class="table-wrap"><table><thead><tr><th>Menú</th><th>Personas</th></tr></thead><tbody>';
     foreach ($menus as $m) $o .= '<tr><td>' . h($m['nombre']) . '</td><td>' . (int) $m['n'] . '</td></tr>';
     $o .= '<tr class="catering-total"><td>Total</td><td>' . array_sum(array_column($menus, 'n')) . '</td></tr></tbody></table></div>';
-    $o .= '<h2 class="panel-h2">Alergias e intolerancias</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th></tr></thead><tbody>';
-    if (!$alergias) $o .= '<tr><td colspan="3" class="vacio">Nadie de los que van al banquete ha indicado alergias.</td></tr>';
+    $o .= '<h2 class="panel-h2">Alergias e intolerancias</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th>' . ($conMesa ? '<th>Mesa</th>' : '') . '<th>Menú</th><th>Alergias</th></tr></thead><tbody>';
+    if (!$alergias) $o .= '<tr><td colspan="' . ($conMesa ? 4 : 3) . '" class="vacio">Nadie de los que van al banquete ha indicado alergias.</td></tr>';
     foreach ($alergias as $p) {
-        $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '') . '</td><td>' . h($p['menu_txt']) . '</td>'
+        $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '') . '</td>'
+            . ($conMesa ? '<td class="catering-mesa">' . h($mesaDe[$p['id']] ?? 'Sin mesa') . '</td>' : '') . '<td>' . h($p['menu_txt']) . '</td>'
             . '<td class="alergia">' . h($p['alergias']) . '</td></tr>';
     }
     $o .= '</tbody></table></div><p class="panel-nota">Solo cuenta a quienes van al banquete. Si un grupo corrigió su respuesta, vale la última.</p></section>';

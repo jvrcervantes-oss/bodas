@@ -666,6 +666,7 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 }
 .field input[type="text"],
 .field input[type="email"],
+.field input[type="number"],
 .field input[type="tel"],
 .field input[type="password"],
 .field textarea,
@@ -1445,6 +1446,43 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 .enl-url{ font-size: 12px; word-break: break-all; color: var(--ink-soft); }
 @media (max-width: 700px){ .enl-url{ display: none; } }
 .saludo-grupo{ margin-bottom: var(--s-sm); }
+/* Extras de pago (F1c): la página del panel de un extra que la boda aún no tiene */
+.extra-oferta .lede{ max-width: 38rem; margin: 0 auto var(--s-sm); text-align: center; }
+.extra-lista{ max-width: 34rem; margin: 0 auto var(--s-md); padding-left: 1.2em; color: var(--ink-soft); font-size: 15px; }
+.extra-precio{ text-align: center; margin: 0 0 var(--s-md); }
+.extra-precio b{ font-family: var(--serif); font-weight: 500; font-size: 32px; color: var(--accent); }
+.extra-compra{ max-width: 34rem; margin: 0 auto; }
+.extra-check{ display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.5; }
+.extra-check input{ margin-top: 3px; flex-shrink: 0; }
+.extra-check a, .extra-recibo a{ color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+
+/* Plano de mesas (F1d): tocar persona y luego mesa (sirve igual en el móvil); tarjetas que se reparten solas */
+.mesa-sin{ display: flex; flex-direction: column; gap: var(--s-xs); }
+.mesa-grupo{ display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.mesa-persona{ min-height: 36px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font: inherit; font-size: 14px; color: var(--ink); cursor: pointer; }
+.mesa-persona:hover{ border-color: var(--primary); }
+.mesa-persona[aria-pressed="true"]{ background: var(--primary); border-color: var(--primary); color: #fff; }
+.mesa-persona[aria-pressed="true"] .muted, .mesa-persona[aria-pressed="true"] .alergia{ color: #fff; }
+.mesa-persona.is-sin-id{ display: inline-flex; align-items: center; color: var(--ink-soft); background: var(--sage); cursor: default; }
+.mesa-persona .rep{ font-size: 11px; color: #9A3412; }
+.mesas-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--s-sm); margin-bottom: var(--s-md); }
+.mesa{ padding: var(--s-sm); border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.mesa-cab{ display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.mesa-destino{ width: 100%; min-height: 40px; margin-bottom: 8px; }
+.mesa-destino:disabled{ opacity: .5; cursor: default; }
+.mesa-personas{ list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.mesa-personas li{ display: flex; align-items: center; gap: 4px; }
+.mesa-quitar{ margin: 0; }
+.mesa-x{ width: 32px; height: 32px; border: 0; border-radius: 50%; background: none; font-size: 18px; color: var(--ink-soft); cursor: pointer; }
+.mesa-x:hover{ background: var(--sage); }
+.mesa-editar summary{ cursor: pointer; font-size: 13px; color: var(--ink-soft); }
+.mesa-editar form{ margin-top: 8px; }
+.mesa-nueva{ display: flex; flex-wrap: wrap; gap: var(--s-sm); align-items: flex-end; }
+.mesa-nueva .field{ margin: 0; }
+.mesa-aviso{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.mesa-menus{ text-align: left; }
+.catering-mesa{ white-space: nowrap; }
+
 /* Resumen para el catering (F1b): se imprime y se da al restaurante; fuera botones, fondo y adornos */
 .catering-total td{ font-weight: 600; }
 @media print{
@@ -1457,5 +1495,6 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .panel-body .table-wrap table{ font-size: 11pt; }
   .panel-body .table-wrap tr{ break-inside: avoid; }
   .panel-body .alergia{ color: #000; font-weight: 600; }
+  .mesa-hoja{ break-inside: avoid; margin-bottom: 14px; }
 }
 .guest-acc{ display: flex; gap: 6px; }

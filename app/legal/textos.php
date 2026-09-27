@@ -56,4 +56,12 @@ return [
     // falta «Sabemos que la compra la hacemos a {vendedor}». Se guarda literal en el pedido de la mejora y el
     // correo de confirmación de la mejora tiene que repetirla (art. 98.7).
     'check_mejora' => 'Pedimos a {marca} que active ya el Pack Atelier en nuestra web, con las condiciones del servicio que ya aceptamos. Sabemos que, en cuanto se active, perdemos el derecho de desistimiento de esta mejora.',
+
+    // TODO-LEGAL: texto PROVISIONAL de Desarrollo para cablear la casilla de los extras de pago (plano de mesas y los
+    // que vengan). Legal lo sustituye en su commit, con el §5 ter de las condiciones, ANTES del push (Legal #133:
+    // un extra es un servicio, 103.a/108.3, con desistimiento proporcional; no es la excepción 103.m de la mejora).
+    // Se guarda literal en el pedido del extra (extras/<token>.json → aceptacion.casilla) y la repite el correo.
+    // Junto a la casilla el panel pone el nombre y el precio del extra y los enlaces a las condiciones y a las de
+    // compra del vendedor (app/extras.php, extra_presentacion), como en la mejora.
+    'check_extra' => 'Pedimos a {marca} que active ya este extra en nuestra web, con las condiciones del servicio que ya aceptamos. Sabemos que, si desistimos dentro de los 14 días, pagaremos la parte proporcional a lo ya prestado.',
 ];

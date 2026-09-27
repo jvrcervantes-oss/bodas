@@ -269,9 +269,13 @@ function estudio_pedidos(): string {
     foreach ($peds as $p) {
         $esRegalo = str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_');
         $doc = ($p['pasarela'] ?? '') === 'lemon' ? 'Lemon Squeezy #' . h((string) ($p['ls']['order_number'] ?? '')) . (!empty($p['ls']['test']) ? ' (test)' : '') : (($p['factura'] ?? '') !== '' ? '<a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($p['factura'])) . '" target="_blank">' . h($p['factura']) . '</a>' : ($esRegalo ? 'Regalo ' . h((string) ($p['cortesia'] ?? '')) : '—'));
-        $estadoK = (($p['tipo'] ?? '') === 'mejora' && ($p['estado'] ?? '') === 'creada') ? 'mejora' : ($p['estado'] ?? '');
+        $esExtra = ($p['tipo'] ?? '') === 'extra';
+        $estadoK = (in_array($p['tipo'] ?? '', ['mejora', 'extra'], true) && ($p['estado'] ?? '') === 'creada') ? (string) $p['tipo'] : ($p['estado'] ?? '');
         $estado = ['creada' => 'Publicada', 'cobrada' => 'Cobrada, sin publicar', 'sin-datos' => '⚠ Cobrada sin datos', 'cortesia' => 'Regalo en curso',
-            'no-conforme' => '⚠ Cobrada, no cuadra (sin web)', 'mejora' => 'Mejora a Atelier aplicada', 'duplicado' => '⚠ Cobro duplicado (devolver)', 'reembolsado' => 'Reembolsada'][$estadoK] ?? (string) ($p['estado'] ?? '');
+            'no-conforme' => $esExtra ? '⚠ Cobrado, no cuadra (extra sin activar)' : '⚠ Cobrada, no cuadra (sin web)', 'mejora' => 'Mejora a Atelier aplicada',
+            // Un extra no es una web: se dice cuál, para que no se lea como una venta nueva
+            'extra' => (!empty($p['reembolso']) ? 'Extra desactivado por reembolso parcial: ' : 'Extra activado: ') . (extra_existe((string) ($p['clave'] ?? '')) ? EXTRAS[$p['clave']]['nombre'] : '?'),
+            'duplicado' => '⚠ Cobro duplicado (devolver)', 'reembolsado' => 'Reembolsada'][$estadoK] ?? (string) ($p['estado'] ?? '');
         $o .= '<tr><td>' . h(isset($p['creado']) ? date('d/m/Y H:i', strtotime($p['creado'])) : '—') . '</td><td>' . h((string) ($p['slug'] ?? '')) . '</td>'
             . '<td>' . h($estado) . '</td><td class="est-num">' . h(euros((int) ($p['importe']['total'] ?? 0))) . '</td><td>' . $doc . '</td></tr>';
     }

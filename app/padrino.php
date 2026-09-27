@@ -34,7 +34,7 @@ function padrino_dir(string ...$p): string { return dir_datos('padrino', ...$p);
 function padrino_precios(): array {
     static $p = null;
     if ($p !== null) return $p;
-    $d = lee_json(padrino_dir('precios.json')) ?? [];
+    $d = padrino_precios_fichero();   // una sola lectura del fichero para packs y extras
     $e = (int) ($d['esencial_cent'] ?? 0);
     $a = (int) ($d['atelier_cent'] ?? 0);
     $ok = padrino_precio_error($e, $a, null) === '';
@@ -46,6 +46,72 @@ function padrino_precios(): array {
 }
 function precio_esencial_cent(): int { return padrino_precios()['esencial_cent']; }
 function precio_atelier_cent(): int { return padrino_precios()['atelier_cent']; }
+
+// ------------------------------------------------------------ extras de pago (encargo 20260927_bodas_servicios_extra)
+// Lista CERRADA: una clave que no esté aquí no existe (el panel responde 400). Cada extra lleva su suelo y su
+// techo propios (Administración #133): el suelo de 49 € de los packs rechazaría un extra de 19 € y el Padrino
+// fallaría en silencio al moverlo. Suelo = lo que cubre la comisión de Lemon Squeezy (5 % + 0,50 €) y el trabajo;
+// en el dominio, además, lo que cuesta el dominio un año. 'venta' = se puede comprar ya; los demás esperan a su
+// fase (F2 álbum, F3 idiomas, F4 dominio) y existen aquí para que el precio tenga desde hoy una sola fuente.
+// 'panel' = la página del panel que abre el extra (a la que vuelve el pago). Precios con IVA incluido.
+const EXTRAS = [
+    'mesas' => ['nombre' => 'Plano de mesas', 'cent' => 1900, 'suelo' => 900, 'techo' => 4900, 'venta' => true, 'panel' => 'mesas',
+        'desc' => 'Plano de mesas en vuestro panel, con la hoja para el restaurante: cada mesa con sus personas, su menú y sus alergias.'],
+    'idiomas' => ['nombre' => 'Dos idiomas', 'cent' => 2500, 'suelo' => 1200, 'techo' => 6900, 'venta' => false, 'panel' => '',
+        'desc' => 'Vuestra web también en inglés.'],
+    'album' => ['nombre' => 'Álbum de invitados', 'cent' => 1900, 'suelo' => 900, 'techo' => 4900, 'venta' => false, 'panel' => '',
+        'desc' => 'Vuestros invitados suben sus fotos de la boda y vosotros decidís cuáles se ven.'],
+    'dominio' => ['nombre' => 'Dominio propio', 'cent' => 2900, 'suelo' => 1900, 'techo' => 7900, 'venta' => false, 'panel' => '',
+        'desc' => 'Vuestra web con un dominio propio.'],
+];
+
+/** ¿Es una clave de la lista cerrada? */
+function extra_existe(string $clave): bool { return isset(EXTRAS[$clave]); }
+
+/**
+ * ¿Tiene esta boda el extra activo? $bp = su pedido.json. `extras.<clave>` lo escribe SOLO el webhook de
+ * Lemon (lemon_extra) y lo da de baja solo el reembolso (Seguridad #133): {desde, pedido[, baja]}.
+ */
+function extra_activo_en(array $bp, string $clave): bool {
+    $e = ((array) ($bp['extras'] ?? []))[$clave] ?? null;
+    return extra_existe($clave) && is_array($e) && (string) ($e['pedido'] ?? '') !== '' && empty($e['baja']);
+}
+
+/**
+ * Precio vigente de un extra: el que decidió el Padrino si existe y está dentro de los límites del
+ * código; si no, el del código. Nunca se escribe a mano en un texto. 0 = clave desconocida.
+ */
+function precio_extra_cent(string $clave): int {
+    if (!extra_existe($clave)) return 0;
+    $v = (int) ((padrino_precios_fichero()['extras'] ?? [])[$clave] ?? 0);
+    return padrino_precio_extra_error($clave, $v, null) === '' ? $v : (int) EXTRAS[$clave]['cent'];
+}
+
+/** precios.json tal cual, leído una vez por petición. */
+function padrino_precios_fichero(): array {
+    static $d = null;
+    return $d ??= (lee_json(padrino_dir('precios.json')) ?? []);
+}
+
+/** Céntimos de escaparate: .00, .50, .90 o .95 (la misma regla para packs y extras). */
+function padrino_centimos_ok(int $c): bool { return in_array($c % 100, [0, 50, 90, 95], true); }
+
+/**
+ * '' si el precio del extra es aceptable; si no, el motivo. $desde = cuándo cambió por última vez ESTE
+ * extra, o null al leer el fichero (entonces solo se miran los límites). Paso y frecuencia son los de los
+ * packs pero por extra: mover el de mesas no bloquea el de idiomas.
+ */
+function padrino_precio_extra_error(string $clave, int $cent, ?string $desde, int $vigente = 0): string {
+    if (!extra_existe($clave)) return 'Extra desconocido.';
+    $x = EXTRAS[$clave];
+    if ($cent < $x['suelo']) return 'Por debajo del suelo de ' . euros($x['suelo']) . ' para ' . $x['nombre'] . '.';
+    if ($cent > $x['techo']) return 'Por encima del techo de ' . euros($x['techo']) . ' para ' . $x['nombre'] . '.';
+    if (!padrino_centimos_ok($cent)) return 'Céntimos no admitidos: .00, .50, .90 o .95.';
+    if ($desde === null) return '';
+    if ($vigente > 0 && abs($cent - $vigente) / $vigente > PADRINO_PASO_MAX + 1e-9) return 'Cambio de más del ' . (int) (PADRINO_PASO_MAX * 100) . ' % de una vez.';
+    if ($desde !== '' && strtotime($desde) > time() - PADRINO_DIAS_ENTRE_CAMBIOS * 86400) return 'Solo un cambio de precio de cada extra cada ' . PADRINO_DIAS_ENTRE_CAMBIOS . ' días.';
+    return '';
+}
 
 /** Marca vigente: la del Padrino si pasó el filtro; si no, la del código. */
 function marca(): string {
@@ -63,8 +129,7 @@ function padrino_precio_error(int $e, int $a, ?array $vigente): string {
     if ($e < PADRINO_SUELO_CENT || $a < PADRINO_SUELO_CENT) return 'Por debajo del suelo de ' . euros(PADRINO_SUELO_CENT) . '.';
     if ($e > PADRINO_TECHO_CENT || $a > PADRINO_TECHO_CENT) return 'Por encima de ' . euros(PADRINO_TECHO_CENT) . ': haría falta factura completa.';
     if ($a <= $e) return 'El Atelier tiene que costar más que el Esencial (Stripe cobra la diferencia como segunda línea).';
-    if ($e % 100 !== 0 && $e % 100 !== 50 && $e % 100 !== 90 && $e % 100 !== 95) return 'Céntimos no admitidos: .00, .50, .90 o .95.';
-    if ($a % 100 !== 0 && $a % 100 !== 50 && $a % 100 !== 90 && $a % 100 !== 95) return 'Céntimos no admitidos: .00, .50, .90 o .95.';
+    if (!padrino_centimos_ok($e) || !padrino_centimos_ok($a)) return 'Céntimos no admitidos: .00, .50, .90 o .95.';
     if ($vigente === null) return '';
     foreach (['esencial_cent' => $e, 'atelier_cent' => $a] as $k => $nuevo) {
         $viejo = (int) $vigente[$k];
@@ -124,6 +189,8 @@ function rutas_padrino(string $sub, string $metodo): void {
             json_response(padrino_remitente((string) ($cuerpo['email'] ?? '')));
         case 'precios':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
+            // {extra, cent, motivo} mueve el precio de un extra; {esencial_cent, atelier_cent, motivo}, el de los packs
+            if (isset($cuerpo['extra'])) padrino_cambia_precio_extra($cuerpo);
             padrino_cambia_precios($cuerpo);
         case 'marca':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
@@ -159,6 +226,7 @@ function padrino_resumen(): array {
             'origen' => str_starts_with((string) ($ped['session_id'] ?? ''), 'cortesia_') ? 'regalo' : 'pago',
             'archivada' => $arch,
             'confirmados' => $conf,
+            'extras' => array_values(array_filter(array_keys(EXTRAS), fn($k) => extra_activo_en($ped, $k))),
             'borrado_en' => $fecha !== '' ? fecha_borrado($fecha) : '',
         ];
     }
@@ -166,23 +234,29 @@ function padrino_resumen(): array {
     foreach (glob(dir_datos('pedidos', '*.json')) ?: [] as $f) {
         $p = lee_json($f);
         if (!$p) continue;
+        $extra = ($p['tipo'] ?? '') === 'extra';
         $pedidos[] = [
             'ref' => substr(hash('sha256', (string) ($p['session_id'] ?? basename($f))), 0, 16),
             'fecha' => (string) ($p['creado'] ?? ''),
-            'pack' => ((string) ($p['atelier'] ?? '')) !== '' || ($p['tipo'] ?? '') === 'mejora' ? 'atelier' : 'esencial',
+            // Un extra no es un pack (Administración #133): sin esto, un plano de mesas de 19 € contaría como un Esencial vendido
+            'pack' => $extra ? '' : (((string) ($p['atelier'] ?? '')) !== '' || ($p['tipo'] ?? '') === 'mejora' ? 'atelier' : 'esencial'),
+            'extra' => $extra && extra_existe((string) ($p['clave'] ?? '')) ? (string) $p['clave'] : '',
             'total_cent' => (int) ($p['importe']['total'] ?? 0),
             'estado' => (string) ($p['estado'] ?? ''),
             'regalo' => str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_'),
             // Con LS el IVA lo liquida LS y los pedidos de prueba no son ingresos (Tesorero: encargo aparte)
             'pasarela' => (string) ($p['pasarela'] ?? (str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_') ? '' : 'stripe')),
             // 'alta' = web nueva; 'mejora' = paso de Esencial a Atelier de una boda que ya existía (no es una venta nueva)
-            'tipo' => ($p['tipo'] ?? '') === 'mejora' ? 'mejora' : 'alta',
+            // 'extra' = un servicio suelto de una boda que ya existía (plano de mesas…): tampoco es una venta nueva
+            'tipo' => ($p['tipo'] ?? '') === 'mejora' ? 'mejora' : ($extra ? 'extra' : 'alta'),
             'test' => !empty($p['ls']['test']),
             'reembolsado_cent' => (int) ($p['reembolso']['importe_cent'] ?? 0),
         ];
     }
     $guias = array_map(fn($g) => ['slug' => $g['slug'], 'version' => (int) $g['version'], 'publicada' => (string) $g['publicada'], 'retirada' => !empty($g['retirada'])], guias_todas(true));
-    return ['ok' => true, 'generado' => date('c'), 'marca' => marca(), 'precios' => padrino_precios(), 'bodas' => $bodas, 'pedidos' => $pedidos,
+    $precios = padrino_precios() + ['extras' => array_map(fn($k) => ['clave' => $k, 'cent' => precio_extra_cent($k), 'suelo' => EXTRAS[$k]['suelo'],
+        'techo' => EXTRAS[$k]['techo'], 'venta' => EXTRAS[$k]['venta']], array_keys(EXTRAS))];
+    return ['ok' => true, 'generado' => date('c'), 'marca' => marca(), 'precios' => $precios, 'bodas' => $bodas, 'pedidos' => $pedidos,
         'analitica' => analitica_resumen(), 'campanas' => (array) ((lee_json(padrino_dir('campanas.json')) ?? [])['ids'] ?? []), 'guias' => $guias];
 }
 
@@ -208,23 +282,72 @@ function padrino_cambia_precios(array $c): void {
     $a = (int) ($c['atelier_cent'] ?? 0);
     $motivo = clean_str($c['motivo'] ?? '', 300);
     if ($motivo === '') json_response(['ok' => false, 'error' => 'Falta el motivo.'], 422);
-    $r = con_cerrojo(function () use ($e, $a, $motivo) {
+    $r = padrino_guarda_precios($e, $a, $motivo);
+    padrino_log('precios', ['esencial_cent' => $e, 'atelier_cent' => $a, 'ok' => $r === '', 'error' => $r]);
+    if ($r !== '') json_response(['ok' => false, 'error' => $r], 422);
+    json_response(['ok' => true, 'esencial_cent' => $e, 'atelier_cent' => $a]);
+}
+
+/** Aplica el cambio de precio de los packs bajo el cerrojo. '' si se guardó; si no, el motivo (se prueba sin HTTP). */
+function padrino_guarda_precios(int $e, int $a, string $motivo): string {
+    return con_cerrojo(function () use ($e, $a, $motivo) {
         $f = padrino_dir('precios.json');
         $d = lee_json($f) ?? [];
         $vig = padrino_precios();
         $err = padrino_precio_error($e, $a, $vig);
         if ($err !== '') return $err;
         $hist = (array) ($d['historial'] ?? []);
-        // El historial arranca con el precio del código, para que el de referencia de 30 días exista
-        if (!$hist) $hist[] = ['desde' => '', 'esencial_cent' => PRECIO_PACK_CENT, 'atelier_cent' => PRECIO_PACK_ATELIER_CENT, 'motivo' => 'precio inicial del owner'];
+        // El historial arranca con el precio del código, para que el de referencia de 30 días exista (se mira si
+        // ya hay alguna entrada de packs: las de los extras comparten el historial y no cuentan)
+        if (!array_filter($hist, fn($h) => is_array($h) && isset($h['esencial_cent']))) $hist[] = ['desde' => '', 'esencial_cent' => PRECIO_PACK_CENT, 'atelier_cent' => PRECIO_PACK_ATELIER_CENT, 'motivo' => 'precio inicial del owner'];
         $ahora = date('c');
         $hist[] = ['desde' => $ahora, 'esencial_cent' => $e, 'atelier_cent' => $a, 'motivo' => $motivo];
-        escribe_json($f, ['esencial_cent' => $e, 'atelier_cent' => $a, 'vigor_desde' => $ahora, 'historial' => array_slice($hist, -200)]);
+        // Se conserva el resto del fichero (precios de los extras y sus fechas): reescribirlo solo con
+        // estas claves borraría en silencio lo que el Padrino decidió para los extras
+        escribe_json($f, ['esencial_cent' => $e, 'atelier_cent' => $a, 'vigor_desde' => $ahora, 'historial' => array_slice($hist, -200)] + $d);
         return '';
     });
-    padrino_log('precios', ['esencial_cent' => $e, 'atelier_cent' => $a, 'ok' => $r === '', 'error' => $r]);
+}
+
+/**
+ * Precio de un extra: al mismo historial que los packs (el precio de referencia de 30 días de Ómnibus sale
+ * de ahí), con la clave del extra en cada entrada. La primera vez se apunta también el precio del código.
+ */
+function padrino_cambia_precio_extra(array $c): void {
+    $clave = (string) ($c['extra'] ?? '');
+    $cent = (int) ($c['cent'] ?? 0);
+    $motivo = clean_str($c['motivo'] ?? '', 300);
+    if ($motivo === '') json_response(['ok' => false, 'error' => 'Falta el motivo.'], 422);
+    $r = padrino_guarda_precio_extra($clave, $cent, $motivo);
+    padrino_log('precio-extra', ['extra' => $clave, 'cent' => $cent, 'ok' => $r === '', 'error' => $r]);
     if ($r !== '') json_response(['ok' => false, 'error' => $r], 422);
-    json_response(['ok' => true, 'esencial_cent' => $e, 'atelier_cent' => $a]);
+    json_response(['ok' => true, 'extra' => $clave, 'cent' => $cent]);
+}
+
+/** Aplica el cambio de precio de un extra bajo el cerrojo. '' si se guardó; si no, el motivo (se prueba sin HTTP). */
+function padrino_guarda_precio_extra(string $clave, int $cent, string $motivo): string {
+    return con_cerrojo(function () use ($clave, $cent, $motivo) {
+        $f = padrino_dir('precios.json');
+        $d = lee_json($f) ?? [];
+        $desde = (string) (((array) ($d['extras_desde'] ?? []))[$clave] ?? '');
+        // El vigente se lee del fichero de ESTE momento (bajo el cerrojo), no de la caché de la petición
+        $vig = (int) (((array) ($d['extras'] ?? []))[$clave] ?? 0);
+        if (!extra_existe($clave)) return 'Extra desconocido.';
+        if (padrino_precio_extra_error($clave, $vig, null) !== '') $vig = (int) EXTRAS[$clave]['cent'];
+        $err = padrino_precio_extra_error($clave, $cent, $desde, $vig);
+        if ($err !== '') return $err;
+        $hist = (array) ($d['historial'] ?? []);
+        if (!array_filter($hist, fn($h) => is_array($h) && ($h['extra'] ?? '') === $clave)) {
+            $hist[] = ['desde' => '', 'extra' => $clave, 'cent' => (int) EXTRAS[$clave]['cent'], 'motivo' => 'precio inicial del owner'];
+        }
+        $ahora = date('c');
+        $hist[] = ['desde' => $ahora, 'extra' => $clave, 'cent' => $cent, 'motivo' => $motivo];
+        $d['extras'] = array_merge((array) ($d['extras'] ?? []), [$clave => $cent]);
+        $d['extras_desde'] = array_merge((array) ($d['extras_desde'] ?? []), [$clave => $ahora]);
+        $d['historial'] = array_slice($hist, -200);
+        escribe_json($f, $d);
+        return '';
+    });
 }
 
 function padrino_cambia_marca(array $c): void {

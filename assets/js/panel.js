@@ -65,4 +65,68 @@
   document.querySelectorAll('[data-copiar-pendientes]').forEach(function (b) {
     b.addEventListener('click', function () { copia(b.getAttribute('data-copiar-pendientes'), document.querySelector('.inv-copiado')); });
   });
+  // Botones que borran algo: confirmación antes de enviar su formulario (la CSP no deja onsubmit en línea)
+  document.querySelectorAll('[data-confirmar]').forEach(function (b) {
+    b.addEventListener('click', function (e) { if (!window.confirm(b.getAttribute('data-confirmar'))) e.preventDefault(); });
+  });
+
+  // ------------------------------------------------------------ plano de mesas (app/mesas.php)
+  // Tocar persona(s) y luego la mesa: funciona igual con el dedo que con el ratón, sin arrastrar. La selección
+  // solo vive en la página; lo que se guarda lo decide el servidor (ids que siguen viniendo, plazas libres).
+  var formSentar = document.getElementById('form-sentar');
+  if (formSentar) {
+    var elegidas = {};
+    var destinos = document.querySelectorAll('[data-sentar]');
+    function pinta() {
+      var n = Object.keys(elegidas).length;
+      document.querySelectorAll('[data-persona]').forEach(function (b) { b.setAttribute('aria-pressed', elegidas[b.getAttribute('data-persona')] ? 'true' : 'false'); });
+      destinos.forEach(function (d) { d.disabled = n === 0; });
+    }
+    document.querySelectorAll('[data-persona]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var id = b.getAttribute('data-persona');
+        if (elegidas[id]) delete elegidas[id]; else elegidas[id] = true;
+        pinta();
+      });
+    });
+    document.querySelectorAll('[data-grupo-sel]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var g = b.getAttribute('data-grupo-sel');
+        document.querySelectorAll('.mesa-sin [data-persona]').forEach(function (p) { if (p.getAttribute('data-grupo') === g) elegidas[p.getAttribute('data-persona')] = true; });
+        pinta();
+      });
+    });
+    destinos.forEach(function (d) {
+      d.addEventListener('click', function () {
+        var ids = Object.keys(elegidas);
+        if (!ids.length) return;
+        formSentar.querySelector('[name="mesa"]').value = d.getAttribute('data-sentar');
+        formSentar.querySelectorAll('[name="personas[]"]').forEach(function (i) { i.remove(); });
+        ids.forEach(function (id) {
+          var i = document.createElement('input');
+          i.type = 'hidden'; i.name = 'personas[]'; i.value = id;
+          formSentar.appendChild(i);
+        });
+        formSentar.submit();
+      });
+    });
+    pinta();
+  }
+
+  // ------------------------------------------------------------ compra de un extra (app/extras.php → /panel/extra)
+  // El importe lo pone el servidor: aquí solo se manda la clave, la casilla y el CSRF, y se va a la URL de pago
+  document.querySelectorAll('[data-extra-compra]').forEach(function (f) {
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var msg = f.querySelector('[data-extra-msg]'), btn = f.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      fetch('/panel/extra', { method: 'POST', body: new FormData(f), credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j.ok && String(j.url || '').indexOf('https://') === 0) { window.location.href = j.url; return; }
+          msg.textContent = j.error || 'No se ha podido abrir el pago.'; msg.hidden = false; btn.disabled = false;
+        })
+        .catch(function () { msg.textContent = 'Sin conexión. Inténtalo de nuevo.'; msg.hidden = false; btn.disabled = false; });
+    });
+  });
 })();

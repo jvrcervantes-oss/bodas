@@ -84,21 +84,26 @@ function lemon_api(string $metodo, string $ruta, ?array $cuerpo = null): array {
  * Cuerpo del checkout. Función pura (se prueba sin red): el importe es el argumento que el
  * servidor ha congelado en meta.json, sin descuentos y con la variante de secrets.php.
  */
-function lemon_cuerpo_checkout(string $token, string $slug, string $email, int $precioCent, int $ahora, string $tipo = 'alta'): array {
+function lemon_cuerpo_checkout(string $token, string $slug, string $email, int $precioCent, int $ahora, string $tipo = 'alta', string $clave = ''): array {
     $mejora = $tipo === 'mejora';
+    // Extra de pago (plano de mesas…): la clave va en custom_data solo como rastro. Qué se activa lo decide
+    // el fichero del servidor extras/<token>.json, nunca este campo (Seguridad #133)
+    $extra = $tipo === 'extra' && extra_existe($clave) ? EXTRAS[$clave] : null;
+    if ($tipo === 'extra' && !$extra) throw new LogicException('Extra desconocido: ' . $clave);
     // Marca de propiedad y enlace con el pedido pendiente (cadenas: LS las devuelve en meta.custom_data)
-    $custom = ['token' => $token, 'slug' => $slug, 'producto' => PRODUCTO] + ($mejora ? ['tipo' => 'mejora'] : []);
+    $custom = ['token' => $token, 'slug' => $slug, 'producto' => PRODUCTO] + ($mejora ? ['tipo' => 'mejora'] : []) + ($extra ? ['tipo' => 'extra', 'clave' => $clave] : []);
     return ['data' => [
         'type' => 'checkouts',
         'attributes' => [
             'custom_price' => $precioCent,
             'product_options' => [
-                'name' => ($mejora ? 'Mejora a Pack Atelier — ' : 'Web de boda — ') . $slug . '.' . BASE_DOMAIN,
-                'description' => $mejora ? 'Diseños Atelier con su entrada animada, para vuestra web ya publicada.'
-                    : 'Creación y alojamiento hasta ' . MESES_ALOJAMIENTO . ' meses después de la boda.',
+                'name' => ($extra ? $extra['nombre'] . ' — ' : ($mejora ? 'Mejora a Pack Atelier — ' : 'Web de boda — ')) . $slug . '.' . BASE_DOMAIN,
+                'description' => $extra ? $extra['desc'] : ($mejora ? 'Diseños Atelier con su entrada animada, para vuestra web ya publicada.'
+                    : 'Creación y alojamiento hasta ' . MESES_ALOJAMIENTO . ' meses después de la boda.'),
                 'enabled_variants' => [(int) secreto('lemon_variante')],
-                // La mejora vuelve al panel de la boda (sesión propia); el alta, a /listo del creador
-                'redirect_url' => $mejora ? url_boda($slug, 'panel/editar?mejora=1') : url_creador('listo?t=' . $token),
+                // La mejora y los extras vuelven al panel de la boda (sesión propia); el alta, a /listo del creador
+                'redirect_url' => $extra ? url_boda($slug, 'panel/' . $extra['panel'] . '?compra=1')
+                    : ($mejora ? url_boda($slug, 'panel/editar?mejora=1') : url_creador('listo?t=' . $token)),
             ],
             'checkout_options' => ['discount' => false, 'quantity' => 1],
             'checkout_data' => [
@@ -115,8 +120,8 @@ function lemon_cuerpo_checkout(string $token, string $slug, string $email, int $
 }
 
 /** Crea el checkout. Devuelve la URL de pago o '' si LS no la ha dado. */
-function lemon_crea_checkout(string $token, string $slug, string $email, int $precioCent, string $tipo = 'alta'): string {
-    [$st, $d] = lemon_api('POST', '/v1/checkouts', lemon_cuerpo_checkout($token, $slug, $email, $precioCent, time(), $tipo));
+function lemon_crea_checkout(string $token, string $slug, string $email, int $precioCent, string $tipo = 'alta', string $clave = ''): string {
+    [$st, $d] = lemon_api('POST', '/v1/checkouts', lemon_cuerpo_checkout($token, $slug, $email, $precioCent, time(), $tipo, $clave));
     $url = (string) ($d['data']['attributes']['url'] ?? '');
     if ($st !== 201 || strpos($url, 'https://') !== 0) {
         registra('lemon: no se pudo crear el checkout', ['status' => $st, 'error' => (string) ($d['errors'][0]['detail'] ?? '')]);
@@ -179,6 +184,8 @@ function lemon_procesa_evento(array $ev, callable $leePedido): array {
     }
     if ($nombre === 'order_refunded') return [200, lemon_reembolso($id, $o, $custom)];
     if (($custom['tipo'] ?? '') === 'mejora') return [200, (string) (lemon_mejora($id, $o, $custom)['estado'] ?? '')];
+    // Extra de pago (app/extras.php): el tipo solo elige la rama; qué extra, de qué boda y a qué precio lo dice extras/<token>.json
+    if (($custom['tipo'] ?? '') === 'extra') return [200, (string) (lemon_extra($id, $o, $custom)['estado'] ?? '')];
     return [200, (string) (lemon_alta($id, $o, $custom)['estado'] ?? '')];
 }
 
@@ -195,7 +202,9 @@ function lemon_pedido_base(string $sid, string $id, array $o, string $slug, stri
         'importe' => ['base' => $total - $iva, 'iva' => $iva, 'total' => $total],
         'ls' => ['order_id' => $id, 'order_number' => (int) ($o['order_number'] ?? 0), 'identifier' => (string) ($o['identifier'] ?? ''),
             'moneda' => (string) ($o['currency'] ?? ''), 'iva_nombre' => (string) ($o['tax_name'] ?? ''), 'iva_pct' => (string) ($o['tax_rate'] ?? ''),
-            'test' => (bool) ($o['test_mode'] ?? false)],
+            'test' => (bool) ($o['test_mode'] ?? false),
+            // Recibo de LS: el panel lleva a él aunque la web no tenga factura nuestra (Administración #133)
+            'recibo' => str_starts_with((string) ($o['urls']['receipt'] ?? ''), 'https://') ? (string) $o['urls']['receipt'] : ''],
         'aceptacion' => $aceptacion,
         'factura' => '',   // Merchant of Record: la factura la emite LS (Administración #109)
         'estado' => 'cobrada',
@@ -464,6 +473,16 @@ function lemon_reembolso(string $id, array $o, array $custom): string {
         // que llegue después encuentra un estado final y no publica nada
         $ped = $ped ?: ['session_id' => $sid, 'pasarela' => 'lemon', 'slug' => (string) ($custom['slug'] ?? ''), 'token' => (string) ($custom['token'] ?? ''),
             'creado' => date('c'), 'email' => (string) ($o['user_email'] ?? ''), 'factura' => '', 'importe' => ['base' => 0, 'iva' => 0, 'total' => 0], 'estado' => 'sin-alta'];
+        // Reembolso de un extra que llega antes de su activación: tipo, clave y boda se toman del pedido del SERVIDOR
+        // (extras/<token>.json), nunca del custom_data; así no se cuenta como una web reembolsada (Administración #133)
+        if (($ped['estado'] ?? '') === 'sin-alta' && empty($ped['tipo']) && preg_match('/^[a-f0-9]{32}$/', (string) ($custom['token'] ?? ''))) {
+            $mx = lee_json(dir_datos('extras', $custom['token'] . '.json'));
+            if ($mx && ($mx['tipo'] ?? '') === 'extra' && extra_existe((string) ($mx['clave'] ?? ''))) {
+                $ped['tipo'] = 'extra';
+                $ped['clave'] = (string) $mx['clave'];
+                $ped['slug'] = (string) ($mx['slug'] ?? '');
+            }
+        }
         $ped['reembolso'] = ['fecha' => date('c'), 'total' => $total, 'importe_cent' => (int) ($o['refunded_amount'] ?? 0)];
         // Final siempre que sea total o que llegue antes que el alta (un 'sin-alta' dejaría publicar después)
         if ($total || $ped['estado'] === 'sin-alta') {
@@ -472,6 +491,22 @@ function lemon_reembolso(string $id, array $o, array $custom): string {
         }
         escribe_json($fPedido, $ped);
         $aplicado = ($ped['estado_previo'] ?? $ped['estado']) === 'creada';
+        // Extra de pago: tipo y clave salen del registro que escribió la activación (desde extras/<token>.json),
+        // nunca del custom_data del evento. Rama propia (Seguridad #133): el extra se desactiva y la web sigue.
+        // Se desactiva con CUALQUIER reembolso, también parcial: en un extra el parcial normal es el desistimiento
+        // proporcional (Legal #133), y dejarlo activo obligaría al owner a quitarlo a mano.
+        if (($ped['tipo'] ?? '') === 'extra') {
+            // Sin mirar $aplicado: extra_baja solo actúa si la boda tiene el extra activo POR ESTE pedido, y así cubre
+            // también un corte a mitad de la activación (boda marcada, registro aún en 'cobrada')
+            $baja = extra_baja((string) ($ped['slug'] ?? ''), (string) ($ped['clave'] ?? ''), $sid);
+            $nombre = extra_existe((string) ($ped['clave'] ?? '')) ? EXTRAS[$ped['clave']]['nombre'] : 'extra';
+            $txt = $baja ? " Era el extra «{$nombre}» de " . url_boda((string) $ped['slug']) . ': se ha desactivado en su panel. La web sigue publicada.'
+                    . ($total ? '' : ' Era un reembolso PARCIAL: si fue un gesto comercial y no un desistimiento, el extra habrá que volver a activarlo.')
+                : ($aplicado ? " Era el extra «{$nombre}» de " . url_boda((string) $ped['slug']) . ': ya no estaba activo por este pedido; no se ha tocado nada.'
+                    : ' Era un extra que no llegó a activarse: no hay nada que desactivar.');
+            avisa_estudio('Reembolso ' . ($total ? 'total' : 'parcial') . ' de un extra de boda', "Pedido LS $id ({$ped['slug']})." . $txt, 'Pedido LS ' . $id);
+            return (string) $ped['estado'];
+        }
         $web = !$aplicado ? '' : (($ped['tipo'] ?? '') === 'mejora'
             ? ' Era la mejora a Pack Atelier de ' . url_boda((string) $ped['slug']) . ': la boda conserva el Atelier; decide si quitarlo.'
             : ' La web ' . url_boda((string) $ped['slug']) . ' sigue publicada: decide si retirarla.');
