@@ -82,7 +82,7 @@
 .l-card-foto { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; align-items: center; }
 .l-card-txt { display: flex; flex-direction: column; height: 100%; }
 .l-card-img { display: block; width: 100%; height: auto; }
-.l-card:nth-child(8) .l-card-ico { background: var(--sage-c); color: var(--sage); }
+.l-card-salvia .l-card-ico { background: var(--sage-c); color: var(--sage); }   /* por clase, no por posición: se rompía al quitar tarjetas */
 
 /* pasos */
 .l-pasos { padding-top: 0; background: linear-gradient(180deg, var(--surface), var(--blush) 50%, var(--surface)); }
@@ -200,8 +200,9 @@
   .l-atelier-grid { grid-template-columns: repeat(2, 1fr); }
   .l-nav { display: none; }
   .l-cards { grid-template-columns: repeat(2, 1fr); }
-  /* A 2 columnas: las 4 tarjetas en 2 filas (el catering sube al hueco) y el plano, con su captura al lado, cierra a lo ancho */
-  .l-card-foto { grid-column: 1 / -1; order: 1; }
+  /* A 2 columnas: las 4 tarjetas en 2 filas y el plano, con su captura al lado, cierra a lo ancho. Sin `order`:
+     el catering va antes en el HTML, así lo que se ve y lo que lee un lector de pantalla van en el mismo orden */
+  .l-card-foto { grid-column: 1 / -1; }
   .l-precio { grid-template-columns: 1fr; gap: 32px; }
 }
 @media (max-width: 900px) {

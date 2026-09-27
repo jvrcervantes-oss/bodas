@@ -172,6 +172,12 @@ function pagina_landing(): string {
           <p>Vuestras fotos, y un libro donde los invitados os dejan mensajes y fotos. Todo protegido con un código que solo tienen ellos.</p>
           <span class="l-card-pie">Protegido con código <?= il('escudo', 'i i-sm') ?></span>
         </article>
+        <article class="l-card l-card-salvia">
+          <span class="l-card-ico"><?= il('lista') ?></span>
+          <h3>Resumen para el catering</h3>
+          <p>Cuántos hay de cada menú y cada alergia con su nombre y su mesa, listo para imprimir o guardar en PDF y dárselo al restaurante.</p>
+          <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
+        </article>
         <?php // Plano de mesas y catering: incluidos en todos los packs (owner, 27-sep-2026). La captura es del panel real con una boda de ejemplo (nombres inventados) ?>
         <article class="l-card l-card-foto">
           <div class="l-card-txt">
@@ -182,12 +188,6 @@ function pagina_landing(): string {
           </div>
           <img class="l-card-img" src="<?= BASE_PATH ?>/assets/img/landing/plano-mesas.webp" width="1200" height="1122" loading="lazy" decoding="async"
             alt="Plano de mesas en el panel de BodaEnlace: cuatro mesas (Presidencia, Familia de Lucía, Amigos de la uni y Primos) con sus invitados sentados y quién tiene alergia">
-        </article>
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('lista') ?></span>
-          <h3>Resumen para el catering</h3>
-          <p>Cuántos hay de cada menú y cada alergia con su nombre y su mesa, listo para imprimir o guardar en PDF y dárselo al restaurante.</p>
-          <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
         </article>
       </div>
     </div>
