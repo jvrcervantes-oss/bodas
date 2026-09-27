@@ -1,5 +1,7 @@
 <?php
-// Extras de pago de una boda ya publicada (plano de mesas; después álbum, idiomas y dominio). Encargo
+// Extras de pago de una boda ya publicada (álbum, idiomas y dominio, por fases; hoy NINGUNO a la venta). El plano de
+// mesas nació aquí como el primero y desde el 27-sep-2026 va incluido en todos los packs (EXTRAS['mesas']['incluido']):
+// extra_activo() lo abre para toda web en pie sin mirar compras. Encargo
 // encargos/20260927_bodas_servicios_extra.md (repo del estudio), revisión previa #133.
 //
 // POR QUÉ ASÍ — calco de la «mejora a Atelier» de app/lemon.php, que ya pasó la revisión #109:
@@ -22,9 +24,15 @@ declare(strict_types=1);
 /** Casilla que acepta la pareja al comprar un extra. SOLO la de Legal (`check_extra`); sin ella no se vende. */
 function texto_extra(): string { return (string) (textos_legales()['check_extra'] ?? ''); }
 
-/** ¿Tiene la boda este extra activo ahora? Lectura del servidor: la única que vale para abrir su página o su POST. */
+/**
+ * ¿Tiene la boda este extra activo ahora? Lectura del servidor: la única que vale para abrir su página o su POST.
+ * Un extra incluido en los packs (plano de mesas, owner 27-sep-2026) está activo en TODA web en pie y no archivada,
+ * pagada o regalada, sin mirar pedido.json: así una compra de prueba anterior, o su reembolso, no lo enciende ni lo apaga.
+ */
 function extra_activo(string $slug, string $clave): bool {
-    return slug_valido($slug) && extra_activo_en(lee_json(dir_boda($slug) . '/pedido.json') ?? [], $clave);
+    if (!slug_valido($slug)) return false;
+    if (extra_incluido($clave)) return boda_existe($slug) && ((lee_json(dir_boda($slug) . '/config.json') ?? [])['_estado'] ?? '') !== 'archivada';
+    return extra_activo_en(lee_json(dir_boda($slug) . '/pedido.json') ?? [], $clave);
 }
 
 /**
@@ -33,6 +41,7 @@ function extra_activo(string $slug, string $clave): bool {
  */
 function extra_bloqueo(string $slug, string $clave): string {
     if (!extra_existe($clave)) return 'sin-extra';
+    if (extra_incluido($clave)) return 'incluido';   // va en todos los packs: no se compra
     if (!slug_valido($slug) || !boda_existe($slug)) return 'sin-boda';
     $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
     if (extra_activo_en($bp, $clave)) return 'ya-activo';
@@ -153,9 +162,11 @@ function lemon_extra(string $id, array $o, array $custom): array {
         if ($yaAplicado && !empty($bp['extras'][$clave]['baja'])) {
             return $aviso('reembolsado', 'Extra reembolsado antes de rematar la activación', "Pedido LS $id ($slug): «" . EXTRAS[$clave]['nombre'] . '» se reembolsó antes de terminar la activación. Sigue desactivado; no se ha mandado confirmación.');
         }
-        $bloqueo = $yaAplicado ? '' : extra_bloqueo($slug, $clave);
-        if ($bloqueo === 'ya-activo') {
-            return $aviso('duplicado', 'Extra pagado en una web que ya lo tenía', "Pedido LS $id ($slug): la web ya tenía «" . EXTRAS[$clave]['nombre'] . '». Devolver este cobro desde Lemon Squeezy.');
+        // Un extra que ya va incluido nunca se remata como compra, ni siquiera tras un corte: se devuelve (abajo)
+        $bloqueo = $yaAplicado && !extra_incluido($clave) ? '' : extra_bloqueo($slug, $clave);
+        // 'incluido': un pago que se abrió antes de que el extra pasara a ir gratis en los packs. Nada que activar: se devuelve
+        if ($bloqueo === 'ya-activo' || $bloqueo === 'incluido') {
+            return $aviso('duplicado', 'Extra pagado en una web que ya lo tenía', "Pedido LS $id ($slug): la web ya tenía «" . EXTRAS[$clave]['nombre'] . '»' . ($bloqueo === 'incluido' ? ' (va incluido en todos los packs)' : '') . '. Devolver este cobro desde Lemon Squeezy.');
         }
         if ($bloqueo !== '') {
             $ped['motivos'] = [$bloqueo];
@@ -270,6 +281,8 @@ function datos_extra_correo(string $slug, string $clave, array $ped, array $meta
 }
 
 /**
+ * SIN LLAMADOR hoy (el plano de mesas era el único y pasó a ir incluido): se conserva como la cáscara de venta del próximo
+ * extra (álbum, F2), junto con panel_extra y el [data-extra-compra] de assets/js/panel.js. Si el álbum no la usa, se borra.
  * Página del panel de un extra que la boda NO tiene: qué hace, cuánto cuesta (precio_extra_cent, nunca a mano) y,
  * si se vende ahora, la casilla y el botón de compra. La compra la hace assets/js/panel.js contra /panel/extra.
  */

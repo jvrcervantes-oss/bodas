@@ -25,6 +25,8 @@ const ICONOS_L = [
     'escudo' => 'M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z',
     'ojo' => 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
     'mas' => 'M12 5v14M5 12h14',
+    'mesa' => 'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 3v2M12 19v2M3 12h2M19 12h2',   // mesa redonda con cuatro sillas
+    'lista' => 'M9 3h6v3H9zM7 4.5H5V21h14V4.5h-2M8 11h8M8 15h8M8 19h5',             // hoja con renglones (catering)
 ];
 /**
  * Logo de la marca: anillos + dominio (MARCA_WEB), con el .com en cursiva. ÚNICO sitio donde se
@@ -186,6 +188,23 @@ function pagina_landing(): string {
           <h3>Menús y transporte a medida</h3>
           <p>Los menús que tengáis (carne, pescado, vegetariano, infantil…) y, si ponéis autobús, sus trayectos y horarios. Cada invitado elige al confirmar.</p>
           <span class="l-card-pie">Cada invitado elige <?= il('check', 'i i-sm') ?></span>
+        </article>
+        <?php // Plano de mesas y catering: incluidos en todos los packs (owner, 27-sep-2026). La captura es del panel real con una boda de ejemplo (nombres inventados) ?>
+        <article class="l-card l-card-foto">
+          <div class="l-card-txt">
+            <span class="l-card-ico"><?= il('mesa') ?></span>
+            <h3>Plano de mesas</h3>
+            <p>Sentad a vuestros invitados tocando su nombre y luego la mesa. Para el restaurante, una hoja con cada mesa, su menú y sus alergias.</p>
+            <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
+          </div>
+          <img class="l-card-img" src="<?= BASE_PATH ?>/assets/img/landing/plano-mesas.webp" width="1200" height="1122" loading="lazy" decoding="async"
+            alt="Plano de mesas en el panel de BodaEnlace: cuatro mesas (Presidencia, Familia de Lucía, Amigos de la uni y Primos) con sus invitados sentados y quién tiene alergia">
+        </article>
+        <article class="l-card">
+          <span class="l-card-ico"><?= il('lista') ?></span>
+          <h3>Resumen para el catering</h3>
+          <p>Cuántos hay de cada menú y cada alergia con su nombre y su mesa, listo para imprimir o guardar en PDF y dárselo al restaurante.</p>
+          <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
         </article>
       </div>
     </div>

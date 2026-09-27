@@ -54,8 +54,11 @@ function precio_atelier_cent(): int { return padrino_precios()['atelier_cent']; 
 // en el dominio, además, lo que cuesta el dominio un año. 'venta' = se puede comprar ya; los demás esperan a su
 // fase (F2 álbum, F3 idiomas, F4 dominio) y existen aquí para que el precio tenga desde hoy una sola fuente.
 // 'panel' = la página del panel que abre el extra (a la que vuelve el pago). Precios con IVA incluido.
+// 'incluido' = va GRATIS en todos los packs (pagados y regalados) y no se vende: el plano de mesas desde el 27-sep-2026
+// (decisión del owner). Sigue en la lista para que las compras de prueba ya hechas se lean y se etiqueten, y para que
+// /panel/extra responda 409 («no está a la venta») y no 400. Su cent/suelo/techo ya no se usan para cobrar nada.
 const EXTRAS = [
-    'mesas' => ['nombre' => 'Plano de mesas', 'cent' => 1900, 'suelo' => 900, 'techo' => 4900, 'venta' => true, 'panel' => 'mesas',
+    'mesas' => ['nombre' => 'Plano de mesas', 'cent' => 1900, 'suelo' => 900, 'techo' => 4900, 'venta' => false, 'incluido' => true, 'panel' => 'mesas',
         'desc' => 'Plano de mesas en vuestro panel, con la hoja para el restaurante: cada mesa con sus personas, su menú y sus alergias.'],
     'idiomas' => ['nombre' => 'Dos idiomas', 'cent' => 2500, 'suelo' => 1200, 'techo' => 6900, 'venta' => false, 'panel' => '',
         'desc' => 'Vuestra web también en inglés.'],
@@ -67,6 +70,9 @@ const EXTRAS = [
 
 /** ¿Es una clave de la lista cerrada? */
 function extra_existe(string $clave): bool { return isset(EXTRAS[$clave]); }
+
+/** ¿Va incluido en todos los packs (sin compra)? Entonces lo abre extra_activo() para toda web en pie, sin mirar pedido.json. */
+function extra_incluido(string $clave): bool { return extra_existe($clave) && !empty(EXTRAS[$clave]['incluido']); }
 
 /**
  * ¿Tiene esta boda el extra activo? $bp = su pedido.json. `extras.<clave>` lo escribe SOLO el webhook de
@@ -103,6 +109,7 @@ function padrino_centimos_ok(int $c): bool { return in_array($c % 100, [0, 50, 9
  */
 function padrino_precio_extra_error(string $clave, int $cent, ?string $desde, int $vigente = 0): string {
     if (!extra_existe($clave)) return 'Extra desconocido.';
+    if (extra_incluido($clave)) return 'Va incluido en todos los packs: no tiene precio.';   // el Padrino no le pone precio
     $x = EXTRAS[$clave];
     if ($cent < $x['suelo']) return 'Por debajo del suelo de ' . euros($x['suelo']) . ' para ' . $x['nombre'] . '.';
     if ($cent > $x['techo']) return 'Por encima del techo de ' . euros($x['techo']) . ' para ' . $x['nombre'] . '.';
@@ -226,7 +233,8 @@ function padrino_resumen(): array {
             'origen' => str_starts_with((string) ($ped['session_id'] ?? ''), 'cortesia_') ? 'regalo' : 'pago',
             'archivada' => $arch,
             'confirmados' => $conf,
-            'extras' => array_values(array_filter(array_keys(EXTRAS), fn($k) => extra_activo_en($ped, $k))),
+            // Extras COMPRADOS y en vigor; uno incluido en los packs no cuenta aunque se comprara en pruebas antes de serlo
+            'extras' => array_values(array_filter(array_keys(EXTRAS), fn($k) => !extra_incluido($k) && extra_activo_en($ped, $k))),
             'borrado_en' => $fecha !== '' ? fecha_borrado($fecha) : '',
         ];
     }
@@ -255,7 +263,7 @@ function padrino_resumen(): array {
     }
     $guias = array_map(fn($g) => ['slug' => $g['slug'], 'version' => (int) $g['version'], 'publicada' => (string) $g['publicada'], 'retirada' => !empty($g['retirada'])], guias_todas(true));
     $precios = padrino_precios() + ['extras' => array_map(fn($k) => ['clave' => $k, 'cent' => precio_extra_cent($k), 'suelo' => EXTRAS[$k]['suelo'],
-        'techo' => EXTRAS[$k]['techo'], 'venta' => EXTRAS[$k]['venta']], array_keys(EXTRAS))];
+        'techo' => EXTRAS[$k]['techo'], 'venta' => EXTRAS[$k]['venta']], array_values(array_filter(array_keys(EXTRAS), fn($k) => !extra_incluido($k))))];
     return ['ok' => true, 'generado' => date('c'), 'marca' => marca(), 'precios' => $precios, 'bodas' => $bodas, 'pedidos' => $pedidos,
         'analitica' => analitica_resumen(), 'campanas' => (array) ((lee_json(padrino_dir('campanas.json')) ?? [])['ids'] ?? []), 'guias' => $guias];
 }

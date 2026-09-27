@@ -78,6 +78,11 @@
 .l-card p { margin: 0 0 22px; font-size: 14px; line-height: 1.65; color: var(--ink-2); flex: 1; }
 .l-card-pie { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: var(--r); background: var(--surface-low);
   border: 1px solid var(--line-soft); font-size: 12px; font-weight: 500; color: var(--ink-2); }
+/* Tarjeta con captura (plano de mesas): ocupa dos columnas; 6 + ancha + 1 = tres filas justas a 3 columnas */
+.l-card-foto { grid-column: span 2; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; align-items: center; }
+.l-card-txt { display: flex; flex-direction: column; height: 100%; }
+.l-card-img { display: block; width: 100%; height: auto; }
+.l-card:nth-child(8) .l-card-ico { background: var(--sage-c); color: var(--sage); }
 
 /* pasos */
 .l-pasos { padding-top: 0; background: linear-gradient(180deg, var(--surface), var(--blush) 50%, var(--surface)); }
@@ -195,6 +200,8 @@
   .l-atelier-grid { grid-template-columns: repeat(2, 1fr); }
   .l-nav { display: none; }
   .l-cards { grid-template-columns: repeat(2, 1fr); }
+  /* A 2 columnas: 6 tarjetas en 3 filas y las dos incluidas, cada una a lo ancho (la del plano sigue con la captura al lado) */
+  .l-card-foto, .l-card-foto + .l-card { grid-column: 1 / -1; }
   .l-precio { grid-template-columns: 1fr; gap: 32px; }
 }
 @media (max-width: 900px) {
@@ -224,6 +231,11 @@
   .l-logo .i-anillos { width: 24px; height: 22px; }
   .l-top-cta { min-height: 40px; padding: 0 16px; font-size: 13px; }
   .l-cards { grid-template-columns: 1fr; }
+  /* Móvil: la captura baja bajo el texto y el pie «Incluido» cierra la tarjeta, como en las demás */
+  .l-card-foto { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+  .l-card-foto .l-card-txt { display: contents; }
+  .l-card-foto .l-card-img { order: 1; margin: 0 0 20px; }
+  .l-card-foto .l-card-pie { order: 2; }
   .l-datos { gap: 12px; }
   .l-datos dt { font-size: 22px; }
   .l-flota-a { left: -6px; top: -26px; }

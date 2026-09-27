@@ -1,8 +1,9 @@
 <?php
-// Plano de mesas y compra del extra de punta a punta por HTTP (F1c + F1d, revisión previa #133): la app en `php -S`
-// (router_prueba.php) y la API de Lemon simulada en otro (lemon_simulador.php), sin red. Recorre lo que hace la
-// pareja: ver la presentación, comprar, webhook ×3, crear mesas, sentar, recargar, cancelación, hoja para el
-// restaurante, catering con mesa y reembolso. Uso: php tests/mesas_test.php  (sale con 1 si algo falla)
+// Plano de mesas de punta a punta por HTTP (F1d, revisión previa #133): la app en `php -S` (router_prueba.php) y la API
+// de Lemon simulada en otro (lemon_simulador.php), sin red. Desde el 27-sep-2026 (owner) el plano va GRATIS e incluido
+// en todos los packs: sin comprar nada, crear mesas, sentar, recargar, cancelación, hoja para el restaurante y catering
+// con mesa; /panel/extra con «mesas» = 409; el webhook de un extra (álbum) sigue activando por HTTP; el reembolso de una
+// compra vieja del plano no lo apaga; y una web archivada no lo tiene. Uso: php tests/mesas_test.php (sale con 1 si falla)
 
 declare(strict_types=1);
 
@@ -98,60 +99,47 @@ ok($st === 302 && strpos($cab, 'Location: /panel/entrar') !== false, 'sin sesió
 [$st] = pide('POST', $host, '/panel/entrar', ['clave' => 'clave-de-prueba-1']);
 ok($st === 302 && $cookie !== '', 'login del panel');
 
-// ---------------------------------------------------------------- 2. sin el extra: presentación, precio de la fuente única, POST = 403
+// ---------------------------------------------------------------- 2. sin comprar nada: el plano ya está, precio en ningún sitio
 [$st, $h, $cab] = pide('GET', $host, '/panel/mesas');
 $csrf = csrf_de($h);
-ok($st === 200 && strpos($h, 'Plano de mesas') !== false && strpos($h, 'Comprar por ' . euros(precio_extra_cent('mesas'))) !== false && strpos($h, 'Crear mesa') === false, 'sin extra: presentación con precio y compra, sin herramienta');
+ok($st === 200 && strpos($h, 'Crear mesa') !== false && strpos($h, 'Comprar por') === false && strpos($h, '€') === false && strpos($h, 'data-extra-compra') === false, 'sin compra: la herramienta, sin precio ni compra');
 ok(stripos($cab, 'Cache-Control: private, no-store') !== false, '/panel/mesas con no-store');
-ok(strpos($h, h(texto_extra())) !== false && strpos($h, 'https://bodaenlace.com/condiciones') !== false, 'la casilla check_extra con el enlace absoluto a las condiciones');
-[$st, $h2] = pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'crear', 'nombre' => 'X', 'plazas' => 8]);
-ok($st === 403 && strpos($h2, 'no está activo') !== false && !is_file(dir_boda($slug) . '/guardado/mesas.json'), 'sin extra: POST de crear mesa = 403 y nada escrito');
-[$st] = pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'sentar', 'mesa' => 'm00000000', 'personas' => [$A[0]['id']]]);
-ok($st === 403, 'sin extra: POST de asignar = 403');
-[$st, , $cab] = pide('GET', $host, '/panel/mesas/imprimir');
-ok($st === 302 && strpos($cab, 'Location: /panel/mesas') !== false, 'sin extra: la hoja para el restaurante no se abre');
+ok(strpos($h, 'Recibo de la compra') === false, 'sin enlace a un recibo de compra');
 [, $hc] = pide('GET', $host, '/panel/catering');
-ok(strpos($hc, '<th>Mesa</th>') === false, 'sin extra: catering sin columna Mesa');
+ok(strpos($hc, '<th>Mesa</th>') === false, 'sin ninguna mesa creada: catering sin columna Mesa');
 [, $hp] = pide('GET', $host, '/panel');
 ok(strpos($hp, 'href="/panel/mesas"') !== false, 'el panel enlaza al plano de mesas');
 
-// ---------------------------------------------------------------- 3. compra: lista cerrada, CSRF, casilla, checkout con el importe del servidor
-[$st, $j] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'fiesta', 'acepto_extra' => 'si']);
+// ---------------------------------------------------------------- 3. el plano no se vende: /panel/extra
+[$st] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'fiesta', 'acepto_extra' => 'si']);
 ok($st === 400, 'clave fuera de la lista: 400 (' . $st . ')');
 [$st] = pide('POST', $host, '/panel/extra', ['clave' => 'mesas', 'acepto_extra' => 'si']);
 ok($st === 403, 'sin CSRF: 403');
+[$st, $j] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'mesas', 'acepto_extra' => 'si', 'precio_cent' => 1]);
+ok($st === 409 && strpos((string) $j, 'no est') !== false && !glob(dir_datos('extras', '*.json')) && !is_file($ls . '/checkout_1.json'), 'el plano de mesas: 409 «no está a la venta», sin pedido ni checkout (' . $st . ')');
 [$st] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'idiomas', 'acepto_extra' => 'si']);
 ok($st === 409, 'extra de la lista que aún no se vende: 409');
-[$st] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'mesas']);
-ok($st === 422, 'sin la casilla: 422');
-[$st, $j] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'mesas', 'acepto_extra' => 'si', 'precio_cent' => 1, 'slug' => 'otra']);
-$j = json_decode($j, true) ?? [];
-ok($st === 200 && ($j['url'] ?? '') === 'https://lemon.test/checkout/1', 'compra: devuelve la URL de pago de Lemon (' . $st . ')');
-$co = json_decode((string) @file_get_contents($ls . '/checkout_1.json'), true) ?? [];
-$at = $co['data']['attributes'] ?? [];
-ok(($at['custom_price'] ?? 0) === precio_extra_cent('mesas') && ($at['product_options']['name'] ?? '') === 'Plano de mesas — mesas-prueba.bodaenlace.com', 'checkout: importe del servidor (no el del formulario) y nombre del producto');
-$tok = (string) ($at['checkout_data']['custom']['token'] ?? '');
-$meta = lee_json(dir_datos('extras', $tok . '.json')) ?? [];
-ok(($meta['clave'] ?? '') === 'mesas' && ($meta['slug'] ?? '') === $slug && ($meta['precio_cent'] ?? 0) === precio_extra_cent('mesas') && ($meta['tipo'] ?? '') === 'extra', 'extras/<token>.json: clave, boda y precio congelado');
-ok(($meta['aceptacion']['casilla'] ?? '') === texto_extra() && ($meta['aceptacion']['version'] ?? '') === textos_legales()['version'], 'la casilla se guarda literal con la versión');
-[$st] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'mesas', 'acepto_extra' => 'si']);
-ok($st === 409, 'un segundo pago abierto del mismo extra: 409');
+// (el 422 de «sin la casilla» ya no se alcanza por HTTP: ningún extra está a la venta; su tubería la cubre extras_test.php)
 
-// ---------------------------------------------------------------- 4. webhook ×3 por HTTP: una sola activación
-$custom = (array) $at['checkout_data']['custom'];
-orden_ls('7001', precio_extra_cent('mesas'));
+// ---------------------------------------------------------------- 4. webhook ×3 por HTTP de un extra (álbum): una sola activación
+// Sin nada a la venta, el pedido del servidor se escribe como lo dejaría panel_extra(): la tubería del webhook sigue viva
+$tok = bin2hex(random_bytes(16));
+escribe_json(dir_datos('extras', $tok . '.json'), ['tipo' => 'extra', 'clave' => 'album', 'slug' => $slug, 'creado' => time(), 'precio_cent' => 1900, 'pasarela' => 'lemon', 'estado' => 'abierta',
+    'aceptacion' => ['fecha' => date('c'), 'version' => textos_legales()['version'], 'casilla' => texto_extra(), 'extra' => EXTRAS['album']['nombre'], 'vendedor' => 'Lemon Squeezy', 'precio_cent' => 1900]]);
+$custom = ['token' => $tok, 'slug' => $slug, 'producto' => 'bodas', 'tipo' => 'extra', 'clave' => 'album'];
+orden_ls('7001', 1900);
 $tg0 = count(glob(dir_datos('telegram', '*')) ?: []);
 $res = [];
 for ($i = 0; $i < 3; $i++) { [$st, $r] = webhook('order_created', '7001', $custom); $res[] = $st . ':' . ((json_decode($r, true) ?? [])['resultado'] ?? ''); }
 ok($res === ['200:creada', '200:creada', '200:creada'], 'webhook ×3: ' . implode(' ', $res));
 $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
-ok(($bp['extras']['mesas']['pedido'] ?? '') === 'ls_7001' && count(glob(dir_datos('telegram', '*')) ?: []) === $tg0 + 1, 'extras.mesas activo una sola vez (un aviso)');
+ok(($bp['extras']['album']['pedido'] ?? '') === 'ls_7001' && count(glob(dir_datos('telegram', '*')) ?: []) === $tg0 + 1, 'extras.album activo una sola vez (un aviso)');
 [$st, $r] = pide('POST', 'bodaenlace.com', '/api/lemon', ['_crudo' => '{"meta":{}}'], ['X-Signature: 00']);
 ok($st === 401, 'webhook sin firma buena: 401');
 
-// ---------------------------------------------------------------- 5. con el extra: crear mesas, sentar a 10, recargar
+// ---------------------------------------------------------------- 5. crear mesas, sentar a 10, recargar
 [$st, $h] = pide('GET', $host, '/panel/mesas');
-ok($st === 200 && strpos($h, 'Crear mesa') !== false && strpos($h, 'Recibo de la compra') !== false, 'con extra: la herramienta y el recibo de LS');
+ok($st === 200 && strpos($h, 'Crear mesa') !== false, 'la herramienta sigue ahí');
 ok(substr_count($h, 'data-persona=') === 10 && strpos($h, 'Kike Mar') === false, 'sin mesa: los 10 que van al banquete (no el que no va)');
 pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'crear', 'nombre' => 'Familia', 'plazas' => 6]);
 [$st, , $cab] = pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'crear', 'nombre' => '', 'plazas' => 5]);
@@ -221,20 +209,38 @@ $h0 = hash_file('sha256', $f);
 [$st] = pide('POST', $host, '/panel/guardar', ['csrf' => $csrf, 'config' => json_encode($c + ['extras' => ['idiomas' => ['desde' => date('c'), 'pedido' => 'ls_1']], 'atelier' => ''])]);
 ok($st === 200 && hash_file('sha256', $f) === $h0 && !extra_activo($slug, 'idiomas'), 'panel_guardar (200) no toca pedido.json: extras solo desde el webhook');
 
-// ---------------------------------------------------------------- 9. reembolso: se desactiva, la web sigue, los POST vuelven a dar 403
-orden_ls('7001', precio_extra_cent('mesas'), ['status' => 'refunded', 'refunded' => true, 'refunded_amount' => precio_extra_cent('mesas')]);
+// ---------------------------------------------------------------- 9. reembolsos: el del álbum lo apaga; el de una compra VIEJA del plano, no
+orden_ls('7001', 1900, ['status' => 'refunded', 'refunded' => true, 'refunded_amount' => 1900]);
 [$st, $r] = webhook('order_refunded', '7001', $custom);
-ok($st === 200 && ((json_decode($r, true) ?? [])['resultado'] ?? '') === 'reembolsado' && !extra_activo($slug, 'mesas'), 'reembolso por webhook: extra desactivado');
+ok($st === 200 && ((json_decode($r, true) ?? [])['resultado'] ?? '') === 'reembolsado' && !extra_activo($slug, 'album') && extra_activo($slug, 'mesas'), 'reembolso del álbum: se apaga el álbum, el plano sigue');
+// Compra de prueba del plano de cuando era de pago (registro histórico) y su reembolso ahora
+muta_json(dir_boda($slug) . '/pedido.json', function (array &$d) { $d['extras']['mesas'] = ['desde' => '2026-09-27T12:00:00+02:00', 'pedido' => 'ls_7002']; });
+$tokv = bin2hex(random_bytes(16));
+escribe_json(dir_datos('pedidos', 'ls_7002.json'), ['session_id' => 'ls_7002', 'pasarela' => 'lemon', 'slug' => $slug, 'estado' => 'creada', 'tipo' => 'extra', 'clave' => 'mesas', 'atelier' => '',
+    'token' => $tokv, 'email' => 'pareja@example.com', 'importe' => ['total' => 1900, 'iva' => 330], 'ls' => ['test' => true]]);
+orden_ls('7002', 1900, ['status' => 'refunded', 'refunded' => true, 'refunded_amount' => 1900]);
+[$st, $r] = webhook('order_refunded', '7002', ['token' => $tokv, 'slug' => $slug, 'producto' => 'bodas', 'tipo' => 'extra', 'clave' => 'mesas']);
+ok($st === 200 && ((json_decode($r, true) ?? [])['resultado'] ?? '') === 'reembolsado', 'reembolso de la compra vieja del plano: procesado (' . $st . ' ' . $r . ')');
+ok(!empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['extras']['mesas']['baja']) && extra_activo($slug, 'mesas'), 'queda anotada la devolución y el plano SIGUE activo');
 [$st, $h] = pide('GET', $host, '/panel/mesas');
-ok($st === 200 && strpos($h, 'Crear mesa') === false && strpos($h, 'Comprar por') !== false, 'tras el reembolso: vuelve la presentación');
-[$st] = pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'crear', 'nombre' => 'X', 'plazas' => 8]);
-ok($st === 403, 'tras el reembolso: POST = 403');
+ok($st === 200 && strpos($h, 'Crear mesa') !== false && strpos($h, 'Comprar por') === false, 'tras ese reembolso: la herramienta sigue, sin compra');
+[$st, , $cab] = pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'crear', 'nombre' => 'Amigos', 'plazas' => 8]);
+ok($st === 303 && strpos($cab, '?e=') === false && count(plano()['mesas'] ?? []) === 3, 'tras ese reembolso: se sigue pudiendo crear mesas');
 [, $hc] = pide('GET', $host, '/panel/catering');
-ok(strpos($hc, '<th>Mesa</th>') === false, 'tras el reembolso: catering sin columna Mesa');
+ok(strpos($hc, '<th>Mesa</th>') !== false, 'tras ese reembolso: el catering conserva la columna Mesa');
 [$st] = pide('GET', $host, '/');
 ok($st === 200, 'la web de la boda sigue publicada');
 $pr = array_values(array_filter(padrino_resumen()['pedidos'], fn($p) => $p['tipo'] === 'extra'));
-ok(count($pr) === 1 && $pr[0]['pack'] === '' && $pr[0]['extra'] === 'mesas', 'Padrino: el extra no es un alta ni tiene pack');
+ok(count($pr) === 2 && !array_filter($pr, fn($p) => $p['pack'] !== ''), 'Padrino: los extras no son altas ni tienen pack');
+
+// ---------------------------------------------------------------- 10. web archivada: sin plano (en el servidor, GET y POST)
+muta_json(dir_boda($slug) . '/config.json', function (array &$d) { $d['_estado'] = 'archivada'; });
+[$st, $h] = pide('GET', $host, '/panel/mesas');
+ok(!extra_activo($slug, 'mesas') && strpos($h, 'Crear mesa') === false && strpos($h, 'Alba Ruiz') === false, 'archivada: /panel/mesas sin herramienta ni nombres (' . $st . ')');
+[$st] = pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'crear', 'nombre' => 'X', 'plazas' => 8]);
+ok($st !== 303 && count(plano()['mesas'] ?? []) === 3, 'archivada: el POST no escribe (' . $st . ')');
+[$st, , $cab] = pide('GET', $host, '/panel/mesas/imprimir');
+ok($st !== 200, 'archivada: la hoja para el restaurante no se abre (' . $st . ')');
 
 proc_terminate($srv); proc_close($srv);
 proc_terminate($sim); proc_close($sim);

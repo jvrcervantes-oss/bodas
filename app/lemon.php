@@ -102,7 +102,7 @@ function lemon_cuerpo_checkout(string $token, string $slug, string $email, int $
                     : 'Creación y alojamiento hasta ' . MESES_ALOJAMIENTO . ' meses después de la boda.'),
                 'enabled_variants' => [(int) secreto('lemon_variante')],
                 // La mejora y los extras vuelven al panel de la boda (sesión propia); el alta, a /listo del creador
-                'redirect_url' => $extra ? url_boda($slug, 'panel/' . $extra['panel'] . '?compra=1')
+                'redirect_url' => $extra ? url_boda($slug, ($extra['panel'] !== '' ? 'panel/' . $extra['panel'] : 'panel') . '?compra=1')
                     : ($mejora ? url_boda($slug, 'panel/editar?mejora=1') : url_creador('listo?t=' . $token)),
             ],
             'checkout_options' => ['discount' => false, 'quantity' => 1],
@@ -507,10 +507,14 @@ function lemon_reembolso(string $id, array $o, array $custom): string {
             // también un corte a mitad de la activación (boda marcada, registro aún en 'cobrada')
             $baja = extra_baja((string) ($ped['slug'] ?? ''), (string) ($ped['clave'] ?? ''), $sid);
             $nombre = extra_existe((string) ($ped['clave'] ?? '')) ? EXTRAS[$ped['clave']]['nombre'] : 'extra';
-            $txt = $baja ? " Era el extra «{$nombre}» de " . url_boda((string) $ped['slug']) . ': se ha desactivado en su panel. La web sigue publicada.'
+            // Uno que hoy va incluido en los packs (plano de mesas) queda anotado como baja en pedido.json, pero la web lo
+            // sigue teniendo: extra_activo() no mira la compra. El aviso no puede decir «desactivado»
+            $txt = $baja && extra_incluido((string) $ped['clave']) ? " Era el extra «{$nombre}» de " . url_boda((string) $ped['slug'])
+                    . ': ahora va incluido en todos los packs, así que la web lo sigue teniendo. La compra queda anotada como devuelta; no hay nada más que hacer.'
+                : ($baja ? " Era el extra «{$nombre}» de " . url_boda((string) $ped['slug']) . ': se ha desactivado en su panel. La web sigue publicada.'
                     . ($total ? '' : ' Era un reembolso PARCIAL: si fue un gesto comercial y no un desistimiento, el extra habrá que volver a activarlo.')
                 : ($aplicado ? " Era el extra «{$nombre}» de " . url_boda((string) $ped['slug']) . ': ya no estaba activo por este pedido; no se ha tocado nada.'
-                    : ' Era un extra que no llegó a activarse: no hay nada que desactivar.');
+                    : ' Era un extra que no llegó a activarse: no hay nada que desactivar.'));
             avisa_estudio('Reembolso ' . ($total ? 'total' : 'parcial') . ' de un extra de boda', "Pedido LS $id ({$ped['slug']})." . $txt, 'Pedido LS ' . $id);
             return (string) $ped['estado'];
         }

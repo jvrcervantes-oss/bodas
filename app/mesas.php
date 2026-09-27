@@ -1,5 +1,6 @@
 <?php
-// Plano de mesas (F1d, extra de pago «mesas»). Encargo encargos/20260927_bodas_servicios_extra.md (repo del
+// Plano de mesas (F1d). Nació como extra de pago «mesas»; desde el 27-sep-2026 va GRATIS en todos los packs
+// (decisión del owner: EXTRAS['mesas']['incluido'] en app/padrino.php). Encargo encargos/20260927_bodas_servicios_extra.md (repo del
 // estudio), revisión previa #133.
 //
 // EL DATO TIENE UN DUEÑO:
@@ -14,8 +15,9 @@
 //    lo ve y decide.
 //  · Una persona con id vacío (respuesta muy antigua sin id de registro) no se puede sentar: sale «sin mesa».
 //
-// PUERTAS: solo con la sesión del panel (rutas_panel), no-store, y SOLO si el extra está activo, comprobado
-// en el servidor en el GET y en cada POST (extra_activo). Sin él, la página enseña el extra y su compra.
+// PUERTAS: solo con la sesión del panel (rutas_panel), no-store, y SOLO si extra_activo($slug, 'mesas'), comprobado
+// en el servidor en el GET y en cada POST. Al ir incluido, es cierto para toda web en pie y no archivada (pagada o
+// regalada), sin mirar ninguna compra: una compra de prueba anterior o su reembolso no lo cambian.
 
 declare(strict_types=1);
 
@@ -83,7 +85,7 @@ function mesas_estado(string $slug): array {
     return ['mesas' => array_values($mesas), 'sin_mesa' => $sinMesa, 'avisos' => $avisos];
 }
 
-/** Mesa de cada persona sentada, por id (para la columna Mesa del catering). Vacío si el extra no está activo. */
+/** Mesa de cada persona sentada, por id (para la columna Mesa del catering). Vacío si el plano no está disponible (web archivada). */
 function mesas_de_personas(string $slug): array {
     if (!extra_activo($slug, 'mesas')) return [];
     $o = [];
@@ -155,12 +157,12 @@ const MESAS_ERRORES = ['max-mesas' => 'Como máximo ' . MESAS_MAX . ' mesas.', '
     'sin-personas' => 'Elegid primero a quién sentar.', 'persona' => 'Alguien de la selección ya no va al banquete. Recargad la página.',
     'no-caben' => 'No caben todos en esa mesa.', 'accion' => 'No se ha podido hacer.', 'lleno' => 'El plano es demasiado grande.'];
 
-/** /panel/mesas: GET = la página; POST = una acción (CSRF + extra activo, o 403). */
+/** /panel/mesas: GET = la página; POST = una acción (CSRF + plano disponible, o 403). */
 function panel_mesas(string $slug, array $c, string $metodo): void {
     header('Cache-Control: private, no-store');   // lleva nombres, menús y alergias (art. 9 RGPD)
     if ($metodo === 'POST') {
         if (!panel_csrf_ok()) { http_response_code(403); exit('La sesión ha caducado. Recarga la página.'); }
-        // Cada POST lo comprueba en el servidor: la página se pudo abrir antes de un reembolso (Seguridad #133)
+        // Cada POST lo comprueba en el servidor: la página se pudo abrir antes de archivar la web (Seguridad #133)
         if (!extra_activo($slug, 'mesas')) { http_response_code(403); exit('El plano de mesas no está activo en esta web.'); }
         if (!limite('mesas|' . $slug, 600, 3600)) { header('Location: /panel/mesas?e=accion', true, 303); exit; }
         $ban = mesas_banquete($slug);
@@ -173,7 +175,10 @@ function panel_mesas(string $slug, array $c, string $metodo): void {
         exit;
     }
     if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }
-    if (!extra_activo($slug, 'mesas')) { echo panel_marco($c, 'Plano de mesas', mesas_cabecera($c, false) . mesas_presentacion($slug), true, true); return; }
+    if (!extra_activo($slug, 'mesas')) {
+        echo panel_marco($c, 'Plano de mesas', mesas_cabecera($c, false) . '<section class="section"><p class="panel-nota">El plano de mesas no está disponible en esta web.</p></section>', true, true);
+        return;
+    }
     echo panel_marco($c, 'Plano de mesas', mesas_cabecera($c, true) . mesas_herramienta($slug), true, true);
 }
 
@@ -181,15 +186,6 @@ function mesas_cabecera(array $c, bool $activo): string {
     return '<header class="panel-head"><div><span class="kicker">Plano de mesas</span><h1>' . h(nombres($c)) . '</h1></div>'
         . '<nav class="panel-acc no-print">' . ($activo ? '<a class="btn" href="/panel/mesas/imprimir">Hoja para el restaurante</a>' : '')
         . '<a class="btn btn-soft" href="/panel">Volver al panel</a></nav></header>';
-}
-
-/** Sin el extra: qué hace, cuánto cuesta y la compra (app/extras.php). */
-function mesas_presentacion(string $slug): string {
-    return extra_presentacion($slug, 'mesas', '<p class="lede">Cread las mesas del banquete, sentad a vuestros invitados tocando su nombre y luego la mesa, '
-        . 'y sacad la hoja para el restaurante: cada mesa con sus personas, su menú y sus alergias.</p>'
-        . '<ul class="extra-lista"><li>Solo aparecen los que han confirmado que van al banquete.</li>'
-        . '<li>Si alguien que ya estaba sentado cancela, os avisamos; nunca se cambia de sitio a nadie solo.</li>'
-        . '<li>El resumen para el catering indica también la mesa de cada alergia.</li></ul>');
 }
 
 function mesas_herramienta(string $slug): string {
@@ -213,8 +209,6 @@ function mesas_herramienta(string $slug): string {
         . '<div class="stat"><b>' . count($E['sin_mesa']) . '</b><span>sin mesa</span></div><div class="stat"><b>' . count($E['mesas']) . '</b><span>mesas</span></div>'
         . '<div class="stat"><b>' . $plazas . '</b><span>plazas</span></div></div>'
         . '<p class="panel-nota">Tocad a una persona (o «Todo el grupo») y luego la mesa donde se sienta. Tocad a alguien ya sentado para cambiarlo de mesa.</p>';
-    $rec = extra_recibo($slug, 'mesas');
-    if ($rec !== '') $o .= '<p class="panel-nota extra-recibo"><a href="' . h($rec) . '" target="_blank" rel="noopener">Recibo de la compra del plano de mesas</a></p>';
     $o .= '</section>';
 
     // Formulario único para sentar: el JS lo rellena con la selección y la mesa tocada

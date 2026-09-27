@@ -251,7 +251,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
         case 'guardar': panel_guardar($slug, $c, $metodo); return;
         case 'mejora': panel_mejora($slug, $metodo); return;   // Esencial → Atelier (app/lemon.php)
         case 'extra': panel_extra($slug, $metodo); return;     // compra de un extra de pago (app/extras.php)
-        case 'mesas': panel_mesas($slug, $c, $metodo); return;   // plano de mesas (app/mesas.php), solo con el extra
+        case 'mesas': panel_mesas($slug, $c, $metodo); return;   // plano de mesas (app/mesas.php), incluido en todos los packs
         case 'mesas/imprimir': panel_mesas_imprimir($slug, $c); return;
         case 'vista-previa': api_vista_previa($metodo, url_boda($slug, 'assets/'), $slug); return;
         case 'galeria': if ($metodo !== 'POST') no_existe(); panel_galeria_subir($slug); return;
@@ -514,8 +514,9 @@ function panel_excel(string $slug, array $c): void {
  * sesión del panel (rutas_panel ya la exige) y sin caché en ningún sitio: lleva nombres con sus
  * alergias, que son datos de salud (art. 9 RGPD). Cuenta a quienes van al BANQUETE con la misma
  * cuenta por menú que el panel (panel_datos, sin respuestas sustituidas): el Excel filtrado por
- * Banquete = Sí da lo mismo. La columna Mesa sale solo con el plano de mesas activo (F1d) y se
- * rellena por el `id` de persona (mesas_de_personas), nunca por nombre.
+ * Banquete = Sí da lo mismo. La columna Mesa sale en cuanto la pareja ha creado alguna mesa (el plano va
+ * incluido en todos los packs desde el 27-sep-2026) y se rellena por el `id` de persona (mesas_de_personas),
+ * nunca por nombre.
  */
 function panel_catering(string $slug, array $c): void {
     header('Cache-Control: private, no-store');
@@ -531,7 +532,7 @@ function panel_catering(string $slug, array $c): void {
         }
     }
     usort($alergias, fn($a, $b) => clave_nombre($a['nombre']) <=> clave_nombre($b['nombre']));
-    $conMesa = extra_activo($slug, 'mesas');
+    $conMesa = extra_activo($slug, 'mesas') && mesas_lee($slug)['mesas'] !== [];
     $mesaDe = $conMesa ? mesas_de_personas($slug) : [];
     $lugar = (string) ($c['convite']['lugar'] ?? '');
     $cuando = trim(($c['fecha'] !== '' ? fecha_larga($c['fecha'], false) : '') . ($lugar !== '' ? ' · ' . $lugar : ''), ' ·');
