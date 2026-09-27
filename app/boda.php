@@ -171,17 +171,10 @@ function api_rsvp(string $slug, array $c, string $metodo): void {
     ];
     if ($grupo) $rec['grupo'] = $grupo['gid'];   // id estable del grupo, no el token: rotar el enlace no rompe el vínculo
     // Un reenvío por el mismo enlace de grupo sustituye al anterior: se añade el registro nuevo y el
-    // viejo queda marcado `sustituido` (no se borra: es lo que el invitado mandó). Las dos cosas en la
-    // MISMA escritura del mismo fichero: o quedan las dos o ninguna.
-    $ok = muta_json(dir_boda($slug) . '/guardado/rsvp.json', function (array &$d) use ($rec) {
-        if (isset($rec['grupo'])) {
-            foreach ($d as $k => $r) {
-                if (is_array($r) && ($r['grupo'] ?? '') === $rec['grupo'] && empty($r['sustituido'])) $d[$k]['sustituido'] = $rec['id'];
-            }
-        }
-        $d[] = $rec;
-        return true;
-    }, MAX_BYTES_RSVP);
+    // viejo queda marcado `sustituido` (no se borra: es lo que el invitado mandó). Sus alergias sí se
+    // vacían: un dato de salud sin uso no se guarda (RGPD 5.1.c; Legal, 27-sep). Todo en la MISMA
+    // escritura del mismo fichero: o queda todo o nada.
+    $ok = muta_json(dir_boda($slug) . '/guardado/rsvp.json', function (array &$d) use ($rec) { rsvp_anade($d, $rec); return true; }, MAX_BYTES_RSVP);
     if ($ok !== true) {
         registra('rsvp no guardado (tope o disco)', ['slug' => $slug]);
         json_response(['ok' => false, 'error' => 'No se ha podido guardar. Avisa a los novios, por favor.'], 507);
@@ -350,6 +343,18 @@ function personas(array $r): array {
  * TODA cuenta de personas (panel, Excel, catering, lista de invitados, estudio, Padrino) lee por aquí;
  * leer rsvp.json a pelo contaría dos veces a un grupo que corrigió su respuesta.
  */
+/** Añade una respuesta; si es de un grupo, marca sustituida la vigente de ese grupo y vacía sus alergias. */
+function rsvp_anade(array &$d, array $rec): void {
+    if (isset($rec['grupo'])) {
+        foreach ($d as $k => $r) {
+            if (!is_array($r) || ($r['grupo'] ?? '') !== $rec['grupo'] || !empty($r['sustituido'])) continue;
+            $d[$k]['sustituido'] = $rec['id'];
+            foreach ((array) ($r['invitados'] ?? []) as $j => $p) if (is_array($p)) $d[$k]['invitados'][$j]['alergias'] = '';
+        }
+    }
+    $d[] = $rec;
+}
+
 function rsvp_vigentes(string $slug): array {
     return array_values(array_filter(lee_json(dir_boda($slug) . '/guardado/rsvp.json') ?? [], fn($r) => is_array($r) && empty($r['sustituido'])));
 }

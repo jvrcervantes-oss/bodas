@@ -62,6 +62,11 @@ $rec = fn(string $id, int $n, string $grupo = '') => ['id' => $id, 'asiste_banqu
 escribe_json(dir_boda($slug) . '/guardado/rsvp.json', [$rec('r1', 2, $g['gid']) + ['sustituido' => 'r2'], $rec('r2', 3, $g['gid']), $rec('r3', 1)]);
 $v = rsvp_vigentes($slug);
 ok(count($v) === 2 && array_sum(array_map(fn($r) => count(personas($r)), $v)) === 4, 'rsvp_vigentes deja fuera la sustituida (4 personas, no 6)');
+// rsvp_anade: un reenvío del grupo marca la anterior y le vacía las alergias (Legal, RGPD 5.1.c)
+$d = [$rec('a1', 2, $g['gid']), $rec('a2', 1)];
+rsvp_anade($d, $rec('a3', 2, $g['gid']));
+ok(($d[0]['sustituido'] ?? '') === 'a3' && implode('', array_column($d[0]['invitados'], 'alergias')) === '' && empty($d[1]['sustituido'])
+    && $d[2]['invitados'][0]['alergias'] === 'nueces', 'reenvío: anterior sustituida y sin alergias; otros grupos y la nueva intactos');
 $c = config_inicial();
 [, $st, $menus] = panel_datos($slug, $c);
 ok($st['personas'] === 4 && array_sum(array_column($menus, 'n')) === 4, 'panel_datos cuenta sin sustituidas');
