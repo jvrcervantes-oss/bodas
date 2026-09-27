@@ -15,7 +15,8 @@ date_default_timezone_set('Europe/Madrid');
 const APP_DIR = __DIR__;
 define('WEB_DIR', dirname(__DIR__));
 
-if (is_file(APP_DIR . '/config.local.php')) require APP_DIR . '/config.local.php';
+// Las pruebas (tests/) fijan sus propias constantes: el config.local.php de desarrollo chocaría con ellas
+if (!defined('SIN_CONFIG_LOCAL') && is_file(APP_DIR . '/config.local.php')) require APP_DIR . '/config.local.php';
 
 // Datos junto a public_html, nunca dentro: instalada en public_html/bodas, «dirname(WEB_DIR)»
 // sería public_html y los datos quedarían servidos por la web principal. Se sube hasta la

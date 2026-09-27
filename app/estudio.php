@@ -205,7 +205,7 @@ function estudio_bodas(string $metodo): string {
         $arch = ($cfg['_estado'] ?? '') === 'archivada';
         $personas = 0;
         if (!$arch) foreach (lee_json($d . '/guardado/rsvp.json') ?? [] as $r) $personas += count(personas($r));
-        $origen = str_starts_with((string) ($ped['session_id'] ?? ''), 'cortesia_') ? 'Regalo' : (($ped['factura'] ?? '') !== '' ? 'Pagada' : '—');
+        $origen = str_starts_with((string) ($ped['session_id'] ?? ''), 'cortesia_') ? 'Regalo' : (($ped['pasarela'] ?? '') === 'lemon' ? 'Lemon' : (($ped['factura'] ?? '') !== '' ? 'Pagada' : '—'));
         // El código usado vive en el pedido completo (pedidos/<id>.json), no en la copia de la boda
         if ($origen === 'Regalo') $ped['cortesia'] = (string) ((lee_json(dir_datos('pedidos', basename((string) $ped['session_id']) . '.json')) ?? [])['cortesia'] ?? '');
         $filas[] = ['slug' => $slug, 'c' => $c, 'ped' => $ped, 'arch' => $arch, 'personas' => $personas, 'origen' => $origen, 'creado' => (string) ($ped['creado'] ?? '')];
@@ -225,7 +225,7 @@ function estudio_bodas(string $metodo): string {
             continue;
         }
         $email = $c['pareja']['email'] !== '' ? $c['pareja']['email'] : (string) ($f['ped']['email'] ?? '');
-        $origen = $f['origen'] === 'Regalo' ? 'Regalo ' . h((string) ($f['ped']['cortesia'] ?? '')) : ($f['origen'] === 'Pagada' ? 'Pagada · <a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($f['ped']['factura'])) . '" target="_blank">' . h($f['ped']['factura']) . '</a>' : '—');
+        $origen = $f['origen'] === 'Regalo' ? 'Regalo ' . h((string) ($f['ped']['cortesia'] ?? '')) : ($f['origen'] === 'Lemon' ? 'Pagada · Lemon Squeezy' : ($f['origen'] === 'Pagada' ? 'Pagada · <a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($f['ped']['factura'])) . '" target="_blank">' . h($f['ped']['factura']) . '</a>' : '—'));
         $o .= '<tr><td>' . $web . '</td><td>' . h(nombres($c) ?: '—') . ($email !== '' ? '<br><small>' . h($email) . '</small>' : '') . '</td>'
             . '<td>' . h($c['fecha'] !== '' ? fecha_corta($c['fecha']) : '—') . '</td><td>' . ($c['atelier'] !== '' ? 'Atelier · ' . h(ATELIER[$c['atelier']]['nombre']) : 'Esencial') . '</td>'
             . '<td>' . $origen . '</td><td class="est-num">' . $f['personas'] . '</td><td>' . h($c['fecha'] !== '' ? fecha_corta(fecha_borrado($c['fecha'])) : '—') . '</td>'
@@ -260,13 +260,15 @@ function estudio_pedidos(): string {
     foreach (glob(dir_datos('pedidos', '*.json')) ?: [] as $f) { $p = lee_json($f); if ($p) $peds[] = $p; }
     usort($peds, fn($a, $b) => strcmp((string) ($b['creado'] ?? ''), (string) ($a['creado'] ?? '')));
     if (!$peds) return '<p>Todavía no hay pedidos.</p>';
-    $total = array_sum(array_map(fn($p) => (int) ($p['importe']['total'] ?? 0), $peds));
+    // Solo lo que se quedó cobrado: fuera reembolsos, cobros que no cuadran y duplicados (se devuelven)
+    $total = array_sum(array_map(fn($p) => in_array($p['estado'] ?? '', ['reembolsado', 'no-conforme', 'duplicado'], true) ? 0 : (int) ($p['importe']['total'] ?? 0), $peds));
     $o = '<p class="est-resumen"><b>' . count($peds) . '</b> pedidos · <b>' . h(euros($total)) . '</b> cobrados (IVA incluido)</p>'
         . '<div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th>Fecha</th><th>Web</th><th>Estado</th><th>Importe</th><th>Factura / código</th></tr></thead><tbody>';
     foreach ($peds as $p) {
         $esRegalo = str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_');
-        $doc = ($p['factura'] ?? '') !== '' ? '<a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($p['factura'])) . '" target="_blank">' . h($p['factura']) . '</a>' : ($esRegalo ? 'Regalo ' . h((string) ($p['cortesia'] ?? '')) : '—');
-        $estado = ['creada' => 'Publicada', 'cobrada' => 'Cobrada, sin publicar', 'sin-datos' => '⚠ Cobrada sin datos', 'cortesia' => 'Regalo en curso'][$p['estado'] ?? ''] ?? (string) ($p['estado'] ?? '');
+        $doc = ($p['pasarela'] ?? '') === 'lemon' ? 'Lemon Squeezy #' . h((string) ($p['ls']['order_number'] ?? '')) . (!empty($p['ls']['test']) ? ' (test)' : '') : (($p['factura'] ?? '') !== '' ? '<a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($p['factura'])) . '" target="_blank">' . h($p['factura']) . '</a>' : ($esRegalo ? 'Regalo ' . h((string) ($p['cortesia'] ?? '')) : '—'));
+        $estado = ['creada' => 'Publicada', 'cobrada' => 'Cobrada, sin publicar', 'sin-datos' => '⚠ Cobrada sin datos', 'cortesia' => 'Regalo en curso',
+            'no-conforme' => '⚠ Cobrada, no cuadra (sin web)', 'duplicado' => '⚠ Cobro duplicado (devolver)', 'reembolsado' => 'Reembolsada'][$p['estado'] ?? ''] ?? (string) ($p['estado'] ?? '');
         $o .= '<tr><td>' . h(isset($p['creado']) ? date('d/m/Y H:i', strtotime($p['creado'])) : '—') . '</td><td>' . h((string) ($p['slug'] ?? '')) . '</td>'
             . '<td>' . h($estado) . '</td><td class="est-num">' . h(euros((int) ($p['importe']['total'] ?? 0))) . '</td><td>' . $doc . '</td></tr>';
     }

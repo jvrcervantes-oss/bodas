@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/stripe.php';
+require_once __DIR__ . '/lemon.php';
 require_once __DIR__ . '/factura.php';
 require_once __DIR__ . '/correo.php';
 require_once __DIR__ . '/panel_auth.php';
@@ -91,7 +92,7 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
         registra('ALERTA pago sin pedido pendiente', ['sid' => $sid, 'slug' => $slug]);
         $ped['estado'] = 'sin-datos';
         escribe_json($fPedido, $ped);
-        avisa_estudio('Pago de web de boda sin datos del creador', "Sesión $sid ($slug). Cobrado y facturado ({$ped['factura']}); la web no se ha podido crear. Contactar con {$ped['email']}.");
+        avisa_estudio('Pago de web de boda sin datos del creador', "Pedido $sid ($slug). Cobrado" . (($ped['factura'] ?? '') !== '' ? " y facturado ({$ped['factura']})" : '') . "; la web no se ha podido crear. Contactar con {$ped['email']}.");
         return $ped;
     }
 
@@ -111,7 +112,7 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
     escribe_json($d . '/config.json', $cfg);
     if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
     // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
-    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
+    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'pasarela' => (string) ($ped['pasarela'] ?? ''), 'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
     mapa_actualiza($slug, normaliza_config($cfg)); // si falla, queda pendiente para el cron
     $enlace = panel_nuevo_enlace($slug);
     $ped['estado'] = 'creada';

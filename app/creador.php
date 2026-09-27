@@ -1,6 +1,6 @@
 <?php
 // Rutas del creador (CREATOR_HOST): la página del constructor, la vista previa, la
-// comprobación del nombre, el pago, el webhook de Stripe y la página de éxito.
+// comprobación del nombre, el pago (Lemon Squeezy; Stripe queda apagado), los webhooks y la página de éxito.
 
 declare(strict_types=1);
 
@@ -59,7 +59,12 @@ function rutas_creador(string $ruta, string $metodo): void {
         case 'api/pagar':
             api_pagar($metodo);
             return;
+        case 'api/lemon':
+            api_lemon($metodo);
+            return;
         case 'api/stripe':
+            // Stripe apagado: su webhook no existe mientras la pasarela sea Lemon Squeezy
+            if (pasarela() !== 'stripe') no_existe();
             api_webhook($metodo);
             return;
         case 'listo':
@@ -127,15 +132,18 @@ function api_pagar(string $metodo): void {
             json_response(['ok' => false, 'error' => 'Ese código no es válido o ha caducado.', 'faltan' => ['codigo' => 'Código no válido.']], 422);
         }
     }
-    // Escondido y sin Stripe configurado (BOD-3): se puede montar y ver la web, no comprarla
-    if (!$cortesia && secreto('stripe_secret') === '') {
+    // Pasarela de secrets.php (Lemon Squeezy por defecto). Sin configurar: se puede montar y ver la web, no comprarla
+    $pasarela = pasarela();
+    $configurada = $pasarela === 'lemon' ? lemon_configurada() : secreto('stripe_secret') !== '';
+    if (!$cortesia && !$configurada) {
         json_response(['ok' => false, 'error' => 'Todavía no está a la venta. Podéis montar vuestra web y verla tal cual; abrimos la contratación muy pronto.'], 503);
     }
-    if (!$cortesia && secreto('stripe_tax_rate') === '') {
+    if (!$cortesia && $pasarela === 'stripe' && secreto('stripe_tax_rate') === '') {
         registra('ALERTA pago bloqueado: falta stripe_tax_rate');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
     }
-    if (stripe_modo_live() && !empresa_completa()) {
+    $live = $pasarela === 'lemon' ? !lemon_test() : stripe_modo_live();
+    if (!$cortesia && $live && !empresa_completa()) {
         registra('ALERTA pago bloqueado: faltan datos del titular');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
     }
@@ -175,8 +183,10 @@ function api_pagar(string $metodo): void {
     $c['foto'] = $fr === '';
     escribe_json($pend . '/config.json', $c);
     $L = textos_legales();
-    // Precio congelado al abrir el pedido: si El Padrino lo cambia con el pago abierto, manda este
-    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => precio_total_cent($c), 'aceptacion' => [
+    // Precio congelado al abrir el pedido: si El Padrino lo cambia con el pago abierto, manda este.
+    // Es también el importe que se manda a Lemon Squeezy (custom_price): una sola cuenta, en el servidor.
+    $precio = precio_total_cent($c);
+    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => $cortesia ? 'cortesia' : $pasarela, 'aceptacion' => [
         'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $L['check_condiciones'] ?? '',
         'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
     ]]);
@@ -193,6 +203,16 @@ function api_pagar(string $metodo): void {
         json_response(['ok' => true, 'url' => url_creador('listo?c=' . $token)]);
     }
 
+    if ($pasarela === 'lemon') {
+        $url = lemon_crea_checkout($token, $slug, $c['pareja']['email'], $precio);
+        if ($url === '') {
+            borra_arbol($pend);
+            @unlink(dir_datos('reservas', $slug . '.json'));
+            json_response(['ok' => false, 'error' => 'No hemos podido abrir el pago. Inténtalo de nuevo.'], 502);
+        }
+        analitica_evento('checkout');
+        json_response(['ok' => true, 'url' => $url]);
+    }
     [$st, $s] = stripe_crea_checkout($token, $slug, $c['pareja']['email'], $c['atelier']);
     if ($st !== 200 || empty($s['url'])) {
         registra('stripe: no se pudo crear la sesión', ['status' => $st, 'error' => $s['error']['message'] ?? '']);
@@ -241,6 +261,10 @@ function pagina_listo(): void {
         listo_muestra($ped);
         return;
     }
+    // Lemon Squeezy: solo el pedido local, nunca la API (rev. #109)
+    $t = (string) ($_GET['t'] ?? '');
+    if (preg_match('/^[a-f0-9]{32}$/', $t)) { listo_lemon($t); return; }
+    if (pasarela() !== 'stripe') { echo pagina_simple('Pago no encontrado', '<p>No encontramos este pago. Si te han cobrado, escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }
     $sid = clean_str($_GET['sid'] ?? '', 250);
     $s = stripe_lee_sesion($sid);
     if (!$s || ($s['metadata']['producto'] ?? '') !== PRODUCTO) { echo pagina_simple('Pago no encontrado', '<p>No encontramos este pago. Si te han cobrado, escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }

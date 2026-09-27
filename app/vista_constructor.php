@@ -221,7 +221,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <label class="c-check" id="filaDes"><input type="checkbox" id="aceptoDes"> <span><?= h($L['check_desistimiento'] ?? '') ?></span></label>
         <ul class="c-faltan" id="faltan" aria-live="polite"></ul>
         <button type="button" class="b-btn b-dark c-btn-pagar" id="pagar">Pagar <?= h(euros(precio_total_cent())) ?></button>
-        <p class="c-nota" id="notaPago">Pago seguro con Stripe. Recibiréis la factura por email.</p>
+        <p class="c-nota" id="notaPago" data-texto="<?= h(nota_pago()) ?>"><?= h(nota_pago()) ?></p>
       </div>
 <?php else: ?>
       <div class="c-guardar">

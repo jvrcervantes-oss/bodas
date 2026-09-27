@@ -48,7 +48,18 @@ function documento_legal(string $cual, string $titulo): string {
         . $cuerpo . '</body></html>';
 }
 
-function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
+/**
+ * Cómo se pagó: 'factura' (Stripe, factura BODA- propia), 'lemon' (Lemon Squeezy es el vendedor y
+ * factura él) o 'regalo' (código de cortesía). Se decide por la pasarela, NUNCA por «no hay
+ * factura»: una venta por LS no lleva factura nuestra y caería en el texto del regalo (Administración #109).
+ */
+function tipo_pago(array $ped): string {
+    if (($ped['pasarela'] ?? '') === 'lemon') return 'lemon';
+    return ($ped['factura'] ?? '') !== '' ? 'factura' : 'regalo';
+}
+
+/** Cuerpo del correo de bienvenida (separado del envío para poder probarlo). */
+function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
     $L = textos_legales();
     $url = url_boda($ped['slug']);
     $borrado = fecha_larga(fecha_borrado((string) ($cfg['fecha'] ?? '')), false);
@@ -57,12 +68,20 @@ function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
         . "Dirección: $url\n\n"
         . "Para entrar en vuestro panel (respuestas de invitados, Excel, editar la web y descargar el ZIP), elegid vuestra contraseña con este enlace. Sirve una sola vez y caduca en 14 días:\n$enlace\n\n"
         . "La web y las respuestas de vuestros invitados se mantienen hasta el $borrado. Ese día se borran las respuestas y la web pasa a una página de agradecimiento. Exportad el Excel antes si queréis conservarlas.\n\n"
-        . (($ped['factura'] ?? '') !== '' ? "Factura: {$ped['factura']} (adjunta).\n" : "Esta web os la regala AxisWorks: no hay nada que pagar.\n")
+        . ['factura' => "Factura: {$ped['factura']} (adjunta).\n",
+            'lemon' => "El cobro lo ha gestionado Lemon Squeezy, que os ha enviado por email el recibo del pago.\n",
+            'regalo' => "Esta web os la regala AxisWorks: no hay nada que pagar.\n"][tipo_pago($ped)]
         . "Condiciones de contratación y encargo de tratamiento: adjuntas.\n\n"
-        . (($ped['factura'] ?? '') !== '' ? "Al comprar" : "Al publicar") . ($acept !== '' ? ' (' . date('d/m/Y H:i', strtotime($acept)) . ')' : '') . " marcasteis lo siguiente:\n"
+        . (tipo_pago($ped) !== 'regalo' ? "Al comprar" : "Al publicar") . ($acept !== '' ? ' (' . date('d/m/Y H:i', strtotime($acept)) . ')' : '') . " marcasteis lo siguiente:\n"
         . '«' . ($L['check_condiciones'] ?? '') . "»\n"
         . (($ped['aceptacion']['desistimiento'] ?? '') !== '' ? '«' . $ped['aceptacion']['desistimiento'] . "»\n" : '') . "\n"
         . "Cualquier duda: " . empresa()['email'] . "\n\nAxisWorks";
+    return $texto;
+}
+
+function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
+    $url = url_boda($ped['slug']);
+    $texto = texto_bienvenida($ped, $cfg, $enlace);
     $adjuntos = ['condiciones.html' => documento_legal('condiciones', 'Condiciones de contratación')];
     if (($ped['factura'] ?? '') !== '') $adjuntos[$ped['factura'] . '.html'] = (string) render_factura($ped['factura']);
     envia_correo($ped['email'], 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), $texto, $adjuntos);

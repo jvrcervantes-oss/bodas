@@ -807,7 +807,8 @@
     var hay = codigoEl.value.trim() !== '';
     pagar.textContent = hay ? 'Publicar con el código de regalo' : txtPagar;
     document.getElementById('filaDes').hidden = hay;
-    document.getElementById('notaPago').textContent = hay ? 'Con un código válido la web se publica sin pagar nada.' : 'Pago seguro con Stripe. Recibiréis la factura por email.';
+    var nota = document.getElementById('notaPago');
+    nota.textContent = hay ? 'Con un código válido la web se publica sin pagar nada.' : nota.getAttribute('data-texto');
   }
   if (codigoEl) codigoEl.addEventListener('input', pintaCodigo);
   if (pagar) pagar.addEventListener('click', function () {

@@ -10,6 +10,9 @@
 declare(strict_types=1);
 
 function emite_factura(array $ped): string {
+    // Con Lemon Squeezy el vendedor es LS y factura él: una BODA- aquí sería una segunda factura
+    // de la misma venta (Administración #109). Falla en alto, nunca numera.
+    if (($ped['pasarela'] ?? '') === 'lemon') throw new LogicException('Venta por Lemon Squeezy: la factura la emite LS');
     $anio = date('Y');
     $n = muta_json(dir_datos('facturas', 'contador.json'), function (array &$d) use ($anio) {
         $d[$anio] = ($d[$anio] ?? 0) + 1;
