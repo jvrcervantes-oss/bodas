@@ -574,3 +574,25 @@
 
 /* Pasos completados en el carril de escritorio (27-sep-2026): mismo verde que en el móvil */
 .c-paso.hecho .c-paso-num { background: var(--ok); border-color: var(--ok); color: #fff; }
+
+/* Interruptor «Vuestro estilo | Diseño premium» (27-sep-2026, opción A del owner): solo en el móvil */
+.c-seg { display: none; }
+@media (max-width: 900px) {
+  .c-seg { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: var(--pill); background: var(--surface-high); }
+  .c-seg button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 48px; padding: 4px 8px;
+    border: 0; border-radius: var(--pill); background: none; color: var(--ink-2); font-size: 14px; font-weight: 500; line-height: 1.2; cursor: pointer; transition: color .25s; }
+  .c-seg button small { font-size: 11px; font-weight: 400; color: var(--ink-3); }
+  .c-seg button[aria-pressed="true"] { color: var(--ink); }
+  .c-seg button[aria-pressed="true"] small { color: var(--bronze); }
+  .c-seg-pulgar { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: var(--pill); background: var(--paper); box-shadow: var(--e1);
+    transition: transform .4s var(--spring); }
+  [data-modo-estilo="premium"] .c-seg-pulgar { transform: translateX(100%); }
+  /* Un camino a la vez. La tarjeta Esencial la sustituye el interruptor (lleva su precio) */
+  [data-modo-estilo] .c-atelier-esencial { display: none; }
+  [data-modo-estilo="propio"] .c-atelier-cab-sep, [data-modo-estilo="propio"] #atelier, [data-modo-estilo="propio"] #fuentesAutor { display: none; }
+  [data-modo-estilo="premium"] #estiloPropio { display: none; }
+  [data-modo-estilo="premium"] .c-atelier-cab-sep { margin-top: 0; padding-top: 0; border-top: 0; }
+  [data-modo-estilo] .c-atelier-cab-sep .c-atelier-precio { display: none; }
+  #estiloPropio { padding-left: 0; border-left: 0; }
+  .c-seg-entra { animation: c-entra .38s var(--out); }
+}

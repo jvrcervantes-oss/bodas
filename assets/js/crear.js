@@ -823,6 +823,7 @@
   // Si el navegador la cierra por su cuenta (sin «cancel»), la página no se queda sin scroll
   hoja.addEventListener('close', function () { hoja.classList.remove('ve'); document.documentElement.classList.remove('c-sin-scroll'); });
   function pintaHoja() {
+    var conFoco = Array.prototype.indexOf.call(listaPasos.querySelectorAll('button'), document.activeElement);
     listaPasos.textContent = '';
     var fp = faltasPorPaso();
     ordenTabs.forEach(function (o, i) {
@@ -835,6 +836,7 @@
       if (o.k === pasoActual) b.setAttribute('aria-current', 'step');
       b.addEventListener('click', function () { cierraHoja(); vaAPaso(o.k); });
       listaPasos.appendChild(el('li', {}, [b]));
+      if (i === conFoco) b.focus({ preventScroll: true });
     });
   }
   function pintaPasoMovil(k) {
@@ -866,7 +868,7 @@
   function pasoHecho(k, fp) {
     if (k === 'publicar') return false;
     if (k === 'estilo') return !!estiloListo;
-    return !!(vistos[k] || yaElegido) && !fp[k];
+    return faltasRecibidas && !!(vistos[k] || yaElegido) && !fp[k];
   }
   function pintaEstados() {
     if (!numPaso) return;
@@ -909,6 +911,30 @@
   });
   var notaModo = propioEl.querySelector('.c-modo-nota');
   propioEl.insertBefore(falta, notaModo ? notaModo.nextSibling : propioEl.firstChild);
+  // Interruptor «Vuestro estilo | Diseño premium» (prototipo aprobado, owner 27-sep, opción A): en el
+  // móvil solo se ve un camino a la vez. Es solo vista: el estado sigue siendo st.atelier, y pasar a
+  // «Vuestro estilo» con un diseño elegido marca la tarjeta Esencial, que es quien lo quita.
+  var panelEstilo = document.getElementById('panel-estilo');
+  var modoEstilo = st.atelier ? 'premium' : 'propio';
+  var seg = el('div', { class: 'c-seg', role: 'group', 'aria-label': 'Tipo de diseño' }, [el('span', { class: 'c-seg-pulgar', 'aria-hidden': 'true' })]);
+  [['propio', 'Vuestro estilo', D.precio.total], ['premium', 'Diseño premium', D.precio.totalAtelier]].forEach(function (o) {
+    var b = el('button', { type: 'button', 'data-modo': o[0], 'aria-pressed': o[0] === modoEstilo ? 'true' : 'false' },
+      [el('span', { text: o[1] })].concat(MODO === 'crear' ? [el('small', { text: o[2] })] : []));
+    b.addEventListener('click', function () { cambiaModoEstilo(o[0]); });
+    seg.appendChild(b);
+  });
+  esencial.parentNode.insertBefore(seg, esencial);
+  function cambiaModoEstilo(m) {
+    if (m === modoEstilo) return;
+    modoEstilo = m;
+    panelEstilo.setAttribute('data-modo-estilo', m);
+    seg.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-modo') === m ? 'true' : 'false'); });
+    if (m === 'propio' && st.atelier) esencial.querySelector('input').click();
+    // El contenido nuevo entra con el mismo deslizamiento que un paso
+    var zona = m === 'premium' ? atelierEl : propioEl;
+    zona.classList.remove('c-seg-entra'); void zona.offsetWidth; zona.classList.add('c-seg-entra');
+  }
+  panelEstilo.setAttribute('data-modo-estilo', modoEstilo);
   var avisoListo = el('div', { class: 'c-toast', role: 'status' }, [el('i', { 'aria-hidden': 'true' }), el('span', { text: 'Estilo listo. Así queda vuestra web' })]);
   document.body.appendChild(avisoListo);
 
@@ -1023,8 +1049,9 @@
   // ------------------------------------------------------------ lo que falta
   var faltanEl = document.getElementById('faltan');
   var ultimasFaltas = {};
+  var faltasRecibidas = false;
   function pintaFaltan(f) {
-    ultimasFaltas = f;
+    ultimasFaltas = f; faltasRecibidas = true;
     if (typeof pintaEstados === 'function') pintaEstados();
     document.querySelectorAll('.c-mal').forEach(function (n) { n.classList.remove('c-mal'); });
     Object.keys(f).forEach(function (k) {
