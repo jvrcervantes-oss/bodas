@@ -638,6 +638,7 @@
         });
         if (!existe) pagina = 'inicio';
         pintaFaltan(j.faltan || {});
+        if (typeof previaLlego === 'function') previaLlego(n);
       })
       .catch(function () { /* MUDO A PROPOSITO: se queda la vista previa anterior y el siguiente cambio vuelve a pedirla */ });
   }
@@ -752,7 +753,7 @@
   tabs.forEach(function (t) {
     t.addEventListener('click', function () { vaAPaso(t.getAttribute('data-tab')); });
   });
-  function vaAPaso(k) { muestraTab(k); irAPagina(paginaDeTab(k)); subeAlPaso(k); }
+  function vaAPaso(k) { if (typeof cancelaPreviaAuto === 'function') cancelaPreviaAuto(); muestraTab(k); irAPagina(paginaDeTab(k)); subeAlPaso(k); }
   // Anterior / Siguiente al pie de cada paso (solo se ven en pantalla estrecha, ver crear.css)
   var ordenTabs = Array.prototype.map.call(document.querySelectorAll('[role="tab"][data-tab]'), function (t, i) {
     t.setAttribute('data-num', i + 1);
@@ -799,23 +800,26 @@
   var cabecera = document.querySelector('.c-top');
   cabecera.parentNode.insertBefore(tarjetaPaso, cabecera.nextSibling);
 
-  var velo = el('div', { class: 'c-velo' });
   var listaPasos = el('ol');
-  var hoja = el('div', { class: 'c-hoja', id: 'hojaPasos', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Pasos', hidden: true }, [el('h2', { text: 'Los pasos' }), listaPasos]);
-  document.body.appendChild(velo); document.body.appendChild(hoja);
+  var hoja = el('dialog', { class: 'c-hoja', id: 'hojaPasos', 'aria-label': 'Pasos' }, [el('div', { class: 'c-hoja-cuerpo' }, [el('h2', { text: 'Los pasos' }), listaPasos])]);
+  document.body.appendChild(hoja);
+  var MOVIMIENTO = window.matchMedia('(prefers-reduced-motion: reduce)');
+  function suave() { return MOVIMIENTO.matches ? 'auto' : 'smooth'; }
   function abreHoja() {
-    pintaHoja(); hoja.hidden = false; void hoja.offsetWidth;
-    hoja.classList.add('ve'); velo.classList.add('ve');
+    cancelaPreviaAuto();
+    pintaHoja(); hoja.showModal(); document.documentElement.classList.add('c-sin-scroll');
+    void hoja.offsetWidth; hoja.classList.add('ve');
     var b = listaPasos.querySelector('[aria-current]'); if (b) b.focus({ preventScroll: true });
   }
   function cierraHoja() {
-    if (hoja.hidden) return;
-    hoja.classList.remove('ve'); velo.classList.remove('ve');
-    setTimeout(function () { if (!hoja.classList.contains('ve')) hoja.hidden = true; }, 350);
+    if (!hoja.open) return;
+    hoja.classList.remove('ve'); document.documentElement.classList.remove('c-sin-scroll');
+    setTimeout(function () { if (!hoja.classList.contains('ve')) hoja.close(); }, MOVIMIENTO.matches ? 0 : 450);
   }
   botonPaso.addEventListener('click', abreHoja);
-  velo.addEventListener('click', cierraHoja);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !hoja.hidden) { cierraHoja(); botonPaso.focus({ preventScroll: true }); } });
+  // Escape: se cierra con la misma bajada; tocar el fondo (fuera del cuerpo) también cierra
+  hoja.addEventListener('cancel', function (e) { e.preventDefault(); cierraHoja(); });
+  hoja.addEventListener('click', function (e) { if (e.target === hoja) cierraHoja(); });
   function pintaHoja() {
     listaPasos.textContent = '';
     ordenTabs.forEach(function (o, i) {
@@ -844,13 +848,16 @@
   // Altura de lo que queda fijo arriba: la usan la vista previa y el salto al siguiente bloque
   function mideTope() { document.body.style.setProperty('--tope', (cabecera.offsetHeight + tarjetaPaso.offsetHeight) + 'px'); }
   window.addEventListener('resize', mideTope);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(mideTope);
 
   // «Ver mi web»: un punto que late mientras hay cambios sin ver
   var botonVer = document.querySelector('.c-ver-previa');
+  if (botonVer) botonVer.addEventListener('animationend', function () { botonVer.classList.remove('brilla'); });
   function webPendiente() {
-    if (!botonVer || document.body.getAttribute('data-ver') === 'previa') return;
+    if (!botonVer || !ESTRECHO.matches || document.body.getAttribute('data-ver') === 'previa') return;
     botonVer.classList.add('pendiente');
-    botonVer.classList.remove('brilla'); void botonVer.offsetWidth; botonVer.classList.add('brilla');
+    if (botonVer.classList.contains('brilla')) return;
+    botonVer.classList.add('brilla');
   }
 
   // Lo que falta del estilo. La configuración siempre trae paleta, letra y adornos por defecto,
@@ -879,10 +886,11 @@
       // Baja sola al siguiente bloque que falta, solo la primera vez que se elige en este
       var sig = ESTILO.filter(function (y) { return !elegido[y[0]]; })[0];
       if (primera && sig && ESTRECHO.matches) {
-        var destino = sig[2].previousElementSibling || sig[2];
+        var destino = sig[2];
+        for (var a = sig[2].previousElementSibling; a; a = a.previousElementSibling) if (a.classList.contains('overline')) { destino = a; break; }
         setTimeout(function () {
           var tope = cabecera.offsetHeight + tarjetaPaso.offsetHeight + falta.offsetHeight + 16;
-          window.scrollTo({ top: destino.getBoundingClientRect().top + window.pageYOffset - tope, behavior: 'smooth' });
+          window.scrollTo({ top: destino.getBoundingClientRect().top + window.pageYOffset - tope, behavior: suave() });
         }, 350);
       }
     });
@@ -894,8 +902,26 @@
     estiloListo = true;
     if (!ESTRECHO.matches) return true;
     avisoListo.classList.add('ve');
-    setTimeout(function () { avisoListo.classList.remove('ve'); abrePrevia(); }, 1100);
+    auto = { desde: pideN, llego: false, tiempo: false };
+    auto.t1 = setTimeout(function () { auto.tiempo = true; intentaAbrir(); }, 1100);
+    // Sin respuesta del servidor (sin conexión), se abre con la vista previa que haya
+    auto.t2 = setTimeout(function () { auto.llego = true; intentaAbrir(); }, 5000);
+    // Tocar la opción que ya estaba marcada no cambia nada ni pide otra: la que hay ya es la buena
+    auto.t3 = setTimeout(function () { if (auto && pideN === auto.desde) { auto.llego = true; intentaAbrir(); } }, 400);
     return true;
+  }
+  var auto = null;
+  function previaLlego(n) { if (auto && n > auto.desde) { auto.llego = true; intentaAbrir(); } }
+  function intentaAbrir() {
+    if (!auto || !auto.tiempo || !auto.llego) return;
+    var sigue = pasoActual === 'estilo' && document.body.getAttribute('data-ver') === 'editor' && !hoja.open;
+    cancelaPreviaAuto();
+    if (sigue) abrePrevia();
+  }
+  function cancelaPreviaAuto() {
+    avisoListo.classList.remove('ve');
+    if (!auto) return;
+    clearTimeout(auto.t1); clearTimeout(auto.t2); clearTimeout(auto.t3); auto = null;
   }
 
   // Vista previa en el móvil: al pie, «Cambiar» vuelve al editor y «Seguir» pasa al paso siguiente
@@ -933,7 +959,7 @@
   });
   var irPublicar = document.getElementById('irPublicar');
   if (irPublicar) irPublicar.addEventListener('click', function () {
-    muestraTab('publicar');
+    vaAPaso('publicar');
     var destino = [document.querySelector('.c-paso[data-tab="publicar"]'), document.getElementById('tab-publicar')].filter(function (x) { return x && x.offsetParent; })[0];
     if (destino) destino.focus();
   });

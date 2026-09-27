@@ -440,7 +440,7 @@
 
   /* Vista previa: la web a todo el ancho, sin barra de navegador ni marco de teléfono dibujados */
   body[data-ver="previa"] .c-grid { padding: 0; }
-  .c-navegador { height: calc(100dvh - var(--tope, 140px) - 76px); min-height: 0; border: 0; border-radius: 0; box-shadow: none; background: #fff; }
+  .c-navegador { height: calc(100dvh - var(--tope, 140px) - 76px - env(safe-area-inset-bottom, 0px)); min-height: 0; border: 0; border-radius: 0; box-shadow: none; background: #fff; }
   .c-nav-barra { gap: 8px; padding: 8px 12px; flex-wrap: wrap; }
   .c-dots { display: none; }
   .c-previa select { max-width: none; flex: 1; min-height: 40px; }
@@ -461,7 +461,7 @@
 /* ---------- móvil: el paso a la vista y la vista previa al terminar el estilo (27-sep-2026) ----------
    Prototipo aprobado por el owner (artifact «Creador BodaEnlace en el móvil»). Piezas creadas en
    crear.js; en escritorio no se ven. */
-.c-pm, .c-falta, .c-hoja, .c-velo, .c-toast, .c-previa-pie, .c-ver-punto { display: none; }
+.c-pm, .c-falta, .c-toast, .c-previa-pie, .c-ver-punto { display: none; }
 @media (max-width: 900px) {
   :root { --spring: cubic-bezier(.2, .9, .25, 1.15); --out: cubic-bezier(.2, .8, .2, 1); }
 
@@ -490,14 +490,15 @@
   .c-pm-barra i.hecho::after { transform: scaleX(1); }
   .c-pm-barra i.actual::after { transform: scaleX(.4); background: var(--rose); }
 
-  /* Hoja con todos los pasos */
-  .c-velo { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(38, 34, 32, .35); opacity: 0; pointer-events: none; transition: opacity .3s; }
-  .c-velo.ve { opacity: 1; pointer-events: auto; }
-  .c-hoja { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; max-height: 85dvh; overflow-y: auto; padding: 10px 14px calc(18px + env(safe-area-inset-bottom, 0px));
-    border-radius: 24px 24px 0 0; background: var(--surface); box-shadow: var(--e3); transform: translateY(105%); transition: transform .45s var(--out); }
-  .c-hoja[hidden] { display: none; }
+  /* Hoja con todos los pasos (<dialog> modal) */
+  .c-sin-scroll { overflow: hidden; }
+  .c-hoja { inset: auto 0 0 0; width: 100%; max-width: 100%; max-height: 85dvh; margin: 0; padding: 0; border: 0; overflow-y: auto;
+    border-radius: 24px 24px 0 0; background: var(--surface); color: var(--ink); box-shadow: var(--e3); transform: translateY(105%); transition: transform .45s var(--out); }
+  .c-hoja::backdrop { background: rgba(38, 34, 32, 0); transition: background .3s; }
   .c-hoja.ve { transform: translateY(0); }
-  .c-hoja::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 12px; }
+  .c-hoja.ve::backdrop { background: rgba(38, 34, 32, .35); }
+  .c-hoja-cuerpo { padding: 10px 14px calc(18px + env(safe-area-inset-bottom, 0px)); }
+  .c-hoja-cuerpo::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 12px; }
   .c-hoja h2 { margin: 0 4px 8px; font-family: var(--serif); font-weight: 400; font-size: 22px; }
   .c-hoja ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .c-hoja li { opacity: 0; transform: translateY(10px); transition: opacity .3s var(--out), transform .3s var(--out); }
@@ -558,6 +559,7 @@
   .c-previa-pie .b-paper { flex: 0 0 auto; }
 
   /* Cambiar de paso: el contenido entra deslizándose */
+  .c-grid { overflow-x: clip; }
   .c-panel:not([hidden]) { animation: c-entra .38s var(--out); }
   @keyframes c-entra { from { opacity: 0; transform: translateX(28px); } }
 }
