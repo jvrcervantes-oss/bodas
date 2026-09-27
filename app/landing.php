@@ -186,8 +186,8 @@ function pagina_landing(): string {
             <p>Sentad a vuestros invitados tocando su nombre y luego la mesa. Para el restaurante, una hoja con cada mesa, su menú y sus alergias.</p>
             <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
           </div>
-          <img class="l-card-img" src="<?= BASE_PATH ?>/assets/img/landing/plano-mesas.webp" width="1200" height="1122" loading="lazy" decoding="async"
-            alt="Plano de mesas en el panel de BodaEnlace: cuatro mesas (Presidencia, Familia de Lucía, Amigos de la uni y Primos) con sus invitados sentados y quién tiene alergia">
+          <img class="l-card-img" src="<?= BASE_PATH ?>/assets/img/landing/plano-mesas.webp" width="1234" height="1156" loading="lazy" decoding="async"
+            alt="Plano de mesas en el panel de BodaEnlace: mesas redondas con sus sillas (Presidencia y Familia de Lucía), quién se sienta en cada una y quién tiene alergia">
         </article>
       </div>
     </div>

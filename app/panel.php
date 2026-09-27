@@ -385,7 +385,7 @@ function panel_invitados(string $slug, array $c): string {
             . '<div class="filtros"><nav class="chips" aria-label="Filtrar por estado">' . panel_filtros('/panel/invitados', $ops, $f, ['q' => $q]) . '</nav>'
             . '<form class="buscar" method="get" action="/panel/invitados" role="search">' . p_ico('buscar') . ($f !== 'todos' ? '<input type="hidden" name="f" value="' . h($f) . '">' : '')
             . '<label for="q" class="vh">Buscar grupo o persona</label><input id="q" name="q" type="search" value="' . h($q) . '" placeholder="Buscar grupo o persona"></form></div>'
-            . ($filas !== '' ? '<div class="tabla-w"><table class="t"><thead><tr><th>Grupo</th><th>Estado</th><th>Menús</th><th><span class="vh">Enlace</span></th></tr></thead><tbody>' . $filas . '</tbody></table></div>'
+            . ($filas !== '' ? '<div class="tabla-w"><table class="t t-grupos"><thead><tr><th>Grupo</th><th>Estado</th><th>Menús</th><th><span class="vh">Enlace</span></th></tr></thead><tbody>' . $filas . '</tbody></table></div>'
                 : '<p class="vacio">Ningún grupo con ese filtro.</p>')
             . '<p class="nota">«Abierto» es orientativo: se apunta la primera vez que alguien abre el enlace, sin guardar nada más, y no cuentan las vistas previas de WhatsApp ni cuando lo abrís vosotros desde aquí.</p></section>';
     }
@@ -405,12 +405,16 @@ function panel_invitados(string $slug, array $c): string {
         $tb .= '<tr><td><b>' . h($x['nombre']) . '</b></td><td class="muted">' . h($x['grupo']) . '</td><td><span class="chip ' . $etq[$x['estado']][1] . '">' . $etq[$x['estado']][0] . '</span>' . ($x['manual'] ? ' <span class="muted">(a mano)</span>' : '') . '</td>'
             . '<td><form method="post" action="/panel/invitados" class="acc">' . $csrf . '<input type="hidden" name="accion" value="marcar"><input type="hidden" name="id" value="' . h($x['id']) . '">' . $botones . '</form></td></tr>';
     }
-    $o .= '<section class="card" id="personas">' . panel_card_cab('Persona a persona', 'Se cruza por nombre con las confirmaciones. Si alguien contestó con otro nombre o por teléfono, corregidlo a mano.',
-            $pend ? '<span class="fila-bot"><button type="button" class="btn b-papel" data-copiar-pendientes="' . h(implode("\n", array_column($pend, 'nombre'))) . '">Copiar los que faltan</button><span class="copiado inv-copiado" role="status" hidden>Copiado</span></span>' : '')
+    // Plegada (el artifact solo enseña los grupos): se abre sola al buscar, sin enlaces por grupo, o al volver de corregir (#personas, panel.js)
+    $abierta = $q !== '' || !$G;
+    $o .= '<details class="card detalle-card" id="personas"' . ($abierta ? ' open' : '') . '><summary><span><span class="h2">Persona a persona</span>'
+        . '<span class="sub">' . count($filasP) . ' invitados · ' . $res['pend'] . ' sin contestar. Se cruza por nombre con las confirmaciones: si alguien contestó con otro nombre o por teléfono, corregidlo a mano.</span></span></summary>'
+        . ($pend ? '<p class="fila-bot"><button type="button" class="btn b-papel" data-copiar-pendientes="' . h(implode("
+", array_column($pend, 'nombre'))) . '">Copiar los que faltan</button><span class="copiado inv-copiado" role="status" hidden>Copiado</span></p>' : '')
         . '<div class="kpis kpis-4 tab"><div class="kpi"><b>' . count($filasP) . '</b><span>invitados</span></div><div class="kpi ok"><b>' . $res['viene'] . '</b><span>vienen</span></div>'
         . '<div class="kpi mal"><b>' . $res['no'] . '</b><span>no vienen</span></div><div class="kpi warn"><b>' . $res['pend'] . '</b><span>sin contestar</span></div></div>'
         . ($tb !== '' ? '<div class="tabla-w"><table class="t"><thead><tr><th>Nombre</th><th>Grupo</th><th>Estado</th><th>Corregir</th></tr></thead><tbody>' . $tb . '</tbody></table></div>' : '<p class="vacio">Nadie con esa búsqueda.</p>')
-        . '</section>';
+        . '</details>';
 
     $o .= '<details class="card detalle-card" id="lista"' . (($_GET['editar'] ?? '') === '1' ? ' open' : '') . '><summary><span class="h2">Añadir o editar la lista</span></summary>' . $nota . $form . '</details>';
     return $o;
@@ -465,8 +469,9 @@ function panel_respuestas(string $slug, array $c): string {
             $alerg .= '<div class="alergia">' . ($p['alergias'] !== '' ? h($p['alergias']) : '&nbsp;') . '</div>';
         }
         $g = $gnom[(string) ($r['grupo'] ?? '')] ?? '';
+        $hueco = $g !== '' ? '<div class="muted" aria-hidden="true">&nbsp;</div>' : '';   // menú y alergia a la altura de su persona
         $filas .= '<tr><td>' . ($g !== '' ? '<div class="muted">' . h($g) . '</div>' : '') . $quien . '</td>'
-            . '<td>' . ($asis !== '' ? h($asis) : '<span class="chip mal">No vienen</span>') . '</td><td class="muted">' . $menu . '</td><td>' . $alerg . '</td>'
+            . '<td>' . ($asis !== '' ? h($asis) : '<span class="chip mal">No vienen</span>') . '</td><td class="muted">' . $hueco . $menu . '</td><td>' . $hueco . $alerg . '</td>'
             . ($bus ? '<td>' . (!empty($r['necesita_bus']) ? 'Sí' : 'No') . '</td>' : '')
             . '<td>' . h($r['contacto'] ?? '') . (($r['cancion'] ?? '') !== '' ? '<div class="muted">♪ ' . h($r['cancion']) . '</div>' : '') . '</td>'
             . '<td class="muted">' . h(isset($r['fecha_envio']) ? date('d/m/Y H:i', (int) strtotime($r['fecha_envio'])) : '') . '</td></tr>';

@@ -51,6 +51,12 @@
     });
   }
 
+  // Volver a una parte plegada (#personas, #lista…) la abre
+  if (location.hash.length > 1) {
+    var destino = document.getElementById(location.hash.slice(1));
+    if (destino && destino.tagName === 'DETAILS') destino.open = true;
+  }
+
   // ------------------------------------------------------------ WhatsApp: el enlace sigue al mensaje
   var msg = document.getElementById('msgWa'), wa = document.getElementById('btnWa');
   if (msg && wa) msg.addEventListener('input', function () { wa.href = 'https://wa.me/?text=' + encodeURIComponent(msg.value); });
