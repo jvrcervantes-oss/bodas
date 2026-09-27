@@ -922,7 +922,7 @@ function pagina_privacidad(array $c, array $ctx): string {
     if (!is_file($f)) return envoltorio('Privacidad', '<p class="lede">Texto en preparación.</p>');
     $b = ['nombre1' => $c['pareja']['nombre1'], 'nombre2' => $c['pareja']['nombre2'], 'email' => $c['pareja']['email'],
         'borrado' => $c['fecha'] !== '' ? fecha_larga(fecha_borrado($c['fecha']), false) : ''];
-    $E = empresa();
+    $E = empresa_publica();
     ob_start();
     include $f;
     return '<main><div class="wrap"><section class="section legal-text">' . ob_get_clean() . '</section></div></main>';

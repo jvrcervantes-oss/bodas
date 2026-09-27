@@ -19,6 +19,7 @@ file_put_contents($tmp . '/secrets.php', '<?php return ' . var_export([
     'pasarela' => 'lemon', 'lemon_api_key' => 'clave-de-prueba', 'lemon_webhook_secret' => SECRETO_FIRMA,
     'lemon_tienda' => '483461', 'lemon_variante' => '2169949', 'lemon_producto' => '1389266', 'lemon_test' => true,
     'telegram_token' => 'x', 'telegram_chat' => '1',
+    'empresa' => ['titular' => 'Titular De Prueba', 'nif' => '00000000T', 'domicilio' => 'Calle Prueba 1'],
 ], true) . ';');
 
 $raiz = dirname(__DIR__);
@@ -190,6 +191,12 @@ ok(strpos($tf, 'BODA-2026-0001') !== false && stripos($tf, 'regala') === false, 
 
 // 9. Pasarela: por defecto Lemon; configuración incompleta = no a la venta
 ok(pasarela() === 'lemon' && lemon_configurada() && lemon_test(), 'pasarela lemon configurada en test');
+// Owner, 27-sep: en pruebas no se publican titular, NIF ni domicilio; el candado de venta sigue viendo la empresa completa
+$ep = empresa_publica();
+ok(titular_oculto() && $ep['nif'] === '' && $ep['domicilio'] === '' && $ep['titular'] === marca(), 'en pruebas: sin NIF, domicilio ni titular persona');
+ok(empresa()['nif'] === '' || empresa_completa(), 'empresa() intacta para el candado');
+$cond = documento_legal('condiciones', 'x');
+ok((empresa()['nif'] === '' || strpos($cond, empresa()['nif']) === false) && strpos($cond, 'Está en pruebas') !== false, 'condiciones del correo en pruebas: sin NIF, dicen que está en pruebas');
 // Candado del modo test: una IP cualquiera sin sesión del estudio no abre el pago (tarjeta de prueba = web gratis)
 $_SERVER['REMOTE_ADDR'] = '203.0.113.9';
 ok(!lemon_checkout_permitido(), 'modo test: IP desconocida sin sesión del estudio no abre checkout');

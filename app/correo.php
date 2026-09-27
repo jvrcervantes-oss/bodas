@@ -158,7 +158,7 @@ function telegram_envia(string $texto): bool {
 }
 
 function documento_legal(string $cual, string $titulo): string {
-    $E = empresa();
+    $E = empresa_publica();
     ob_start();
     include __DIR__ . '/legal/' . $cual . '.php';
     $cuerpo = ob_get_clean();
@@ -209,7 +209,7 @@ function legal_a_texto(string $html): string {
  */
 function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
     $L = textos_legales();
-    $E = empresa();
+    $E = empresa_publica();
     $url = url_boda($ped['slug']);
     $borrado = fecha_larga(fecha_borrado((string) ($cfg['fecha'] ?? '')), false);
     $acept = (array) ($ped['aceptacion'] ?? []);

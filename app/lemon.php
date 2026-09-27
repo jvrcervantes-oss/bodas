@@ -338,7 +338,7 @@ function panel_mejora(string $slug, string $metodo): void {
  */
 function texto_mejora_correo(string $slug, array $ped, array $meta): string {
     $L = textos_legales();
-    $E = empresa();
+    $E = empresa_publica();
     $a = (array) ($meta['aceptacion'] ?? []);
     $fecha = ($a['fecha'] ?? '') !== '' ? date('d/m/Y H:i', strtotime((string) $a['fecha'])) : '';
     // El vendedor que se aceptó; si no quedó guardado, el de la fuente única de Legal (nunca escrito a mano)

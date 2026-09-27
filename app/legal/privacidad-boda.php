@@ -9,7 +9,7 @@ $M = h(marca());
 
 <h2>Quién usa tus datos</h2>
 <p>Los datos los recogen y los usan <?= h($pareja) ?>, para organizar su boda. Son los responsables. Contacto: <?= h($b['email']) ?>.</p>
-<p>La web la aloja <?= $M ?>, un producto de AxisWorks (<?= h($E['titular']) ?>), que guarda los datos por encargo de <?= h($pareja) ?> y no los usa para nada propio.</p>
+<p>La web la aloja <?= $M ?>, un producto de AxisWorks<?= $E['titular'] !== marca() ? ' (' . h($E['titular']) . ')' : '' ?>, que guarda los datos por encargo de <?= h($pareja) ?> y no los usa para nada propio.</p>
 
 <h2>Qué datos y para qué</h2>
 <ul>

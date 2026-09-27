@@ -93,6 +93,21 @@ function empresa(): array {
         'email' => (string) ($e['email'] ?? 'hola@bodaenlace.com'),   // buzón de la marca (owner, 26-sep-2026)
     ];
 }
+/**
+ * Owner, 27-sep-2026 (decisión suya, avisado de que la LSSI/RGPD/TRLGDCU piden la identidad a la vista): mientras
+ * el cobro esté en PRUEBAS no se publican titular, NIF ni domicilio. En pruebas nadie de fuera puede contratar
+ * (lemon_checkout_permitido). Al pasar a cobro real (hard stop del owner) vuelven a salir solos: vender de verdad
+ * sin identidad no se permite. empresa() sigue completa para el candado de empresa_completa().
+ */
+function titular_oculto(): bool {
+    if (secreto('pasarela', 'lemon') === 'stripe') return !stripe_modo_live();
+    return secreto('lemon_test', true) !== false;
+}
+function empresa_publica(): array {
+    $e = empresa();
+    if (!titular_oculto()) return $e;
+    return ['titular' => function_exists('marca') ? marca() : MARCA, 'nif' => '', 'domicilio' => '', 'email' => $e['email']];
+}
 function empresa_completa(): bool {
     $e = empresa();
     return $e['titular'] !== '' && $e['nif'] !== '' && $e['domicilio'] !== '';

@@ -15,7 +15,7 @@ $V = h($L['vendedor'] ?? '');
 <p>Versión del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
-<p><?= $M ?> es un producto de AxisWorks. AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>. En estas condiciones, «nosotros» es <?= h($E['titular']) ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
+<p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>Está en pruebas: los datos de quien presta el servicio se publicarán antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= h($E['titular']) ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
 <p>La compra se la hacéis a <?= $V ?> (<?= h($L['vendedor_entidad'] ?? '') ?>), que actúa como vendedor final (en inglés, <em>Merchant of Record</em>): revende nuestro servicio, os cobra, os envía el recibo y la factura y liquida el IVA. Esa compra se rige por las <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" rel="noopener">condiciones de compra de <?= $V ?></a>.</p>
 <p>El servicio, es decir, crear, publicar y alojar vuestra web, lo prestamos nosotros y se rige por estas condiciones. Para cualquier cosa sobre la web podéis dirigiros siempre a nosotros. Nada de lo que digan las condiciones de <?= $V ?> ni estas limita los derechos que la ley os reconoce como consumidores.</p>
 
@@ -120,7 +120,7 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>Anexo I. Modelo de formulario de desistimiento</h2>
 <p>Sirve para desistir del alojamiento en los 14 días siguientes a la compra, o en cualquier otro caso en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
-<p>A la atención de <?= h($E['titular']) ?> (<?= $M ?>), <?= h($E['domicilio']) ?>, <?= h($E['email']) ?>, o de <?= $V ?>:</p>
+<p>A la atención de <?= h($E['titular']) ?><?= $E['titular'] !== marca() ? ' (' . $M . ')' : '' ?>, <?= $E['domicilio'] !== '' ? h($E['domicilio']) . ', ' : '' ?><?= h($E['email']) ?>, o de <?= $V ?>:</p>
 <ul>
   <li>Por la presente os comunico que desisto del contrato (del alojamiento) de la web de boda publicada en: ____________</li>
   <li>Fecha de compra y número de pedido de <?= $V ?>: ____________</li>

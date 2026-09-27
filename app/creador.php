@@ -38,8 +38,8 @@ function rutas_creador(string $ruta, string $metodo): void {
             header('Content-Security-Policy: ' . CSP_CREADOR);
             $t = ['condiciones' => 'Condiciones del servicio', 'privacidad' => 'Privacidad', 'aviso-legal' => 'Aviso legal'][$ruta];
             $E = empresa();
-            // Sin titular, NIF y domicilio (BOD-1) los textos saldrían con huecos: se dice la verdad
-            if (!empresa_completa()) {
+            // Sin titular, NIF y domicilio (BOD-1), o en pruebas (titular_oculto, owner 27-sep): se dice la verdad
+            if (!empresa_completa() || titular_oculto()) {
                 echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(marca()) . ' todavía no está a la venta. '
                     . 'Publicaremos aquí el texto completo, con los datos de quién presta el servicio, antes de abrir la contratación.</p>'
                     . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
