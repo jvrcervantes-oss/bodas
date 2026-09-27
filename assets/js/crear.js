@@ -820,6 +820,8 @@
   // Escape: se cierra con la misma bajada; tocar el fondo (fuera del cuerpo) también cierra
   hoja.addEventListener('cancel', function (e) { e.preventDefault(); cierraHoja(); });
   hoja.addEventListener('click', function (e) { if (e.target === hoja) cierraHoja(); });
+  // Si el navegador la cierra por su cuenta (sin «cancel»), la página no se queda sin scroll
+  hoja.addEventListener('close', function () { hoja.classList.remove('ve'); document.documentElement.classList.remove('c-sin-scroll'); });
   function pintaHoja() {
     listaPasos.textContent = '';
     ordenTabs.forEach(function (o, i) {
