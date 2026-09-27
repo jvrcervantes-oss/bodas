@@ -100,8 +100,8 @@ function empresa(): array {
  * sin identidad no se permite. empresa() sigue completa para el candado de empresa_completa().
  */
 function titular_oculto(): bool {
-    if (secreto('pasarela', 'lemon') === 'stripe') return !stripe_modo_live();
-    return secreto('lemon_test', true) !== false;
+    if (pasarela() === 'stripe') return !stripe_modo_live();
+    return lemon_test();
 }
 function empresa_publica(): array {
     $e = empresa();

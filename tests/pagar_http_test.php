@@ -49,6 +49,29 @@ $c['fecha'] = date('Y-m-d', strtotime('+200 days'));
 $c['ceremonia']['lugar'] = 'Ayuntamiento'; $c['ceremonia']['hora'] = '12:00';
 $base = ['config' => json_encode($c), 'acepto_condiciones' => 'si'];
 
+// 0. En pruebas (lemon_test por defecto) el titular no se publica, así que los regalos están cerrados y las
+//    páginas legales no enseñan NIF ni domicilio (owner + revisor, 27-sep)
+[$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-en-pruebas', 'codigo' => $codigo]);
+ok($st === 503 && empty($j['ok']), 'en pruebas: el código de regalo no publica (' . $st . ')');
+function pagina(int $puerto, string $ruta): string {
+    $ch = curl_init('http://127.0.0.1:' . $puerto . $ruta);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['Host: bodaenlace.com']]);
+    $r = (string) curl_exec($ch);
+    curl_close($ch);
+    return $r;
+}
+foreach (['/aviso-legal', '/condiciones', '/privacidad'] as $r) {
+    $h = pagina($puerto, $r);
+    ok(strpos($h, '00000000T') === false && strpos($h, 'Calle de Prueba') === false && strpos($h, 'Titular de Prueba') === false, "en pruebas: $r sin titular, NIF ni domicilio");
+}
+
+// Cobro real: los datos vuelven solos y los regalos se abren
+$secretos(['pasarela' => 'lemon', 'lemon_test' => false]);
+foreach (['/aviso-legal', '/condiciones', '/privacidad'] as $r) {
+    $h = pagina($puerto, $r);
+    ok(strpos($h, '00000000T') !== false && strpos($h, 'Calle de Prueba 1') !== false, "cobro real: $r con NIF y domicilio");
+}
+
 // 1. Regalo: se publica y guarda la casilla de regalo, sin vendedor ni desistimiento
 [$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-prueba', 'codigo' => $codigo]);
 ok($st === 200 && !empty($j['ok']), 'regalo: publicada (' . $st . ' ' . json_encode($j) . ')');

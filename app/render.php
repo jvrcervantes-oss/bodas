@@ -814,7 +814,7 @@ function textos_legales(): array {
         $t = is_file($f) ? (array) require $f : [];
         // Único sitio donde se ponen titular, marca y vendedor: la casilla que se ve y la que se guarda
         // en el pedido salen de aquí, así que son el mismo texto (Legal, 27-sep-2026)
-        $sust = ['{titular}' => empresa()['titular'], '{marca}' => marca(), '{vendedor}' => (string) ($t['vendedor'] ?? '')];
+        $sust = ['{titular}' => empresa_publica()['titular'], '{marca}' => marca(), '{vendedor}' => (string) ($t['vendedor'] ?? '')];
         foreach ($t as $k => $v) if (is_string($v)) $t[$k] = strtr($v, $sust);
     }
     return $t;

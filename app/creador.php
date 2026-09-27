@@ -121,8 +121,9 @@ function api_pagar(string $metodo): void {
         if (cortesia_bloqueada() || !limite('cortesia|' . ip_cliente(), 10, 3600, true)) {
             json_response(['ok' => false, 'error' => 'Demasiados intentos con códigos. Prueba dentro de un rato.'], 429);
         }
-        // Sin titular en los textos legales no se publica ninguna web, ni regalada (BOD-1)
-        if (!empresa_completa()) {
+        // Sin titular en los textos legales no se publica ninguna web, ni regalada (BOD-1). En pruebas el titular
+        // no se publica (titular_oculto), así que los códigos quedan cerrados hasta el cobro real (revisor, 27-sep)
+        if (!empresa_completa() || titular_oculto()) {
             json_response(['ok' => false, 'error' => 'Los códigos de regalo se activan en cuanto terminemos los datos legales del servicio. Os avisamos.'], 503);
         }
         $cortesia = cortesia_busca($codigo);
