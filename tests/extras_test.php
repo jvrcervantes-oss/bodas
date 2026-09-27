@@ -214,6 +214,13 @@ ok(extra_bloqueo('ana-y-luis', 'inventado') === 'sin-extra', 'clave fuera de la 
 $_SERVER['REMOTE_ADDR'] = '203.0.113.9';
 ok(!extra_venta_abierta() && !extra_disponible('ana-y-luis', 'mesas'), 'modo test: una IP cualquiera no abre la compra');
 ok(texto_extra() === (string) (textos_legales()['check_extra'] ?? '') && texto_extra() !== '' && strpos(texto_extra(), marca()) !== false, 'casilla del extra: la de textos.php (check_extra), con la marca');
+// Legal #133: ningún extra se vende sin su texto en las condiciones (apartado 5 ter) en el mismo diff. Poner
+// 'venta' => true sin que Legal lo añada al 5 ter pone este test en rojo.
+$cond5ter = legal_a_texto(documento_legal('condiciones', 'c'));
+$cond5ter = substr($cond5ter, (int) stripos($cond5ter, '5 ter. Extras'), 4000);
+foreach (EXTRAS as $k => $x) {
+    if (!empty($x['venta'])) ok(stripos($cond5ter, $x['nombre']) !== false && strpos($cond5ter, euros(precio_extra_cent($k))) !== false, "extra a la venta «{$x['nombre']}»: está en el 5 ter con su precio");
+}
 
 // 9. El Padrino: un extra no es una venta nueva ni tiene pack
 $res = padrino_resumen();

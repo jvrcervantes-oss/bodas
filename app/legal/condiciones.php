@@ -98,7 +98,7 @@ $V = h($L['vendedor'] ?? '');
 </ul>
 <p>Esas devoluciones se hacen a través de <?= $V ?>, por el mismo medio de pago. Nada de este apartado limita los derechos que la ley os reconoce como consumidores. Para desistir basta con decírnoslo por email a <?= h($E['email']) ?>; podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
 <p>Si <?= $V ?> devuelve todo lo pagado por la web, o vuestro banco anula el pago y <?= $V ?> confirma la devolución, el servicio queda sin pagar y daremos de baja la web: os avisaremos por email y tendréis 7 días para exportar el Excel y descargar el ZIP; después se borran los datos como en el apartado 7. Mientras un contracargo esté en disputa, podremos dejar la web en pausa, sin borrar nada, hasta que se resuelva. Si lo que se devuelve es solo la mejora al Pack Atelier, la web vuelve al Pack Esencial y sigue alojada. Si desistís del alojamiento, la web se da de baja con el mismo aviso de 7 días.</p>
-<p>Si lo que se devuelve es un extra, entero o la parte que corresponda al desistir de él, o si vuestro banco anula el pago de un extra y <?= $V ?> confirma la devolución, ese extra se desactiva y la web sigue publicada y alojada, con todo lo demás igual. Lo que hubierais guardado con el extra (por ejemplo, el plano de mesas) no se borra al desactivarlo: se conserva hasta la fecha de borrado del apartado 7 por si lo volvéis a activar, y se borra entonces con el resto. Si la devolución de un extra es una rebaja por un fallo que no hemos arreglado (apartado 9), el extra sigue activo.</p>
+<p>Si lo que se devuelve es un extra, entero o la parte que corresponda al desistir de él, o si vuestro banco anula el pago de un extra y <?= $V ?> confirma la devolución, ese extra se desactiva y la web sigue publicada y alojada, con todo lo demás igual. Lo que hubierais guardado con el extra (por ejemplo, el plano de mesas) no se borra al desactivarlo: se conserva hasta la fecha de borrado del apartado 7 por si lo volvéis a activar, y se borra entonces con el resto. Si la devolución de un extra es una rebaja por un fallo que no hemos arreglado (apartado 9), no perdéis el extra: si al hacer la devolución se desactivara, lo volveremos a activar sin coste.</p>
 
 <h2>9. Garantía</h2>
 <p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos a nosotros, que somos quienes prestamos el servicio, y lo arreglaremos sin coste. El orden es el que marca la ley: primero lo arreglamos; si no lo arreglamos en un plazo razonable, podéis pedir una rebaja proporcional del precio o, si el fallo no es menor, resolver el contrato y recuperar lo pagado en la medida que fija la ley. Si hay que devolver dinero, lo hacemos a través de <?= $V ?>. Es la garantía legal que os da la ley y no la limitamos.</p>
@@ -140,10 +140,10 @@ $V = h($L['vendedor'] ?? '');
 <p>Estas condiciones se rigen por la ley española. Si residís en otro país de la Unión Europea, conserváis la protección que os dan las normas de consumo de ese país que no se pueden excluir por contrato. Podéis reclamar ante los tribunales de vuestro domicilio.</p>
 
 <h2>Anexo I. Modelo de formulario de desistimiento</h2>
-<p>Sirve para desistir del alojamiento en los 14 días siguientes a la compra, o en cualquier otro caso en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
+<p>Sirve para desistir del alojamiento o de un extra (apartado 5 ter) en los 14 días siguientes a su compra, o en cualquier otro caso en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
 <p>A la atención de <?= h($E['titular']) ?><?= $E['titular'] !== marca() ? ' (' . $M . ')' : '' ?>, <?= $E['domicilio'] !== '' ? h($E['domicilio']) . ', ' : '' ?><?= h($E['email']) ?>, o de <?= $V ?>:</p>
 <ul>
-  <li>Por la presente os comunico que desisto del contrato (del alojamiento) de la web de boda publicada en: ____________</li>
+  <li>Por la presente os comunico que desisto del contrato (del alojamiento, o del extra ____________) de la web de boda publicada en: ____________</li>
   <li>Fecha de compra y número de pedido de <?= $V ?>: ____________</li>
   <li>Nombre de quien compró: ____________</li>
   <li>Dirección de quien compró: ____________</li>
