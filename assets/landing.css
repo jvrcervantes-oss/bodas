@@ -200,8 +200,8 @@
   .l-atelier-grid { grid-template-columns: repeat(2, 1fr); }
   .l-nav { display: none; }
   .l-cards { grid-template-columns: repeat(2, 1fr); }
-  /* A 2 columnas: 6 tarjetas en 3 filas y las dos incluidas, cada una a lo ancho (la del plano sigue con la captura al lado) */
-  .l-card-foto, .l-card-foto + .l-card { grid-column: 1 / -1; }
+  /* A 2 columnas: las 4 tarjetas en 2 filas (el catering sube al hueco) y el plano, con su captura al lado, cierra a lo ancho */
+  .l-card-foto { grid-column: 1 / -1; order: 1; }
   .l-precio { grid-template-columns: 1fr; gap: 32px; }
 }
 @media (max-width: 900px) {

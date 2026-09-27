@@ -156,7 +156,7 @@ function pagina_landing(): string {
         <article class="l-card">
           <span class="l-card-ico"><?= il('sobre') ?></span>
           <h3>Confirmación por grupo</h3>
-          <p>Uno confirma por toda su familia, con el menú y las alergias de cada persona. Vosotros lo descargáis en Excel para el catering.</p>
+          <p>Uno confirma por toda su familia, con el menú y las alergias de cada persona, y si necesitan autobús. Vosotros lo descargáis en Excel.</p>
           <span class="l-card-pie">Excel para el catering <?= il('excel', 'i i-sm') ?></span>
         </article>
         <article class="l-card">
@@ -165,29 +165,12 @@ function pagina_landing(): string {
           <p>La cuenta atrás hasta el gran día y una lista de canciones que proponen y votan vuestros invitados.</p>
           <span class="l-card-pie">Votos de los invitados <?= il('musica', 'i i-sm') ?></span>
         </article>
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('mapa') ?></span>
-          <h3>Un mapa con los dos sitios</h3>
-          <p>La ceremonia y el convite en un solo mapa, con los colores de vuestra web, y botón para abrir cada uno en Google Maps. La fecha, lista para el calendario del móvil.</p>
-          <span class="l-card-pie">Añadir al calendario <?= il('calendario', 'i i-sm') ?></span>
-        </article>
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('regalo') ?></span>
-          <h3>Lista de bodas</h3>
-          <p>Vuestro número de cuenta con botón para copiarlo. Comprobamos que el IBAN esté bien escrito antes de publicarlo.</p>
-          <span class="l-card-pie">IBAN comprobado <?= il('check', 'i i-sm') ?></span>
-        </article>
+        <?php // Mapa, lista de bodas y «menús y transporte» fuera (owner, 27-sep: «lo menos interesante»); el autobús pasa a la tarjeta de confirmación ?>
         <article class="l-card">
           <span class="l-card-ico"><?= il('ojo') ?></span>
           <h3>Galería y libro de invitados</h3>
           <p>Vuestras fotos, y un libro donde los invitados os dejan mensajes y fotos. Todo protegido con un código que solo tienen ellos.</p>
           <span class="l-card-pie">Protegido con código <?= il('escudo', 'i i-sm') ?></span>
-        </article>
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('lapiz') ?></span>
-          <h3>Menús y transporte a medida</h3>
-          <p>Los menús que tengáis (carne, pescado, vegetariano, infantil…) y, si ponéis autobús, sus trayectos y horarios. Cada invitado elige al confirmar.</p>
-          <span class="l-card-pie">Cada invitado elige <?= il('check', 'i i-sm') ?></span>
         </article>
         <?php // Plano de mesas y catering: incluidos en todos los packs (owner, 27-sep-2026). La captura es del panel real con una boda de ejemplo (nombres inventados) ?>
         <article class="l-card l-card-foto">
