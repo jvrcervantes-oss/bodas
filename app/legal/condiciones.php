@@ -1,6 +1,7 @@
 <?php
 // Condiciones del servicio + Anexo de encargo de tratamiento (art. 28 RGPD).
-// Versión 2026-09-27 (Legal): Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
+// Versión 2026-09-27c (Legal; la «c» añade el enlace personal por grupo y el resumen para el catering, F1a/F1b,
+// revisión #133: §2, §7, §13, anexo II.2, II.3 y II.6). Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
 // el servicio. Owner (27-sep): «no se puede pedir reembolso», hasta donde la ley lo permite: el desistimiento
 // se pierde en la creación y publicación (103.m), pero el alojamiento es servicio (103.a) y se puede desistir en
 // 14 días pagando lo prestado (108.3); fuera de eso, solo las devoluciones legales (consulta fresca de Legal).
@@ -12,7 +13,7 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-09-27c, del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
 <p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
@@ -26,9 +27,12 @@ $V = h($L['vendedor'] ?? '');
   <li>Un formulario de confirmación de asistencia por grupo. Por cada invitado: nombre, si es adulto o niño, menú y alergias. Por cada grupo: si asiste, si usa el autobús, un dato de contacto y una canción.</li>
   <li>Peticiones y votos de canciones.</li>
   <li>Un panel privado con contraseña para ver las respuestas, exportarlas a Excel, editar la web y descargar un ZIP.</li>
+  <li>Una lista de invitados privada en el panel, con un enlace personal para cada grupo que podéis copiar o enviar por WhatsApp. Quien lo abre ve el nombre del grupo y los nombres de sus personas tal como los escribisteis, y confirma por todo el grupo. En el panel veis si cada enlace se ha abierto y podéis cambiarlo por uno nuevo cuando queráis.</li>
+  <li>Un resumen para el catering, que imprimís o guardáis en PDF desde el panel: cuántos menús hay de cada tipo y, de cada persona con alergias o intolerancias, su nombre, su menú y la alergia.</li>
   <li>Si las activáis: una galería de hasta 24 fotos que subís desde el panel, y un libro de invitados donde quien tenga el enlace y el código de la boda puede dejar su nombre, un mensaje y una foto. Ambas van detrás de un código de acceso que elegís vosotros.</li>
   <li>Alojamiento de la web hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda (apartado 7).</li>
 </ul>
+<p>El enlace personal por grupo y el resumen para el catering van incluidos en los dos packs.</p>
 <p>El ZIP contiene el HTML estático de vuestra web y las fotos de la galería, sin datos de invitados ni el libro de invitados. Es una copia de lo que se ve, no de lo que funciona: fuera de nuestro alojamiento, el formulario de asistencia, las canciones y el panel no funcionan. Se abre en cualquier navegador actual.</p>
 <p>Las webs de boda no aparecen en buscadores: están marcadas para que Google y similares no las indexen. Cualquiera que tenga el enlace puede verlas.</p>
 
@@ -62,6 +66,7 @@ $V = h($L['vendedor'] ?? '');
 <ul>
   <li>se borran todas las respuestas de asistencia (nombres, menús, alergias, contactos) y las canciones;</li>
   <li>se borran las fotos de la galería y los mensajes y fotos del libro de invitados;</li>
+  <li>se borra la lista de invitados, y los enlaces personales de cada grupo dejan de funcionar;</li>
   <li>la web deja de mostrar su contenido y pasa a una página de agradecimiento.</li>
 </ul>
 <p>Lo borrado no se puede recuperar. Si queréis conservar las respuestas, exportad el Excel y guardad las fotos antes de esa fecha. Podéis pedirnos que borremos antes la web entera escribiendo a <?= h($E['email']) ?>.</p>
@@ -105,7 +110,8 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>13. Datos de vuestros invitados</h2>
 <p>Las respuestas de los invitados son datos personales, y las alergias son datos de salud. Vosotros sois los responsables de esos datos y nosotros los tratamos por encargo vuestro, en los términos del anexo II. La web muestra a cada invitado un aviso de privacidad con vuestros nombres, el email de contacto que nos deis y la fecha de borrado.</p>
-<p>Si exportáis las respuestas a Excel, esa copia queda fuera de nuestro alojamiento y de nuestro control. Es responsabilidad vuestra guardarla con cuidado, no compartirla más allá de quien la necesite para organizar la boda (por ejemplo, el catering) y borrarla cuando ya no haga falta.</p>
+<p>Si exportáis las respuestas a Excel, o imprimís o guardáis en PDF el resumen para el catering, esas copias quedan fuera de nuestro alojamiento y de nuestro control. Es responsabilidad vuestra guardarlas con cuidado, no compartirlas más allá de quien las necesite para organizar la boda y borrarlas o destruirlas cuando ya no hagan falta. El resumen para el catering lleva nombres y alergias: dádselo solo a quien sirve la comida, para ese fin, y pedidle que lo destruya después de la boda.</p>
+<p>El nombre de cada grupo de la lista de invitados lo ve quien abre su enlace. Poned nombres neutros (por ejemplo, «Familia García» o «Amigos de la universidad»), sin etiquetas ofensivas ni notas sobre las personas. Cada enlace permite responder por su grupo: enviadlo solo a ese grupo y, si llega a quien no debe, cambiadlo desde el panel; el anterior deja de funcionar.</p>
 
 <h2>14. Contraseña del panel</h2>
 <p>La contraseña la elegís vosotros con el enlace de un solo uso que os enviamos. No la compartáis con quien no deba ver los datos de los invitados. Si creéis que alguien la conoce, escribidnos y os enviaremos un enlace nuevo.</p>
@@ -139,9 +145,9 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>II.2. Qué se trata</h2>
 <ul>
-  <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel; publicar los mensajes y fotos del libro de invitados y las fotos de la galería.</li>
+  <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel; generar un enlace personal para cada grupo de la lista de invitados; preparar para la pareja resúmenes imprimibles del catering y, si lo usa, del plano de mesas; publicar los mensajes y fotos del libro de invitados y las fotos de la galería.</li>
   <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños); quienes escriben en el libro y las personas que aparecen en las fotos, incluidos menores; y las personas que la pareja incluye en su lista de invitados aunque no respondan.</li>
-  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, solo nombre y grupo, que tampoco ve <?= $M ?>.</li>
+  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, el nombre, el grupo, el enlace del grupo, la fecha y hora del primer acceso a ese enlace (sin dirección IP ni navegador) y, si la pareja usa el plano de mesas, la mesa asignada, que tampoco ve <?= $M ?>.</li>
   <li>Categoría especial: las alergias e intolerancias son datos de salud (artículo 9 del RGPD). La web solo las recoge si quien responde da su consentimiento explícito en el formulario.</li>
   <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda, o hasta la baja de la web si es antes.</li>
 </ul>
@@ -151,7 +157,7 @@ $V = h($L['vendedor'] ?? '');
   <li>Tratar los datos solo para prestar este servicio y siguiendo las instrucciones de la pareja, que son las de este contrato y las que dé por escrito después. Si una instrucción nos parece contraria a la ley, lo diremos.</li>
   <li>No usar los datos para nada propio: ni publicidad, ni estadísticas, ni cederlos a nadie, salvo obligación legal.</li>
   <li>Garantizar que quien pueda acceder a ellos está obligado a guardar confidencialidad.</li>
-  <li>Aplicar medidas de seguridad adecuadas: los datos se guardan fuera de la parte pública del servidor, el panel está protegido con una contraseña que guardamos de forma que nadie, ni nosotros, puede leerla, y la conexión con la web va cifrada. Los mensajes y fotos del libro y de la galería no están detrás de la contraseña: los ve quien tenga el enlace y el código de la boda, porque ese es su fin.</li>
+  <li>Aplicar medidas de seguridad adecuadas: los datos se guardan fuera de la parte pública del servidor, el panel está protegido con una contraseña que guardamos de forma que nadie, ni nosotros, puede leerla, y la conexión con la web va cifrada. Los mensajes y fotos del libro y de la galería no están detrás de la contraseña: los ve quien tenga el enlace y el código de la boda, porque ese es su fin. Cada enlace de grupo lleva un código aleatorio que no se puede adivinar y no muestra las respuestas ya enviadas, las alergias ni los datos de contacto.</li>
   <li>Ayudar a la pareja a atender las peticiones de los invitados (ver, corregir o borrar sus datos) y, si procede, en las evaluaciones de impacto o consultas a la autoridad de control.</li>
   <li>Al terminar el encargo, borrar los datos de invitados. Antes de esa fecha, la pareja puede llevarse una copia exportando el Excel. No guardamos copias después.</li>
   <li>Poner a disposición de la pareja la información necesaria para demostrar que cumplimos este anexo y permitir, con aviso razonable, las comprobaciones que pida.</li>
@@ -174,6 +180,7 @@ $V = h($L['vendedor'] ?? '');
 <ul>
   <li>Usar los datos de los invitados solo para organizar la boda.</li>
   <li>Dar un email de contacto que funcione para que los invitados puedan ejercer sus derechos, y atender esas peticiones.</li>
-  <li>Guardar con cuidado la contraseña del panel y el Excel exportado (apartado 13 de las condiciones).</li>
-  <li>En la lista de invitados, poner solo nombres y grupos: ni datos de contacto, ni de salud, ni notas sobre las personas.</li>
+  <li>Guardar con cuidado la contraseña del panel, el Excel exportado y el resumen para el catering impreso o en PDF; pasar ese resumen solo a quien sirve la comida y destruirlo después de la boda (apartado 13 de las condiciones).</li>
+  <li>En la lista de invitados, poner solo nombres y grupos: ni datos de contacto, ni de salud, ni notas sobre las personas. Los nombres de los grupos los ve quien abre su enlace, así que no pueden llevar etiquetas ofensivas.</li>
+  <li>Enviar cada enlace de grupo solo a ese grupo, y cambiarlo desde el panel si llega a quien no debe.</li>
 </ul>

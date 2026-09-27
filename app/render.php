@@ -883,7 +883,7 @@ function form_rsvp(array $c, array $s, array $ctx): string {
     <span class="kicker">Quiénes venís</span>
     <p class="guests-hint">Uno confirma por todos: añadid a cada adulto y a cada peque.</p>
 <?php if ($grupo): // un reenvío por este enlace SUSTITUYE al anterior entero: que nadie mande medio grupo para cambiar un teléfono ?>
-    <p class="guests-hint">Si ya confirmasteis y queréis cambiar algo, enviad de nuevo al grupo completo, con menús y alergias: la respuesta nueva sustituye a la anterior.</p>
+    <p class="guests-hint">Si ya confirmasteis y queréis cambiar algo, enviad de nuevo al grupo completo, con menús y alergias: la respuesta nueva sustituye a la anterior. Este enlace es solo para vuestro grupo: no lo reenviéis a nadie más.</p>
 <?php endif; ?>
   </div>
   <div class="guest-list" id="guestList">
@@ -933,7 +933,7 @@ function form_rsvp(array $c, array $s, array $ctx): string {
     $frase = 'Más información en el aviso de privacidad.';
     $antes = strpos($capa1, $frase) !== false ? trim(str_replace($frase, '', $capa1)) : $capa1; ?>
     <p class="rsvp-capa1"><?= h($antes) ?> <?= a_interno('privacidad', $ctx) ?>Más información en el aviso de privacidad</a>.</p><?php endif; ?>
-    <div class="field" data-si-alergias hidden><label class="check-group"><input type="checkbox" name="consent_alergias" value="si"> <?= h($L['check_alergias'] ?? 'Consiento que se traten los datos de alergias e intolerancias para organizar el menú.') ?></label></div>
+    <div class="field" data-si-alergias hidden><label class="check-group"><input type="checkbox" name="consent_alergias" value="si"> <?= h($L['check_alergias'] ?? 'Doy mi consentimiento explícito para que la pareja use las alergias o intolerancias que indico solo para preparar el menú, y para que se las pase al catering con mi nombre y, si hay plano de mesas, mi mesa.') ?></label></div>
     <div class="field" data-si-grupo hidden><label class="check-group"><input type="checkbox" name="consent_acompanantes" value="si"> <?= h($L['check_acompanantes'] ?? 'Tengo permiso de las personas que apunto para facilitar sus datos.') ?></label></div>
   </div>
 
