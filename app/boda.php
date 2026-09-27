@@ -245,11 +245,13 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
 
     switch ($sub) {
         case 'invitados': panel_invitados_accion($slug, $metodo); return;
-        case 'galeria': panel_galeria_subir($slug); return;
-        case '': case 'respuestas': case 'musica': case 'descargas': case 'mas': http_response_code(405); exit;
+        case 'galeria':   // POST = subir una foto (la usa el editor); GET/HEAD = la página, arriba
+            if ($metodo !== 'POST') { header('Allow: GET, HEAD, POST'); http_response_code(405); exit; }
+            panel_galeria_subir($slug); return;
+        case '': case 'respuestas': case 'musica': case 'descargas': case 'mas': header('Allow: GET, HEAD'); http_response_code(405); exit;
         case 'excel': panel_excel($slug, $c); return;
         case 'catering':
-            if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }
+            if ($metodo !== 'GET' && $metodo !== 'HEAD') { header('Allow: GET, HEAD'); http_response_code(405); exit; }
             panel_catering($slug, $c); return;
         case 'zip': panel_zip($slug, $c); return;
         case 'factura':

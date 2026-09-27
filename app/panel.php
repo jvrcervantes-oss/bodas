@@ -159,8 +159,9 @@ function panel_hoja_marco(array $c, string $titulo, string $cuerpo): string {
 }
 
 /** Cabecera de tarjeta: título, texto y, a la derecha, lo que se pase (botón o etiqueta). */
+/** $titulo y $sub son texto (se escapan aquí); $dcha es marcado ya hecho (un botón, una etiqueta). */
 function panel_card_cab(string $titulo, string $sub = '', string $dcha = '', string $id = ''): string {
-    return '<div class="card-cab"><div><h2' . ($id !== '' ? ' id="' . h($id) . '"' : '') . '>' . h($titulo) . '</h2>' . ($sub !== '' ? '<p class="sub">' . $sub . '</p>' : '') . '</div>' . $dcha . '</div>';
+    return '<div class="card-cab"><div><h2' . ($id !== '' ? ' id="' . h($id) . '"' : '') . '>' . h($titulo) . '</h2>' . ($sub !== '' ? '<p class="sub">' . h($sub) . '</p>' : '') . '</div>' . $dcha . '</div>';
 }
 
 /** Filtros como enlaces (URL real, funcionan sin JS). $ops: clave => rótulo. */
@@ -235,7 +236,8 @@ function panel_inicio(string $slug, array $c): string {
     $kpi = fn(string $cls, string $n, string $t) => '<div class="kpi ' . $cls . '"><b>' . h($n) . '</b><span>' . h($t) . '</span></div>';
     $o .= '<div class="kpis tab">' . $kpi('ok', (string) $vienen, 'vienen') . $kpi('mal', (string) $noVienen, 'no vienen')
         . $kpi('warn', $hayLista ? (string) $res['pend'] : '—', 'sin responder') . $kpi('', (string) $ninos, $ninos === 1 ? 'niño/a' : 'niños/as')
-        . $kpi('', (string) $alergias, 'con alergias') . $kpi('', (string) $st['bus'], 'en autobús') . '</div>';
+        . $kpi('', (string) $alergias, 'con alergias')
+        . ((pregunta_bus($c) || $st['bus'] > 0) ? $kpi('', (string) $st['bus'], 'en autobús') : '') . '</div>';
 
     // Lo que os queda: cada paso se tacha solo, leyendo el estado real
     $pasos = [['Publicar la web', true, '', '']];
@@ -249,7 +251,7 @@ function panel_inicio(string $slug, array $c): string {
             $enBanquete > 0 && !$E['sin_mesa'] && !$E['avisos'], '/panel/mesas', $E['mesas'] ? 'Seguir' : 'Empezar'];
     }
     $gal = seccion_tipo($c, 'galeria');
-    if ($gal) $pasos[] = ['Subir vuestras fotos a la galería', (bool) $gal['datos']['fotos'], '/panel/galeria', 'Subir'];
+    if ($gal && !$archivada) $pasos[] = ['Subir vuestras fotos a la galería', (bool) $gal['datos']['fotos'], '/panel/editar', 'Subir'];
     $lp = '';
     $i = 0;
     foreach ($pasos as [$txt, $hecho, $href, $bot]) {
@@ -409,8 +411,7 @@ function panel_invitados(string $slug, array $c): string {
     $abierta = $q !== '' || !$G;
     $o .= '<details class="card detalle-card" id="personas"' . ($abierta ? ' open' : '') . '><summary><span><span class="h2">Persona a persona</span>'
         . '<span class="sub">' . count($filasP) . ' invitados · ' . $res['pend'] . ' sin contestar. Se cruza por nombre con las confirmaciones: si alguien contestó con otro nombre o por teléfono, corregidlo a mano.</span></span></summary>'
-        . ($pend ? '<p class="fila-bot"><button type="button" class="btn b-papel" data-copiar-pendientes="' . h(implode("
-", array_column($pend, 'nombre'))) . '">Copiar los que faltan</button><span class="copiado inv-copiado" role="status" hidden>Copiado</span></p>' : '')
+        . ($pend ? '<p class="fila-bot"><button type="button" class="btn b-papel" data-copiar-pendientes="' . h(implode("\n", array_column($pend, 'nombre'))) . '">Copiar los que faltan</button><span class="copiado inv-copiado" role="status" hidden>Copiado</span></p>' : '')
         . '<div class="kpis kpis-4 tab"><div class="kpi"><b>' . count($filasP) . '</b><span>invitados</span></div><div class="kpi ok"><b>' . $res['viene'] . '</b><span>vienen</span></div>'
         . '<div class="kpi mal"><b>' . $res['no'] . '</b><span>no vienen</span></div><div class="kpi warn"><b>' . $res['pend'] . '</b><span>sin contestar</span></div></div>'
         . ($tb !== '' ? '<div class="tabla-w"><table class="t"><thead><tr><th>Nombre</th><th>Grupo</th><th>Estado</th><th>Corregir</th></tr></thead><tbody>' . $tb . '</tbody></table></div>' : '<p class="vacio">Nadie con esa búsqueda.</p>')
@@ -448,7 +449,7 @@ function panel_respuestas(string $slug, array $c): string {
     $ultima = $rsvps ? max(array_map(fn($r) => (int) strtotime((string) ($r['fecha_envio'] ?? '')), $rsvps)) : 0;
     $sub = $st['personas'] ? $st['personas'] . ($st['personas'] === 1 ? ' persona ha' : ' personas han') . ' contestado en ' . count($rsvps) . (count($rsvps) === 1 ? ' respuesta' : ' respuestas')
         . ($ultima ? ' · la última, ' . panel_hace($ultima) : '') . '.' : 'Todavía no ha contestado nadie.';
-    $o = '<section class="card">' . panel_card_cab('Respuestas', h($sub), '<a class="btn b-papel" href="/panel/excel">' . p_ico('descargas') . 'Excel</a>');
+    $o = '<section class="card">' . panel_card_cab('Respuestas', $sub, '<a class="btn b-papel" href="/panel/excel">' . p_ico('descargas') . 'Excel</a>');
     $o .= '<div class="cifras tab">';
     foreach ([['personas', 'personas'], ['adultos', 'adultos'], ['ninos', 'niños/as'], ['ceremonia', 'a la ceremonia'], ['banquete', 'al banquete']] as [$k, $t]) $o .= '<span><b>' . $st[$k] . '</b> ' . $t . '</span>';
     if ($bus) $o .= '<span><b>' . $st['bus'] . '</b> en autobús</span>';
@@ -519,17 +520,17 @@ function panel_galeria(string $slug, array $c): string {
     $fotos = $on ? $gi['datos']['fotos'] : [];
     $codigo = (string) ($c['codigo'] ?? '');
     $o = '<div class="rej r-12"><section class="card" id="galeria">';
-    if (!$on) {
+    if (($c['_estado'] ?? '') === 'archivada') {
+        $o .= panel_card_cab('Galería', 'Vuestra web está archivada: la galería y el libro ya no se ven ni admiten fotos nuevas.');
+    } elseif (!$on) {
         $o .= panel_card_cab('Galería', 'La galería no está activa en vuestra web. Podéis activarla en Editar la web → Más secciones y volver aquí a subir las fotos.',
             '<a class="btn b-papel" href="/panel/editar">Editar la web</a>');
     } else {
-        $L = textos_legales();
-        $o .= panel_card_cab('Galería', h(count($fotos) . ' de ' . MAX_GALERIA . ' fotos' . ($codigo !== '' ? ' · protegida con el código «' . $codigo . '»' : '')),
-            count($fotos) < MAX_GALERIA ? '<label class="btn b-rosa">Subir fotos<input type="file" accept="image/jpeg,image/png,image/webp" multiple hidden data-galeria-subir data-csrf="' . h(panel_csrf()) . '"></label>' : '');
-        if (!$gi['datos']['consentido']) {
-            $o .= '<label class="check"><input type="checkbox" data-galeria-consent> <span>' . h((string) ($L['check_galeria_pareja'] ?? '')) . '</span></label>';
-        }
-        $o .= '<p class="aviso-vivo" role="status" data-galeria-msg></p>';
+        // Subir, ordenar y quitar fotos se hace en el editor, que es quien guarda el config entero: una subida desde
+        // aquí la borraría el «Guardar» de una pestaña del editor abierta antes (revisión de código, 27-sep-2026)
+        $o .= panel_card_cab('Galería', count($fotos) . ' de ' . MAX_GALERIA . ' fotos' . ($codigo !== '' ? ' · protegida con el código «' . $codigo . '»' : ''),
+            '<a class="btn b-rosa" href="/panel/editar">Subir fotos</a>');
+        $o .= '<p class="sub">Las fotos se suben, se ordenan y llevan su pie en <a href="/panel/editar">Editar la web</a> → Más secciones → Galería.</p>';
         if (!$fotos) $o .= '<p class="vacio">Todavía no hay fotos. Subid las vuestras: los invitados las verán con el código de la boda.</p>';
         else {
             $o .= '<div class="fotos">';
@@ -537,7 +538,7 @@ function panel_galeria(string $slug, array $c): string {
                 $o .= '<figure class="foto"><img src="/g/' . h($f['id']) . '.webp" alt="' . h($f['pie'] !== '' ? $f['pie'] : 'Foto ' . ($i + 1) . ' de la galería') . '" loading="lazy" decoding="async">'
                     . ($i === 0 ? '<span class="et">Portada</span>' : '') . '</figure>';
             }
-            $o .= '</div><p class="nota">Para poner pies de foto, cambiar el orden o quitar alguna: <a href="/panel/editar">Editar la web</a> → Más secciones → Galería.</p>';
+            $o .= '</div>';
         }
     }
     $o .= '</section>';
@@ -548,7 +549,7 @@ function panel_galeria(string $slug, array $c): string {
         $o .= panel_card_cab('Libro de invitados', 'El libro no está activo en vuestra web. Podéis activarlo en Editar la web → Más secciones.');
     } else {
         $vis = count(array_filter($libro, fn($e) => empty($e['oculto'])));
-        $o .= panel_card_cab('Libro de invitados', h(count($libro) . (count($libro) === 1 ? ' mensaje' : ' mensajes') . ($vis !== count($libro) ? ' · ' . (count($libro) - $vis) . ' oculto(s)' : '')
+        $o .= panel_card_cab('Libro de invitados', (count($libro) . (count($libro) === 1 ? ' mensaje' : ' mensajes') . ($vis !== count($libro) ? ' · ' . (count($libro) - $vis) . ' oculto(s)' : '')
             . '. Se publican al momento: podéis ocultar o borrar cualquiera; si alguien os pide retirar algo, hacedlo aquí.'));
         if (!$libro) $o .= '<p class="vacio">Todavía no hay mensajes.</p>';
         $csrf = h(panel_csrf());

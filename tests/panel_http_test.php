@@ -190,7 +190,7 @@ $h = $H['musica'];
 ok(strpos($h, 'September') !== false && strpos($h, 'Dancing &lt;Queen&gt;') !== false && strpos($h, 'Copiar lista para el DJ') !== false && strpos($h, 'width:100%') !== false, 'música: canciones con votos y lista para el DJ');
 ok(strpos($h, 'Pedidas al confirmar') !== false, 'música: la canción pedida al confirmar');
 $h = $H['galeria'];
-ok(strpos($h, 'src="/g/' . $fotoId . '.webp"') !== false && strpos($h, 'data-galeria-subir') !== false && strpos($h, 'olivo27') !== false, 'galería: la foto, subir y el código');
+ok(strpos($h, 'src="/g/' . $fotoId . '.webp"') !== false && strpos($h, 'olivo27') !== false && preg_match('~<a class="btn b-rosa" href="/panel/editar">Subir fotos</a>~', $h) === 1, 'galería: la foto, el código y «Subir fotos» al editor (que guarda el config entero)');
 ok(strpos($h, 'Que la vida os siga sorprendiendo') !== false && strpos($h, 'action="/panel/libro"') !== false && strpos($h, 'value="ocultar"') !== false, 'libro: el mensaje con ocultar/borrar');
 $h = $H['descargas'];
 ok(strpos($h, 'href="/panel/excel"') !== false && strpos($h, 'href="/panel/zip"') !== false && strpos($h, 'r901') !== false && strpos($h, 'Pack Atelier') !== false, 'descargas: Excel, ZIP, recibo y pack');
@@ -206,6 +206,8 @@ ok($st === 303 && strpos($cab, 'Location: /panel/invitados#personas') !== false 
 $tokAntes = inv_lee($slug)['grupos']['g:vecinos']['token'];
 [$st, , $cab] = pide('POST', '/panel/invitados', ['csrf' => $csrf, 'accion' => 'rotar', 'gid' => $gid('g:vecinos')]);
 ok($st === 303 && strpos($cab, 'Location: /panel/invitados#enlaces') !== false && inv_lee($slug)['grupos']['g:vecinos']['token'] !== $tokAntes, 'cambiar enlace: token nuevo y vuelta a Invitados');
+[$st, , $cab] = pide('PUT', '/panel/galeria', ['consentido' => 'si']);
+ok($st === 405 && stripos($cab, 'Allow: GET, HEAD, POST') !== false, 'PUT /panel/galeria: 405 con Allow');
 [$st, $j] = pide('POST', '/panel/galeria', ['consentido' => 'si']);
 ok($st === 403 && strpos($j, '"ok":false') !== false, 'subir foto sin CSRF: 403');
 [$st, , $cab] = pide('POST', '/panel/libro', ['csrf' => $csrf, 'id' => 'e1', 'accion' => 'ocultar']);
@@ -215,11 +217,19 @@ ok($st === 403 && count(lee_json(dir_libro($slug) . '/libro.json') ?? []) === 1,
 [$st] = pide('GET', '/panel/libro');
 ok($st === 404, 'GET /panel/libro: 404');
 foreach (['/panel', '/panel/respuestas', '/panel/musica', '/panel/descargas', '/panel/mas', '/panel/catering'] as $r) {
-    [$st] = pide('POST', $r, ['csrf' => $csrf]);
-    ok($st === 405, "POST $r: 405 ($st)");
+    [$st, , $cab] = pide('POST', $r, ['csrf' => $csrf]);
+    ok($st === 405 && stripos($cab, 'Allow: GET, HEAD') !== false, "POST $r: 405 con Allow ($st)");
 }
 [$st, $h, $cab] = pide('GET', '/panel/mesas/imprimir');
 ok($st === 200 && stripos($cab, 'private, no-store') !== false && marca_ok_con_enlaces($h) && strpos($h, 'class="rail') === false && strpos($h, 'data-imprimir') !== false, 'hoja para el restaurante: la marca, sin menú');
+
+ok((strpos($H['inicio'], 'en autobús') !== false) === pregunta_bus($c) && (strpos($H['respuestas'], '<th>Bus</th>') !== false) === pregunta_bus($c),
+    'autobús: Inicio y Respuestas lo enseñan o no a la vez, según se pregunte (' . (pregunta_bus($c) ? 'sí' : 'no') . ')');
+// Web archivada: la galería lo dice y no ofrece subir ni carga imágenes que ya no se sirven
+muta_json(dir_boda($slug) . '/config.json', function (array &$d) { $d['_estado'] = 'archivada'; });
+[$st, $h] = pide('GET', '/panel/galeria');
+ok($st === 200 && strpos($h, 'está archivada') !== false && strpos($h, 'Subir fotos') === false && strpos($h, 'src="/g/') === false, 'archivada: la galería sin subir ni fotos rotas');
+muta_json(dir_boda($slug) . '/config.json', function (array &$d) { $d['_estado'] = 'activa'; });
 
 // ---------------------------------------------------------------- 4. otra boda: su cookie no abre este panel
 $otra = 'otra-prueba';

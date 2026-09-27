@@ -248,7 +248,7 @@ function mesas_herramienta(string $slug): string {
         . $nueva . '<div class="fila-bot"><a class="btn b-osc" href="/panel/mesas/imprimir">' . p_ico('hoja') . 'Hoja para el restaurante</a></div></section>';
 
     // Sin mesa, agrupados por respuesta (un grupo = los que confirmaron juntos), y los avisos
-    $o .= '<section class="card sin-mesa">' . panel_card_cab('Sin mesa', h(count($E['sin_mesa']) ? count($E['sin_mesa']) . (count($E['sin_mesa']) === 1 ? ' persona que va' : ' personas que van') . ' al banquete.' : 'Todos los que van al banquete tienen mesa.'));
+    $o .= '<section class="card sin-mesa">' . panel_card_cab('Sin mesa', (count($E['sin_mesa']) ? count($E['sin_mesa']) . (count($E['sin_mesa']) === 1 ? ' persona que va' : ' personas que van') . ' al banquete.' : 'Todos los que van al banquete tienen mesa.'));
     // Quien estaba sentado y ya no viene: se dice, y la pareja lo quita (nunca se reasigna solo)
     foreach ($E['avisos'] as $a) {
         $o .= '<form method="post" action="/panel/mesas" class="aviso mesa-aviso"><span>' . ($a['respondio']

@@ -1,5 +1,5 @@
 // Panel de la pareja (app/panel.php): compartir la web (QR para las invitaciones en papel y mensaje de WhatsApp),
-// copiar enlaces y listas, plano de mesas y subir fotos a la galería. El QR se dibuja aquí, en el navegador,
+// copiar enlaces y listas y plano de mesas. El QR se dibuja aquí, en el navegador,
 // con qrcode-generator (assets/js/vendor/qrcode.js): nada sale a servicios de terceros.
 (function () {
   'use strict';
@@ -121,29 +121,6 @@
       });
     });
     pinta();
-  }
-
-  // ------------------------------------------------------------ galería: subir fotos (POST /panel/galeria, el de siempre)
-  // Una foto por petición, en orden; el servidor la comprueba y la recodifica. Al acabar se recarga la página.
-  var subir = document.querySelector('[data-galeria-subir]');
-  if (subir) {
-    var aviso = document.querySelector('[data-galeria-msg]'), consent = document.querySelector('[data-galeria-consent]');
-    subir.addEventListener('change', function () {
-      var files = Array.prototype.slice.call(subir.files), hechas = 0;
-      subir.value = '';
-      if (consent && !consent.checked) { aviso.textContent = 'Marcad antes la casilla de permisos.'; return; }
-      (function sube() {
-        var f = files.shift();
-        if (!f) { aviso.textContent = hechas ? 'Fotos subidas. Ya están en la web.' : ''; if (hechas) window.location.reload(); return; }
-        aviso.textContent = 'Subiendo ' + f.name + '…';
-        var fd = new FormData();
-        fd.append('csrf', subir.getAttribute('data-csrf')); fd.append('foto', f); fd.append('consentido', 'si');
-        fetch('/panel/galeria', { method: 'POST', body: fd, credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (j) {
-          if (!j.ok) { aviso.textContent = j.error || 'No se ha podido subir.'; if (hechas) setTimeout(function () { window.location.reload(); }, 2500); return; }
-          hechas++; sube();
-        }).catch(function () { aviso.textContent = 'Sin conexión. Inténtalo de nuevo.'; });
-      })();
-    });
   }
 
   // ------------------------------------------------------------ compra de un extra (app/extras.php → /panel/extra)
