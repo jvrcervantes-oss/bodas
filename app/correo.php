@@ -287,7 +287,7 @@ function avisa_estudio(string $titulo, string $texto, string $ref = ''): void {
     registra('AVISO ESTUDIO: ' . $titulo, ['ref' => $ref, 'texto' => $texto]);
     envia_o_encola(['tipo' => 'correo', 'para' => empresa()['email'], 'asunto' => '[BodaEnlace] ' . $titulo . ($ref !== '' ? ' · ' . $ref : ''), 'texto' => $texto]);
     envia_o_encola(['tipo' => 'telegram', 'texto' => 'BodaEnlace · ' . $titulo . ($ref !== '' ? "\n" . $ref : '')
-        . "\n\nDetalle en el correo de " . empresa()['email'] . ' y en ' . url_creador('estudio')]);
+        . "\n\nDetalle en el buzón de la marca y en " . url_creador('estudio')]);
 }
 /** Referencia neutra de un pedido para los avisos: el nº de LS, o un resumen del id (el de un regalo lleva el token de /listo). */
 function aviso_ref(string $sid): string {
