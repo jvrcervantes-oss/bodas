@@ -4,20 +4,17 @@
 // extra_activo() lo abre para toda web en pie sin mirar compras. Encargo
 // encargos/20260927_bodas_servicios_extra.md (repo del estudio), revisión previa #133.
 //
-// POR QUÉ ASÍ — calco de la «mejora a Atelier» de app/lemon.php, que ya pasó la revisión #109:
+// POR QUÉ ASÍ — la compra y la activación van por el camino común de app/servicios.php, el mismo que la «mejora a
+// Atelier» (revisiones #109 y #133; unificado en BOD-23 para que el álbum, los idiomas y el dominio no lo copien):
 //  · La lista de extras, su precio y sus límites viven en app/padrino.php (EXTRAS, precio_extra_cent): una
 //    sola fuente, la misma que la de los packs. Aquí nunca se escribe un precio.
-//  · La compra abre un pedido del SERVIDOR (extras/<token>.json) con la clave, la boda y el precio congelado.
-//    El checkout de Lemon cobra ese importe (`custom_price`); del navegador solo llega la clave, que se
-//    comprueba contra la lista cerrada (fuera de ella → 400).
-//  · El webhook decide qué activar leyendo extras/<token>.json, NUNCA `custom_data` (Seguridad #133): si el
-//    custom_data trae otra clave u otra boda, el pedido es «no-conforme» y no se activa nada. El pedido se
-//    vuelve a pedir a la API y se compara como el de la mejora (importe == congelado, sin descuento, modo…).
-//  · `pedido.json.extras.<clave> = {desde, pedido}` lo escribe SOLO lemon_extra() y lo da de baja SOLO el
+//  · Del navegador solo llega la clave, que se comprueba contra la lista cerrada (fuera de ella → 400). El webhook
+//    decide qué activar leyendo extras/<token>.json, NUNCA `custom_data` (Seguridad #133).
+//  · `pedido.json.extras.<clave> = {desde, pedido}` lo escribe SOLO lemon_servicio() y lo da de baja SOLO el
 //    reembolso (extra_baja). panel_guardar escribe config.json y no puede tocarlo. Cada página y cada POST de
 //    un extra lo comprueba en el servidor (extra_activo).
-//  · Idempotente como la mejora: por pedido de LS (pedidos/ls_<id>.json, estados finales) y por token
-//    (ls_tokens/<token>.json: un segundo cobro del mismo pedido es «duplicado» y se avisa para devolverlo).
+//  · Lo propio de un extra está en su ficha (servicio_pago): casilla `check_extra` (servicio desistible, 5 ter),
+//    la clave del custom_data comprobada contra la del servidor y el «reembolsado entre el corte y el reintento».
 
 declare(strict_types=1);
 
@@ -54,7 +51,7 @@ function extra_bloqueo(string $slug, string $clave): string {
 
 /** Las mismas puertas de venta que la mejora: en pruebas (modo test de LS) solo el estudio abre el pago. */
 function extra_venta_abierta(): bool {
-    return pasarela() === 'lemon' && lemon_configurada() && lemon_checkout_permitido() && empresa_completa() && texto_extra() !== '';
+    return servicio_venta_abierta(texto_extra());
 }
 
 /** ¿Se puede ofrecer la compra de este extra en este panel ahora? */
@@ -63,141 +60,20 @@ function extra_disponible(string $slug, string $clave): bool {
 }
 
 /** Fichero de la marca «hay un pago de este extra abierto» (uno por boda y extra, vive lo que el checkout). */
-function extra_fichero_abierta(string $slug, string $clave): string { return dir_datos('extras', 'abierta_' . $slug . '_' . $clave . '.json'); }
+function extra_fichero_abierta(string $slug, string $clave): string { return servicio_fichero_abierta(servicio_pago('extra', $clave), $slug); }
 
-/** POST /panel/extra (sesión del panel ya exigida por rutas_panel; CSRF aquí). Devuelve la URL de pago. */
+/** POST /panel/extra (sesión del panel ya exigida por rutas_panel; CSRF aquí). Compra por el camino común (app/servicios.php). */
 function panel_extra(string $slug, string $metodo): void {
     if ($metodo !== 'POST') json_response(['ok' => false], 405);
     if (!panel_csrf_ok()) json_response(['ok' => false, 'error' => 'La sesión ha caducado. Recarga la página.'], 403);
     $clave = (string) ($_POST['clave'] ?? '');
     if (!extra_existe($clave)) json_response(['ok' => false, 'error' => 'Ese extra no existe.'], 400);
     if (!EXTRAS[$clave]['venta']) json_response(['ok' => false, 'error' => 'Este extra todavía no está a la venta.'], 409);
-    if (!limite('extra|' . $slug, 10, 3600, true)) json_response(['ok' => false, 'error' => 'Demasiados intentos. Prueba dentro de un rato.'], 429);
-    if (!extra_venta_abierta()) json_response(['ok' => false, 'error' => 'Este extra todavía no está disponible. Escribidnos y os ayudamos.'], 503);
-    if (($_POST['acepto_extra'] ?? '') !== 'si') json_response(['ok' => false, 'error' => 'Marca la casilla para continuar.'], 422);
-    $precio = precio_extra_cent($clave);
-    if ($precio <= 0) { registra('ALERTA extra con importe no positivo', ['clave' => $clave, 'precio' => $precio]); json_response(['ok' => false, 'error' => 'Este extra no está disponible ahora mismo.'], 503); }
-    $L = textos_legales();
-    $tok = bin2hex(random_bytes(16));
-    // Un solo pago abierto por boda y extra; el pedido del servidor guarda la clave, la boda y el precio congelado
-    $motivo = con_cerrojo(function () use ($slug, $clave, $tok, $precio, $L) {
-        $m = extra_bloqueo($slug, $clave);
-        if ($m !== '') return $m;
-        $fa = extra_fichero_abierta($slug, $clave);
-        if ((lee_json($fa)['hasta'] ?? 0) > time()) return 'abierta';
-        escribe_json(dir_datos('extras', $tok . '.json'), ['tipo' => 'extra', 'clave' => $clave, 'slug' => $slug, 'creado' => time(), 'precio_cent' => $precio,
-            'pasarela' => 'lemon', 'estado' => 'abierta', 'aceptacion' => ['fecha' => date('c'), 'version' => $L['version'] ?? '',
-                // Lo que se enseñó y aceptó, literal, qué extra y quién vendía: el correo del extra lo repite (art. 98.7)
-                'casilla' => texto_extra(), 'extra' => EXTRAS[$clave]['nombre'], 'vendedor' => (string) ($L['vendedor'] ?? ''), 'precio_cent' => $precio]]);
-        escribe_json($fa, ['token' => $tok, 'hasta' => time() + LEMON_CADUCIDAD_S + 60]);
-        return '';
-    });
-    $err = ['ya-activo' => 'Vuestra web ya tiene este extra.', 'abierta' => 'Ya hay un pago de este extra abierto. Terminadlo o esperad media hora.',
-        'archivada' => 'Esta web ya está archivada.', 'sin-pedido' => 'Esta web no admite extras. Escribidnos y lo vemos.', 'sin-boda' => 'Esta web no existe.'];
-    if ($motivo !== '') json_response(['ok' => false, 'error' => $err[$motivo] ?? 'No se puede ahora.'], 409);
-    $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
-    $email = (string) ($bp['email'] ?? '') ?: (string) ((lee_json(dir_boda($slug) . '/config.json') ?? [])['pareja']['email'] ?? '');
-    $url = lemon_crea_checkout($tok, $slug, $email, $precio, 'extra', $clave);
-    if ($url === '') {
-        con_cerrojo(function () use ($slug, $clave, $tok) {
-            @unlink(dir_datos('extras', $tok . '.json'));
-            $fa = extra_fichero_abierta($slug, $clave);
-            if ((lee_json($fa)['token'] ?? '') === $tok) @unlink($fa);
-        });
-        json_response(['ok' => false, 'error' => 'No hemos podido abrir el pago. Inténtalo de nuevo.'], 502);
-    }
-    json_response(['ok' => true, 'url' => $url]);
+    servicio_compra(servicio_pago('extra', $clave), $slug);
 }
 
-/**
- * Extra cobrado: valida contra su pedido congelado y lo activa en la boda. Idempotente, bajo el cerrojo global
- * (el mismo que el alta y la mejora: ninguna de las tres pisa el pedido.json de otra).
- */
-function lemon_extra(string $id, array $o, array $custom): array {
-    $sid = 'ls_' . $id;
-    $fPedido = dir_datos('pedidos', $sid . '.json');
-    return con_cerrojo(function () use ($id, $o, $custom, $sid, $fPedido) {
-        $ped = lee_json($fPedido);
-        if ($ped && in_array($ped['estado'] ?? '', LEMON_FINALES, true)) return $ped;
-        $token = (string) ($custom['token'] ?? '');
-        $tokOk = (bool) preg_match('/^[a-f0-9]{32}$/', $token);
-        $fTok = $tokOk ? dir_datos('ls_tokens', $token . '.json') : '';
-        $fMeta = $tokOk ? dir_datos('extras', $token . '.json') : '';
-        $meta = $fMeta !== '' ? lee_json($fMeta) : null;
-        // Qué extra y de qué boda: del fichero del servidor. El custom_data solo sirve para el aviso si no hay fichero
-        $clave = (string) ($meta['clave'] ?? '');
-        $slug = (string) ($meta['slug'] ?? $custom['slug'] ?? '');
-        $ped = $ped ?: lemon_pedido_base($sid, $id, $o, $slug, $token, '', $meta['aceptacion'] ?? null)
-            + ['tipo' => 'extra', 'clave' => extra_existe($clave) ? $clave : '', 'atelier' => ''];
-        $aviso = function (string $estado, string $asunto, string $texto) use (&$ped, $fPedido, $slug, $clave, $token, $id) {
-            if (slug_valido($slug) && extra_existe($clave)) {
-                $fa = extra_fichero_abierta($slug, $clave);
-                if ((lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
-            }
-            $ped['estado'] = $estado;
-            escribe_json($fPedido, $ped);
-            avisa_estudio($asunto, $texto, 'Pedido LS ' . $id);
-            return $ped;
-        };
-        $previo = $fTok !== '' ? (string) ((lee_json($fTok) ?? [])['order_id'] ?? '') : '';
-        if ($previo !== '' && $previo !== $id) {
-            $ped['duplicado_de'] = 'ls_' . $previo;
-            return $aviso('duplicado', 'Pago duplicado de un extra', "Pedido LS $id ($slug): ese extra ya se pagó con el pedido LS $previo. No se ha activado nada. Devolver este cobro desde Lemon Squeezy.");
-        }
-        if ($fTok !== '' && $previo === '') escribe_json($fTok, ['order_id' => $id, 'creado' => date('c'), 'tipo' => 'extra']);
-        if (!$meta || ($meta['tipo'] ?? '') !== 'extra' || !extra_existe($clave)) {
-            return $aviso('sin-datos', 'Pago de extra sin pedido', "Pedido LS $id ($slug): cobrado un extra sin su pedido en el servidor. No se ha activado nada. Revisar.");
-        }
-        $motivos = lemon_motivos_no_conforme($o, $meta, $custom);
-        // La clave del custom_data tiene que ser la del pedido del servidor: si no, alguien la ha cambiado
-        if ((string) ($custom['clave'] ?? '') !== $clave) $motivos[] = 'clave';
-        if ($motivos) {
-            $ped['motivos'] = $motivos;
-            return $aviso('no-conforme', 'Pago de extra que no cuadra', "Pedido LS $id ($slug) cobrado pero no cuadra con el extra «" . EXTRAS[$clave]['nombre'] . '»: ' . implode(', ', $motivos) . '. No se ha activado nada. Revisar en Lemon Squeezy.');
-        }
-        // Reintento tras un corte: la boda ya quedó marcada por ESTE pedido → se remata el cierre (no es un duplicado)
-        $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
-        $yaAplicado = (string) ($bp['extras'][$clave]['pedido'] ?? '') === $sid;
-        // ...salvo que entre el corte y el reintento llegara el reembolso: ni «Ya tenéis» ni reactivar (revisor, 27-sep)
-        if ($yaAplicado && !empty($bp['extras'][$clave]['baja'])) {
-            return $aviso('reembolsado', 'Extra reembolsado antes de rematar la activación', "Pedido LS $id ($slug): «" . EXTRAS[$clave]['nombre'] . '» se reembolsó antes de terminar la activación. Sigue desactivado; no se ha mandado confirmación.');
-        }
-        // Un extra que ya va incluido nunca se remata como compra, ni siquiera tras un corte: se devuelve (abajo)
-        $bloqueo = $yaAplicado && !extra_incluido($clave) ? '' : extra_bloqueo($slug, $clave);
-        // 'incluido': un pago que se abrió antes de que el extra pasara a ir gratis en los packs. Nada que activar: se devuelve
-        if ($bloqueo === 'ya-activo' || $bloqueo === 'incluido') {
-            return $aviso('duplicado', 'Extra pagado en una web que ya lo tenía', "Pedido LS $id ($slug): la web ya tenía «" . EXTRAS[$clave]['nombre'] . '»' . ($bloqueo === 'incluido' ? ' (va incluido en todos los packs)' : '') . '. Devolver este cobro desde Lemon Squeezy.');
-        }
-        if ($bloqueo !== '') {
-            $ped['motivos'] = [$bloqueo];
-            return $aviso('no-conforme', 'Extra pagado en una web que no lo admite', "Pedido LS $id ($slug): $bloqueo. No se ha activado nada. Revisar.");
-        }
-        // El registro local (tipo y clave) se escribe ANTES de tocar la boda (code-review): si la petición muere entre
-        // las dos escrituras y llega un reembolso, lemon_reembolso encuentra el pedido como extra y lo da de baja
-        escribe_json($fPedido, $ped);
-        if (!$yaAplicado) {
-            // Único sitio que escribe extras.<clave> (Seguridad #133). Se lee y se reescribe el pedido.json entero
-            $bp['extras'] = (array) ($bp['extras'] ?? []);
-            $bp['extras'][$clave] = ['desde' => date('c'), 'pedido' => $sid];
-            escribe_json(dir_boda($slug) . '/pedido.json', $bp);
-        }
-        $meta['estado'] = 'pagada';
-        $meta['session_id'] = $sid;
-        escribe_json($fMeta, $meta);
-        $fa = extra_fichero_abierta($slug, $clave);
-        if ((lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
-        if ($ped['email'] === '') $ped['email'] = (string) ($bp['email'] ?? '');
-        $dc = datos_extra_correo($slug, $clave, $ped, $meta);
-        envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis ' . EXTRAS[$clave]['nombre'], 'texto' => compra_texto($dc), 'html' => compra_html($dc)]);
-        avisa_estudio('Extra «' . EXTRAS[$clave]['nombre'] . '»' . (!empty($ped['ls']['test']) ? ' (prueba)' : ''),
-            'Web: ' . url_boda($slug) . "\nImporte: " . euros((int) ($ped['importe']['total'] ?? 0)) . ' (IVA ' . euros((int) ($ped['importe']['iva'] ?? 0)) . ")\n"
-            . 'Pago: Lemon Squeezy #' . ($ped['ls']['order_number'] ?? '') . (!empty($ped['ls']['test']) ? ' (PRUEBA, modo test)' : '') . "\nComprador: " . $ped['email'], 'Pedido LS ' . $id);
-        $ped['estado'] = 'creada';
-        escribe_json($fPedido, $ped);
-        registra('extra activado', ['slug' => $slug, 'clave' => $clave, 'sid' => $sid]);
-        return $ped;
-    });
-}
+/** Extra cobrado: valida contra su pedido congelado y lo activa en la boda (camino común, app/servicios.php). */
+function lemon_extra(string $id, array $o, array $custom): array { return lemon_servicio('extra', $id, $o, $custom); }
 
 /**
  * Reembolso de un extra: lo da de baja en la boda si seguía activo POR ESTE pedido. Devuelve si lo ha hecho.
@@ -217,11 +93,7 @@ function extra_baja(string $slug, string $clave, string $sid): bool {
 
 /** URL del recibo de Lemon del extra activo (o ''), para enlazarlo desde su página del panel. */
 function extra_recibo(string $slug, string $clave): string {
-    $e = ((array) ((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['extras'] ?? []))[$clave] ?? [];
-    $sid = (string) ($e['pedido'] ?? '');
-    if (!preg_match('/^ls_\d{1,15}$/', $sid)) return '';
-    $r = (string) ((lee_json(dir_datos('pedidos', $sid . '.json')) ?? [])['ls']['recibo'] ?? '');
-    return str_starts_with($r, 'https://') ? $r : '';
+    return recibo_ls((string) ((((array) ((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['extras'] ?? []))[$clave] ?? [])['pedido'] ?? ''));
 }
 
 /**

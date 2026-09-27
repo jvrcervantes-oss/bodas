@@ -21,6 +21,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/servicios.php';   // camino común de la mejora y los extras (BOD-23)
+
 defined('LEMON_API') || define('LEMON_API', 'https://api.lemonsqueezy.com');
 const LEMON_CADUCIDAD_S = 1800;   // igual que la sesión de Stripe: la reserva del nombre dura lo mismo
 /** Estados de un pedido LS que ningún evento posterior puede cambiar (salvo el reembolso, que se anota). */
@@ -288,54 +290,17 @@ function mejora_bloqueo(string $slug): string {
 
 /** ¿Se puede ofrecer la mejora en este panel ahora? (la vista del constructor lo enseña o no) */
 function mejora_disponible(string $slug): bool {
-    return pasarela() === 'lemon' && lemon_configurada() && lemon_checkout_permitido() && empresa_completa()
-        && texto_mejora() !== '' && precio_mejora_cent() > 0 && mejora_bloqueo($slug) === '';
+    return servicio_venta_abierta(texto_mejora()) && precio_mejora_cent() > 0 && mejora_bloqueo($slug) === '';
 }
 /** Casilla que acepta la pareja al pagar la mejora. SOLO la de Legal (`check_mejora`): la del alta dice
  *  «que cree y publique nuestra web», falso para una web ya publicada (revisor, 27-sep). Sin ella no se vende. */
 function texto_mejora(): string { return (string) (textos_legales()['check_mejora'] ?? ''); }
 
-/** POST /panel/mejora (sesión del panel y CSRF ya exigidos por rutas_panel + aquí). Devuelve la URL de pago. */
+/** POST /panel/mejora (sesión del panel ya exigida por rutas_panel; CSRF aquí). Compra por el camino común (app/servicios.php). */
 function panel_mejora(string $slug, string $metodo): void {
     if ($metodo !== 'POST') json_response(['ok' => false], 405);
     if (!panel_csrf_ok()) json_response(['ok' => false, 'error' => 'La sesión ha caducado. Recarga la página.'], 403);
-    if (!limite('mejora|' . $slug, 10, 3600, true)) json_response(['ok' => false, 'error' => 'Demasiados intentos. Prueba dentro de un rato.'], 429);
-    // En modo test, el mismo candado que el alta: solo el estudio (sesión o IP) abre el pago
-    if (pasarela() !== 'lemon' || !lemon_configurada() || !lemon_checkout_permitido() || !empresa_completa() || texto_mejora() === '') {
-        json_response(['ok' => false, 'error' => 'La mejora todavía no está disponible. Escribidnos y os ayudamos.'], 503);
-    }
-    $L = textos_legales();
-    if (($_POST['acepto_mejora'] ?? '') !== 'si') json_response(['ok' => false, 'error' => 'Marca la casilla para continuar.'], 422);
-    $precio = precio_mejora_cent();
-    if ($precio <= 0) { registra('ALERTA mejora con importe no positivo', ['precio' => $precio]); json_response(['ok' => false, 'error' => 'La mejora no está disponible ahora mismo.'], 503); }
-    $tok = bin2hex(random_bytes(16));
-    // Una sola mejora abierta por boda: la marca vive lo mismo que el checkout
-    $motivo = con_cerrojo(function () use ($slug, $tok, $precio, $L) {
-        $m = mejora_bloqueo($slug);
-        if ($m !== '') return $m;
-        $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
-        if ((lee_json($fa)['hasta'] ?? 0) > time()) return 'abierta';
-        escribe_json(dir_datos('mejoras', $tok . '.json'), ['tipo' => 'mejora', 'slug' => $slug, 'creado' => time(), 'precio_cent' => $precio,
-            'pasarela' => 'lemon', 'estado' => 'abierta', 'aceptacion' => ['fecha' => date('c'), 'version' => $L['version'] ?? '',
-                // Lo que se enseñó y aceptó, literal, y quién vendía (Legal, BOD-20): el correo lo repite (art. 98.7)
-                'desistimiento' => texto_mejora(), 'vendedor' => (string) ($L['vendedor'] ?? ''), 'precio_cent' => $precio]]);
-        escribe_json($fa, ['token' => $tok, 'hasta' => time() + LEMON_CADUCIDAD_S + 60]);
-        return '';
-    });
-    $err = ['ya-atelier' => 'Vuestra web ya tiene el Pack Atelier.', 'abierta' => 'Ya hay un pago de la mejora abierto. Terminadlo o esperad media hora.',
-        'archivada' => 'Esta web ya está archivada.', 'sin-pedido' => 'Esta web no admite la mejora. Escribidnos y lo vemos.', 'sin-boda' => 'Esta web no existe.'];
-    if ($motivo !== '') json_response(['ok' => false, 'error' => $err[$motivo] ?? 'No se puede ahora.'], 409);
-    $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
-    $email = (string) ($bp['email'] ?? '') ?: (string) ((lee_json(dir_boda($slug) . '/config.json') ?? [])['pareja']['email'] ?? '');
-    $url = lemon_crea_checkout($tok, $slug, $email, $precio, 'mejora');
-    if ($url === '') {
-        con_cerrojo(function () use ($slug, $tok) {
-            @unlink(dir_datos('mejoras', $tok . '.json'));
-            if ((lee_json(dir_datos('mejoras', 'abierta_' . $slug . '.json'))['token'] ?? '') === $tok) @unlink(dir_datos('mejoras', 'abierta_' . $slug . '.json'));
-        });
-        json_response(['ok' => false, 'error' => 'No hemos podido abrir el pago. Inténtalo de nuevo.'], 502);
-    }
-    json_response(['ok' => true, 'url' => $url]);
+    servicio_compra(servicio_pago('mejora'), $slug);
 }
 
 /**
@@ -395,76 +360,8 @@ function datos_mejora_correo(string $slug, array $ped, array $meta): array {
             'boton' => ['Elegir diseño', $donde], 'enlace' => $donde]];
 }
 
-/** Mejora cobrada: valida contra su pedido congelado y marca la boda como Atelier. Idempotente, bajo el cerrojo. */
-function lemon_mejora(string $id, array $o, array $custom): array {
-    $sid = 'ls_' . $id;
-    $fPedido = dir_datos('pedidos', $sid . '.json');
-    return con_cerrojo(function () use ($id, $o, $custom, $sid, $fPedido) {
-        $ped = lee_json($fPedido);
-        if ($ped && in_array($ped['estado'] ?? '', LEMON_FINALES, true)) return $ped;
-        $token = (string) ($custom['token'] ?? '');
-        $tokOk = (bool) preg_match('/^[a-f0-9]{32}$/', $token);
-        $fTok = $tokOk ? dir_datos('ls_tokens', $token . '.json') : '';
-        $fMeta = $tokOk ? dir_datos('mejoras', $token . '.json') : '';
-        $meta = $fMeta !== '' ? lee_json($fMeta) : null;
-        $slug = (string) ($meta['slug'] ?? $custom['slug'] ?? '');
-        $ped = $ped ?: lemon_pedido_base($sid, $id, $o, $slug, $token, '', $meta['aceptacion'] ?? null) + ['tipo' => 'mejora', 'atelier' => ''];
-        $aviso = function (string $estado, string $asunto, string $texto) use (&$ped, $fPedido, $slug, $token, $id) {
-            $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
-            if (slug_valido($slug) && (lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
-            $ped['estado'] = $estado;
-            escribe_json($fPedido, $ped);
-            avisa_estudio($asunto, $texto, 'Pedido LS ' . $id);
-            return $ped;
-        };
-        $previo = $fTok !== '' ? (string) ((lee_json($fTok) ?? [])['order_id'] ?? '') : '';
-        if ($previo !== '' && $previo !== $id) {
-            $ped['duplicado_de'] = 'ls_' . $previo;
-            return $aviso('duplicado', 'Pago duplicado de una mejora a Atelier', "Pedido LS $id ($slug): esa mejora ya se pagó con el pedido LS $previo. No se ha cambiado nada. Devolver este cobro desde Lemon Squeezy.");
-        }
-        if ($fTok !== '' && $previo === '') escribe_json($fTok, ['order_id' => $id, 'creado' => date('c'), 'tipo' => 'mejora']);
-        if (!$meta || ($meta['tipo'] ?? '') !== 'mejora') {
-            return $aviso('sin-datos', 'Pago de mejora sin pedido', "Pedido LS $id ($slug): cobrada una mejora a Atelier sin su pedido en el servidor. No se ha cambiado nada. Revisar.");
-        }
-        $motivos = lemon_motivos_no_conforme($o, $meta, $custom);
-        if ($motivos) {
-            $ped['motivos'] = $motivos;
-            return $aviso('no-conforme', 'Pago de mejora que no cuadra', "Pedido LS $id ($slug) cobrado pero no cuadra con la mejora: " . implode(', ', $motivos) . ". No se ha cambiado nada. Revisar en Lemon Squeezy.");
-        }
-        // Reintento tras un corte: la boda ya quedó marcada por ESTE pedido → se remata el cierre (no es un duplicado)
-        $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
-        $yaAplicada = ($bp['mejora']['session_id'] ?? '') === $sid;
-        $bloqueo = $yaAplicada ? '' : mejora_bloqueo($slug);
-        if ($bloqueo === 'ya-atelier') {
-            return $aviso('duplicado', 'Mejora pagada en una web que ya era Atelier', "Pedido LS $id ($slug): la web ya tenía el Pack Atelier. Devolver este cobro desde Lemon Squeezy.");
-        }
-        if ($bloqueo !== '') {
-            $ped['motivos'] = [$bloqueo];
-            return $aviso('no-conforme', 'Mejora pagada en una web que no la admite', "Pedido LS $id ($slug): $bloqueo. No se ha cambiado nada. Revisar.");
-        }
-        // Aplicar: la boda puede usar cualquier diseño Atelier desde el panel, sin límite de cambios
-        if (!$yaAplicada) {
-            $bp['atelier'] = true;
-            $bp['mejora'] = ['session_id' => $sid, 'fecha' => date('c'), 'importe_cent' => (int) ($o['total'] ?? 0)];
-            escribe_json(dir_boda($slug) . '/pedido.json', $bp);
-        }
-        $meta['estado'] = 'pagada';
-        $meta['session_id'] = $sid;
-        escribe_json($fMeta, $meta);
-        $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
-        if ((lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
-        if ($ped['email'] === '') $ped['email'] = (string) ($bp['email'] ?? '');
-        $dc = datos_mejora_correo($slug, $ped, $meta);
-        envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis el Pack Atelier', 'texto' => compra_texto($dc), 'html' => compra_html($dc)]);
-        avisa_estudio('Mejora a Atelier' . (!empty($ped['ls']['test']) ? ' (prueba)' : ''),
-            'Web: ' . url_boda($slug) . "\nImporte: " . euros((int) ($ped['importe']['total'] ?? 0)) . ' (IVA ' . euros((int) ($ped['importe']['iva'] ?? 0)) . ")\n"
-            . 'Pago: Lemon Squeezy #' . ($ped['ls']['order_number'] ?? '') . (!empty($ped['ls']['test']) ? ' (PRUEBA, modo test)' : '') . "\nComprador: " . $ped['email'], 'Pedido LS ' . $id);
-        $ped['estado'] = 'creada';
-        escribe_json($fPedido, $ped);
-        registra('mejora a Atelier aplicada', ['slug' => $slug, 'sid' => $sid]);
-        return $ped;
-    });
-}
+/** Mejora cobrada: valida contra su pedido congelado y marca la boda como Atelier (camino común, app/servicios.php). */
+function lemon_mejora(string $id, array $o, array $custom): array { return lemon_servicio('mejora', $id, $o, $custom); }
 
 /** Reembolso: se marca el pedido y se avisa. La web NO se borra sola (decide el owner). */
 function lemon_reembolso(string $id, array $o, array $custom): string {

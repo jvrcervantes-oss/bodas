@@ -52,7 +52,7 @@ $condDoc = documento_legal('condiciones', 'Condiciones del servicio');
 
 $db = datos_bienvenida($ped, $cfg, $enlace);
 $dr = datos_bienvenida($reg, $cfg, $enlace);
-$dx = datos_extra_correo('ana-y-luis', 'mesas', $pe, $me);
+$dx = datos_extra_correo('ana-y-luis', 'album', $pe, $me);
 $dm = datos_mejora_correo('ana-y-luis', $pe, $mm);
 $correos = [
     'bienvenida' => [bienvenida_texto($db), bienvenida_html($db), $db],
@@ -65,7 +65,7 @@ $correos = [
 
 // Las funciones públicas de texto siguen dando lo mismo que el renderizado común (la plana no cambió de fuente)
 ok(texto_bienvenida($ped, $cfg, $enlace) === $correos['bienvenida'][0], 'texto_bienvenida = bienvenida_texto(datos)');
-ok(texto_extra_correo('ana-y-luis', 'mesas', $pe, $me) === $correos['extra'][0], 'texto_extra_correo = compra_texto(datos)');
+ok(texto_extra_correo('ana-y-luis', 'album', $pe, $me) === $correos['extra'][0], 'texto_extra_correo = compra_texto(datos)');
 ok(texto_mejora_correo('ana-y-luis', $pe, $mm) === $correos['mejora'][0], 'texto_mejora_correo = compra_texto(datos)');
 
 foreach ($correos as $q => [$texto, $html, $d]) {

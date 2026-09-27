@@ -577,9 +577,8 @@ function panel_descargas(string $slug, array $c): string {
     $o .= $d('galeria', 'Vuestra web en ZIP', 'Para guardarla o publicarla donde queráis (sin los datos de los invitados)', '/panel/zip', 'Descargar');
     if (extra_activo($slug, 'mesas')) $o .= $d('hoja', 'Hoja para el restaurante', 'Cada mesa con sus personas, sus menús y sus alergias', '/panel/mesas/imprimir', 'Abrir');
     if ((string) ($p['factura'] ?? '') !== '') $o .= $d('recibo', 'Factura', panel_pack($slug), '/panel/factura', 'Ver', true);
-    $sid = (string) ($p['session_id'] ?? '');
-    $recibo = preg_match('/^ls_\d{1,15}$/', $sid) ? (string) ((lee_json(dir_datos('pedidos', $sid . '.json')) ?? [])['ls']['recibo'] ?? '') : '';
-    if (str_starts_with($recibo, 'https://')) $o .= $d('recibo', 'Recibo de la compra', panel_pack($slug), $recibo, 'Ver', true);
+    $recibo = recibo_ls((string) ($p['session_id'] ?? ''));
+    if ($recibo !== '') $o .= $d('recibo', 'Recibo de la compra', panel_pack($slug), $recibo, 'Ver', true);
     $o .= '</div><section class="card">' . panel_card_cab('Vuestra cuenta');
     $borra = fecha_borrado((string) $c['fecha']);
     $o .= '<p>' . h(panel_pack($slug)) . ($borra !== '' ? '. La web y las respuestas se guardan hasta el ' . h(fecha_larga($borra, false)) . ': ese día se borran y la web pasa a una página de agradecimiento.' : '.') . '</p>'
