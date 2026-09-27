@@ -223,7 +223,7 @@ function mesas_herramienta(string $slug): string {
     // Sin mesa, agrupados por respuesta (un grupo = los que confirmaron juntos)
     $o .= '<section class="section"><h2 class="panel-h2">Sin mesa</h2>';
     if (!$E['sin_mesa']) $o .= '<p class="vacio">Todos los que van al banquete tienen mesa.</p>';
-    $rep = array_keys(array_filter(array_count_values(array_map(fn($p) => clave_nombre($p['nombre']), array_merge($E['sin_mesa'], ...array_column($E['mesas'], 'personas')))), fn($n) => $n > 1));
+    $rep = mesas_repetidos($E);
     $grupos = [];
     foreach ($E['sin_mesa'] as $p) $grupos[$p['grupo']][] = $p;
     $o .= '<div class="mesa-sin">';
@@ -261,6 +261,13 @@ function mesas_herramienta(string $slug): string {
     return $o;
 }
 
+/** Nombres que salen más de una vez entre sentados y sin mesa: un grupo que respondió por la
+ *  confirmación general y luego por su enlace deja dos respuestas vigentes (EST: fila BOD-22). */
+function mesas_repetidos(array $E): array {
+    return array_keys(array_filter(array_count_values(array_map(fn($p) => clave_nombre($p['nombre']),
+        array_merge($E['sin_mesa'], ...array_column($E['mesas'], 'personas')))), fn($n) => $n > 1));
+}
+
 function mesas_boton_persona(array $p, array $rep): string {
     if ($p['id'] === '') return '<span class="mesa-persona is-sin-id">' . h($p['nombre']) . '</span>';
     return '<button type="button" class="mesa-persona" aria-pressed="false" data-persona="' . h($p['id']) . '" data-grupo="' . h($p['grupo']) . '">' . h($p['nombre'])
@@ -280,6 +287,11 @@ function panel_mesas_imprimir(string $slug, array $c): void {
         // La hoja impresa envejece: se dice a qué hora se sacó (como el resumen para el catering)
         . '<p>Datos del ' . h(date('d/m/Y')) . ' a las ' . h(date('H:i')) . '. Si llegan más confirmaciones o cambiáis el plano, volved a imprimirlo.</p></div>'
         . '<nav class="panel-acc no-print"><button type="button" class="btn" data-imprimir>Imprimir / guardar PDF</button><a class="btn btn-soft" href="/panel/mesas">Volver al plano</a></nav></header>';
+    $rep = mesas_repetidos($E);
+    if ($rep) {
+        $o .= '<p class="panel-aviso aviso-repetido">Atención: hay personas que aparecen dos veces porque respondieron dos veces'
+            . ' (marcadas «repetido»). Comprobad con ellas su menú y sus alergias antes de dar esta hoja al restaurante.</p>';
+    }
     if ($E['avisos']) {
         $o .= '<p class="panel-aviso no-print">Hay ' . count($E['avisos']) . ' persona(s) en el plano que ya no vienen. No salen en la hoja; quitadlas del plano cuando lo veáis.</p>';
     }
@@ -292,15 +304,18 @@ function panel_mesas_imprimir(string $slug, array $c): void {
             . '<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th></tr></thead><tbody>';
         if (!$m['personas']) $o .= '<tr><td colspan="3" class="vacio">Mesa vacía.</td></tr>';
         foreach ($m['personas'] as $p) {
-            $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '') . '</td><td>' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</td>'
+            $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '')
+                . (in_array(clave_nombre($p['nombre']), $rep, true) ? ' <strong class="rep">repetido</strong>' : '') . '</td><td>' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</td>'
                 . '<td class="alergia">' . h($p['alergias']) . '</td></tr>';
         }
         $o .= '</tbody></table></div></div>';
     }
     if ($E['sin_mesa']) {
-        $o .= '<div class="mesa-hoja"><h2 class="panel-h2">Sin mesa <span class="muted">· ' . count($E['sin_mesa']) . ' personas</span></h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th></tr></thead><tbody>';
+        $o .= '<div class="mesa-hoja"><h2 class="panel-h2">Sin mesa <span class="muted">· ' . count($E['sin_mesa']) . ' personas</span></h2>'
+            . '<p class="panel-nota">Sus alergias están en el resumen para el catering.</p><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th></tr></thead><tbody>';
         foreach ($E['sin_mesa'] as $p) {
-            $o .= '<tr><td>' . h($p['nombre']) . '</td><td>' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</td><td class="alergia">' . h($p['alergias']) . '</td></tr>';
+            $o .= '<tr><td>' . h($p['nombre']) . (in_array(clave_nombre($p['nombre']), $rep, true) ? ' <strong class="rep">repetido</strong>' : '')
+                . '</td><td>' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</td></tr>';
         }
         $o .= '</tbody></table></div></div>';
     }

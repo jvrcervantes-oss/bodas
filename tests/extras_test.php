@@ -193,6 +193,15 @@ lemon_procesa_evento(ev_extra('order_refunded', '701', $tc, 'corte', 'mesas'), l
 ok(!extra_activo('corte', 'mesas'), 'corte a mitad de la activación y reembolso: el extra queda desactivado');
 [, $r] = lemon_procesa_evento(ev_extra('order_created', '701', $tc, 'corte', 'mesas'), lector(['701' => pedido_ls($pm)]));
 ok($r === 'reembolsado' && !extra_activo('corte', 'mesas'), 'el reintento posterior no lo reactiva');
+// Corte + reembolso PARCIAL (el registro no pasa a final) + reintento: ni reactiva ni manda «Ya tenéis»
+web_pagada('corte2', '150');
+$tq = extra_abierto('corte2', 'mesas', $pm);
+escribe_json(dir_datos('pedidos', 'ls_703.json'), lemon_pedido_base('ls_703', '703', pedido_ls($pm), 'corte2', $tq, '', null) + ['tipo' => 'extra', 'clave' => 'mesas', 'atelier' => '']);
+$bq = bp('corte2'); $bq['extras'] = ['mesas' => ['desde' => date('c'), 'pedido' => 'ls_703']]; escribe_json(dir_boda('corte2') . '/pedido.json', $bq);
+lemon_procesa_evento(ev_extra('order_refunded', '703', $tq, 'corte2', 'mesas'), lector(['703' => pedido_ls($pm, ['status' => 'partial_refund', 'refunded' => true, 'refunded_amount' => 500])]));
+$yaTenéis0 = count(correos_con('Ya tenéis'));
+[, $r] = lemon_procesa_evento(ev_extra('order_created', '703', $tq, 'corte2', 'mesas'), lector(['703' => pedido_ls($pm)]));
+ok($r === 'reembolsado' && !extra_activo('corte2', 'mesas') && count(correos_con('Ya tenéis')) === $yaTenéis0, 'corte + reembolso parcial + reintento: sigue desactivado y sin correo de confirmación');
 // Reembolso que llega ANTES de la activación: el registro sale como extra (del fichero del servidor), no como web
 $tp = extra_abierto('corte', 'mesas', $pm);
 lemon_procesa_evento(ev_extra('order_refunded', '702', $tp, 'corte', 'idiomas'), lector(['702' => pedido_ls($pm, ['status' => 'refunded'])]));
@@ -227,7 +236,7 @@ $res = padrino_resumen();
 $ext = array_values(array_filter($res['pedidos'], fn($p) => $p['tipo'] === 'extra'));
 ok(count($ext) >= 3 && !array_filter($ext, fn($p) => $p['pack'] !== '') && !array_filter($ext, fn($p) => $p['estado'] === 'creada' && $p['extra'] !== 'mesas'), 'resumen: tipo extra, sin pack, con su clave');
 $altas = array_filter($res['pedidos'], fn($p) => $p['tipo'] === 'alta' && !$p['regalo']);
-ok(count($altas) === 5, 'resumen: las altas son solo las 5 webs pagadas (' . count($altas) . ')');
+ok(count($altas) === 6, 'resumen: las altas son solo las 6 webs pagadas del test, ningún extra (' . count($altas) . ')');
 $bt = array_values(array_filter($res['bodas'], fn($b) => $b['slug'] === 'tercera'))[0] ?? [];
 ok(($bt['extras'] ?? null) === ['mesas'], 'resumen: la boda dice qué extras tiene activos');
 ok(($res['precios']['extras'][0]['clave'] ?? '') === 'mesas' && isset($res['precios']['extras'][0]['suelo']), 'resumen: precios y límites de los extras');

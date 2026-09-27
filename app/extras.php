@@ -149,6 +149,10 @@ function lemon_extra(string $id, array $o, array $custom): array {
         // Reintento tras un corte: la boda ya quedó marcada por ESTE pedido → se remata el cierre (no es un duplicado)
         $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
         $yaAplicado = (string) ($bp['extras'][$clave]['pedido'] ?? '') === $sid;
+        // ...salvo que entre el corte y el reintento llegara el reembolso: ni «Ya tenéis» ni reactivar (revisor, 27-sep)
+        if ($yaAplicado && !empty($bp['extras'][$clave]['baja'])) {
+            return $aviso('reembolsado', 'Extra reembolsado antes de rematar la activación', "Pedido LS $id ($slug): «" . EXTRAS[$clave]['nombre'] . '» se reembolsó antes de terminar la activación. Sigue desactivado; no se ha mandado confirmación.');
+        }
         $bloqueo = $yaAplicado ? '' : extra_bloqueo($slug, $clave);
         if ($bloqueo === 'ya-activo') {
             return $aviso('duplicado', 'Extra pagado en una web que ya lo tenía', "Pedido LS $id ($slug): la web ya tenía «" . EXTRAS[$clave]['nombre'] . '». Devolver este cobro desde Lemon Squeezy.');

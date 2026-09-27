@@ -207,6 +207,14 @@ pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'levantar', 'p
 [, $h] = pide('GET', $host, '/panel/mesas');
 ok(strpos($h, 'Juan Sol') === false, '«Quitar del plano» cierra el aviso');
 
+// ---------------------------------------------------------------- 7b. respuesta general + la del enlace: «repetido» también al imprimir
+muta_json(dir_boda($slug) . '/guardado/rsvp.json', function (array &$d) use ($resp, $per) { rsvp_anade($d, $resp('rgen', [$per('Hugo Sol', 'pescado', 'gluten')], true)); });
+[, $hi] = pide('GET', $host, '/panel/mesas/imprimir');
+ok(strpos($hi, 'aviso-repetido') !== false && strpos($hi, 'class="panel-aviso aviso-repetido"') !== false && substr_count($hi, 'class="rep">repetido') >= 2,
+    'hoja: quien respondió dos veces sale «repetido» y hay un aviso que también se imprime');
+$sin = (string) (array_values(array_filter(preg_split('~<div class="mesa-hoja">~', $hi), fn($b) => strpos($b, '<h2 class="panel-h2">Sin mesa') === 0))[0] ?? '');
+ok($sin !== '' && strpos($sin, '<th>Alergias</th>') === false && strpos($sin, 'gluten') === false, 'hoja: «Sin mesa» sin alergias (van en el resumen para el catering)');
+
 // ---------------------------------------------------------------- 8. el panel no puede escribir extras
 $f = dir_boda($slug) . '/pedido.json';
 $h0 = hash_file('sha256', $f);
