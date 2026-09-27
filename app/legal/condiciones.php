@@ -1,7 +1,9 @@
 <?php
 // Condiciones del servicio + Anexo de encargo de tratamiento (art. 28 RGPD).
-// Versión 2026-09-27c (Legal; la «c» añade el enlace personal por grupo y el resumen para el catering, F1a/F1b,
-// revisión #133: §2, §7, §13, anexo II.2, II.3 y II.6). Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
+// Versión 2026-09-27d (Legal; la «c» añadió el enlace personal por grupo y el resumen para el catering, F1a/F1b; la «d»
+// añade los extras de pago y el plano de mesas, F1c/F1d, revisión #133: §2, §5 ter, §7, §8, §13, anexo II.2 y II.6).
+// §5 ter nombra SOLO los extras que están a la venta (EXTRAS[...]['venta']): uno que aún no se vende no tiene precio
+// que garantizar. Al abrir la venta de otro (álbum, idiomas, dominio), Legal lo añade aquí y sube la versión. Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
 // el servicio. Owner (27-sep): «no se puede pedir reembolso», hasta donde la ley lo permite: el desistimiento
 // se pierde en la creación y publicación (103.m), pero el alojamiento es servicio (103.a) y se puede desistir en
 // 14 días pagando lo prestado (108.3); fuera de eso, solo las devoluciones legales (consulta fresca de Legal).
@@ -13,7 +15,7 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión 2026-09-27c, del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-09-27d, del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
 <p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
@@ -28,11 +30,11 @@ $V = h($L['vendedor'] ?? '');
   <li>Peticiones y votos de canciones.</li>
   <li>Un panel privado con contraseña para ver las respuestas, exportarlas a Excel, editar la web y descargar un ZIP.</li>
   <li>Una lista de invitados privada en el panel, con un enlace personal para cada grupo que podéis copiar o enviar por WhatsApp. Quien lo abre ve el nombre del grupo y los nombres de sus personas tal como los escribisteis, y confirma por todo el grupo. En el panel veis si cada enlace se ha abierto y podéis cambiarlo por uno nuevo cuando queráis.</li>
-  <li>Un resumen para el catering, que imprimís o guardáis en PDF desde el panel: cuántos menús hay de cada tipo y, de cada persona con alergias o intolerancias, su nombre, su menú y la alergia.</li>
+  <li>Un resumen para el catering, que imprimís o guardáis en PDF desde el panel: cuántos menús hay de cada tipo y, de cada persona con alergias o intolerancias, su nombre, su menú, la alergia y, si tenéis el plano de mesas, su mesa.</li>
   <li>Si las activáis: una galería de hasta 24 fotos que subís desde el panel, y un libro de invitados donde quien tenga el enlace y el código de la boda puede dejar su nombre, un mensaje y una foto. Ambas van detrás de un código de acceso que elegís vosotros.</li>
   <li>Alojamiento de la web hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda (apartado 7).</li>
 </ul>
-<p>El enlace personal por grupo y el resumen para el catering van incluidos en los dos packs.</p>
+<p>El enlace personal por grupo y el resumen para el catering van incluidos en los dos packs. Además, desde el panel podéis comprar extras sueltos, que se pagan aparte (apartado 5 ter).</p>
 <p>El ZIP contiene el HTML estático de vuestra web y las fotos de la galería, sin datos de invitados ni el libro de invitados. Es una copia de lo que se ve, no de lo que funciona: fuera de nuestro alojamiento, el formulario de asistencia, las canciones y el panel no funcionan. Se abre en cualquier navegador actual.</p>
 <p>Las webs de boda no aparecen en buscadores: están marcadas para que Google y similares no las indexen. Cualquiera que tenga el enlace puede verlas.</p>
 
@@ -58,6 +60,16 @@ $V = h($L['vendedor'] ?? '');
 <p>Antes de pagarla marcáis una casilla en la que pedís que el Pack Atelier se active ya y reconocéis que, en cuanto se active, perdéis el derecho de desistimiento de la mejora (artículo 103.m de la misma ley): es un diseño que se entrega al momento y no alarga el alojamiento. Os lo confirmamos por email. Por eso, una vez activada, no se puede pedir su reembolso por cambio de opinión, salvo en los casos que exige la ley (apartado 8).</p>
 <p>Con el Pack Atelier podéis cambiar de diseño de la colección cuantas veces queráis mientras la web esté alojada. Si volvéis a un estilo del Pack Esencial, no se devuelve nada de la mejora.</p>
 
+<h2>5 ter. Extras</h2>
+<p>Con la web ya publicada, podéis añadirle desde el panel servicios sueltos que no van en los packs. Hoy son estos, con su precio, IVA incluido y en pago único:</p>
+<ul>
+  <li>Plano de mesas, <?= h(euros(precio_extra_cent('mesas'))) ?>: en el panel creáis las mesas del banquete, con su nombre y sus plazas, y sentáis en ellas a quienes han confirmado que van al banquete. El panel os avisa si alguien que habíais sentado deja de venir o vuelve a responder, pero no lo mueve por su cuenta: lo decidís vosotros. Incluye una hoja para el restaurante, que imprimís o guardáis en PDF, con cada mesa y, de cada persona, su nombre, su menú y sus alergias o intolerancias. Con el plano de mesas, el resumen para el catering muestra también la mesa de cada persona con alergias.</li>
+</ul>
+<p>Si más adelante ofrecemos otros extras, los añadiremos a este apartado antes de ponerlos a la venta.</p>
+<p>El panel os enseña qué hace cada extra y su precio antes de pagar, y ese es el importe que os cobra <?= $V ?>. Cada extra es una compra aparte que también os vende y os cobra <?= $V ?>, que os envía el recibo y la factura, igual que en el apartado 5. También se puede comprar para una web de regalo. Antes de pagar marcáis una casilla en la que pedís que el extra se active ya, dentro de los 14 días para desistir, y aceptáis para él estas condiciones; se activa en cuanto <?= $V ?> confirma el pago y os lo confirmamos por email con el texto de la casilla, su fecha y estas condiciones completas.</p>
+<p>Un extra es un servicio que os prestamos mientras la web está alojada, así que podéis desistir de él en los 14 días siguientes a su compra, sin dar motivos, escribiéndonos a <?= h($E['email']) ?> (podéis usar el modelo del anexo I). Como pedís que empiece ya, si desistís pagaréis la parte proporcional a lo ya prestado: el precio del extra repartido por días entre el día de la compra y la fecha de borrado de la web (apartado 7), multiplicado por los días transcurridos hasta que nos lo comuniquéis. El resto os lo devuelve <?= $V ?>, por el mismo medio de pago, en un máximo de 14 días. Al desistir, el extra se desactiva y la web sigue publicada y alojada como hasta entonces. Pasados esos 14 días, no se devuelve el extra por cambio de opinión, salvo en los casos del apartado 8.</p>
+<p>Cada extra dura lo que dure la web: se puede usar hasta la fecha de borrado del apartado 7 y se apaga con ella, o antes si la web se da de baja. Comprar un extra no alarga el alojamiento. Lo que guardáis con él (por ejemplo, el plano de mesas) se borra con el resto de los datos de la boda.</p>
+
 <h2>6. Plazo de entrega</h2>
 <p>La web se publica en cuanto <?= $V ?> confirma el pago, normalmente en segundos. Si pasado un rato no la veis o no os llega el email, escribid a <?= h($E['email']) ?> y lo resolvemos.</p>
 
@@ -67,6 +79,7 @@ $V = h($L['vendedor'] ?? '');
   <li>se borran todas las respuestas de asistencia (nombres, menús, alergias, contactos) y las canciones;</li>
   <li>se borran las fotos de la galería y los mensajes y fotos del libro de invitados;</li>
   <li>se borra la lista de invitados, y los enlaces personales de cada grupo dejan de funcionar;</li>
+  <li>se borra el plano de mesas, si lo teníais, y se apagan los extras;</li>
   <li>la web deja de mostrar su contenido y pasa a una página de agradecimiento.</li>
 </ul>
 <p>Lo borrado no se puede recuperar. Si queréis conservar las respuestas, exportad el Excel y guardad las fotos antes de esa fecha. Podéis pedirnos que borremos antes la web entera escribiendo a <?= h($E['email']) ?>.</p>
@@ -76,7 +89,8 @@ $V = h($L['vendedor'] ?? '');
 <p>La primera parte es crear y publicar vuestra web y entregaros el ZIP. Es contenido digital hecho con vuestros datos que se entrega al momento de pagar, a petición vuestra. Por eso, antes de pagar marcáis una casilla en la que nos pedís que la creemos y la publiquemos ya y reconocéis que, en cuanto se publique, perdéis el derecho de desistimiento sobre esta parte (artículo 103.m de la Ley General para la Defensa de los Consumidores y Usuarios).</p>
 <p>La segunda parte es el alojamiento de la web, el panel y el formulario de asistencia hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda. Sobre esta parte podéis desistir en los 14 días siguientes a la compra. Como pedís que empiece ya, si desistís tendréis que pagar la parte proporcional a lo ya prestado: la creación y publicación de la web, que ya está hecha, y el tiempo de alojamiento transcurrido hasta que nos lo comuniquéis; se os devuelve el resto, por el mismo medio de pago, en un máximo de 14 días. Al desistir del alojamiento, la web se da de baja con el aviso del final de este apartado.</p>
 <p>El correo de bienvenida os confirma vuestra petición y vuestro reconocimiento, con su fecha. Pasados esos 14 días, no se devuelve dinero por cambio de opinión.</p>
-<p>Además del desistimiento del alojamiento, se devuelve dinero en estos casos:</p>
+<p>Los extras del apartado 5 ter son servicios y funcionan como el alojamiento: podéis desistir de cada uno en los 14 días siguientes a su compra, pagando la parte proporcional a lo ya prestado como explica ese apartado.</p>
+<p>Además del desistimiento del alojamiento y de los extras, se devuelve dinero en estos casos:</p>
 <ul>
   <li>si habéis pagado y la web no llega a publicarse, y no lo resolvemos cuando nos aviséis: se devuelve todo lo pagado;</li>
   <li>si se os cobra dos veces o un importe distinto del que os enseñamos antes de pagar: se devuelve lo cobrado de más;</li>
@@ -84,6 +98,7 @@ $V = h($L['vendedor'] ?? '');
 </ul>
 <p>Esas devoluciones se hacen a través de <?= $V ?>, por el mismo medio de pago. Nada de este apartado limita los derechos que la ley os reconoce como consumidores. Para desistir basta con decírnoslo por email a <?= h($E['email']) ?>; podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
 <p>Si <?= $V ?> devuelve todo lo pagado por la web, o vuestro banco anula el pago y <?= $V ?> confirma la devolución, el servicio queda sin pagar y daremos de baja la web: os avisaremos por email y tendréis 7 días para exportar el Excel y descargar el ZIP; después se borran los datos como en el apartado 7. Mientras un contracargo esté en disputa, podremos dejar la web en pausa, sin borrar nada, hasta que se resuelva. Si lo que se devuelve es solo la mejora al Pack Atelier, la web vuelve al Pack Esencial y sigue alojada. Si desistís del alojamiento, la web se da de baja con el mismo aviso de 7 días.</p>
+<p>Si lo que se devuelve es un extra, entero o la parte que corresponda al desistir de él, o si vuestro banco anula el pago de un extra y <?= $V ?> confirma la devolución, ese extra se desactiva y la web sigue publicada y alojada, con todo lo demás igual. Lo que hubierais guardado con el extra (por ejemplo, el plano de mesas) no se borra al desactivarlo: se conserva hasta la fecha de borrado del apartado 7 por si lo volvéis a activar, y se borra entonces con el resto. Si la devolución de un extra es una rebaja por un fallo que no hemos arreglado (apartado 9), el extra sigue activo.</p>
 
 <h2>9. Garantía</h2>
 <p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos a nosotros, que somos quienes prestamos el servicio, y lo arreglaremos sin coste. El orden es el que marca la ley: primero lo arreglamos; si no lo arreglamos en un plazo razonable, podéis pedir una rebaja proporcional del precio o, si el fallo no es menor, resolver el contrato y recuperar lo pagado en la medida que fija la ley. Si hay que devolver dinero, lo hacemos a través de <?= $V ?>. Es la garantía legal que os da la ley y no la limitamos.</p>
@@ -110,7 +125,7 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>13. Datos de vuestros invitados</h2>
 <p>Las respuestas de los invitados son datos personales, y las alergias son datos de salud. Vosotros sois los responsables de esos datos y nosotros los tratamos por encargo vuestro, en los términos del anexo II. La web muestra a cada invitado un aviso de privacidad con vuestros nombres, el email de contacto que nos deis y la fecha de borrado.</p>
-<p>Si exportáis las respuestas a Excel, o imprimís o guardáis en PDF el resumen para el catering, esas copias quedan fuera de nuestro alojamiento y de nuestro control. Es responsabilidad vuestra guardarlas con cuidado, no compartirlas más allá de quien las necesite para organizar la boda y borrarlas o destruirlas cuando ya no hagan falta. El resumen para el catering lleva nombres y alergias: dádselo solo a quien sirve la comida, para ese fin, y pedidle que lo destruya después de la boda.</p>
+<p>Si exportáis las respuestas a Excel, o imprimís o guardáis en PDF el resumen para el catering o la hoja del plano de mesas, esas copias quedan fuera de nuestro alojamiento y de nuestro control. Es responsabilidad vuestra guardarlas con cuidado, no compartirlas más allá de quien las necesite para organizar la boda y borrarlas o destruirlas cuando ya no hagan falta. El resumen para el catering y la hoja del plano de mesas llevan nombres y alergias: dádselos solo a quien sirve la comida, para ese fin, y pedidle que los destruya después de la boda. Las hojas impresas no se actualizan solas: si cambian las respuestas o el plano, volved a imprimirlas y destruid las anteriores.</p>
 <p>El nombre de cada grupo de la lista de invitados lo ve quien abre su enlace. Poned nombres neutros (por ejemplo, «Familia García» o «Amigos de la universidad»), sin etiquetas ofensivas ni notas sobre las personas. Cada enlace permite responder por su grupo: enviadlo solo a ese grupo y, si llega a quien no debe, cambiadlo desde el panel; el anterior deja de funcionar.</p>
 
 <h2>14. Contraseña del panel</h2>
@@ -147,7 +162,7 @@ $V = h($L['vendedor'] ?? '');
 <ul>
   <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel; generar un enlace personal para cada grupo de la lista de invitados; preparar para la pareja resúmenes imprimibles del catering y, si lo usa, del plano de mesas; publicar los mensajes y fotos del libro de invitados y las fotos de la galería.</li>
   <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños); quienes escriben en el libro y las personas que aparecen en las fotos, incluidos menores; y las personas que la pareja incluye en su lista de invitados aunque no respondan.</li>
-  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, el nombre, el grupo, el enlace del grupo, la fecha y hora del primer acceso a ese enlace (sin dirección IP ni navegador) y, si la pareja usa el plano de mesas, la mesa asignada, que tampoco ve <?= $M ?>.</li>
+  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, el nombre, el grupo, el enlace del grupo, la fecha y hora del primer acceso a ese enlace (sin dirección IP ni navegador); y, si la pareja usa el plano de mesas, los nombres y plazas de las mesas y la mesa asignada a cada persona que ha confirmado su asistencia al banquete, junto con una copia de su nombre tomada al sentarla, que sirve solo para avisar a la pareja si esa persona deja de venir y se conserva hasta que la pareja la quita del plano o hasta el borrado. Tampoco ve <?= $M ?> estos datos del plano de mesas.</li>
   <li>Categoría especial: las alergias e intolerancias son datos de salud (artículo 9 del RGPD). La web solo las recoge si quien responde da su consentimiento explícito en el formulario.</li>
   <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda, o hasta la baja de la web si es antes.</li>
 </ul>
@@ -180,7 +195,7 @@ $V = h($L['vendedor'] ?? '');
 <ul>
   <li>Usar los datos de los invitados solo para organizar la boda.</li>
   <li>Dar un email de contacto que funcione para que los invitados puedan ejercer sus derechos, y atender esas peticiones.</li>
-  <li>Guardar con cuidado la contraseña del panel, el Excel exportado y el resumen para el catering impreso o en PDF; pasar ese resumen solo a quien sirve la comida y destruirlo después de la boda (apartado 13 de las condiciones).</li>
+  <li>Guardar con cuidado la contraseña del panel, el Excel exportado y el resumen para el catering y la hoja del plano de mesas impresos o en PDF; pasar esas hojas solo a quien sirve la comida y destruirlas después de la boda (apartado 13 de las condiciones).</li>
   <li>En la lista de invitados, poner solo nombres y grupos: ni datos de contacto, ni de salud, ni notas sobre las personas. Los nombres de los grupos los ve quien abre su enlace, así que no pueden llevar etiquetas ofensivas.</li>
   <li>Enviar cada enlace de grupo solo a ese grupo, y cambiarlo desde el panel si llega a quien no debe.</li>
 </ul>

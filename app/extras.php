@@ -243,8 +243,12 @@ function texto_extra_correo(string $slug, string $clave, array $ped, array $meta
         . "- Venta y cobro: $vend, que es quien os lo vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
         . ". El recibo y la factura os los envía $vend en otro correo.\n"
         . '- Duración: podéis usarlo mientras la web esté alojada' . ($borrado !== '' ? ", hasta el $borrado" : '') . ". El extra no alarga el alojamiento.\n"
-        // TODO-LEGAL: línea provisional de Desarrollo. Legal la redacta con el §5 ter (servicio, 103.a/108.3) en su commit, antes del push
-        . "- Desistimiento: tenéis 14 días desde la compra para desistir; si ya lo habéis empezado a usar, pagaréis la parte proporcional a lo ya prestado.\n"
+        // Condiciones, apartado 5 ter (Legal #133): servicio (103.a), desistible en 14 días pagando lo prestado (108.3) porque
+        // la pareja pidió que empezara ya. La base del cálculo es la misma duración que declara la línea anterior.
+        . '- Desistimiento: podéis desistir de este extra en los 14 días siguientes a la compra, escribiéndonos a ' . $E['email'] . '. '
+        . 'Como pedisteis que se activara ya, pagaréis la parte proporcional a lo ya prestado, por días entre la compra y la fecha de borrado de la web'
+        . ($borrado !== '' ? " ($borrado)" : '') . "; el resto os lo devuelve $vend por el mismo medio de pago en un máximo de 14 días. "
+        . "Al desistir, el extra se desactiva y la web sigue publicada (apartado 5 ter).\n"
         . "- Garantía: tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
         . '- Condiciones del servicio: van completas al final de este correo' . (($a['version'] ?? '') !== '' ? ' (versión ' . $a['version'] . ')' : '')
         . '. También están en ' . url_creador('condiciones') . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n"

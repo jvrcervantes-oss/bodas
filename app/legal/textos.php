@@ -10,7 +10,7 @@
 // migración a Stripe Managed Payments sin fechas: si cambia, se cambia AQUÍ y se sube 'version'.
 // Si algún día se reactiva `pasarela = stripe`, estos textos NO sirven: Stripe no es vendedor (Legal, 27-sep-2026).
 return [
-    'version' => '2026-09-27c',
+    'version' => '2026-09-27d',
 
     'vendedor' => 'Lemon Squeezy',
     'vendedor_entidad' => 'Sold through Link, LLC (antes Lemon Squeezy LLC), Estados Unidos',
@@ -57,11 +57,13 @@ return [
     // correo de confirmación de la mejora tiene que repetirla (art. 98.7).
     'check_mejora' => 'Pedimos a {marca} que active ya el Pack Atelier en nuestra web, con las condiciones del servicio que ya aceptamos. Sabemos que, en cuanto se active, perdemos el derecho de desistimiento de esta mejora.',
 
-    // TODO-LEGAL: texto PROVISIONAL de Desarrollo para cablear la casilla de los extras de pago (plano de mesas y los
-    // que vengan). Legal lo sustituye en su commit, con el §5 ter de las condiciones, ANTES del push (Legal #133:
-    // un extra es un servicio, 103.a/108.3, con desistimiento proporcional; no es la excepción 103.m de la mejora).
-    // Se guarda literal en el pedido del extra (extras/<token>.json → aceptacion.casilla) y la repite el correo.
-    // Junto a la casilla el panel pone el nombre y el precio del extra y los enlaces a las condiciones y a las de
-    // compra del vendedor (app/extras.php, extra_presentacion), como en la mejora.
-    'check_extra' => 'Pedimos a {marca} que active ya este extra en nuestra web, con las condiciones del servicio que ya aceptamos. Sabemos que, si desistimos dentro de los 14 días, pagaremos la parte proporcional a lo ya prestado.',
+    // Extras de pago desde el panel (condiciones, apartado 5 ter; Legal #133). Un extra es un SERVICIO (103.a TRLGDCU),
+    // no la excepción 103.m de la mejora: se puede desistir en 14 días, y como la pareja pide que empiece ya, paga la
+    // parte proporcional (108.3). Sin la petición expresa de empezar DENTRO de los 14 días, el 108.4 obliga a devolverlo
+    // todo: por eso «antes de que acaben los 14 días». Es la ÚNICA casilla del formulario del extra, así que también
+    // acepta las condiciones vigentes (la pareja aceptó al comprar la web una versión que quizá no tenía el 5 ter).
+    // Nombra solo la marca PORQUE junto a la casilla van el nombre y el precio del extra y los enlaces a las condiciones
+    // y a las de compra del vendedor (app/extras.php, extra_presentacion). Se guarda literal en extras/<token>.json
+    // (aceptacion.casilla) y la repite el correo del extra (art. 98.7). Cambiarla exige subir 'version'.
+    'check_extra' => 'Pedimos a {marca} que active ya este extra en nuestra web, antes de que acaben los 14 días para desistir, y aceptamos para él las condiciones del servicio vigentes. Sabemos que, si desistimos dentro de esos 14 días, pagaremos la parte proporcional a lo ya prestado y el extra se desactivará.',
 ];
