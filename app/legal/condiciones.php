@@ -1,9 +1,14 @@
 <?php
 // Condiciones del servicio + Anexo de encargo de tratamiento (art. 28 RGPD).
-// Versión 2026-09-27d (Legal; la «c» añadió el enlace personal por grupo y el resumen para el catering, F1a/F1b; la «d»
-// añade los extras de pago y el plano de mesas, F1c/F1d, revisión #133: §2, §5 ter, §7, §8, §13, anexo II.2 y II.6).
-// TODO-LEGAL-REVISA: desde el 27-sep-2026 (owner) el plano de mesas va incluido en los dos packs (§2) y §5 ter no nombra
-// ningún extra, porque hoy no hay ninguno a la venta. Cambios marcados abajo; la versión la sube Legal.
+// Versión 2026-09-27e (Legal; la «c» añadió el enlace personal por grupo y el resumen para el catering, F1a/F1b; la «d»
+// añadió los extras de pago y el plano de mesas, F1c/F1d, revisión #133: §2, §5 ter, §7, §8, §13, anexo II.2 y II.6;
+// la «e», decisión del owner del 27-sep: el plano de mesas va incluido en los dos packs, también regalados (§2), y
+// §5 ter queda sin ningún extra a la venta, con las reglas generales para cuando se venda uno).
+// Por qué §5 ter conserva sus reglas sin extras a la venta: el circuito de compra sigue en el código (álbum, idiomas y
+// dominio lo usarán) y el anexo I y el §8 las citan; quitarlas y volver a ponerlas en F2 es reescribir texto ya revisado.
+// Van en condicional («cuando haya alguno a la venta») para no describir como vigente una venta que no existe.
+// Las compras de prueba del plano de antes del cambio no se nombran: no hubo ventas reales (el servicio está en
+// pruebas, §1), y un cobro de algo incluido ya está cubierto por «se devuelve lo cobrado de más» (§8).
 // §5 ter nombra SOLO los extras que están a la venta (EXTRAS[...]['venta']): uno que aún no se vende no tiene precio
 // que garantizar. Al abrir la venta de otro (álbum, idiomas, dominio), Legal lo añade aquí y sube la versión. Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
 // el servicio. Owner (27-sep): «no se puede pedir reembolso», hasta donde la ley lo permite: el desistimiento
@@ -17,7 +22,7 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión 2026-09-27d, del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-09-27e, del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
 <p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
@@ -32,14 +37,12 @@ $V = h($L['vendedor'] ?? '');
   <li>Peticiones y votos de canciones.</li>
   <li>Un panel privado con contraseña para ver las respuestas, exportarlas a Excel, editar la web y descargar un ZIP.</li>
   <li>Una lista de invitados privada en el panel, con un enlace personal para cada grupo que podéis copiar o enviar por WhatsApp. Quien lo abre ve el nombre del grupo y los nombres de sus personas tal como los escribisteis, y confirma por todo el grupo. En el panel veis si cada enlace se ha abierto y podéis cambiarlo por uno nuevo cuando queráis.</li>
-<?php /* TODO-LEGAL-REVISA (Desarrollo, 27-sep-2026): plano de mesas GRATIS e incluido en todos los packs (owner). §2: el catering dice la mesa si la persona está sentada; el plano pasa a esta lista con el texto que tenía en §5 ter. Sin subir versión: la sube Legal. */ ?>
   <li>Un resumen para el catering, que imprimís o guardáis en PDF desde el panel: cuántos menús hay de cada tipo y, de cada persona con alergias o intolerancias, su nombre, su menú, la alergia y, si la habéis sentado en el plano de mesas, su mesa.</li>
   <li>Un plano de mesas en el panel: creáis las mesas del banquete, con su nombre y sus plazas, y sentáis en ellas a quienes han confirmado que van al banquete. El panel os avisa si alguien que habíais sentado deja de venir o vuelve a responder, pero no lo mueve por su cuenta: lo decidís vosotros. Incluye una hoja para el restaurante, que imprimís o guardáis en PDF, con cada mesa y, de cada persona, su nombre, su menú y sus alergias o intolerancias.</li>
   <li>Si las activáis: una galería de hasta 24 fotos que subís desde el panel, y un libro de invitados donde quien tenga el enlace y el código de la boda puede dejar su nombre, un mensaje y una foto. Ambas van detrás de un código de acceso que elegís vosotros.</li>
   <li>Alojamiento de la web hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda (apartado 7).</li>
 </ul>
-<?php /* TODO-LEGAL-REVISA (Desarrollo, 27-sep-2026): plano de mesas GRATIS e incluido en todos los packs (owner). §2: el plano entra en lo incluido; ya no se dice que se puedan comprar extras. Sin subir versión: la sube Legal. */ ?>
-<p>El enlace personal por grupo, el resumen para el catering y el plano de mesas van incluidos en los dos packs, también en una web de regalo. Hoy no hay extras de pago (apartado 5 ter).</p>
+<p>El enlace personal por grupo, el resumen para el catering y el plano de mesas van incluidos en los dos packs, también en una web de regalo, sin pagar nada aparte. Hoy no vendemos ningún extra de pago (apartado 5 ter).</p>
 <p>El ZIP contiene el HTML estático de vuestra web y las fotos de la galería, sin datos de invitados ni el libro de invitados. Es una copia de lo que se ve, no de lo que funciona: fuera de nuestro alojamiento, el formulario de asistencia, las canciones y el panel no funcionan. Se abre en cualquier navegador actual.</p>
 <p>Las webs de boda no aparecen en buscadores: están marcadas para que Google y similares no las indexen. Cualquiera que tenga el enlace puede verlas.</p>
 
@@ -66,9 +69,8 @@ $V = h($L['vendedor'] ?? '');
 <p>Con el Pack Atelier podéis cambiar de diseño de la colección cuantas veces queráis mientras la web esté alojada. Si volvéis a un estilo del Pack Esencial, no se devuelve nada de la mejora.</p>
 
 <h2>5 ter. Extras</h2>
-<?php /* TODO-LEGAL-REVISA (Desarrollo, 27-sep-2026): plano de mesas GRATIS e incluido en todos los packs (owner). §5 ter: sin extras a la venta; los párrafos genéricos de abajo se dejan para cuando se venda uno (Legal decide si se quedan). Sin subir versión: la sube Legal. */ ?>
-<p>Con la web ya publicada, podremos ofreceros desde el panel servicios sueltos que no van en los packs, con su precio, IVA incluido y en pago único. Hoy no hay ninguno a la venta: antes de vender uno, lo añadiremos a este apartado con lo que hace y su precio. El plano de mesas no es un extra: va incluido en los dos packs (apartado 2).</p>
-<p>El panel os enseña qué hace cada extra y su precio antes de pagar, y ese es el importe que os cobra <?= $V ?>. Cada extra es una compra aparte que también os vende y os cobra <?= $V ?>, que os envía el recibo y la factura, igual que en el apartado 5. También se puede comprar para una web de regalo. Antes de pagar marcáis una casilla en la que pedís que el extra se active ya, dentro de los 14 días para desistir, y aceptáis para él estas condiciones; se activa en cuanto <?= $V ?> confirma el pago y os lo confirmamos por email con el texto de la casilla, su fecha y estas condiciones completas.</p>
+<p>Con la web ya publicada, podremos ofreceros desde el panel servicios sueltos que no van en los packs, con su precio, IVA incluido y en pago único. Hoy no hay ninguno a la venta: antes de vender uno, lo añadiremos a este apartado con lo que hace y su precio. El plano de mesas no es un extra: va incluido en los dos packs (apartado 2). Las reglas que siguen se aplicarán a los extras que vendamos en el futuro.</p>
+<p>El panel os enseñará qué hace cada extra y su precio antes de pagar, y ese es el importe que os cobrará <?= $V ?>. Cada extra es una compra aparte que también os vende y os cobra <?= $V ?>, que os envía el recibo y la factura, igual que en el apartado 5. También se puede comprar para una web de regalo. Antes de pagar marcáis una casilla en la que pedís que el extra se active ya, dentro de los 14 días para desistir, y aceptáis para él estas condiciones; se activa en cuanto <?= $V ?> confirma el pago y os lo confirmamos por email con el texto de la casilla, su fecha y estas condiciones completas.</p>
 <p>Un extra es un servicio que os prestamos mientras la web está alojada, así que podéis desistir de él en los 14 días siguientes a su compra, sin dar motivos, escribiéndonos a <?= h($E['email']) ?> (podéis usar el modelo del anexo I). Como pedís que empiece ya, si desistís pagaréis la parte proporcional a lo ya prestado: el precio del extra repartido por días entre el día de la compra y la fecha de borrado de la web (apartado 7), multiplicado por los días transcurridos hasta que nos lo comuniquéis. El resto os lo devuelve <?= $V ?>, por el mismo medio de pago, en un máximo de 14 días. Al desistir, el extra se desactiva y la web sigue publicada y alojada como hasta entonces. Pasados esos 14 días, no se devuelve el extra por cambio de opinión, salvo en los casos del apartado 8.</p>
 <p>Cada extra dura lo que dure la web: se puede usar hasta la fecha de borrado del apartado 7 y se apaga con ella, o antes si la web se da de baja. Comprar un extra no alarga el alojamiento. Lo que guardáis con él se borra con el resto de los datos de la boda.</p>
 
@@ -100,7 +102,7 @@ $V = h($L['vendedor'] ?? '');
 </ul>
 <p>Esas devoluciones se hacen a través de <?= $V ?>, por el mismo medio de pago. Nada de este apartado limita los derechos que la ley os reconoce como consumidores. Para desistir basta con decírnoslo por email a <?= h($E['email']) ?>; podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
 <p>Si <?= $V ?> devuelve todo lo pagado por la web, o vuestro banco anula el pago y <?= $V ?> confirma la devolución, el servicio queda sin pagar y daremos de baja la web: os avisaremos por email y tendréis 7 días para exportar el Excel y descargar el ZIP; después se borran los datos como en el apartado 7. Mientras un contracargo esté en disputa, podremos dejar la web en pausa, sin borrar nada, hasta que se resuelva. Si lo que se devuelve es solo la mejora al Pack Atelier, la web vuelve al Pack Esencial y sigue alojada. Si desistís del alojamiento, la web se da de baja con el mismo aviso de 7 días.</p>
-<p>Si lo que se devuelve es un extra, entero o la parte que corresponda al desistir de él, o si vuestro banco anula el pago de un extra y <?= $V ?> confirma la devolución, ese extra se desactiva y la web sigue publicada y alojada, con todo lo demás igual. <?php /* TODO-LEGAL-REVISA: quitado «por ejemplo, el plano de mesas» aquí y en §5 ter, porque el plano ya no es un extra. */ ?>Lo que hubierais guardado con el extra no se borra al desactivarlo: se conserva hasta la fecha de borrado del apartado 7 por si lo volvéis a activar, y se borra entonces con el resto. Si la devolución de un extra es una rebaja por un fallo que no hemos arreglado (apartado 9), no perdéis el extra: si al hacer la devolución se desactivara, lo volveremos a activar sin coste.</p>
+<p>Si lo que se devuelve es un extra, entero o la parte que corresponda al desistir de él, o si vuestro banco anula el pago de un extra y <?= $V ?> confirma la devolución, ese extra se desactiva y la web sigue publicada y alojada, con todo lo demás igual. Lo que hubierais guardado con el extra no se borra al desactivarlo: se conserva hasta la fecha de borrado del apartado 7 por si lo volvéis a activar, y se borra entonces con el resto. Si la devolución de un extra es una rebaja por un fallo que no hemos arreglado (apartado 9), no perdéis el extra: si al hacer la devolución se desactivara, lo volveremos a activar sin coste.</p>
 
 <h2>9. Garantía</h2>
 <p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos a nosotros, que somos quienes prestamos el servicio, y lo arreglaremos sin coste. El orden es el que marca la ley: primero lo arreglamos; si no lo arreglamos en un plazo razonable, podéis pedir una rebaja proporcional del precio o, si el fallo no es menor, resolver el contrato y recuperar lo pagado en la medida que fija la ley. Si hay que devolver dinero, lo hacemos a través de <?= $V ?>. Es la garantía legal que os da la ley y no la limitamos.</p>

@@ -10,7 +10,9 @@
 // migración a Stripe Managed Payments sin fechas: si cambia, se cambia AQUÍ y se sube 'version'.
 // Si algún día se reactiva `pasarela = stripe`, estos textos NO sirven: Stripe no es vendedor (Legal, 27-sep-2026).
 return [
-    'version' => '2026-09-27d',
+    // 2026-09-27e: cambia el texto de las condiciones que acepta check_condiciones (§2 y §5 ter: el plano de mesas va
+    // incluido en los packs). La versión que se guarda con cada aceptación es esta, así que sube con las condiciones.
+    'version' => '2026-09-27e',
 
     'vendedor' => 'Lemon Squeezy',
     'vendedor_entidad' => 'Sold through Link, LLC (antes Lemon Squeezy LLC), Estados Unidos',
