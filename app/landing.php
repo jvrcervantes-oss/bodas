@@ -285,7 +285,7 @@ function pagina_landing(): string {
       <ul class="l-confianza-lista">
         <li><?= il('escudo') ?><span><b>Datos de invitados protegidos</b>Solo los veis vosotros y se borran <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</span></li>
         <li><?= il('ojo') ?><span><b>Fuera de los buscadores</b>Vuestra web no aparece en Google: solo la ve quien tiene el enlace.</span></li>
-        <li><?= il('check') ?><span><b>Sin publicidad ni suscripciones</b>Un único pago, con factura, a través de Stripe.</span></li>
+        <li><?= il('check') ?><span><b>Sin publicidad ni suscripciones</b>Un único pago, con recibo y factura de <?= h(textos_legales()['vendedor'] ?? '') ?>, que es quien os lo vende.</span></li>
       </ul>
     </div>
   </section>

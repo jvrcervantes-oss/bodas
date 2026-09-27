@@ -220,7 +220,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <div class="c-precio"><b id="precioTotal"><?= h(euros(precio_total_cent())) ?></b><span id="precioDesglose">Pack Esencial · IVA incluido · pago único</span></div>
         <label class="c-campo c-codigo"><span>Código de regalo <small>(solo si os lo hemos dado)</small></span>
           <input id="codigo" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="XXXXX-XXXXX-XXXXX"></label>
-        <label class="c-check"><input type="checkbox" id="aceptoCond"> <span><?= h($L['check_condiciones'] ?? '') ?> <a href="<?= BASE_PATH ?>/condiciones" target="_blank" rel="noopener">Leer condiciones</a></span></label>
+        <label class="c-check"><input type="checkbox" id="aceptoCond"> <span><span id="txtCond" data-regalo="<?= h($L['check_condiciones_regalo'] ?? '') ?>"><?= h($L['check_condiciones'] ?? '') ?></span> <a href="<?= BASE_PATH ?>/condiciones" target="_blank" rel="noopener">Leer condiciones</a> · <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" target="_blank" rel="noopener">Condiciones de compra de <?= h($L['vendedor'] ?? '') ?></a></span></label>
         <label class="c-check" id="filaDes"><input type="checkbox" id="aceptoDes"> <span><?= h($L['check_desistimiento'] ?? '') ?></span></label>
         <ul class="c-faltan" id="faltan" aria-live="polite"></ul>
         <button type="button" class="b-btn b-dark c-btn-pagar" id="pagar">Pagar <?= h(euros(precio_total_cent())) ?></button>

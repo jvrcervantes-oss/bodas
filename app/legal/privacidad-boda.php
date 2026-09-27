@@ -1,14 +1,15 @@
 <?php
-// Privacidad para invitados de una boda (segunda capa). Version 2026-09-25b (libro y galería, rev. previa #87).
+// Privacidad para invitados de una boda (segunda capa). Versión 2026-09-27 (Legal: marca vigente y Cloudflare declarado).
 // Se incluye dentro de un <main> ya maquetado. $b (datos de la boda) y $E los define la app.
 $pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
+$M = h(marca());
 ?>
 <h1>Privacidad para invitados</h1>
 <p>Este aviso explica qué pasa con los datos que das al confirmar tu asistencia, pedir canciones o escribir en el libro de invitados de esta web, y con las fotos que se publican en ella.</p>
 
 <h2>Quién usa tus datos</h2>
 <p>Los datos los recogen y los usan <?= h($pareja) ?>, para organizar su boda. Son los responsables. Contacto: <?= h($b['email']) ?>.</p>
-<p>La web la aloja AxisWorks (<?= h($E['titular']) ?>), que guarda los datos por encargo de <?= h($pareja) ?> y no los usa para nada propio.</p>
+<p>La web la aloja <?= $M ?>, un producto de AxisWorks (<?= h($E['titular']) ?>), que guarda los datos por encargo de <?= h($pareja) ?> y no los usa para nada propio.</p>
 
 <h2>Qué datos y para qué</h2>
 <ul>
@@ -34,10 +35,10 @@ $pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
 <p><?= h($pareja) ?> pueden haber descargado antes una copia en Excel para organizar la boda. Esa copia la guardan y la borran ellos.</p>
 
 <h2>Quién más los ve</h2>
-<p>Las respuestas de asistencia y las canciones solo las ven <?= h($pareja) ?>, desde su panel privado con contraseña, y quienes les ayuden a organizar la boda (por ejemplo, el catering) en lo que necesiten. Los mensajes y fotos del libro y la galería los ve cualquiera que tenga el enlace y el código de la boda; la web no aparece en buscadores. AxisWorks usa a Hostinger para alojar la web. Tus datos no se venden ni se ceden a nadie más.</p>
+<p>Las respuestas de asistencia y las canciones solo las ven <?= h($pareja) ?>, desde su panel privado con contraseña, y quienes les ayuden a organizar la boda (por ejemplo, el catering) en lo que necesiten. Los mensajes y fotos del libro y la galería los ve cualquiera que tenga el enlace y el código de la boda; la web no aparece en buscadores. <?= $M ?> usa a Hostinger para alojar la web y a Cloudflare, Inc. (Estados Unidos) para entregarla: su red recibe tu conexión, con tu dirección IP y lo que envías, y la pasa cifrada al alojamiento, con las cláusulas contractuales tipo de la Comisión Europea como garantía. Tus datos no se venden ni se ceden a nadie más.</p>
 <p>Esta web no usa analítica. Solo usa una cookie técnica: si escribes el código de la boda para ver la galería o el libro, lo recuerda durante 60 días para no pedírtelo cada vez.</p>
-<p>El mapa de la ceremonia y el convite es una imagen que hace AxisWorks con datos de OpenStreetMap: al verlo, tu navegador no se conecta con nadie más. Para situar los sitios, la dirección del lugar (no la tuya) se consulta una vez en el buscador de OpenStreetMap (Fundación OpenStreetMap, Reino Unido). Los botones «Ver mapa» abren Google Maps y, desde ese momento, se aplica la política de privacidad de Google.</p>
+<p>El mapa de la ceremonia y el convite es una imagen que hace <?= $M ?> con datos de OpenStreetMap: al verlo, tu navegador no se conecta con nadie más. Para situar los sitios, la dirección del lugar (no la tuya) se consulta una vez en el buscador de OpenStreetMap (Fundación OpenStreetMap, Reino Unido). Los botones «Ver mapa» abren Google Maps y, desde ese momento, se aplica la política de privacidad de Google.</p>
 
 <h2>Tus derechos</h2>
-<p>Puedes pedir ver tus datos, corregirlos, borrarlos, limitar su uso, oponerte o recibirlos en un formato que puedas llevar a otro sitio. Escribe a <?= h($b['email']) ?>. Si no obtienes respuesta, puedes escribir a AxisWorks (<?= h($E['email']) ?>), que avisará a <?= h($pareja) ?> y les ayudará a atenderte.</p>
+<p>Puedes pedir ver tus datos, corregirlos, borrarlos, limitar su uso, oponerte o recibirlos en un formato que puedas llevar a otro sitio. Escribe a <?= h($b['email']) ?>. Si no obtienes respuesta, puedes escribir a <?= $M ?> (<?= h($E['email']) ?>), que avisará a <?= h($pareja) ?> y les ayudará a atenderte.</p>
 <p>También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>

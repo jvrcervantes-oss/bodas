@@ -1,15 +1,24 @@
 <?php
-// Condiciones de contratacion + Anexo de encargo de tratamiento (art. 28 RGPD).
-// Version 2026-09-25. Se incluye dentro de un <main> ya maquetado. $E lo define la app.
+// Condiciones del servicio + Anexo de encargo de tratamiento (art. 28 RGPD).
+// Versión 2026-09-27 (Legal): Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
+// el servicio; sin reembolsos por desistimiento una vez publicada la web (decisión del owner, 27-sep),
+// solo los que exige la ley. Se incluye dentro de un <main> ya maquetado y en el cuerpo del correo de
+// bienvenida (legal_a_texto): nada de maquetación que no sea h1/h2/p/ul/li/a. $E lo define la app.
+// Precio y marca SIEMPRE por sus funciones; el vendedor, por textos.php.
+$L = textos_legales();
+$M = h(marca());
+$V = h($L['vendedor'] ?? '');
 ?>
-<h1>Condiciones de contratación</h1>
-<p>Versión del 25 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra.</p>
+<h1>Condiciones del servicio</h1>
+<p>Versión del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
-<h2>1. Quiénes somos</h2>
-<p>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
+<h2>1. Quiénes somos y quién os vende</h2>
+<p><?= $M ?> es un producto de AxisWorks. AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>. En estas condiciones, «nosotros» es <?= h($E['titular']) ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
+<p>La compra se la hacéis a <?= $V ?> (<?= h($L['vendedor_entidad'] ?? '') ?>), que actúa como vendedor final (en inglés, <em>Merchant of Record</em>): revende nuestro servicio, os cobra, os envía el recibo y la factura y liquida el IVA. Esa compra se rige por las <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" rel="noopener">condiciones de compra de <?= $V ?></a>.</p>
+<p>El servicio, es decir, crear, publicar y alojar vuestra web, lo prestamos nosotros y se rige por estas condiciones. Para cualquier cosa sobre la web podéis dirigiros siempre a nosotros. Nada de lo que digan las condiciones de <?= $V ?> ni estas limita los derechos que la ley os reconoce como consumidores.</p>
 
 <h2>2. Qué compráis</h2>
-<p>Una web para vuestra boda, creada con nuestro creador y publicada en https://vuestro-nombre.axisworks.studio. Incluye:</p>
+<p>Una web para vuestra boda, creada con nuestro creador y publicada en https://vuestro-nombre.<?= h(BASE_DOMAIN) ?>. Incluye:</p>
 <ul>
   <li>La web con las secciones, textos, fechas, lugares y foto que elijáis en el creador.</li>
   <li>Un formulario de confirmación de asistencia por grupo. Por cada invitado: nombre, si es adulto o niño, menú y alergias. Por cada grupo: si asiste, si usa el autobús, un dato de contacto y una canción.</li>
@@ -28,17 +37,23 @@
 <ul>
   <li>Montáis la web en el creador. El borrador se guarda en vuestro navegador; nosotros no lo recibimos hasta que pagáis, salvo que pulséis «Seguir en otro dispositivo» (os guardamos una copia 30 días, como explica la política de privacidad).</li>
   <li>Revisáis la vista previa. Hasta pulsar el botón de pago podéis cambiar cualquier dato o corregir errores.</li>
-  <li>Aceptáis estas condiciones y el encargo de tratamiento (anexo II), y pedís que la web se cree ya (apartado 8).</li>
-  <li>Pagáis en la página de Stripe. Al confirmarse el pago, la web se publica al momento.</li>
-  <li>Os enviamos un email a la dirección que deis en Stripe con la dirección de la web, un enlace de un solo uso para elegir la contraseña del panel, la factura y una copia de estas condiciones con vuestra petición de ejecución inmediata.</li>
+  <li>Marcáis dos casillas: en la primera aceptáis estas condiciones y el encargo de tratamiento (anexo II), sabiendo que quien os vende es <?= $V ?>; en la segunda pedís que la web se cree y se publique ya (apartado 8).</li>
+  <li>Pagáis en la página de <?= $V ?>, donde dais vuestro nombre, vuestro email y vuestra dirección de facturación. Al confirmarse el pago, la web se publica al momento.</li>
+  <li><?= $V ?> os envía por email el recibo del pago. Nosotros os enviamos otro email con la dirección de la web, un enlace de un solo uso para elegir la contraseña del panel, el texto exacto de las dos casillas que marcasteis, con su fecha, y el texto completo de estas condiciones.</li>
 </ul>
-<p>El contrato se celebra en castellano. Guardamos una copia de estas condiciones con su fecha de versión; si la necesitáis, pedídnosla por email.</p>
+<p>El contrato se celebra en castellano. Guardamos cada versión de estas condiciones con su fecha, y la vuestra os llega entera en el correo de bienvenida.</p>
 
 <h2>5. Precio y pago</h2>
-<p>Dos packs, IVA incluido: Esencial, <?= h(euros(precio_esencial_cent())) ?>; y Atelier, con un diseño ilustrado de la colección y sus animaciones, <?= h(euros(precio_atelier_cent())) ?>. Pago único. No hay cuotas ni renovaciones. El pago se hace con tarjeta u otro medio que ofrezca Stripe en su página; nosotros no vemos ni guardamos los datos de la tarjeta. Recibiréis una factura simplificada por email.</p>
+<p>Dos packs, IVA incluido: Esencial, <?= h(euros(precio_esencial_cent())) ?>; y Atelier, con un diseño ilustrado de la colección y sus animaciones, <?= h(euros(precio_atelier_cent())) ?>. Pago único. No hay cuotas ni renovaciones.</p>
+<p>Pagáis el precio que os enseña el creador justo antes del botón de pago, que es el mismo que os cobra <?= $V ?>. Lo cobra <?= $V ?> con tarjeta u otro medio que ofrezca en su página; nosotros no vemos ni guardamos los datos de pago. El recibo y la factura los emite <?= $V ?>: nosotros no emitimos factura de estas ventas.</p>
+
+<h2>5 bis. Pasar del Pack Esencial al Atelier</h2>
+<p>Desde el panel podéis pasar vuestra web del Pack Esencial al Atelier. La mejora cuesta la diferencia entre los precios vigentes de los dos packs el día que la pagáis, y el panel os enseña el importe, IVA incluido, antes de pagar. Es una compra aparte que también os vende y os cobra <?= $V ?>, con estas mismas condiciones.</p>
+<p>Antes de pagarla marcáis una casilla en la que pedís que el Pack Atelier se active ya y reconocéis que, en cuanto se active, perdéis el derecho de desistimiento de la mejora, también frente a <?= $V ?>. Os lo confirmamos por email. Por eso, una vez activada, no se puede pedir su reembolso por cambio de opinión, salvo en los casos que exige la ley (apartado 8).</p>
+<p>Con el Pack Atelier podéis cambiar de diseño de la colección cuantas veces queráis mientras la web esté alojada. Si volvéis a un estilo del Pack Esencial, no se devuelve nada de la mejora.</p>
 
 <h2>6. Plazo de entrega</h2>
-<p>La web se publica en cuanto Stripe confirma el pago, normalmente en segundos. Si pasado un rato no la veis o no os llega el email, escribid a <?= h($E['email']) ?> y lo resolvemos.</p>
+<p>La web se publica en cuanto <?= $V ?> confirma el pago, normalmente en segundos. Si pasado un rato no la veis o no os llega el email, escribid a <?= h($E['email']) ?> y lo resolvemos.</p>
 
 <h2>7. Duración y borrado</h2>
 <p>La web y las respuestas de los invitados se mantienen hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda que figure en la web. Ese día, de forma automática:</p>
@@ -49,14 +64,21 @@
 </ul>
 <p>Lo borrado no se puede recuperar. Si queréis conservar las respuestas, exportad el Excel y guardad las fotos antes de esa fecha. Podéis pedirnos que borremos antes la web entera escribiendo a <?= h($E['email']) ?>.</p>
 
-<h2>8. Derecho de desistimiento</h2>
-<p>Como consumidores, tenéis 14 días naturales desde la compra para desistir sin dar motivos.</p>
-<p>Pero la web se crea y se publica al momento de pagar, a petición vuestra. Por eso, antes de pagar, marcáis una casilla en la que pedís que empecemos ya y reconocéis que, una vez publicada la web, perdéis el derecho de desistimiento (artículo 103.m de la Ley General para la Defensa de los Consumidores y Usuarios). El email de confirmación recoge esa petición y ese reconocimiento.</p>
-<p>Si en algún caso se entendiera que el derecho no se ha perdido y desistís dentro del plazo, os devolveremos lo pagado menos la parte proporcional del servicio ya prestado hasta que nos lo comuniquéis (artículo 108.3 de la misma ley), por el mismo medio de pago y en un máximo de 14 días.</p>
-<p>Para desistir basta con decírnoslo por email a <?= h($E['email']) ?>. Podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
+<h2>8. Desistimiento y reembolsos</h2>
+<p>Como consumidores, la ley os da en general 14 días naturales desde la compra para desistir sin dar motivos.</p>
+<p>Vuestra web es contenido digital que se hace con vuestros datos y se entrega al momento de pagar, a petición vuestra. Por eso, antes de pagar marcáis una casilla en la que pedís a <?= h($E['titular']) ?> que la cree y la publique ya, y reconocéis que, en cuanto se publique, perdéis el derecho de desistimiento, también frente a <?= $V ?> (artículo 103.m de la Ley General para la Defensa de los Consumidores y Usuarios). El correo de bienvenida os confirma esa petición y ese reconocimiento, con su fecha.</p>
+<p><strong>Una vez publicada la web, no se puede pedir el reembolso por desistimiento ni por cambio de opinión.</strong></p>
+<p>Solo se devuelve dinero en los casos en que la ley lo exige:</p>
+<ul>
+  <li>si habéis pagado y la web no llega a publicarse, y no lo resolvemos cuando nos aviséis: se devuelve todo lo pagado;</li>
+  <li>si se os cobra dos veces o un importe distinto del que os enseñamos antes de pagar: se devuelve lo cobrado de más;</li>
+  <li>si la web no funciona como se describe aquí y no lo arreglamos: lo que corresponda según la garantía del apartado 9.</li>
+</ul>
+<p>Esas devoluciones se hacen a través de <?= $V ?>, por el mismo medio de pago. Nada de este apartado limita los derechos que la ley os reconozca como consumidores. Si, aun así, la ley os reconoce el derecho de desistimiento en algún caso, basta con que nos lo digáis por email a <?= h($E['email']) ?>; podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
+<p>Si el pago se devuelve por decisión de <?= $V ?> o porque lo anuláis con vuestro banco, el servicio queda sin pagar y podremos dar de baja la web. Antes os avisaremos por email y tendréis 7 días para exportar el Excel y descargar el ZIP. Al darla de baja, se borran los datos de la web como en el apartado 7.</p>
 
 <h2>9. Garantía</h2>
-<p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos y lo arreglaremos sin coste. Si no lo arreglamos en un plazo razonable, podéis pedir una rebaja del precio o, si el fallo es importante, resolver el contrato y recuperar lo pagado. Es la garantía legal que os da la ley y no la limitamos.</p>
+<p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos a nosotros, que somos quienes prestamos el servicio, y lo arreglaremos sin coste. Si no lo arreglamos en un plazo razonable, podéis pedir una rebaja del precio o, si el fallo es importante, resolver el contrato y recuperar lo pagado en la medida que fija la ley. Si hay que devolver dinero, lo hacemos a través de <?= $V ?>. Es la garantía legal que os da la ley y no la limitamos.</p>
 
 <h2>10. Vuestros textos y vuestras fotos</h2>
 <p>Los textos y la foto que ponéis en la web son vuestros y seguís siendo sus titulares. Al subirlos nos dais permiso para alojarlos y mostrarlos en vuestra web mientras dure el servicio, y para nada más.</p>
@@ -86,19 +108,19 @@
 <p>La contraseña la elegís vosotros con el enlace de un solo uso que os enviamos. No la compartáis con quien no deba ver los datos de los invitados. Si creéis que alguien la conoce, escribidnos y os enviaremos un enlace nuevo.</p>
 
 <h2>15. Responsabilidad</h2>
-<p>Respondemos de los daños que os cause un incumplimiento nuestro, según la ley. No respondemos de lo que no depende de nosotros, como cortes de internet ajenos o fallos de Stripe, ni del uso que hagáis del Excel o del ZIP una vez descargados. Nada de estas condiciones limita los derechos que os da la ley como consumidores.</p>
+<p>Respondemos de los daños que os cause un incumplimiento nuestro, según la ley. No respondemos de lo que no depende de nosotros, como cortes de internet ajenos o fallos de <?= $V ?> al cobrar, ni del uso que hagáis del Excel o del ZIP una vez descargados. Nada de estas condiciones limita los derechos que os da la ley como consumidores.</p>
 
 <h2>16. Reclamaciones y ley aplicable</h2>
-<p>Para cualquier reclamación, escribid a <?= h($E['email']) ?>. Os responderemos lo antes posible y como máximo en un mes.</p>
+<p>Para cualquier reclamación sobre la web o el servicio, escribid a <?= h($E['email']) ?>. Os responderemos lo antes posible y como máximo en un mes. Las dudas sobre el cobro, el recibo o la factura podéis planteárnoslas a nosotros o directamente a <?= $V ?>.</p>
 <p>No estamos adheridos a ninguna entidad de resolución alternativa de conflictos de consumo. Si no llegamos a un acuerdo, podéis acudir a los servicios de consumo de vuestra comunidad autónoma o a los tribunales.</p>
-<p>Este contrato se rige por la ley española. Si residís en otro país de la Unión Europea, conserváis la protección que os dan las normas de consumo de ese país que no se pueden excluir por contrato. Podéis reclamar ante los tribunales de vuestro domicilio.</p>
+<p>Estas condiciones se rigen por la ley española. Si residís en otro país de la Unión Europea, conserváis la protección que os dan las normas de consumo de ese país que no se pueden excluir por contrato. Podéis reclamar ante los tribunales de vuestro domicilio.</p>
 
 <h2>Anexo I. Modelo de formulario de desistimiento</h2>
-<p>Solo tenéis que rellenarlo y enviarlo si queréis desistir del contrato.</p>
-<p>A la atención de <?= h($E['titular']) ?> (AxisWorks), <?= h($E['domicilio']) ?>, <?= h($E['email']) ?>:</p>
+<p>Solo tiene efecto en los casos en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
+<p>A la atención de <?= h($E['titular']) ?> (<?= $M ?>), <?= h($E['domicilio']) ?>, <?= h($E['email']) ?>:</p>
 <ul>
   <li>Por la presente os comunico que desisto del contrato de la web de boda publicada en: ____________</li>
-  <li>Fecha de compra: ____________</li>
+  <li>Fecha de compra y número de pedido de <?= $V ?>: ____________</li>
   <li>Nombre de quien compró: ____________</li>
   <li>Dirección de quien compró: ____________</li>
   <li>Firma (solo si se envía en papel): ____________</li>
@@ -108,20 +130,20 @@
 <h2>Anexo II. Encargo de tratamiento de datos (artículo 28 del RGPD)</h2>
 
 <h2>II.1. Partes y papel de cada una</h2>
-<p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?= h($E['titular']) ?> (AxisWorks) es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar.</p>
-<p>Aunque la pareja trate esos datos para una actividad personal, AxisWorks cumple igualmente todo lo que dice este anexo.</p>
-<p>Para dar soporte y llevar el servicio, AxisWorks solo ve cifras agregadas y anónimas de cada web, como el número total de personas que han confirmado. Nunca ve los datos de un invitado concreto ni cifras por menú o por alergia.</p>
+<p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»), es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar. <?= $V ?> no es parte de este anexo: no recibe datos de invitados.</p>
+<p>Aunque la pareja trate esos datos para una actividad personal, <?= $M ?> cumple igualmente todo lo que dice este anexo.</p>
+<p>Para dar soporte y llevar el servicio, <?= $M ?> solo ve cifras agregadas y anónimas de cada web, como el número total de personas que han confirmado. Nunca ve los datos de un invitado concreto ni cifras por menú o por alergia.</p>
 
 <h2>II.2. Qué se trata</h2>
 <ul>
   <li>Objeto: alojar el formulario de asistencia y las canciones, guardar las respuestas y ponerlas a disposición de la pareja en el panel y en la exportación a Excel; publicar los mensajes y fotos del libro de invitados y las fotos de la galería.</li>
   <li>Personas afectadas: los invitados que responden y las personas de su grupo (adultos y niños); quienes escriben en el libro y las personas que aparecen en las fotos, incluidos menores; y las personas que la pareja incluye en su lista de invitados aunque no respondan.</li>
-  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, solo nombre y grupo, que tampoco ve AxisWorks.</li>
+  <li>Datos: nombre, si es adulto o niño, menú, alergias o intolerancias, si asiste, si usa el autobús, dato de contacto y canciones pedidas o votadas; mensajes y fotos del libro, la dirección IP de cada mensaje (para atender avisos de abuso) y un código derivado de la IP guardado un día como máximo para evitar abusos; de la lista de invitados, solo nombre y grupo, que tampoco ve <?= $M ?>.</li>
   <li>Categoría especial: las alergias e intolerancias son datos de salud (artículo 9 del RGPD). La web solo las recoge si quien responde da su consentimiento explícito en el formulario.</li>
-  <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda.</li>
+  <li>Duración: desde la publicación de la web hasta el borrado automático, <?= (int) MESES_ALOJAMIENTO ?> meses después de la fecha de la boda, o hasta la baja de la web si es antes.</li>
 </ul>
 
-<h2>II.3. Obligaciones de AxisWorks</h2>
+<h2>II.3. Obligaciones de <?= $M ?></h2>
 <ul>
   <li>Tratar los datos solo para prestar este servicio y siguiendo las instrucciones de la pareja, que son las de este contrato y las que dé por escrito después. Si una instrucción nos parece contraria a la ley, lo diremos.</li>
   <li>No usar los datos para nada propio: ni publicidad, ni estadísticas, ni cederlos a nadie, salvo obligación legal.</li>
@@ -133,7 +155,12 @@
 </ul>
 
 <h2>II.4. Subencargados</h2>
-<p>La pareja autoriza a AxisWorks a usar a Hostinger para el alojamiento de la web y el envío de emails. Stripe no recibe datos de invitados. Si cambiamos o añadimos un subencargado que trate datos de invitados, lo avisaremos por email con antelación y la pareja podrá oponerse; si se opone y no podemos seguir sin ese cambio, podrá resolver el contrato. Cada subencargado queda sujeto a obligaciones de protección de datos equivalentes a las de este anexo.</p>
+<p>La pareja autoriza a <?= $M ?> a usar estos subencargados:</p>
+<ul>
+  <li>Hostinger, para el alojamiento de la web y el envío de emails.</li>
+  <li>Cloudflare, Inc. (Estados Unidos), cuya red recibe las visitas a la web, incluidas las respuestas que envían los invitados, y las entrega cifradas a nuestro alojamiento. Puede tratar datos fuera de la Unión Europea con las cláusulas contractuales tipo de la Comisión Europea que recoge su acuerdo de tratamiento.</li>
+</ul>
+<p>Si cambiamos o añadimos un subencargado que trate datos de invitados, lo avisaremos por email con antelación y la pareja podrá oponerse; si se opone y no podemos seguir sin ese cambio, podrá resolver el contrato. Cada subencargado queda sujeto a obligaciones de protección de datos equivalentes a las de este anexo.</p>
 
 <h2>II.5. Brechas de seguridad</h2>
 <p>Si sufrimos una brecha que afecte a datos de invitados, avisaremos a la pareja sin dilación indebida desde que lo sepamos, con lo que sepamos en ese momento: qué ha pasado, qué datos y cuántas personas pueden estar afectadas, qué consecuencias puede tener y qué medidas hemos tomado. Completaremos la información según la vayamos teniendo.</p>

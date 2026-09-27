@@ -62,7 +62,7 @@ const PRODUCTO = 'bodas';              // marca de propiedad en la metadata de S
 // Nombre comercial del producto. "Vowly" (el de la maqueta de Stitch) está cogido por
 // competidores directos (25-sep-2026). Desde el 25-sep la elige El Padrino (owner con veto) y vive
 // en DATA_DIR/padrino/marca.json: se lee con marca(); esta constante es solo el valor por defecto.
-const MARCA = 'Bodas by AxisWorks';
+const MARCA = 'BodaEnlace';   // owner, 26-sep-2026: «BodaEnlace, un producto de AxisWorks»
 // Dominio del producto tal como se enseña en la portada (owner, 26-sep-2026: comprado, ver BOD-7)
 const MARCA_WEB = 'bodaenlace.com';
 

@@ -830,6 +830,10 @@
     var hay = codigoEl.value.trim() !== '';
     pagar.textContent = hay ? 'Publicar con el código de regalo' : txtPagar;
     document.getElementById('filaDes').hidden = hay;
+    // Con código no hay venta: la casilla de condiciones no nombra al vendedor (Legal, 27-sep). Es el mismo
+    // texto que guarda el servidor en el pedido del regalo (check_condiciones_regalo)
+    var tc = document.getElementById('txtCond');
+    if (tc) { if (!tc.hasAttribute('data-pago')) tc.setAttribute('data-pago', tc.textContent); tc.textContent = hay ? tc.getAttribute('data-regalo') : tc.getAttribute('data-pago'); }
     var nota = document.getElementById('notaPago');
     nota.textContent = hay ? 'Con un código válido la web se publica sin pagar nada.' : nota.getAttribute('data-texto');
   }

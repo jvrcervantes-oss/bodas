@@ -1,8 +1,8 @@
 <?php
 // Emails del producto, por SMTP autenticado desde hola@bodaenlace.com (ver remitente()). El de bienvenida es además el "soporte
-// duradero" que exige la ley (Legal, 25-sep): lleva ADJUNTAS las condiciones y la
-// factura, y repite la petición de ejecución inmediata con la pérdida del
-// desistimiento (art. 98.7 TRLGDCU). Si se quita algo de eso, cae la excepción.
+// duradero" que exige la ley: desde el 27-sep (Legal, BOD-6) lleva las condiciones ÍNTEGRAS en el CUERPO,
+// sin adjunto (los adjuntos lo mandaban a spam), y repite la petición de ejecución inmediata con la
+// pérdida del desistimiento (art. 98.7 TRLGDCU). Si se quita algo de eso, cae la excepción.
 
 declare(strict_types=1);
 
@@ -177,31 +177,79 @@ function tipo_pago(array $ped): string {
     return ($ped['factura'] ?? '') !== '' ? 'factura' : 'regalo';
 }
 
-/** Cuerpo del correo de bienvenida (separado del envío para poder probarlo). */
+/**
+ * HTML de un texto legal a texto plano, para el cuerpo del correo. Puro: se prueba sin red.
+ * Los legales solo usan h1/h2/p/ul/li/a/strong/em: títulos en mayúsculas, viñetas con guion y
+ * cada enlace con su dirección entre paréntesis (en texto plano se perdería).
+ */
+function legal_a_texto(string $html): string {
+    if (preg_match('~<body[^>]*>(.*)</body>~si', $html, $m)) $html = $m[1];
+    $html = str_replace("\r", "", $html);
+    $t = (string) preg_replace('~<a\s[^>]*href="([^"]*)"[^>]*>(.*?)</a>~si', '$2 ($1)', $html);
+    $t = (string) preg_replace_callback('~<h[12][^>]*>(.*?)</h[12]>~si', fn($m) => "\n\n" . mb_strtoupper(trim(strip_tags($m[1])), 'UTF-8') . "\n", $t);
+    $t = (string) preg_replace('~</li>\s*~i', '', $t);
+    $t = (string) preg_replace('~<li[^>]*>~i', "\n- ", $t);
+    $t = (string) preg_replace('~</(p|ul)>~i', "\n", $t);
+    $t = html_entity_decode(strip_tags($t), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $t = (string) preg_replace("~[ \t]+~", ' ', $t);
+    $t = (string) preg_replace("~ *\n *~", "\n", $t);
+    return trim((string) preg_replace("~\n{3,}~", "\n\n", $t));
+}
+
+/**
+ * Cuerpo del correo de bienvenida (separado del envío para poder probarlo).
+ *
+ * SOPORTE DURADERO (Legal, 27-sep-2026, BOD-6): este cuerpo ES la confirmación del art. 98.7 TRLGDCU.
+ * Sin adjuntos: cualquier adjunto mandaba el correo a spam (6 variantes probadas). Un ENLACE a las
+ * condiciones no es soporte duradero (TJUE C-49/11, Content Services), así que todo va DENTRO del
+ * cuerpo: 1) el texto literal de las casillas con fecha y versión (sin él, la excepción del 103.m no
+ * vale y el desistimiento sigue vivo); 2) la información del art. 97.1 (quién presta, quién vende,
+ * qué, cuánto, hasta cuándo, garantía, reclamaciones); 3) las condiciones íntegras en texto plano.
+ * El enlace a /condiciones es solo una comodidad. Si se quita algo de esto, cae la excepción.
+ */
 function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
     $L = textos_legales();
+    $E = empresa();
     $url = url_boda($ped['slug']);
     $borrado = fecha_larga(fecha_borrado((string) ($cfg['fecha'] ?? '')), false);
-    $acept = $ped['aceptacion']['fecha'] ?? '';
-    $texto = "¡Vuestra web de boda ya está publicada!\n\n"
+    $acept = (array) ($ped['aceptacion'] ?? []);
+    $fecha = (string) ($acept['fecha'] ?? '');
+    $tipo = tipo_pago($ped);
+    $vend = (string) ($L['vendedor'] ?? '');
+    $ls = (array) ($ped['ls'] ?? []);
+    $pack = ($ped['atelier'] ?? '') !== '' ? 'Pack Atelier' : 'Pack Esencial';
+    $total = (int) ($ped['importe']['total'] ?? 0);
+
+    return "¡Vuestra web de boda ya está publicada!\n\n"
         . "Dirección: $url\n\n"
         . "Para entrar en vuestro panel (respuestas de invitados, Excel, editar la web y descargar el ZIP), elegid vuestra contraseña con este enlace. Sirve una sola vez y caduca en 14 días:\n$enlace\n\n"
         . "La web y las respuestas de vuestros invitados se mantienen hasta el $borrado. Ese día se borran las respuestas y la web pasa a una página de agradecimiento. Exportad el Excel antes si queréis conservarlas.\n\n"
-        . ['factura' => "Factura: {$ped['factura']} (adjunta).\n",
-            'lemon' => "El cobro lo ha gestionado Lemon Squeezy, que os ha enviado por email el recibo del pago.\n",
-            'regalo' => "Esta web os la regala AxisWorks: no hay nada que pagar.\n"][tipo_pago($ped)]
-        . "Condiciones de contratación y encargo de tratamiento: adjuntas.\n\n"
-        . (tipo_pago($ped) !== 'regalo' ? "Al comprar" : "Al publicar") . ($acept !== '' ? ' (' . date('d/m/Y H:i', strtotime($acept)) . ')' : '') . " marcasteis lo siguiente:\n"
-        . '«' . ($L['check_condiciones'] ?? '') . "»\n"
-        . (($ped['aceptacion']['desistimiento'] ?? '') !== '' ? '«' . $ped['aceptacion']['desistimiento'] . "»\n" : '') . "\n"
-        . "Cualquier duda: " . empresa()['email'] . "\n\nAxisWorks";
-    return $texto;
+        . "Guardad este correo: es la confirmación de vuestro contrato.\n\n"
+        . "RESUMEN DE LO CONTRATADO\n"
+        . '- Servicio: ' . marca() . ', un producto de AxisWorks, que presta ' . $E['titular'] . ($E['nif'] !== '' ? ' (NIF ' . $E['nif'] . ')' : '') . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . ".\n"
+        . "- Qué: $pack, web de boda publicada en $url, alojada hasta el $borrado.\n"
+        . ['factura' => '- Pago: ' . euros($total) . ", IVA incluido. Factura: {$ped['factura']} (adjunta).\n",
+            'lemon' => "- Venta y cobro: $vend, que es quien os la vende (vendedor final), pedido n.º " . (string) ($ls['order_number'] ?? '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo.\n",
+            'regalo' => '- Pago: ninguno. Esta web os la regala ' . marca() . ".\n"][$tipo]
+        . ($tipo !== 'regalo' ? "- Desistimiento: lo perdisteis al publicarse la web, porque así lo pedisteis antes de pagar (casilla de abajo). No hay reembolsos por cambio de opinión; sí los que exige la ley (apartado 8 de las condiciones).\n" : '')
+        . "- Garantía: la web tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
+        . "- Dudas y reclamaciones: {$E['email']}\n\n"
+        . ($tipo !== 'regalo' ? 'Antes de pagar' : 'Al publicar') . ($fecha !== '' ? ' (' . date('d/m/Y H:i', strtotime($fecha)) . ')' : '')
+        . ' marcasteis lo siguiente' . (($acept['version'] ?? '') !== '' ? ' (condiciones, versión ' . $acept['version'] . ')' : '') . ":\n"
+        . '«' . (string) ($acept['condiciones'] ?? '') . "»\n"
+        . (($acept['desistimiento'] ?? '') !== '' ? '«' . $acept['desistimiento'] . "»\n" : '') . "\n"
+        . 'Las condiciones completas van al final de este correo. También están en ' . url_creador('condiciones') . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n\n"
+        . "Cualquier duda: {$E['email']}\n\n" . marca_comercial_correo() . "\n\n"
+        . str_repeat('=', 40) . "\n\n"
+        . legal_a_texto(documento_legal('condiciones', 'Condiciones del servicio')) . "\n";
 }
 
 function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
     $url = url_boda($ped['slug']);
     $texto = texto_bienvenida($ped, $cfg, $enlace);
-    $adjuntos = ['condiciones.html' => documento_legal('condiciones', 'Condiciones de contratación')];
+    // Sin adjunto de las condiciones: van enteras en el cuerpo (Legal, 27-sep, BOD-6). Solo una venta
+    // por Stripe, hoy apagada, lleva su factura BODA- adjunta.
+    $adjuntos = [];
     if (($ped['factura'] ?? '') !== '') $adjuntos[$ped['factura'] . '.html'] = (string) render_factura($ped['factura']);
     $aviso = ['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), 'texto' => $texto, 'adjuntos' => $adjuntos];
     if (aviso_envia($aviso)) return;
@@ -221,7 +269,7 @@ function texto_venta(array $ped): string {
 }
 
 function correo_enlace_panel(string $slug, string $email, string $enlace): void {
-    envia_correo($email, 'Acceso a vuestro panel de boda', "Hola:\n\nAlguien ha pedido un enlace para elegir una nueva contraseña del panel de " . url_boda($slug) . ".\n\n$enlace\n\nSirve una sola vez y caduca en 14 días. Si no lo habéis pedido vosotros, ignorad este email: vuestra contraseña actual sigue funcionando.\n\nAxisWorks");
+    envia_correo($email, 'Acceso a vuestro panel de boda', "Hola:\n\nAlguien ha pedido un enlace para elegir una nueva contraseña del panel de " . url_boda($slug) . ".\n\n$enlace\n\nSirve una sola vez y caduca en 14 días. Si no lo habéis pedido vosotros, ignorad este email: vuestra contraseña actual sigue funcionando.\n\n" . marca_comercial_correo());
 }
 
 /** Aviso al owner por correo (buzón de la marca) y por Telegram. Si alguno falla, a la cola del cron. */

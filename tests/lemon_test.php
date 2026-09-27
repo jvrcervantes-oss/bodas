@@ -156,9 +156,29 @@ $cfg = config_inicial();
 $cfg['fecha'] = date('Y-m-d', strtotime('+200 days'));
 $base = ['slug' => 'x', 'email' => 'a@b.c', 'aceptacion' => ['fecha' => date('c'), 'desistimiento' => 'd']];
 $tl = texto_bienvenida($base + ['pasarela' => 'lemon', 'factura' => ''], $cfg, 'https://enlace');
-ok(strpos($tl, 'Lemon Squeezy') !== false && stripos($tl, 'regala') === false && strpos($tl, 'Al comprar') !== false, 'correo LS: rama propia, sin regalo');
+ok(strpos($tl, 'Venta y cobro: Lemon Squeezy') !== false && stripos($tl, 'os la regala') === false && strpos($tl, 'Antes de pagar') !== false, 'correo LS: rama propia, sin regalo');
 $tr = texto_bienvenida($base + ['factura' => ''], $cfg, 'https://enlace');
-ok(stripos($tr, 'regala') !== false && strpos($tr, 'Lemon') === false, 'correo regalo intacto');
+ok(stripos($tr, 'os la regala') !== false && strpos($tr, 'Venta y cobro') === false && strpos($tr, 'Desistimiento:') === false, 'correo regalo intacto: sin venta ni desistimiento en el resumen');
+// Legal (27-sep, BOD-6): soporte duradero = el CUERPO. Condiciones íntegras dentro, casillas literales, sin adjunto
+$acLs = ['fecha' => date('c'), 'version' => textos_legales()['version'], 'condiciones' => textos_legales()['check_condiciones'], 'desistimiento' => textos_legales()['check_desistimiento']];
+$tl2 = texto_bienvenida(['slug' => 'x', 'email' => 'a@b.c', 'pasarela' => 'lemon', 'factura' => '', 'aceptacion' => $acLs, 'ls' => ['order_number' => 77], 'importe' => ['total' => 12500]], $cfg, 'https://enlace');
+ok(strpos($tl2, '«' . $acLs['condiciones'] . '»') !== false && strpos($tl2, '«' . $acLs['desistimiento'] . '»') !== false, 'bienvenida LS: las dos casillas, literales');
+ok(strpos($tl2, 'CONDICIONES DEL SERVICIO') !== false && strpos($tl2, '8. DESISTIMIENTO Y REEMBOLSOS') !== false && strpos($tl2, 'ANEXO II') !== false, 'bienvenida LS: condiciones íntegras en el cuerpo');
+ok(strpos($tl2, 'pedido n.º 77') !== false && strpos($tl2, 'versión ' . $acLs['version']) !== false, 'bienvenida LS: número de pedido y versión de las condiciones');
+ok(!preg_match('~</?(p|h1|h2|ul|li|a|strong|em)\b~', $tl2), 'bienvenida: sin etiquetas HTML en el texto plano');
+correo_bienvenida(['slug' => 'x', 'email' => 'adj@b.c', 'pasarela' => 'lemon', 'factura' => '', 'aceptacion' => $acLs], $cfg, 'https://enlace');
+$adj = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('correos', '*')) ?: []), fn($c) => strpos($c, 'Para: adj@b.c') === 0));
+ok(count($adj) === 1 && preg_match('/Adjuntos: *$/', rtrim($adj[0])) === 1, 'bienvenida sin ningún adjunto (spam): ' . count($adj));
+// Casillas y legales: sin marcadores sin sustituir, vendedor en un solo sitio, sin la promesa de devolución proporcional
+foreach (textos_legales() as $k => $v) if (is_string($v)) ok(!preg_match('/\{(titular|marca|vendedor)\}/', $v), "textos.php $k sin marcadores sin sustituir");
+ok(strpos(textos_legales()['check_desistimiento'], 'Lemon Squeezy') !== false && strpos(textos_legales()['check_condiciones_regalo'], 'Lemon') === false, 'casilla de pago nombra al vendedor; la de regalo no');
+$E = empresa();
+foreach (['condiciones', 'privacidad', 'aviso-legal'] as $doc) {
+    $h = documento_legal($doc, $doc);
+    ok(strpos($h, 'Lemon Squeezy') !== false && strpos($h, 'Stripe') === false && strpos($h, 'axisworks.studio') === false, "$doc nombra a LS, no a Stripe, y el dominio es el del producto");
+}
+$cond = legal_a_texto(documento_legal('condiciones', 'c'));
+ok(stripos($cond, 'parte proporcional') === false && stripos($cond, 'factura simplificada') === false, 'condiciones sin devolución proporcional prometida ni factura propia');
 $tf = texto_bienvenida($base + ['factura' => 'BODA-2026-0001'], $cfg, 'https://enlace');
 ok(strpos($tf, 'BODA-2026-0001') !== false && stripos($tf, 'regala') === false, 'correo Stripe con factura intacto');
 

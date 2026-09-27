@@ -36,7 +36,7 @@ function rutas_creador(string $ruta, string $metodo): void {
             return;
         case 'condiciones': case 'privacidad': case 'aviso-legal':
             header('Content-Security-Policy: ' . CSP_CREADOR);
-            $t = ['condiciones' => 'Condiciones de contratación', 'privacidad' => 'Privacidad', 'aviso-legal' => 'Aviso legal'][$ruta];
+            $t = ['condiciones' => 'Condiciones del servicio', 'privacidad' => 'Privacidad', 'aviso-legal' => 'Aviso legal'][$ruta];
             $E = empresa();
             // Sin titular, NIF y domicilio (BOD-1) los textos saldrían con huecos: se dice la verdad
             if (!empresa_completa()) {
@@ -189,8 +189,10 @@ function api_pagar(string $metodo): void {
     // Es también el importe que se manda a Lemon Squeezy (custom_price): una sola cuenta, en el servidor.
     $precio = precio_total_cent($c);
     escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => $cortesia ? 'cortesia' : $pasarela, 'aceptacion' => [
-        'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $L['check_condiciones'] ?? '',
+        'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $cortesia ? ($L['check_condiciones_regalo'] ?? '') : ($L['check_condiciones'] ?? ''),
         'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
+        // Quién vendía al aceptar (Legal, 27-sep): la casilla nombra al vendedor y queda atada a este pedido
+        'vendedor' => $cortesia ? '' : (string) ($L['vendedor'] ?? ''),
     ]]);
 
     if ($cortesia) {
