@@ -675,8 +675,9 @@
   });
   window.addEventListener('resize', ajustaMarco);
 
-  // Pantalla estrecha: editor o vista previa, uno cada vez
-  document.querySelectorAll('[data-ver]').forEach(function (b) {
+  // Pantalla estrecha: editor o vista previa, uno cada vez. Solo los botones: el <body> también
+  // lleva data-ver y, con '[data-ver]', cualquier clic en la página subía arriba (owner, 27-sep).
+  document.querySelectorAll('button[data-ver]').forEach(function (b) {
     b.addEventListener('click', function () {
       document.body.setAttribute('data-ver', b.getAttribute('data-ver'));
       ajustaMarco();
