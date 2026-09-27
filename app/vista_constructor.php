@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 function vista_constructor(string $modo, array $c, string $slug, string $csrf = ''): string {
     $L = textos_legales();
+    $editar = $modo === 'editar';
     $datos = ['modo' => $modo, 'config' => $c, 'slug' => $slug, 'csrf' => $csrf,
         'temas' => array_map(fn($t) => ['nombre' => $t[0], 'color' => $t[2], 'fondo' => $t[5], 'titulo' => $t[1]], TEMAS),
         'fuentes' => array_map(fn($f) => ['nombre' => $f[0], 'titulos' => $f[1], 'nombres' => $f[3], 'estilo' => $f[4]], FUENTES),
@@ -21,8 +22,11 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
         'precio' => ['total' => euros(precio_esencial_cent()), 'totalAtelier' => euros(precio_atelier_cent())],
         'atelier' => array_map(fn($a) => ['nombre' => $a['nombre'], 'categoria' => $a['categoria'], 'desc' => $a['desc']], ATELIER),
-        // En el panel, los diseños Atelier solo si la web se compró con uno (no hay pago de mejora)
+        // En el panel, los diseños Atelier solo si la boda tiene el Pack Atelier (comprado al crearla o con la mejora)
         'atelierPermitido' => !$editar || !empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier']),
+        // Mejora Esencial → Atelier desde el panel: precio vigente calculado aquí (app/lemon.php), nunca en el navegador
+        'mejora' => $editar && mejora_disponible($slug)
+            ? ['precio' => euros(precio_mejora_cent()), 'check' => (string) ($L['check_mejora'] ?? $L['check_desistimiento'] ?? '')] : null,
         'fotoUrl' => $modo === 'editar' && is_file(dir_boda($slug) . '/foto.webp') ? '/foto?v=' . filemtime(dir_boda($slug) . '/foto.webp') : '',
     ];
     // Fotos de la galería con su firma para verlas en el editor (el navegador no manda la cookie al iframe)
@@ -33,7 +37,6 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         unset($sx, $fx);
     }
     $json = json_encode($datos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
-    $editar = $modo === 'editar';
     $titulo = $editar ? 'Editar la web' : 'Crea la web de vuestra boda';
     // Orden (owner, 25-sep): primero el estilo, luego los datos
     $tabs = ['estilo' => 'Estilo', 'pareja' => 'Vosotros', 'lugares' => 'Ceremonia y convite', 'rsvp' => 'Confirmación y menú',

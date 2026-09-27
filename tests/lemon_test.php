@@ -211,6 +211,52 @@ ok(strpos(pagina_seccion($n2, $rs, ['modo' => 'zip', 'assets' => 'assets/', 'fot
 $vacio = normaliza_config(config_inicial());
 ok(array_values(array_filter($vacio['secciones'], fn($s) => $s['tipo'] === 'rsvp'))[0]['datos']['banquete'] === '', 'banquete vacío por defecto');
 
+// 14. Mejora Esencial → Atelier: importe del servidor, validación, idempotencia y estados finales
+$pm = precio_mejora_cent();
+ok($pm === precio_atelier_cent() - precio_esencial_cent() && $pm > 0, 'mejora = diferencia de packs al precio vigente');
+$cm = lemon_cuerpo_checkout(str_repeat('b', 32), 'corte', 'p@example.com', $pm, 1000000, 'mejora');
+ok($cm['data']['attributes']['custom_price'] === $pm && $cm['data']['attributes']['checkout_data']['custom']['tipo'] === 'mejora', 'checkout de mejora con importe del servidor y tipo');
+ok($cm['data']['attributes']['checkout_options']['discount'] === false, 'mejora sin descuentos');
+ok($cm['data']['attributes']['product_options']['redirect_url'] === 'https://corte.bodaenlace.com/panel/editar?mejora=1', 'la mejora vuelve al panel');
+ok(!isset($cu['data']['attributes']['checkout_data']['custom']['tipo']), 'el alta no lleva tipo');
+ok(mejora_bloqueo('corte') === '', 'boda Esencial pagada: se puede mejorar');
+ok(mejora_bloqueo('ana-y-luis') === 'sin-pedido', 'boda reembolsada: no se puede mejorar');
+function mejora_abierta(string $slug, int $precio): string {
+    $t = bin2hex(random_bytes(16));
+    escribe_json(dir_datos('mejoras', $t . '.json'), ['tipo' => 'mejora', 'slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => 'lemon', 'estado' => 'abierta']);
+    return $t;
+}
+function ev_mejora(string $id, string $tok, string $slug): array {
+    $e = evento('order_created', $id, $tok, $slug);
+    $e['meta']['custom_data']['tipo'] = 'mejora';
+    return $e;
+}
+// Importe manipulado (el precio de alta en vez de la diferencia) → no-conforme, sin Atelier
+$tm = mejora_abierta('corte', $pm);
+[$st, $r] = lemon_procesa_evento(ev_mejora('900', $tm, 'corte'), lector(['900' => pedido_ls($pm + 100)]));
+ok($r === 'no-conforme' && empty((lee_json(dir_boda('corte') . '/pedido.json') ?? [])['atelier']), 'mejora con importe distinto: no-conforme y sin Atelier');
+// Buena, entregada 3 veces → un solo cambio, un correo a la pareja, un Telegram
+$tm = mejora_abierta('corte', $pm);
+$tgAntes = count(telegramas());
+$paAntes = correos_a('pareja@example.com');
+for ($i = 0; $i < 3; $i++) [$st, $r] = lemon_procesa_evento(ev_mejora('901', $tm, 'corte'), lector(['901' => pedido_ls($pm)]));
+ok($r === 'creada', 'mejora aplicada (3 entregas)');
+$bpc = lee_json(dir_boda('corte') . '/pedido.json') ?? [];
+ok(!empty($bpc['atelier']) && ($bpc['mejora']['session_id'] ?? '') === 'ls_901', 'la boda pasa a Atelier y guarda qué pedido la mejoró');
+ok(count(telegramas()) === $tgAntes + 1 && correos_a('pareja@example.com') === $paAntes + 1, 'un solo aviso por mejora (pareja + Telegram)');
+ok((lee_json(dir_datos('mejoras', $tm . '.json'))['estado'] ?? '') === 'pagada', 'el pedido de mejora queda pagado');
+ok(facturas_emitidas() === 0, 'la mejora tampoco emite factura BODA-');
+// Otro cobro con el mismo token → duplicado; y una mejora nueva sobre una web ya Atelier → duplicado
+[$st, $r] = lemon_procesa_evento(ev_mejora('902', $tm, 'corte'), lector(['902' => pedido_ls($pm)]));
+ok($r === 'duplicado', 'segundo cobro de la misma mejora: duplicado');
+$tm2 = mejora_abierta('corte', $pm);
+[$st, $r] = lemon_procesa_evento(ev_mejora('903', $tm2, 'corte'), lector(['903' => pedido_ls($pm)]));
+ok($r === 'duplicado', 'mejora pagada en una web que ya es Atelier: duplicado');
+ok(mejora_bloqueo('corte') === 'ya-atelier', 'una web Atelier ya no ofrece la mejora');
+// Sin pedido de mejora congelado → sin-datos, nada cambia
+[$st, $r] = lemon_procesa_evento(ev_mejora('904', str_repeat('c', 32), 'corte'), lector(['904' => pedido_ls($pm)]));
+ok($r === 'sin-datos', 'mejora sin su pedido en el servidor: sin-datos');
+
 // Limpieza
 borra_arbol_test($tmp);
 function borra_arbol_test(string $d): void {

@@ -111,7 +111,28 @@
   atelierEl.parentNode.insertBefore(propioEl, atelierEl);
   atelierEl.parentNode.insertBefore(el('div', { class: 'c-atelier-cab c-atelier-cab-sep' }, [el('span', { class: 'overline', text: 'Colección Atelier · diseños premium' }), el('span', { class: 'c-atelier-precio', text: 'Pack Atelier · ' + D.precio.totalAtelier })]), atelierEl);
   Object.keys(D.atelier).forEach(function (k) { atelierEl.appendChild(tarjetaAtelier(k, D.atelier[k])); });
-  if (!D.atelierPermitido) atelierEl.appendChild(el('p', { class: 'c-ayuda c-atelier-nota', text: 'Los diseños Atelier se eligen al crear la web. Si queréis cambiar a uno, escribidnos.' }));
+  if (!D.atelierPermitido) atelierEl.appendChild(D.mejora ? cajaMejora() : el('p', { class: 'c-ayuda c-atelier-nota', text: /[?&]mejora=1/.test(location.search)
+    ? 'Estamos confirmando el pago de la mejora. Recargad la página en un minuto.' : 'Los diseños Atelier se eligen al crear la web. Si queréis cambiar a uno, escribidnos.' }));
+  // Mejora Esencial → Atelier desde el panel: el importe lo pone el servidor (D.mejora.precio es solo el rótulo)
+  function cajaMejora() {
+    var chk = el('input', { type: 'checkbox' });
+    var msg = el('p', { class: 'c-ayuda', 'aria-live': 'polite' });
+    var btn = el('button', { type: 'button', class: 'b-btn b-dark', text: 'Pasar al Pack Atelier por ' + D.mejora.precio });
+    btn.addEventListener('click', function () {
+      if (!chk.checked) { msg.textContent = 'Marca la casilla para continuar.'; return; }
+      var fd = new FormData();
+      fd.append('csrf', D.csrf); fd.append('acepto_desistimiento', 'si');
+      btn.disabled = true; msg.textContent = 'Abriendo el pago…';
+      fetch('/panel/mejora', { method: 'POST', body: fd })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { if (j.ok && j.url) { location.href = j.url; return; } btn.disabled = false; msg.textContent = j.error || 'No se ha podido abrir el pago.'; })
+        .catch(function () { btn.disabled = false; msg.textContent = 'Sin conexión. Inténtalo de nuevo.'; });
+    });
+    return el('div', { class: 'c-atelier-nota c-mejora' }, [
+      el('p', { class: 'c-ayuda', text: 'Vuestra web tiene el Pack Esencial. Con el Pack Atelier podréis usar cualquiera de estos diseños y cambiarlo cuantas veces queráis. Pagáis solo la diferencia.' }),
+      el('label', { class: 'c-check' }, [chk, el('span', { text: D.mejora.check })]),
+      btn, msg]);
+  }
   pintaAtelier();
 
   var temasEl = document.getElementById('temas');

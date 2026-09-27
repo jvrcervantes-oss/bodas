@@ -186,6 +186,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
             echo vista_constructor('editar', $c, $slug, panel_csrf());
             return;
         case 'guardar': panel_guardar($slug, $c, $metodo); return;
+        case 'mejora': panel_mejora($slug, $metodo); return;   // Esencial → Atelier (app/lemon.php)
         case 'vista-previa': api_vista_previa($metodo, url_boda($slug, 'assets/'), $slug); return;
         case 'galeria': if ($metodo !== 'POST') no_existe(); panel_galeria_subir($slug); return;
         case 'libro': if ($metodo !== 'POST') no_existe(); panel_libro_accion($slug); return;
@@ -461,7 +462,7 @@ function panel_guardar(string $slug, array $actual, string $metodo): void {
     $f = faltan($c);
     if ($f) json_response(['ok' => false, 'error' => 'Faltan datos.', 'faltan' => $f], 422);
     if ($c['atelier'] !== '' && empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier'])) {
-        json_response(['ok' => false, 'error' => 'Los diseños Atelier solo están disponibles si la web se compró con uno.'], 422);
+        json_response(['ok' => false, 'error' => 'Los diseños Atelier necesitan el Pack Atelier: podéis pasar a él desde el paso Estilo.'], 422);
     }
     $d = dir_boda($slug);
     if (($_POST['quitar_foto'] ?? '') === 'si') @unlink($d . '/foto.webp');
