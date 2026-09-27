@@ -508,10 +508,12 @@ function panel_misma_confirmar(array $c, array $rsvps, array $gnom): string {
         foreach (personas($r) as $p) $o .= '<li><b>' . h($p['nombre']) . '</b>' . ($p['alergias'] !== '' ? ' · alergias: ' . h($p['alergias']) : ' · sin alergias') . '</li>';
         return $o . '</ul>';
     };
-    // Alergias de la general que la del grupo no trae para esa persona (por nombre): se perderían al confirmar
-    $conAlergia = [];
-    foreach (personas($gru) as $p) if ($p['alergias'] !== '') $conAlergia[clave_nombre($p['nombre'])] = true;
-    $pierde = array_filter(personas($gen), fn($p) => $p['alergias'] !== '' && !isset($conAlergia[clave_nombre($p['nombre'])]));
+    // Alergias de la general que la del grupo no trae para esa persona (por nombre y por TEXTO: «marisco» en la general y
+    // «gluten» en la del grupo también se pierde, revisor 27-sep): al confirmar se borran
+    $delGrupo = [];
+    foreach (personas($gru) as $p) $delGrupo[clave_nombre($p['nombre'])] = ($delGrupo[clave_nombre($p['nombre'])] ?? '') . ' ' . clave_nombre($p['alergias']);
+    $pierde = array_filter(personas($gen), fn($p) => $p['alergias'] !== ''
+        && !str_contains($delGrupo[clave_nombre($p['nombre'])] ?? '', clave_nombre($p['alergias'])));
     $grupo = $gnom[(string) $gru['grupo']] ?? 'su grupo';
     $o = '<section class="card misma-card" id="misma"><h2 class="h2">¿Es la misma respuesta?</h2>'
         . '<p>Si lo es, cuenta solo la que «' . h($grupo) . '» mandó por su enlace, y la otra deja de contar en el panel, el Excel, el catering y el plano.</p>'

@@ -246,6 +246,13 @@ muta_json($rsvpF, function (array &$d) use ($per) { $d[] = ['id' => 'rgen', 'fec
 [, $h] = pide('GET', '/panel/respuestas');
 ok(strpos($h, 'misma=rgen&amp;con=' . $nueva['id']) !== false && strpos($h, '¿Es la misma que la de «Familia Pérez»?') !== false, 'respuestas: la general repetida ofrece juntarla con la del grupo');
 [, $h] = pide('GET', '/panel/respuestas?misma=rgen&con=' . $nueva['id']);
+$rsvpAntes = lee_json($rsvpF);
+muta_json($rsvpF, function (array &$d) use ($nueva) { foreach ($d as $k => $r) if (($r['id'] ?? '') === $nueva['id']) $d[$k]['invitados'][1]['alergias'] = 'gluten'; });
+[, $h2] = pide('GET', '/panel/respuestas?misma=rgen&con=' . $nueva['id']);
+muta_json($rsvpF, function (array &$d) use ($nueva) { foreach ($d as $k => $r) if (($r['id'] ?? '') === $nueva['id']) $d[$k]['invitados'][1]['alergias'] = 'Marisco y gluten'; });
+[, $h3] = pide('GET', '/panel/respuestas?misma=rgen&con=' . $nueva['id']);
+escribe_json($rsvpF, $rsvpAntes);
+ok(strpos($h2, 'Carlos Pérez: marisco') !== false && strpos($h3, 'Ojo: la respuesta general') === false, 'aviso: alergias distintas en el grupo («gluten») también avisan; si la del grupo ya la trae, no');
 ok(strpos($h, 'id="misma"') !== false && strpos($h, 'Carlos Pérez: marisco') !== false && strpos($h, 'action="/panel/respuestas/misma"') !== false, 'confirmación: las dos respuestas y el aviso de la alergia que se perdería');
 [, $h] = pide('GET', '/panel/respuestas?misma=' . $nueva['id'] . '&con=rgen');
 ok(strpos($h, 'id="misma"') === false, 'confirmación: al revés (grupo como general) no se ofrece');

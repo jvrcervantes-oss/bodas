@@ -27,7 +27,7 @@ declare(strict_types=1);
  */
 function servicio_pago(string $tipo, string $clave = ''): ?array {
     if ($tipo === 'mejora') return [
-        'tipo' => 'mejora', 'clave' => '', 'dir' => 'mejoras', 'limite' => 'mejora', 'post' => 'acepto_mejora', 'campo_casilla' => 'desistimiento',
+        'tipo' => 'mejora', 'clave' => '', 'dir' => servicio_dir('mejora'), 'limite' => 'mejora', 'post' => 'acepto_mejora', 'campo_casilla' => 'desistimiento',
         'bloqueo' => fn(string $slug) => mejora_bloqueo($slug),
         'precio' => fn() => precio_mejora_cent(),
         'casilla' => fn() => texto_mejora(),
@@ -56,7 +56,7 @@ function servicio_pago(string $tipo, string $clave = ''): ?array {
     if ($tipo !== 'extra' || !extra_existe($clave)) return null;
     $x = EXTRAS[$clave];
     return [
-        'tipo' => 'extra', 'clave' => $clave, 'dir' => 'extras', 'limite' => 'extra', 'post' => 'acepto_extra', 'campo_casilla' => 'casilla',
+        'tipo' => 'extra', 'clave' => $clave, 'dir' => servicio_dir('extra'), 'limite' => 'extra', 'post' => 'acepto_extra', 'campo_casilla' => 'casilla',
         'bloqueo' => fn(string $slug) => extra_bloqueo($slug, $clave),
         'precio' => fn() => precio_extra_cent($clave),
         'casilla' => fn() => texto_extra(),
@@ -88,6 +88,9 @@ function servicio_pago(string $tipo, string $clave = ''): ?array {
         'registro' => 'extra activado',
     ];
 }
+
+/** Carpeta de los pedidos de cada tipo de servicio (la ficha y el webhook, que la necesita antes de saber la clave). */
+function servicio_dir(string $tipo): string { return $tipo === 'mejora' ? 'mejoras' : 'extras'; }
 
 /** Marca «hay un pago de este servicio abierto en esta boda» (vive lo que el checkout). */
 function servicio_fichero_abierta(array $s, string $slug): string {
@@ -158,7 +161,7 @@ function lemon_servicio(string $tipo, string $id, array $o, array $custom): arra
     return con_cerrojo(function () use ($tipo, $id, $o, $custom, $sid, $fPedido) {
         $ped = lee_json($fPedido);
         if ($ped && in_array($ped['estado'] ?? '', LEMON_FINALES, true)) return $ped;
-        $dir = $tipo === 'mejora' ? 'mejoras' : 'extras';
+        $dir = servicio_dir($tipo);
         $token = (string) ($custom['token'] ?? '');
         $tokOk = (bool) preg_match('/^[a-f0-9]{32}$/', $token);
         $fTok = $tokOk ? dir_datos('ls_tokens', $token . '.json') : '';
@@ -200,7 +203,7 @@ function lemon_servicio(string $tipo, string $id, array $o, array $custom): arra
         $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
         $yaAplicado = ($s['aplicado'])($bp, $sid);
         if ($yaAplicado && ($s['baja_tras_corte'])($bp)) {
-            return $aviso('reembolsado', 'Extra reembolsado antes de rematar la activación', "Pedido LS $id ($slug): {$s['que']} se reembolsó antes de terminar la activación. Sigue desactivado; no se ha mandado confirmación.");
+            return $aviso('reembolsado', 'Compra reembolsada antes de rematar la activación', "Pedido LS $id ($slug): {$s['que']} se reembolsó antes de terminar la activación. Sigue desactivado; no se ha mandado confirmación.");
         }
         $bloqueo = $yaAplicado && $s['rematable'] ? '' : ($s['bloqueo'])($slug);
         if (isset($s['ya_lo_tiene'][$bloqueo])) {
