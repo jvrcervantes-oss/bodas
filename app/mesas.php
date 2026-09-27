@@ -176,16 +176,29 @@ function panel_mesas(string $slug, array $c, string $metodo): void {
     }
     if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }
     if (!extra_activo($slug, 'mesas')) {
-        echo panel_marco($c, 'Plano de mesas', mesas_cabecera($c, false) . '<section class="section"><p class="panel-nota">El plano de mesas no está disponible en esta web.</p></section>', true, true);
+        echo panel_pagina($slug, $c, 'mesas', 'Plano de mesas', '<section class="card">' . panel_card_cab('Plano de mesas', 'El plano de mesas no está disponible en esta web.') . '</section>');
         return;
     }
-    echo panel_marco($c, 'Plano de mesas', mesas_cabecera($c, true) . mesas_herramienta($slug), true, true);
+    echo panel_pagina($slug, $c, 'mesas', 'Plano de mesas', mesas_herramienta($slug));
 }
 
-function mesas_cabecera(array $c, bool $activo): string {
-    return '<header class="panel-head"><div><span class="kicker">Plano de mesas</span><h1>' . h(nombres($c)) . '</h1></div>'
-        . '<nav class="panel-acc no-print">' . ($activo ? '<a class="btn" href="/panel/mesas/imprimir">Hoja para el restaurante</a>' : '')
-        . '<a class="btn btn-soft" href="/panel">Volver al panel</a></nav></header>';
+/**
+ * Sillas alrededor de una mesa redonda: ocupadas (dorado), con alergia (rosa), libres (blanco). Solo dibujo
+ * (aria-hidden): la lista de quién se sienta va debajo, en texto. Con muchas plazas las sillas encogen y pierden
+ * las iniciales para no montarse unas sobre otras.
+ */
+function mesa_sillas(array $m, int $radio = 70, int $centro = 60): string {
+    $n = max(1, (int) $m['plazas']);
+    $tam = (int) max(10, min(24, floor(2 * M_PI * $radio / $n) - 4));
+    $o = '';
+    for ($i = 0; $i < $n; $i++) {
+        $a = $i / $n * M_PI * 2 - M_PI / 2;
+        $p = $m['personas'][$i] ?? null;
+        $cls = $p ? ($p['alergias'] !== '' ? ' a' : ' o') : '';
+        $o .= '<span class="silla' . $cls . '" style="left:' . round($centro + cos($a) * $radio, 1) . 'px;top:' . round($centro + sin($a) * $radio, 1) . 'px;width:' . $tam . 'px;height:' . $tam . 'px;margin:-' . ($tam / 2) . 'px 0 0 -' . ($tam / 2) . 'px">'
+            . ($p && $tam >= 20 ? h(panel_iniciales($p['nombre'])) : '') . '</span>';
+    }
+    return $o;
 }
 
 function mesas_herramienta(string $slug): string {
@@ -193,65 +206,68 @@ function mesas_herramienta(string $slug): string {
     $csrf = h(panel_csrf());
     $o = '';
     $e = (string) ($_GET['e'] ?? '');
-    if ($e !== '') $o .= '<p class="panel-aviso" role="alert">' . h(MESAS_ERRORES[$e] ?? 'No se ha podido hacer.') . '</p>';
-    // Quien estaba sentado y ya no viene: se dice, y la pareja lo quita (nunca se reasigna solo)
-    foreach ($E['avisos'] as $a) {
-        $o .= '<form method="post" action="/panel/mesas" class="panel-aviso mesa-aviso"><span>' . ($a['respondio']
-                ? 'Ha vuelto a responder: <b>' . h($a['nombre']) . '</b> estaba en <b>' . h($a['mesa']) . '</b> y ahora sale en «Sin mesa». Volved a sentarle.'
-                : 'Ya no viene: <b>' . h($a['nombre']) . '</b> estaba en <b>' . h($a['mesa']) . '</b>.') . '</span>'
-            . '<input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar"><input type="hidden" name="persona" value="' . h($a['id']) . '">'
-            . '<button class="inv-btn">Quitar del plano</button></form>';
-    }
+    if ($e !== '') $o .= '<p class="aviso" role="alert">' . h(MESAS_ERRORES[$e] ?? 'No se ha podido hacer.') . '</p>';
     $sentados = array_sum(array_map(fn($m) => count($m['personas']), $E['mesas']));
     $plazas = array_sum(array_column($E['mesas'], 'plazas'));
     $sinId = array_filter($E['sin_mesa'], fn($p) => $p['id'] === '');
-    $o .= '<section class="section"><div class="stat-row"><div class="stat"><b>' . $sentados . '</b><span>sentados</span></div>'
-        . '<div class="stat"><b>' . count($E['sin_mesa']) . '</b><span>sin mesa</span></div><div class="stat"><b>' . count($E['mesas']) . '</b><span>mesas</span></div>'
-        . '<div class="stat"><b>' . $plazas . '</b><span>plazas</span></div></div>'
-        . '<p class="panel-nota">Tocad a una persona (o «Todo el grupo») y luego la mesa donde se sienta. Tocad a alguien ya sentado para cambiarlo de mesa.</p>';
-    $o .= '</section>';
+    $rep = mesas_repetidos($E);
 
     // Formulario único para sentar: el JS lo rellena con la selección y la mesa tocada
     $o .= '<form method="post" action="/panel/mesas" id="form-sentar" hidden><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="sentar"><input type="hidden" name="mesa" value=""></form>';
 
-    // Sin mesa, agrupados por respuesta (un grupo = los que confirmaron juntos)
-    $o .= '<section class="section"><h2 class="panel-h2">Sin mesa</h2>';
-    if (!$E['sin_mesa']) $o .= '<p class="vacio">Todos los que van al banquete tienen mesa.</p>';
-    $rep = mesas_repetidos($E);
+    // Salón: una mesa redonda por mesa, con sus sillas. Tocar la mesa = sentar ahí a quien esté elegido
+    $salon = '';
+    foreach ($E['mesas'] as $m) {
+        $libres = $m['plazas'] - count($m['personas']);
+        $conAlergia = count(array_filter($m['personas'], fn($p) => $p['alergias'] !== ''));
+        $salon .= '<div class="mesa" data-mesa="' . h($m['id']) . '">'
+            . '<button type="button" class="m-circ mesa-destino" data-sentar="' . h($m['id']) . '" disabled aria-label="Sentar aquí: ' . h(mesa_nombre($m)) . ($libres > 0 ? '' : ' (llena)') . '">'
+            . '<b>' . h(mesa_nombre($m)) . '</b><span class="m-sentar" aria-hidden="true">Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</span>' . mesa_sillas($m) . '</button>'
+            . '<small class="tab">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . ($conAlergia ? ' · ' . $conAlergia . ' con alergia' : '') . '</small>'
+            . '<ul class="mesa-personas">';
+        foreach ($m['personas'] as $p) {
+            $salon .= '<li>' . mesas_boton_persona($p, $rep) . '<form method="post" action="/panel/mesas" class="mesa-quitar"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar">'
+                . '<input type="hidden" name="persona" value="' . h($p['id']) . '"><button class="mesa-x" aria-label="Quitar a ' . h($p['nombre']) . ' de la mesa">×</button></form></li>';
+        }
+        $salon .= '</ul><details class="mesa-editar"><summary>Cambiar</summary>'
+            . '<form method="post" action="/panel/mesas" class="form"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="editar"><input type="hidden" name="mesa" value="' . h($m['id']) . '">'
+            . '<div class="campo"><label for="n-' . h($m['id']) . '">Nombre</label><input type="text" id="n-' . h($m['id']) . '" name="nombre" maxlength="40" value="' . h($m['nombre']) . '" placeholder="Mesa ' . (int) $m['n'] . '"></div>'
+            . '<div class="campo"><label for="p-' . h($m['id']) . '">Plazas</label><input type="number" id="p-' . h($m['id']) . '" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="' . (int) $m['plazas'] . '" required></div>'
+            . '<button class="btn b-sm b-papel">Guardar</button></form>'
+            . '<form method="post" action="/panel/mesas"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="borrar"><input type="hidden" name="mesa" value="' . h($m['id']) . '">'
+            . '<button class="btn b-sm b-papel" data-confirmar="¿Borrar esta mesa? Quien estaba sentado vuelve a «Sin mesa».">Borrar la mesa</button></form></details></div>';
+    }
+    $nueva = '<form method="post" action="/panel/mesas" class="mesa-nueva"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="crear">'
+        . '<div class="campo"><label for="mesa-nombre">Mesa nueva</label><input type="text" id="mesa-nombre" name="nombre" maxlength="40" placeholder="Mesa ' . (count($E['mesas']) + 1) . '"></div>'
+        . '<div class="campo campo-corto"><label for="mesa-plazas">Plazas</label><input type="number" id="mesa-plazas" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="10" required></div>'
+        . '<button class="btn b-papel">Crear mesa</button></form>';
+    $o .= '<div class="rej r-12 mesas"><section class="card" id="plano">'
+        . panel_card_cab('Plano de mesas', 'Tocad a una persona (o «Todo el grupo») y luego la mesa donde se sienta. Tocad a alguien ya sentado para cambiarlo de mesa.', '<span class="chip incl">Incluido en vuestro pack</span>')
+        . '<div class="cifras tab"><span><b>' . $sentados . '</b> sentados</span><span><b>' . count($E['sin_mesa']) . '</b> sin mesa</span><span><b>' . count($E['mesas']) . '</b> mesas</span><span><b>' . $plazas . '</b> plazas</span></div>'
+        . ($salon !== '' ? '<div class="salon">' . $salon . '</div>' : '<p class="vacio">Todavía no hay mesas. Cread la primera aquí abajo.</p>')
+        . $nueva . '<div class="fila-bot"><a class="btn b-osc" href="/panel/mesas/imprimir">' . p_ico('hoja') . 'Hoja para el restaurante</a></div></section>';
+
+    // Sin mesa, agrupados por respuesta (un grupo = los que confirmaron juntos), y los avisos
+    $o .= '<section class="card sin-mesa">' . panel_card_cab('Sin mesa', h(count($E['sin_mesa']) ? count($E['sin_mesa']) . (count($E['sin_mesa']) === 1 ? ' persona que va' : ' personas que van') . ' al banquete.' : 'Todos los que van al banquete tienen mesa.'));
+    // Quien estaba sentado y ya no viene: se dice, y la pareja lo quita (nunca se reasigna solo)
+    foreach ($E['avisos'] as $a) {
+        $o .= '<form method="post" action="/panel/mesas" class="aviso mesa-aviso"><span>' . ($a['respondio']
+                ? 'Ha vuelto a responder: <b>' . h($a['nombre']) . '</b> estaba en <b>' . h($a['mesa']) . '</b> y ahora sale en «Sin mesa». Volved a sentarle.'
+                : 'Ya no viene: <b>' . h($a['nombre']) . '</b> estaba en <b>' . h($a['mesa']) . '</b>.') . '</span>'
+            . '<input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar"><input type="hidden" name="persona" value="' . h($a['id']) . '">'
+            . '<button class="btn b-sm b-papel">Quitar del plano</button></form>';
+    }
     $grupos = [];
     foreach ($E['sin_mesa'] as $p) $grupos[$p['grupo']][] = $p;
     $o .= '<div class="mesa-sin">';
     foreach ($grupos as $gid => $ps) {
         $conId = array_filter($ps, fn($p) => $p['id'] !== '');
-        $o .= '<div class="mesa-grupo">' . (count($conId) > 1 ? '<button type="button" class="inv-btn" data-grupo-sel="' . h($gid) . '">Todo el grupo (' . count($conId) . ')</button>' : '');
+        $o .= '<div class="mesa-grupo">' . (count($conId) > 1 ? '<button type="button" class="todo-grupo" data-grupo-sel="' . h($gid) . '">Todo el grupo (' . count($conId) . ')</button>' : '');
         foreach ($ps as $p) $o .= mesas_boton_persona($p, $rep);
         $o .= '</div>';
     }
-    $o .= '</div>' . ($sinId ? '<p class="panel-nota">Las personas en gris respondieron antes de que existiera el plano y no se pueden sentar: pedidles que vuelvan a confirmar.</p>' : '') . '</section>';
-
-    // Mesas
-    $o .= '<section class="section"><h2 class="panel-h2">Mesas</h2><div class="mesas-grid">';
-    foreach ($E['mesas'] as $m) {
-        $libres = $m['plazas'] - count($m['personas']);
-        $o .= '<div class="mesa" data-mesa="' . h($m['id']) . '"><div class="mesa-cab"><b>' . h(mesa_nombre($m)) . '</b><span class="muted">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . '</span></div>'
-            . '<button type="button" class="btn btn-soft mesa-destino" data-sentar="' . h($m['id']) . '" disabled>Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</button><ul class="mesa-personas">';
-        foreach ($m['personas'] as $p) {
-            $o .= '<li>' . mesas_boton_persona($p, $rep) . '<form method="post" action="/panel/mesas" class="mesa-quitar"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar">'
-                . '<input type="hidden" name="persona" value="' . h($p['id']) . '"><button class="mesa-x" aria-label="Quitar a ' . h($p['nombre']) . ' de la mesa">×</button></form></li>';
-        }
-        $o .= '</ul><details class="mesa-editar"><summary>Cambiar</summary>'
-            . '<form method="post" action="/panel/mesas" class="stack"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="editar"><input type="hidden" name="mesa" value="' . h($m['id']) . '">'
-            . '<div class="field"><label for="n-' . h($m['id']) . '">Nombre</label><input type="text" id="n-' . h($m['id']) . '" name="nombre" maxlength="40" value="' . h($m['nombre']) . '" placeholder="Mesa ' . (int) $m['n'] . '"></div>'
-            . '<div class="field"><label for="p-' . h($m['id']) . '">Plazas</label><input type="number" id="p-' . h($m['id']) . '" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="' . (int) $m['plazas'] . '" required></div>'
-            . '<button class="btn btn-soft">Guardar</button></form>'
-            . '<form method="post" action="/panel/mesas"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="borrar"><input type="hidden" name="mesa" value="' . h($m['id']) . '">'
-            . '<button class="inv-btn" data-confirmar="¿Borrar esta mesa? Quien estaba sentado vuelve a «Sin mesa».">Borrar la mesa</button></form></details></div>';
-    }
-    $o .= '</div>';
-    $o .= '<form method="post" action="/panel/mesas" class="mesa-nueva"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="crear">'
-        . '<div class="field"><label for="mesa-nombre">Mesa nueva</label><input type="text" id="mesa-nombre" name="nombre" maxlength="40" placeholder="Mesa ' . (count($E['mesas']) + 1) . '"></div>'
-        . '<div class="field"><label for="mesa-plazas">Plazas</label><input type="number" id="mesa-plazas" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="10" required></div>'
-        . '<button class="btn">Crear mesa</button></form></section>';
+    $o .= '</div>' . ($sinId ? '<p class="nota">Las personas en gris respondieron antes de que existiera el plano y no se pueden sentar: pedidles que vuelvan a confirmar.</p>' : '')
+        . '<p class="nota leyenda"><span class="silla o" aria-hidden="true"></span> sentado <span class="silla a" aria-hidden="true"></span> con alergia <span class="silla" aria-hidden="true"></span> libre</p></section></div>';
     return $o;
 }
 
@@ -276,11 +292,11 @@ function panel_mesas_imprimir(string $slug, array $c): void {
     $E = mesas_estado($slug);
     $lugar = (string) ($c['convite']['lugar'] ?? '');
     $cuando = trim(($c['fecha'] !== '' ? fecha_larga($c['fecha'], false) : '') . ($lugar !== '' ? ' · ' . $lugar : ''), ' ·');
-    $o = '<header class="panel-head"><div><span class="kicker">Plano de mesas</span><h1>' . h(nombres($c)) . '</h1>'
+    $o = '<header class="hoja-top"><div><p class="over">Plano de mesas</p><h1>' . h(nombres($c)) . '</h1>'
         . ($cuando !== '' ? '<p>' . h($cuando) . '</p>' : '')
         // La hoja impresa envejece: se dice a qué hora se sacó (como el resumen para el catering)
-        . '<p>Datos del ' . h(date('d/m/Y')) . ' a las ' . h(date('H:i')) . '. Si llegan más confirmaciones o cambiáis el plano, volved a imprimirlo.</p></div>'
-        . '<nav class="panel-acc no-print"><button type="button" class="btn" data-imprimir>Imprimir / guardar PDF</button><a class="btn btn-soft" href="/panel/mesas">Volver al plano</a></nav></header>';
+        . '<p class="sub">Datos del ' . h(date('d/m/Y')) . ' a las ' . h(date('H:i')) . '. Si llegan más confirmaciones o cambiáis el plano, volved a imprimirlo.</p></div>'
+        . '<nav class="fila-bot no-print"><button type="button" class="btn b-osc" data-imprimir>Imprimir / guardar PDF</button><a class="btn b-papel" href="/panel/mesas">Volver al plano</a></nav></header>';
     $rep = mesas_repetidos($E);
     if ($rep) {
         $o .= '<p class="panel-aviso aviso-repetido">Atención: hay personas que aparecen dos veces porque respondieron dos veces'
@@ -289,13 +305,13 @@ function panel_mesas_imprimir(string $slug, array $c): void {
     if ($E['avisos']) {
         $o .= '<p class="panel-aviso no-print">Hay ' . count($E['avisos']) . ' persona(s) en el plano que ya no vienen. No salen en la hoja; quitadlas del plano cuando lo veáis.</p>';
     }
-    $o .= '<section class="section catering">';
+    $o .= '<section class="catering">';
     foreach ($E['mesas'] as $m) {
         $menus = [];
         foreach ($m['personas'] as $p) { $k = nombre_menu($c, $p['menu'], $p['menu_nombre']); $menus[$k] = ($menus[$k] ?? 0) + 1; }
         $o .= '<div class="mesa-hoja"><h2 class="panel-h2">' . h(mesa_nombre($m)) . ' <span class="muted">· ' . count($m['personas']) . ' personas</span></h2>'
-            . ($menus ? '<p class="panel-nota mesa-menus">' . h(implode(' · ', array_map(fn($k, $n) => "$n $k", array_keys($menus), $menus))) . '</p>' : '')
-            . '<div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th></tr></thead><tbody>';
+            . ($menus ? '<p class="sub mesa-menus">' . h(implode(' · ', array_map(fn($k, $n) => "$n $k", array_keys($menus), $menus))) . '</p>' : '')
+            . '<div class="tabla-w"><table class="t t-corta"><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th></tr></thead><tbody>';
         if (!$m['personas']) $o .= '<tr><td colspan="3" class="vacio">Mesa vacía.</td></tr>';
         foreach ($m['personas'] as $p) {
             $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '')
@@ -306,13 +322,13 @@ function panel_mesas_imprimir(string $slug, array $c): void {
     }
     if ($E['sin_mesa']) {
         $o .= '<div class="mesa-hoja"><h2 class="panel-h2">Sin mesa <span class="muted">· ' . count($E['sin_mesa']) . ' personas</span></h2>'
-            . '<p class="panel-nota">Sus alergias están en el resumen para el catering.</p><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th></tr></thead><tbody>';
+            . '<p class="sub">Sus alergias están en el resumen para el catering.</p><div class="tabla-w"><table class="t t-corta"><thead><tr><th>Nombre</th><th>Menú</th></tr></thead><tbody>';
         foreach ($E['sin_mesa'] as $p) {
             $o .= '<tr><td>' . h($p['nombre']) . (in_array(clave_nombre($p['nombre']), $rep, true) ? ' <strong class="rep">repetido</strong>' : '')
                 . '</td><td>' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</td></tr>';
         }
         $o .= '</tbody></table></div></div>';
     }
-    $o .= '<p class="panel-nota">Solo aparecen quienes van al banquete. Si un grupo corrigió su respuesta, vale la última.</p></section>';
-    echo panel_marco($c, 'Plano de mesas', $o, true, true);
+    $o .= '<p class="nota">Solo aparecen quienes van al banquete. Si un grupo corrigió su respuesta, vale la última.</p></section>';
+    echo panel_hoja_marco($c, 'Plano de mesas', $o);
 }

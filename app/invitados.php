@@ -170,7 +170,7 @@ function panel_invitados_accion(string $slug, string $metodo): void {
                 }
             });
         }
-        header('Location: /panel#enlaces', true, 303);
+        header('Location: /panel/invitados#enlaces', true, 303);
         exit;
     } elseif ($acc === 'marcar') {
         $id = (string) ($_POST['id'] ?? '');
@@ -182,79 +182,6 @@ function panel_invitados_accion(string $slug, string $metodo): void {
             });
         }
     }
-    header('Location: /panel#invitados', true, 303);
+    header('Location: /panel/invitados' . ($acc === 'marcar' ? '#personas' : ''), true, 303);
     exit;
-}
-
-function bloque_invitados(string $slug, array $c): string {
-    $inv = inv_lee($slug);
-    $csrf = '<input type="hidden" name="csrf" value="' . h(panel_csrf()) . '">';
-    $nota = '<p class="panel-nota">Solo nombres y, si queréis, un grupo (por ejemplo «Familia de Lucía»). Ni teléfonos ni alergias: eso ya lo dejan ellos al confirmar. Esta lista solo la veis vosotros y se borra junto con las respuestas.</p>';
-    $texto = implode("\n", array_map(fn($g) => $g['nombre'] . ($g['grupo'] !== '' ? '; ' . $g['grupo'] : ''), $inv['lista']));
-    $form = '<form method="post" action="/panel/invitados" class="inv-form">' . $csrf . '<input type="hidden" name="accion" value="lista">'
-        . '<label for="invLista" class="inv-label">Una persona por línea. Para el grupo, un punto y coma: <i>Ana García; Familia de Lucía</i>. También podéis pegar dos columnas de Excel.</label>'
-        . '<textarea id="invLista" name="lista" rows="8" maxlength="' . INVITADOS_MAX_BYTES . '" spellcheck="false">' . h($texto) . '</textarea>'
-        . '<div class="form-actions"><button class="btn" type="submit">Guardar lista</button></div></form>';
-    $o = '<section class="section" id="invitados"><h2 class="panel-h2">Lista de invitados</h2>';
-    if (!$inv['lista']) return $o . '<p>Pegad aquí a quién habéis invitado y os diremos quién falta por contestar.</p>' . $nota . $form . '</section>';
-
-    [$filas, $res] = inv_cruza($slug, $c);
-    $pend = array_values(array_filter($filas, fn($f) => $f['estado'] === 'pend'));
-    $o .= '<div class="stat-row"><div class="stat"><b>' . count($filas) . '</b><span>Invitados</span></div><div class="stat"><b>' . $res['viene'] . '</b><span>Vienen</span></div>'
-        . '<div class="stat"><b>' . $res['no'] . '</b><span>No vienen</span></div><div class="stat stat-pend"><b>' . $res['pend'] . '</b><span>Sin contestar</span></div></div>';
-    if ($pend) {
-        $o .= '<p><button type="button" class="btn btn-soft" data-copiar-pendientes="' . h(implode("\n", array_column($pend, 'nombre'))) . '">Copiar los que faltan</button> <span class="panel-nota inv-copiado" hidden>Copiado</span></p>';
-    }
-    $etq = ['pend' => 'Sin contestar', 'no' => 'No viene', 'viene' => 'Viene'];
-    $o .= '<div class="table-wrap"><table class="inv-tabla"><thead><tr><th>Nombre</th><th>Grupo</th><th>Estado</th><th>Corregir</th></tr></thead><tbody>';
-    foreach ($filas as $f) {
-        $botones = '';
-        foreach (['viene' => 'Viene', 'no' => 'No viene', 'pend' => 'Sin contestar'] as $k => $t) {
-            if ($k !== $f['estado']) $botones .= '<button class="inv-btn" name="estado" value="' . $k . '">' . $t . '</button>';
-        }
-        if ($f['manual']) $botones .= '<button class="inv-btn" name="estado" value="auto" title="Volver a lo que digan las confirmaciones">Automático</button>';
-        $o .= '<tr class="inv-' . $f['estado'] . '"><td>' . h($f['nombre']) . '</td><td>' . h($f['grupo']) . '</td>'
-            . '<td><span class="inv-estado">' . $etq[$f['estado']] . '</span>' . ($f['manual'] ? ' <span class="muted">(a mano)</span>' : '') . '</td>'
-            . '<td><form method="post" action="/panel/invitados" class="inv-marcar">' . $csrf . '<input type="hidden" name="accion" value="marcar"><input type="hidden" name="id" value="' . h($f['id']) . '">' . $botones . '</form></td></tr>';
-    }
-    $o .= '</tbody></table></div><p class="panel-nota">Se cruza por nombre con las confirmaciones. Si alguien contestó con otro nombre o por teléfono, corregidlo a mano.</p>';
-    return $o . '<details class="inv-editar"><summary>Editar la lista</summary>' . $nota . $form . '</details></section>' . bloque_enlaces($slug, $c, $csrf);
-}
-
-/**
- * Un enlace por grupo: copiar, WhatsApp con el mensaje escrito, estado y rotar. Estado:
- * «Confirmado» si hay una respuesta vigente llegada por su enlace (rsvp.json, por gid);
- * «Abierto» si alguien lo abrió (fecha del primer acceso); si no, «Sin abrir».
- */
-function bloque_enlaces(string $slug, array $c, string $csrf): string {
-    if (!seccion_tipo($c, 'rsvp')) return '';
-    inv_asegura_grupos($slug);
-    $inv = inv_lee($slug);
-    $grupos = inv_grupos_de($inv['lista']);
-    if (!$grupos) return '';
-    $conf = [];
-    foreach (rsvp_vigentes($slug) as $r) {
-        if (($r['grupo'] ?? '') !== '') $conf[(string) $r['grupo']] = !empty($r['asiste_ceremonia']) || !empty($r['asiste_banquete']);
-    }
-    $o = '<section class="section" id="enlaces"><h2 class="panel-h2">Enlace personal por grupo</h2>'
-        . '<p class="panel-nota">Cada grupo abre la web con su saludo y sus nombres ya escritos. Mandad a cada uno el suyo: quien tenga el enlace puede confirmar por ese grupo, y si confirman dos veces vale la última.</p>'
-        . '<div class="table-wrap"><table class="inv-tabla enl-tabla"><thead><tr><th>Grupo</th><th>Estado</th><th>Enlace</th></tr></thead><tbody>';
-    foreach ($grupos as $k => $g) {
-        $e = $inv['grupos'][$k] ?? null;
-        if (!is_array($e)) continue;
-        $url = url_boda($slug, 'i/' . $e['token']);
-        if (isset($conf[$e['gid']])) $est = ['viene', 'Confirmado' . ($conf[$e['gid']] ? '' : ' · no vienen')];
-        elseif ((string) ($e['abierto'] ?? '') !== '') $est = ['no', 'Abierto el ' . date('d/m/Y', (int) strtotime((string) $e['abierto']))];
-        else $est = ['pend', 'Sin abrir'];
-        $msg = '¡Hola, ' . $g['nombre'] . '! Nos casamos y nos encantaría que vinierais. En este enlace tenéis toda la información y podéis confirmar: ' . $url;
-        $o .= '<tr class="inv-' . $est[0] . '"><td><b>' . h($g['nombre']) . '</b><br><span class="muted">' . h(implode(', ', $g['personas'])) . '</span>'
-            // El enlace entero solo en escritorio: en el móvil ensancha la tabla y ya está en «Copiar»
-            . '<br><code class="enl-url">' . h($url) . '</code></td>'
-            . '<td><span class="inv-estado">' . h($est[1]) . '</span></td>'
-            . '<td><div class="inv-marcar"><button type="button" class="inv-btn" data-copiar-enlace="' . h($url) . '">Copiar</button><span class="panel-nota copiado" hidden>Copiado</span>'
-            . '<a class="inv-btn" href="https://wa.me/?text=' . h(rawurlencode($msg)) . '" target="_blank" rel="noopener">WhatsApp</a>'
-            . '<form method="post" action="/panel/invitados" class="inv-marcar">' . $csrf . '<input type="hidden" name="accion" value="rotar"><input type="hidden" name="gid" value="' . h($e['gid']) . '">'
-            . '<button class="inv-btn" title="Crea un enlace nuevo; el anterior deja de funcionar">Cambiar enlace</button></form></div></td></tr>';
-    }
-    return $o . '</tbody></table></div><p class="panel-nota">«Abierto» es orientativo: se apunta la primera vez que alguien abre el enlace (sin guardar nada más), sin contar las vistas previas de WhatsApp ni cuando lo abrís vosotros desde aquí. «Cambiar enlace» deja sin servicio el que ya mandasteis.</p></section>';
 }

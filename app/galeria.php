@@ -219,6 +219,6 @@ function panel_libro_accion(string $slug): void {
         return false;
     });
     if ($foto && preg_match('/^[a-f0-9]{16}$/', $foto)) @unlink(dir_libro($slug) . '/' . $foto . '.webp');
-    header('Location: /panel#libro', true, 303);
+    header('Location: /panel/galeria#libro', true, 303);
     exit;
 }

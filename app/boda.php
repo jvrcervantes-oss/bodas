@@ -8,6 +8,7 @@ declare(strict_types=1);
 // cargan boda.php (catering, por ejemplo) los tienen sin tocar su lista de módulos
 require_once __DIR__ . '/extras.php';
 require_once __DIR__ . '/mesas.php';
+require_once __DIR__ . '/panel.php';   // carcasa y secciones del panel de la pareja (rediseño 27-sep-2026)
 
 const CSP_BODA = "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; "
     . "connect-src 'self'; frame-src 'none'; form-action 'self'; "
@@ -231,11 +232,25 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
     if ($sub === 'salir') { panel_sal($slug); header('Location: /panel/entrar'); exit; }
     if (!panel_autenticado($slug)) { header('Location: /panel/entrar'); exit; }
 
+    // Secciones del panel: páginas GET con la carcasa (app/panel.php). Las que además reciben una acción
+    // (invitados, galería) la mandan por POST a su función de siempre, con su CSRF.
+    $paginas = ['' => ['inicio', 'panel_inicio'], 'invitados' => ['invitados', 'panel_invitados'], 'respuestas' => ['respuestas', 'panel_respuestas'],
+        'musica' => ['musica', 'panel_musica'], 'galeria' => ['galeria', 'panel_galeria'], 'descargas' => ['descargas', 'panel_descargas'], 'mas' => ['mas', null]];
+    if (isset($paginas[$sub]) && ($metodo === 'GET' || $metodo === 'HEAD')) {
+        [$sec, $fn] = $paginas[$sub];
+        $titulo = $sec === 'inicio' ? (nombres($c) !== '' ? nombres($c) : 'Inicio') : ($sec === 'mas' ? 'Más' : PANEL_SECCIONES[$sec][1]);
+        echo panel_pagina($slug, $c, $sec, $titulo, $fn ? $fn($slug, $c) : panel_mas(), ['qr' => $sec === 'inicio']);
+        return;
+    }
+
     switch ($sub) {
-        case '': echo panel_inicio($slug, $c); return;
-        case 'excel': panel_excel($slug, $c); return;
-        case 'catering': panel_catering($slug, $c); return;
         case 'invitados': panel_invitados_accion($slug, $metodo); return;
+        case 'galeria': panel_galeria_subir($slug); return;
+        case '': case 'respuestas': case 'musica': case 'descargas': case 'mas': http_response_code(405); exit;
+        case 'excel': panel_excel($slug, $c); return;
+        case 'catering':
+            if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }
+            panel_catering($slug, $c); return;
         case 'zip': panel_zip($slug, $c); return;
         case 'factura':
             $p = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
@@ -254,7 +269,6 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
         case 'mesas': panel_mesas($slug, $c, $metodo); return;   // plano de mesas (app/mesas.php), incluido en todos los packs
         case 'mesas/imprimir': panel_mesas_imprimir($slug, $c); return;
         case 'vista-previa': api_vista_previa($metodo, url_boda($slug, 'assets/'), $slug); return;
-        case 'galeria': if ($metodo !== 'POST') no_existe(); panel_galeria_subir($slug); return;
         case 'libro': if ($metodo !== 'POST') no_existe(); panel_libro_accion($slug); return;
     }
     no_existe();
@@ -265,15 +279,6 @@ const CSP_CREADOR_PANEL = "default-src 'self'; img-src 'self' data: blob:; style
     . "script-src 'self'; connect-src 'self'; frame-src 'self'; "
     . "form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
-function panel_marco(array $c, string $titulo, string $cuerpo, bool $ancho = false, bool $js = false): string {
-    // $js: el panel principal carga el QR y los botones de copiar (assets/js/panel.js)
-    $scripts = $js ? '<script src="/assets/js/vendor/qrcode.js?v=' . h(ASSETS_V) . '" defer></script><script src="/assets/js/panel.js?v=' . h(ASSETS_V) . '" defer></script>' : '';
-    return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(nombres($c)) . '</title><meta name="robots" content="noindex, nofollow">'
-        . '<link rel="stylesheet" href="/assets/boda.css?v=' . h(ASSETS_V) . '"><style>' . tema_css($c) . '</style></head>'
-        . '<body class="panel-body"><main><div class="wrap' . ($ancho ? ' wrap-ancho' : '') . '">' . $cuerpo . '</div></main>' . $scripts . '</body></html>';
-}
-
 function panel_entrar(string $slug, array $c, string $metodo): void {
     $error = '';
     if ($metodo === 'POST') {
@@ -281,12 +286,12 @@ function panel_entrar(string $slug, array $c, string $metodo): void {
         if ($error === '') { header('Location: /panel'); exit; }
     }
     $sinClave = !panel_tiene_clave($slug);
-    echo panel_marco($c, 'Panel privado', '<section class="section panel-login"><h1>Panel privado</h1><hr class="divider">'
-        . ($sinClave ? '<p class="lede">Todavía no habéis elegido contraseña. Usad el enlace del email de bienvenida o pedid uno nuevo.</p>' : '')
-        . '<form method="post" class="stack"><div class="field"><label for="clave">Contraseña</label><input type="password" id="clave" name="clave" autocomplete="current-password" required autofocus></div>'
-        . ($error !== '' ? '<div class="form-msg">' . h($error) . '</div>' : '')
-        . '<div class="form-actions"><button type="submit" class="btn">Entrar</button></div></form>'
-        . '<p class="panel-aux"><a href="/panel/recuperar">He olvidado la contraseña</a> · <a href="/">Ver la web</a></p></section>');
+    echo panel_acceso_marco($c, 'Panel privado', '<h1>Entrar al panel</h1>'
+        . ($sinClave ? '<p class="sub">Todavía no habéis elegido contraseña. Usad el enlace del email de bienvenida o pedid uno nuevo.</p>' : '')
+        . '<form method="post" class="form"><div class="campo"><label for="clave">Contraseña</label><input type="password" id="clave" name="clave" autocomplete="current-password" required autofocus></div>'
+        . ($error !== '' ? '<p class="error" role="alert">' . h($error) . '</p>' : '')
+        . '<button type="submit" class="btn b-rosa btn-ancho">Entrar</button></form>'
+        . '<p class="aux"><a href="/panel/recuperar">He olvidado la contraseña</a> · <a href="/">Ver la web</a></p>');
 }
 
 function panel_clave(string $slug, array $c, string $metodo): void {
@@ -300,13 +305,13 @@ function panel_clave(string $slug, array $c, string $metodo): void {
     } elseif (!panel_enlace_valido($slug, $tok)) {
         $error = 'Este enlace ya se ha usado o ha caducado. Pide otro desde «He olvidado la contraseña».';
     }
-    echo panel_marco($c, 'Elegir contraseña', '<section class="section panel-login"><h1>Elegid vuestra contraseña</h1><hr class="divider">'
-        . '<form method="post" class="stack"><input type="hidden" name="t" value="' . h($tok) . '">'
-        . '<div class="field"><label for="clave">Contraseña nueva (mínimo ' . PANEL_MIN_CLAVE . ' caracteres)</label><input type="password" id="clave" name="clave" minlength="' . PANEL_MIN_CLAVE . '" autocomplete="new-password" required autofocus></div>'
-        . '<div class="field"><label for="clave2">Repetidla</label><input type="password" id="clave2" name="clave2" minlength="' . PANEL_MIN_CLAVE . '" autocomplete="new-password" required></div>'
-        . ($error !== '' ? '<div class="form-msg">' . h($error) . '</div>' : '')
-        . '<div class="form-actions"><button type="submit" class="btn">Guardar y entrar</button></div></form>'
-        . '<p class="panel-aux"><a href="/panel/recuperar">Pedir otro enlace</a></p></section>');
+    echo panel_acceso_marco($c, 'Elegir contraseña', '<h1>Elegid vuestra contraseña</h1>'
+        . '<form method="post" class="form"><input type="hidden" name="t" value="' . h($tok) . '">'
+        . '<div class="campo"><label for="clave">Contraseña nueva (mínimo ' . PANEL_MIN_CLAVE . ' caracteres)</label><input type="password" id="clave" name="clave" minlength="' . PANEL_MIN_CLAVE . '" autocomplete="new-password" required autofocus></div>'
+        . '<div class="campo"><label for="clave2">Repetidla</label><input type="password" id="clave2" name="clave2" minlength="' . PANEL_MIN_CLAVE . '" autocomplete="new-password" required></div>'
+        . ($error !== '' ? '<p class="error" role="alert">' . h($error) . '</p>' : '')
+        . '<button type="submit" class="btn b-rosa btn-ancho">Guardar y entrar</button></form>'
+        . '<p class="aux"><a href="/panel/recuperar">Pedir otro enlace</a></p>');
 }
 
 /** Siempre la misma respuesta, exista o no el email: no se confirma a nadie qué email tiene la pareja. */
@@ -321,12 +326,12 @@ function panel_recuperar(string $slug, array $c, string $metodo): void {
         }
         $msg = 'Si ese email es el de la pareja o el de la compra, os acaba de llegar un enlace. Mirad también en spam.';
     }
-    echo panel_marco($c, 'Recuperar acceso', '<section class="section panel-login"><h1>Recuperar acceso</h1><hr class="divider">'
-        . '<p class="lede">Escribid el email de contacto de la web o el que usasteis al pagar.</p>'
-        . '<form method="post" class="stack"><div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required></div>'
-        . ($msg !== '' ? '<p class="form-ok">' . h($msg) . '</p>' : '')
-        . '<div class="form-actions"><button type="submit" class="btn">Enviar enlace</button></div></form>'
-        . '<p class="panel-aux"><a href="/panel/entrar">Volver</a></p></section>');
+    echo panel_acceso_marco($c, 'Recuperar acceso', '<h1>Recuperar acceso</h1>'
+        . '<p class="sub">Escribid el email de contacto de la web o el que usasteis al pagar y os mandamos un enlace para elegir contraseña.</p>'
+        . '<form method="post" class="form"><div class="campo"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required></div>'
+        . ($msg !== '' ? '<p class="ok" role="status">' . h($msg) . '</p>' : '')
+        . '<button type="submit" class="btn b-rosa btn-ancho">Enviar enlace</button></form>'
+        . '<p class="aux"><a href="/panel">Volver</a></p>');
 }
 
 /**
@@ -399,93 +404,6 @@ function panel_datos(string $slug, array $c): array {
     return [$rsvps, $st, $menus, $rep];
 }
 
-function panel_inicio(string $slug, array $c): string {
-    [$rsvps, $st, $menus, $rep] = panel_datos($slug, $c);
-    $canciones = lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? [];
-    usort($canciones, fn($a, $b) => ($b['votos'] ?? 0) <=> ($a['votos'] ?? 0));
-    // Columna de bus si hoy se pregunta o si alguna respuesta antigua lo pidió
-    $bus = pregunta_bus($c) || (bool) array_filter($rsvps, fn($r) => !empty($r['necesita_bus']));
-    $sino = fn($v) => !empty($v) ? '<span class="yes">Sí</span>' : '<span class="no">No</span>';
-    $o = '<header class="panel-head"><div><span class="kicker">Panel privado</span><h1>' . h(nombres($c)) . '</h1>'
-        . '<p><a href="/" target="_blank" rel="noopener">' . h(preg_replace('~^https?://~', '', rtrim(url_boda($slug), '/'))) . '</a> · se mantiene hasta el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '</p></div>'
-        . '<nav class="panel-acc"><a class="btn" href="/panel/editar">Editar la web</a><a class="btn btn-soft" href="/panel/excel">Descargar Excel</a>'
-        . '<a class="btn btn-soft" href="/panel/catering">Resumen para el catering</a>'
-        . '<a class="btn btn-soft" href="/panel/mesas">Plano de mesas</a>'
-        . '<a class="btn btn-soft" href="/panel/zip">Descargar ZIP</a>' . (((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '' ? '<a class="btn btn-soft" href="/panel/factura" target="_blank" rel="noopener">Factura</a>' : '')
-        . '<a class="panel-salir" href="/panel/salir">Salir</a></nav></header>';
-    $o .= bloque_compartir($slug, $c);
-    $o .= '<section class="section"><div class="stat-row">';
-    foreach ([['personas', 'personas'], ['adultos', 'adultos'], ['ninos', 'niños/as'], ['ceremonia', 'van a ceremonia'], ['banquete', 'van a banquete']] as [$k, $t]) {
-        $o .= '<div class="stat"><b>' . $st[$k] . '</b><span>' . $t . '</span></div>';
-    }
-    if ($bus) $o .= '<div class="stat"><b>' . $st['bus'] . '</b><span>necesitan bus</span></div>';
-    $o .= '<div class="stat"><b>' . count($rsvps) . '</b><span>respuestas</span></div></div>';
-    $o .= '<p class="panel-nota">Menús de quienes van al banquete</p><div class="stat-row">';
-    foreach ($menus as $m) $o .= '<div class="stat"><b>' . $m['n'] . '</b><span>' . h(mb_strtolower($m['nombre'], 'UTF-8')) . '</span></div>';
-    $o .= '</div></section>';
-
-    $o .= bloque_invitados($slug, $c);
-    $o .= '<section class="section"><h2 class="panel-h2">Confirmaciones</h2>';
-    if ($rep) $o .= '<p class="panel-aviso">Hay nombres que aparecen en más de una respuesta (marcados con «repetido»). Puede que alguien haya confirmado dos veces.</p>';
-    $o .= '<div class="table-wrap"><table><thead><tr><th>Quién viene</th><th>Ceremonia</th><th>Banquete</th>' . ($bus ? '<th>Bus</th>' : '') . '<th>Contacto</th><th>Canción</th><th>Enviado</th></tr></thead><tbody>';
-    if (!$rsvps) $o .= '<tr><td colspan="7" class="vacio">Todavía no hay confirmaciones.</td></tr>';
-    foreach (array_reverse($rsvps) as $r) {
-        $o .= '<tr><td>';
-        foreach (personas($r) as $p) {
-            $o .= '<div class="persona"><b>' . h($p['nombre']) . '</b>'
-                . (in_array(clave_nombre($p['nombre']), $rep, true) ? '<span class="rep"> · repetido</span>' : '')
-                . ($p['tipo'] === 'nino' ? '<span class="muted"> · niño/a</span>' : '')
-                . '<span class="muted"> · ' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</span>'
-                . ($p['alergias'] !== '' ? '<br><span class="alergia">Alergias: ' . h($p['alergias']) . '</span>' : '') . '</div>';
-        }
-        $o .= '</td><td>' . $sino($r['asiste_ceremonia'] ?? false) . '</td><td>' . $sino($r['asiste_banquete'] ?? false) . '</td>'
-            . ($bus ? '<td>' . $sino($r['necesita_bus'] ?? false) . '</td>' : '')
-            . '<td>' . h($r['contacto'] ?? '') . '</td><td>' . h($r['cancion'] ?? '') . '</td>'
-            . '<td>' . h(isset($r['fecha_envio']) ? date('d/m/Y H:i', strtotime($r['fecha_envio'])) : '') . '</td></tr>';
-    }
-    $o .= '</tbody></table></div></section>';
-
-    $libro = libro_entradas($slug);
-    if (seccion_tipo($c, 'libro') || $libro) {
-        $o .= '<section class="section" id="libro"><h2 class="panel-h2">Libro de invitados</h2>'
-            . '<p class="panel-nota">Se publica al momento. Podéis ocultar o borrar cualquier mensaje; si alguien os pide retirar algo, hacedlo aquí.</p>';
-        if (!$libro) $o .= '<p class="vacio">Todavía no hay mensajes.</p>';
-        foreach (array_reverse($libro) as $e) {
-            $o .= '<div class="panel-libro' . (!empty($e['oculto']) ? ' is-oculto' : '') . '">'
-                . (!empty($e['foto']) ? '<img src="/l/' . h($e['foto']) . '.webp?t=' . h(firma_img($slug, (string) $e['foto'])) . '" alt="" loading="lazy">' : '')
-                . '<div><b>' . h($e['nombre']) . '</b> <span class="muted">· ' . h(date('d/m/Y H:i', strtotime((string) $e['fecha']))) . (!empty($e['oculto']) ? ' · oculto' : '') . '</span>'
-                . parrafos((string) $e['mensaje'])
-                . '<form method="post" action="/panel/libro" class="panel-libro-acc"><input type="hidden" name="csrf" value="' . h(panel_csrf()) . '"><input type="hidden" name="id" value="' . h($e['id']) . '">'
-                . '<button class="btn btn-soft" name="accion" value="' . (!empty($e['oculto']) ? 'mostrar' : 'ocultar') . '">' . (!empty($e['oculto']) ? 'Mostrar' : 'Ocultar') . '</button>'
-                . '<button class="btn btn-soft" name="accion" value="borrar">Borrar</button></form></div></div>';
-        }
-        $o .= '</section>';
-    }
-    if (seccion_tipo($c, 'musica')) {
-        $o .= '<section class="section"><h2 class="panel-h2">Canciones propuestas</h2><div class="table-wrap"><table><thead><tr><th>Canción</th><th>Artista</th><th>Votos</th></tr></thead><tbody>';
-        if (!$canciones) $o .= '<tr><td colspan="3" class="vacio">Todavía no hay canciones.</td></tr>';
-        foreach ($canciones as $s) $o .= '<tr><td>' . h($s['cancion'] ?? '') . '</td><td>' . h($s['artista'] ?? '') . '</td><td>' . (int) ($s['votos'] ?? 0) . '</td></tr>';
-        $o .= '</tbody></table></div></section>';
-    }
-    $o .= '<p class="panel-nota">Las respuestas de vuestros invitados se borran el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '. El Excel que descarguéis queda bajo vuestra responsabilidad.</p>';
-    return panel_marco($c, 'Panel privado', $o, true, true);
-}
-
-/** Compartir la web: enlace, mensaje de WhatsApp ya escrito y QR para las invitaciones en papel. */
-function bloque_compartir(string $slug, array $c): string {
-    $url = url_boda($slug);
-    $msg = '¡Nos casamos! Aquí tenéis toda la información de nuestra boda y la confirmación de asistencia: ' . $url;
-    if ((seccion_tipo($c, 'galeria') || seccion_tipo($c, 'libro')) && ($c['codigo'] ?? '') !== '') $msg .= "\nPara la galería y el libro de invitados, el código es " . $c['codigo'] . '.';
-    return '<section class="section panel-compartir" id="compartir"><h2 class="panel-h2">Compartir vuestra web</h2><div class="compartir-grid">'
-        . '<div class="compartir-qr"><div id="qr" class="qr-caja" data-url="' . h($url) . '" data-slug="' . h($slug) . '"></div>'
-        . '<div class="compartir-bot"><button type="button" class="btn btn-soft" data-qr-png>QR en PNG</button><button type="button" class="btn btn-soft" data-qr-svg>QR para imprenta (SVG)</button></div>'
-        . '<p class="panel-nota">Para las invitaciones en papel: al escanearlo se abre vuestra web. El SVG no pierde calidad a ningún tamaño.</p></div>'
-        . '<div class="compartir-txt"><label for="msgWa">Mensaje para WhatsApp</label><textarea id="msgWa" rows="5">' . h($msg) . '</textarea>'
-        . '<div class="compartir-bot"><a class="btn" id="btnWa" href="https://wa.me/?text=' . h(rawurlencode($msg)) . '" target="_blank" rel="noopener">Compartir por WhatsApp</a>'
-        . '<button type="button" class="btn btn-soft" data-copiar-enlace="' . h($url) . '">Copiar enlace</button><span class="panel-nota copiado" hidden>Copiado</span></div></div>'
-        . '</div></section>';
-}
-
 /** Excel: una fila por persona. `;` + BOM para el Excel en español; celdas = + - @ neutralizadas (las escribe un invitado). */
 function panel_excel(string $slug, array $c): void {
     [$rsvps, , , $rep] = panel_datos($slug, $c);
@@ -510,13 +428,13 @@ function panel_excel(string $slug, array $c): void {
 }
 
 /**
- * Resumen para el catering (F1b): la hoja que se imprime y se le da al restaurante. Solo con la
+ * Resumen para el catering (F1b): la sección del panel que se imprime y se le da al restaurante. Solo con la
  * sesión del panel (rutas_panel ya la exige) y sin caché en ningún sitio: lleva nombres con sus
  * alergias, que son datos de salud (art. 9 RGPD). Cuenta a quienes van al BANQUETE con la misma
  * cuenta por menú que el panel (panel_datos, sin respuestas sustituidas): el Excel filtrado por
  * Banquete = Sí da lo mismo. La columna Mesa sale en cuanto la pareja ha creado alguna mesa (el plano va
  * incluido en todos los packs desde el 27-sep-2026) y se rellena por el `id` de persona (mesas_de_personas),
- * nunca por nombre.
+ * nunca por nombre. Al imprimir, panel.css esconde el menú y deja solo la hoja.
  */
 function panel_catering(string $slug, array $c): void {
     header('Cache-Control: private, no-store');
@@ -536,25 +454,35 @@ function panel_catering(string $slug, array $c): void {
     $mesaDe = $conMesa ? mesas_de_personas($slug) : [];
     $lugar = (string) ($c['convite']['lugar'] ?? '');
     $cuando = trim(($c['fecha'] !== '' ? fecha_larga($c['fecha'], false) : '') . ($lugar !== '' ? ' · ' . $lugar : ''), ' ·');
-    $o = '<header class="panel-head"><div><span class="kicker">Resumen para el catering</span><h1>' . h(nombres($c)) . '</h1>'
-        . ($cuando !== '' ? '<p>' . h($cuando) . '</p>' : '')
-        // La hoja impresa envejece: se dice a qué hora se sacó para que nadie cocine con una vieja
-        . '<p>Datos del ' . h(date('d/m/Y')) . ' a las ' . h(date('H:i')) . '. Si llegan más confirmaciones, volved a imprimirlo.</p></div>'
-        . '<nav class="panel-acc no-print"><button type="button" class="btn" data-imprimir>Imprimir / guardar PDF</button><a class="btn btn-soft" href="/panel">Volver al panel</a></nav></header>';
-    $o .= '<section class="section catering"><div class="stat-row">';
-    foreach ([['total', 'en el banquete'], ['adultos', 'adultos'], ['ninos', 'niños/as']] as [$k, $txt]) $o .= '<div class="stat"><b>' . $t[$k] . '</b><span>' . $txt . '</span></div>';
-    $o .= '</div><h2 class="panel-h2">Por menú</h2><div class="table-wrap"><table><thead><tr><th>Menú</th><th>Personas</th></tr></thead><tbody>';
-    foreach ($menus as $m) $o .= '<tr><td>' . h($m['nombre']) . '</td><td>' . (int) $m['n'] . '</td></tr>';
-    $o .= '<tr class="catering-total"><td>Total</td><td>' . array_sum(array_column($menus, 'n')) . '</td></tr></tbody></table></div>';
-    $o .= '<h2 class="panel-h2">Alergias e intolerancias</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th>' . ($conMesa ? '<th>Mesa</th>' : '') . '<th>Menú</th><th>Alergias</th></tr></thead><tbody>';
+    // Texto para pegar en un correo al restaurante: las mismas cifras que la tabla
+    $txt = ['Resumen para el catering — ' . nombres($c) . ($cuando !== '' ? ' (' . $cuando . ')' : ''), 'En el banquete: ' . $t['total'] . ' (' . $t['adultos'] . ' adultos, ' . $t['ninos'] . ' niños/as)', '', 'Por menú:'];
+    foreach ($menus as $m) $txt[] = '- ' . $m['nombre'] . ': ' . (int) $m['n'];
+    $txt[] = '';
+    $txt[] = 'Alergias e intolerancias:';
+    foreach ($alergias as $p) $txt[] = '- ' . $p['nombre'] . ($conMesa ? ' (' . ($mesaDe[$p['id']] ?? 'sin mesa') . ')' : '') . ' · ' . $p['menu_txt'] . ': ' . $p['alergias'];
+    if (!$alergias) $txt[] = '- Ninguna';
+    // La hoja impresa envejece: se dice a qué hora se sacó para que nadie cocine con una vieja
+    $o = '<p class="hoja-cab">Resumen para el catering · ' . h(nombres($c)) . ($cuando !== '' ? ' · ' . h($cuando) : '')
+        . '<br>Datos del ' . h(date('d/m/Y')) . ' a las ' . h(date('H:i')) . '. Si llegan más confirmaciones, volved a imprimirlo.</p>';
+    $o .= '<div class="rej r-12 catering"><section class="card">' . panel_card_cab('Resumen para el catering', 'Lo que os pedirá el restaurante. Solo cuenta a quienes van al banquete; si un grupo corrigió su respuesta, vale la última.',
+        '<span class="chip incl">Incluido</span>');
+    $o .= '<div class="kpis kpis-4 tab">';
+    foreach ([['total', 'en el banquete'], ['adultos', 'adultos'], ['ninos', 'niños/as']] as [$k, $tx]) $o .= '<div class="kpi"><b>' . $t[$k] . '</b><span>' . $tx . '</span></div>';
+    $o .= '<div class="kpi mal"><b>' . count($alergias) . '</b><span>con alergias</span></div></div>';
+    $o .= '<h3 class="h3">Por menú</h3><div class="tabla-w"><table class="t t-corta"><thead><tr><th>Menú</th><th class="num">Personas</th></tr></thead><tbody>';
+    foreach ($menus as $m) $o .= '<tr><td>' . h($m['nombre']) . '</td><td class="num">' . (int) $m['n'] . '</td></tr>';
+    $o .= '<tr class="catering-total"><td>Total</td><td>' . array_sum(array_column($menus, 'n')) . '</td></tr></tbody></table></div></section>';
+    $o .= '<section class="card">' . panel_card_cab('Alergias e intolerancias', 'Con su mesa, para que la cocina lo tenga claro.')
+        . '<div class="tabla-w"><table class="t t-corta"><thead><tr><th>Nombre</th>' . ($conMesa ? '<th>Mesa</th>' : '') . '<th>Menú</th><th>Alergias</th></tr></thead><tbody>';
     if (!$alergias) $o .= '<tr><td colspan="' . ($conMesa ? 4 : 3) . '" class="vacio">Nadie de los que van al banquete ha indicado alergias.</td></tr>';
     foreach ($alergias as $p) {
         $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '') . '</td>'
             . ($conMesa ? '<td class="catering-mesa">' . h($mesaDe[$p['id']] ?? 'Sin mesa') . '</td>' : '') . '<td>' . h($p['menu_txt']) . '</td>'
             . '<td class="alergia">' . h($p['alergias']) . '</td></tr>';
     }
-    $o .= '</tbody></table></div><p class="panel-nota">Solo cuenta a quienes van al banquete. Si un grupo corrigió su respuesta, vale la última.</p></section>';
-    echo panel_marco($c, 'Resumen para el catering', $o, true, true);
+    $o .= '</tbody></table></div><div class="fila-bot no-print"><button type="button" class="btn b-osc" data-imprimir>Imprimir / guardar PDF</button>'
+        . '<button type="button" class="btn b-papel" data-copiar-texto="' . h(implode("\n", $txt)) . '">Copiar como texto</button><span class="copiado" role="status" hidden>Copiado</span></div></section></div>';
+    echo panel_pagina($slug, $c, 'catering', 'Catering', $o);
 }
 
 /**

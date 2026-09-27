@@ -44,11 +44,11 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'portada' => 'Portada', 'secciones' => 'Más secciones'];
     if (!$editar) $tabs['publicar'] = 'Publicar';
     $rail = $editar
-        ? [['/panel/editar', 'lapiz', 'Editar la web', true], ['/panel', 'sobre', 'Invitados y respuestas', false],
-           ['/panel/excel', 'excel', 'Descargar Excel', false], ['/panel/zip', 'regalo', 'Descargar ZIP', false]]
+        // El panel tiene su propio menú (app/panel.php): desde el editor se vuelve a sus secciones principales
+        ? [['/panel/editar', 'lapiz', 'Editar la web', true], ['/panel', 'flecha', 'Volver al panel', false], ['/panel/invitados', 'sobre', 'Invitados', false],
+           ['/panel/respuestas', 'lista', 'Respuestas', false], ['/panel/descargas', 'excel', 'Descargas y cuenta', false]]
         : [];
-    // Una web regalada con código de cortesía no tiene factura
-    if ($editar && ((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '') $rail[] = ['/panel/factura', 'check', 'Factura', false];
+    // La factura, el Excel y el ZIP están en «Descargas y cuenta» del panel
     // Al crear, el carril son los pasos del propio constructor: antes enlazaba a la landing
     // y sacaba a la pareja a media edición (queja del owner, 25-sep-2026)
     $pasos = $tabs;
