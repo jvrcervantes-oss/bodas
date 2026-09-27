@@ -127,6 +127,8 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
     escribe_json($fPedido, $ped);
     @unlink(dir_datos('reservas', $ped['slug'] . '.json'));
     borra_arbol($pend);
+    // Aviso al owner de cada venta (correo + Telegram). Tras 'creada': un reintento no lo repite
+    if (tipo_pago($ped) !== 'regalo') avisa_estudio('Venta nueva: ' . $slug . (!empty($ped['ls']['test']) ? ' (prueba)' : ''), texto_venta($ped));
     registra('boda creada', ['slug' => $slug, 'sid' => $sid, 'factura' => $ped['factura']]);
     return $ped;
 }

@@ -17,7 +17,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'fuentesAutor' => array_map(fn($f) => ['nombre' => $f['nombre'], 'nota' => $f['nota']], fuentes_autor()),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
-        'maxMenus' => MAX_MENUS, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
+        'maxMenus' => MAX_MENUS, 'maxBanquete' => MAX_BANQUETE, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
         'precio' => ['total' => euros(precio_esencial_cent()), 'totalAtelier' => euros(precio_atelier_cent())],
         'atelier' => array_map(fn($a) => ['nombre' => $a['nombre'], 'categoria' => $a['categoria'], 'desc' => $a['desc']], ATELIER),

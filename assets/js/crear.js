@@ -351,6 +351,8 @@
             }
           })
         ]));
+        w.appendChild(campoTexto(s, 'banquete', 'El menú del banquete (opcional)', { area: true, max: D.maxBanquete || 1500, rows: 6,
+          ph: 'Aperitivo: jamón ibérico y croquetas\nPrincipal: solomillo o lubina\nPostre: tarta nupcial\nBarra libre', ayuda: 'Lo que se va a servir, aunque haya un solo menú. Una línea por momento («Principal: …»). Sale en la página de confirmación.' }));
         w.appendChild(casilla(s.datos.asistencia, 'Preguntar si van a la ceremonia, al banquete o a los dos', function (v) { s.datos.asistencia = v; }));
         var tr = st.secciones.filter(function (x) { return x.tipo === 'transporte'; })[0];
         if (tr) w.appendChild(el('p', { class: 'c-ayuda' }, [

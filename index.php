@@ -26,6 +26,12 @@ require __DIR__ . '/app/proxy.php';
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+// BOD-13: detrás del Worker todas las bodas llegan al origen con la MISMA URL (bodaenlace.com/<ruta>); solo
+// cambia la cabecera firmada X-Boda-Slug. Ninguna caché compartida (Cloudflare, LiteSpeed) puede guardar
+// una respuesta dinámica: private + no-store por defecto, y Vary por si alguna la ignora. Las rutas que
+// quieren caché en el navegador (foto, mapa) lo cambian ellas, siempre «private».
+header('Cache-Control: private, no-store');
+header('Vary: X-Boda-Slug, Cookie');
 
 $host = strtolower((string) preg_replace('/:\d+$/', '', (string) ($_SERVER['HTTP_HOST'] ?? '')));
 // <slug>.bodaenlace.com llega a través del Worker de Cloudflare, firmado (app/proxy.php, rev. #116)

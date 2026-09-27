@@ -267,7 +267,7 @@ function sirve_mapa(string $slug): void {
     $f = dir_datos('mapas', $m['id'] . '.webp');
     header('Content-Type: image/webp');
     header('Content-Length: ' . filesize($f));
-    header('Cache-Control: public, max-age=86400');
+    header('Cache-Control: private, max-age=86400');   // private: misma URL de origen para todas las bodas (BOD-13)
     header('X-Content-Type-Options: nosniff');
     readfile($f);
     exit;

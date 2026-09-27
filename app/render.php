@@ -567,7 +567,7 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
     $d = $s['datos'];
     $intro = parrafos($d['texto'] ?? '', 'lede');
     switch ($s['tipo']) {
-        case 'rsvp': return envoltorio($s['titulo'], $intro . form_rsvp($c, $s, $ctx));
+        case 'rsvp': return envoltorio($s['titulo'], $intro . bloque_banquete((string) ($d['banquete'] ?? '')) . form_rsvp($c, $s, $ctx));
         case 'informacion': return envoltorio($s['titulo'], $intro . bloque_mapa($c, $ctx) . pagina_informacion($c) . tarjeta_menu($c));
         case 'transporte': return envoltorio($s['titulo'], $intro . bloque_transporte($c, $s, $ctx));
         case 'hoteles': return envoltorio($s['titulo'], $intro . lista_hoteles($d));
@@ -621,6 +621,21 @@ function pagina_informacion(array $c): string {
             . '<p class="info-mapa"><a class="btn btn-soft" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($e))) . '" target="_blank" rel="noopener noreferrer">'
             . ico(ICONOS['mapa'], 'ico ico-sm') . 'Ver en el mapa</a></p></div>';
         $first = false;
+    }
+    return $o . '</div>';
+}
+
+/**
+ * Menú del banquete (lo que se va a servir), en la página de la confirmación y en el ZIP. Una línea
+ * «Momento: platos» sale con el momento de título; cualquier otra, como párrafo. Todo pasa por h().
+ */
+function bloque_banquete(string $t): string {
+    $lineas = array_slice(array_values(array_filter(array_map('trim', explode("\n", $t)), fn($l) => $l !== '')), 0, 30);
+    if (!$lineas) return '';
+    $o = '<div class="menu-card banquete"><div class="info-title">EL BANQUETE</div>';
+    foreach ($lineas as $l) {
+        if (preg_match('/^([^:]{1,40}):\s*(.+)$/u', $l, $m)) $o .= '<div class="menu-item"><h3>' . h(trim($m[1])) . '</h3><p>' . h(trim($m[2])) . '</p></div>';
+        else $o .= '<div class="menu-item"><p>' . h($l) . '</p></div>';
     }
     return $o . '</div>';
 }

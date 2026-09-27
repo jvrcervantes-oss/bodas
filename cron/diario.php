@@ -72,4 +72,6 @@ foreach (glob(dir_datos('rl', '*.json')) ?: [] as $f) {
     // Cada contador sabe su ventana (los votos duran un año: "un voto por canción")
     if (($d['desde'] ?? 0) + ($d['v'] ?? 86400) < time()) { @unlink($f); $n['rl']++; }
 }
+// 5. Avisos (correo a la pareja o al owner, Telegram) que fallaron al darse de alta la boda
+$n['avisos'] = cola_avisos_reintenta();
 echo json_encode($n), "\n";

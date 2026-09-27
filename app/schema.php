@@ -105,6 +105,7 @@ const DECORACIONES = [
 
 const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
 const MAX_MENUS = 8;
+const MAX_BANQUETE = 1500;      // menú del banquete: caracteres (unas 20 líneas)
 const MAX_TRAYECTOS = 6;
 const MAX_GALERIA = 24;
 
@@ -182,7 +183,7 @@ function config_inicial(): array {
 
 function datos_iniciales(string $tipo): array {
     switch ($tipo) {
-        case 'rsvp': return ['texto' => 'Si venís en familia o en grupo, basta con que uno lo rellene por todos.', 'asistencia' => true, 'fecha_limite' => '',
+        case 'rsvp': return ['texto' => 'Si venís en familia o en grupo, basta con que uno lo rellene por todos.', 'asistencia' => true, 'fecha_limite' => '', 'banquete' => '',
             'menus' => [menu_nuevo('carne', 'Carne'), menu_nuevo('pescado', 'Pescado'), menu_nuevo('vegetariano', 'Vegetariano'), menu_nuevo('infantil', 'Infantil', true)]];
         case 'informacion': return ['texto' => ''];
         case 'hoteles': return ['texto' => 'Opciones de alojamiento cerca de la celebración.', 'hoteles' => []];
@@ -269,7 +270,9 @@ function norm_datos(string $tipo, $d): array {
     switch ($tipo) {
         case 'rsvp':
             $r = ['texto' => clean_str($d['texto'] ?? '', 600), 'menus' => norm_menus($d['menus'] ?? null),
-                'asistencia' => norm_bool($d['asistencia'] ?? true), 'fecha_limite' => norm_fecha($d['fecha_limite'] ?? '')];
+                'asistencia' => norm_bool($d['asistencia'] ?? true), 'fecha_limite' => norm_fecha($d['fecha_limite'] ?? ''),
+                // Lo que se va a servir (owner, 27-sep): texto libre, una línea por momento («Principal: …»). Opcional
+                'banquete' => clean_str($d['banquete'] ?? '', MAX_BANQUETE)];
             // La pregunta del autobús vivía aquí hasta el 25-sep: se conserva solo para migrarla a Transporte
             if (array_key_exists('bus', $d)) $r['_bus_antiguo'] = norm_bool($d['bus']);
             return $r;

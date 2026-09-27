@@ -18,6 +18,7 @@ const SECRETO_FIRMA = 'secreto-de-prueba-0123456789abcdef0123';
 file_put_contents($tmp . '/secrets.php', '<?php return ' . var_export([
     'pasarela' => 'lemon', 'lemon_api_key' => 'clave-de-prueba', 'lemon_webhook_secret' => SECRETO_FIRMA,
     'lemon_tienda' => '483461', 'lemon_variante' => '2169949', 'lemon_producto' => '1389266', 'lemon_test' => true,
+    'telegram_token' => 'x', 'telegram_chat' => '1',
 ], true) . ';');
 
 $raiz = dirname(__DIR__);
@@ -57,6 +58,11 @@ function evento(string $nombre, string $id, string $tok, string $slug): array {
         'data' => ['type' => 'orders', 'id' => $id, 'attributes' => []]];
 }
 function lector(array $pedidos): callable { return fn(string $id) => $pedidos[$id] ?? null; }
+/** Correos dejados en disco (CORREO_A_FICHERO) cuyo destinatario es $para. */
+function correos_a(string $para): int {
+    return count(array_filter(glob(dir_datos('correos', '*')) ?: [], fn($f) => strpos((string) file_get_contents($f), "Para: $para\n") === 0));
+}
+function telegramas(): array { return array_map('file_get_contents', glob(dir_datos('telegram', '*')) ?: []); }
 function facturas_emitidas(): int { return count(glob(dir_datos('facturas', 'BODA-*.json')) ?: []) + (is_file(dir_datos('facturas', 'contador.json')) ? 1 : 0); }
 
 $precio = precio_esencial_cent();
@@ -85,7 +91,10 @@ for ($i = 0; $i < 3; $i++) [$st, $r] = lemon_procesa_evento(evento('order_create
 ok($st === 200 && $r === 'creada', 'alta creada (3 entregas)');
 ok(boda_existe('ana-y-luis'), 'la web existe');
 ok(count(glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: []) === 1, 'una sola web tras 3 entregas');
-ok(count(glob(dir_datos('correos', '*')) ?: []) === 1, 'un solo correo de bienvenida');
+ok(correos_a('pareja@example.com') === 1, 'un solo correo de bienvenida');
+ok(correos_a('hola@bodaenlace.com') === 1, 'un solo aviso de venta al owner por correo');
+$tg = telegramas();
+ok(count($tg) === 1 && strpos($tg[0], 'Venta nueva: ana-y-luis (prueba)') !== false && strpos($tg[0], 'Lemon Squeezy #1001') !== false, 'un solo aviso de venta por Telegram, con el pedido');
 ok(facturas_emitidas() === 0, 'venta LS: ninguna factura BODA-');
 $ped = lee_json(dir_datos('pedidos', 'ls_101.json'));
 ok(($ped['factura'] ?? 'x') === '' && ($ped['pasarela'] ?? '') === 'lemon', 'pedido LS sin factura y con pasarela');
@@ -168,11 +177,39 @@ escribe_json(dir_datos('pedidos', 'ls_700.json'), $ped);
 escribe_json(dir_datos('ls_tokens', $t . '.json'), ['order_id' => '700']);
 escribe_json(dir_boda('corte') . '/pedido.json', ['session_id' => 'ls_700']);
 escribe_json(dir_boda('corte') . '/config.json', lee_json(dir_datos('pendientes', $t, 'config.json')));
-$correos = count(glob(dir_datos('correos', '*')) ?: []);
+$correos = correos_a('p@example.com');
 [$st, $r] = lemon_procesa_evento(evento('order_created', '700', $t, 'corte'), lector(['700' => pedido_ls($precio)]));
 ok($r === 'creada' && !boda_existe('corte-2'), 'reintento tras corte: misma web, sin «-2»');
-ok(count(glob(dir_datos('correos', '*')) ?: []) === $correos + 1, 'reintento tras corte: el correo sale');
+ok(correos_a('p@example.com') === $correos + 1, 'reintento tras corte: el correo sale');
 ok(!empty((lee_json(dir_boda('corte') . '/pedido.json') ?? [])['test']), 'la web de un pedido de prueba queda marcada como test');
+
+// 11. Avisos de estados raros también llegan al owner (correo + Telegram)
+$antes = count(telegramas());
+$t = pendiente('raro', $precio);
+lemon_procesa_evento(evento('order_created', '800', $t, 'raro'), lector(['800' => pedido_ls($precio - 1)]));
+ok(count(telegramas()) === $antes + 1 && strpos(implode("\n", telegramas()), 'no cuadra') !== false, 'no-conforme avisa por Telegram');
+
+// 12. Correo MIME: asunto codificado, adjunto en base64, sin saltos que inyecten cabeceras
+$mime = mensaje_mime('hola@bodaenlace.com', 'a@b.c', "Asunto\r\nBcc: x@y.z", "Hola\n.\nfin", ['condiciones.html' => '<p>x</p>']);
+ok(strpos($mime, "\r\nBcc:") === false, 'el asunto no inyecta cabeceras');
+ok(strpos($mime, 'From: BodaEnlace <hola@bodaenlace.com>') !== false && strpos($mime, 'filename="condiciones.html"') !== false, 'remitente de la marca y adjunto');
+ok(!envia_correo("a@b.c\r\nBcc: x@y.z", 'x', 'y'), 'destinatario con salto de línea rechazado');
+
+// 13. Menú del banquete: opcional, con tope, escapado y en la página de confirmación (y en el ZIP)
+$c = config_inicial();
+foreach ($c['secciones'] as &$s) if ($s['tipo'] === 'rsvp') $s['datos']['banquete'] = "Aperitivo: croquetas <script>alert(1)</script>\nPrincipal: lubina\nBarra libre\n" . str_repeat('x', 3000);
+unset($s);
+$n2 = normaliza_config($c);
+$b = array_values(array_filter($n2['secciones'], fn($s) => $s['tipo'] === 'rsvp'))[0]['datos']['banquete'];
+ok(mb_strlen($b) === MAX_BANQUETE, 'banquete con tope de caracteres');
+$html = bloque_banquete($b);
+ok(strpos($html, '<script>') === false && strpos($html, '&lt;script&gt;') !== false, 'banquete escapado');
+ok(strpos($html, '<h3>Aperitivo</h3>') !== false && strpos($html, '<h3>Principal</h3>') !== false && strpos($html, '<p>Barra libre</p>') !== false, 'una línea por momento');
+ok(bloque_banquete('') === '', 'sin banquete no se pinta nada');
+$rs = array_values(array_filter($n2['secciones'], fn($s) => $s['tipo'] === 'rsvp'))[0];
+ok(strpos(pagina_seccion($n2, $rs, ['modo' => 'zip', 'assets' => 'assets/', 'foto' => '', 'slug' => 'x']), 'EL BANQUETE') !== false, 'el banquete sale en el ZIP');
+$vacio = normaliza_config(config_inicial());
+ok(array_values(array_filter($vacio['secciones'], fn($s) => $s['tipo'] === 'rsvp'))[0]['datos']['banquete'] === '', 'banquete vacío por defecto');
 
 // Limpieza
 borra_arbol_test($tmp);

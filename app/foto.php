@@ -46,7 +46,7 @@ function sirve_foto(string $ruta): void {
     if (!is_file($ruta)) { http_response_code(404); exit; }
     header('Content-Type: image/webp');
     header('Content-Length: ' . filesize($ruta));
-    header('Cache-Control: public, max-age=300');
+    header('Cache-Control: private, max-age=300');   // private: /foto es la misma URL de origen para todas las bodas (BOD-13)
     header('X-Content-Type-Options: nosniff');
     readfile($ruta);
     exit;
