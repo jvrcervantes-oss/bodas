@@ -176,7 +176,7 @@ ok(strpos(textos_legales()['check_condiciones'], 'Lemon Squeezy') !== false && s
 // Owner + Legal (27-sep tarde): las casillas nombran la marca, no a la persona; la identidad va en condiciones y aviso legal
 $tit = (string) (empresa()['titular'] ?? '');
 foreach (['check_condiciones', 'check_condiciones_regalo', 'check_desistimiento', 'check_mejora'] as $k)
-    ok(($tit === '' || strpos(textos_legales()[$k], $tit) === false) && strpos(textos_legales()[$k], MARCA) !== false, "$k nombra la marca y no al titular");
+    ok(($tit === '' || strpos(textos_legales()[$k], $tit) === false) && strpos(textos_legales()[$k], marca()) !== false, "$k nombra la marca y no al titular");
 $E = empresa();
 foreach (['condiciones', 'privacidad', 'aviso-legal'] as $doc) {
     $h = documento_legal($doc, $doc);
