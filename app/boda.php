@@ -245,6 +245,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
 
     switch ($sub) {
         case 'invitados': panel_invitados_accion($slug, $metodo); return;
+        case 'respuestas/misma': panel_respuestas_misma($slug, $c, $metodo); return;   // BOD-22 (app/panel.php)
         case 'galeria':   // POST = subir una foto (la usa el editor); GET/HEAD = la página, arriba
             if ($metodo !== 'POST') { header('Allow: GET, HEAD, POST'); http_response_code(405); exit; }
             panel_galeria_subir($slug); return;
@@ -347,7 +348,8 @@ function personas(array $r): array {
     $o = [];
     foreach (array_values(array_filter((array) ($r['invitados'] ?? []), 'is_array')) as $i => $g) {
         $id = (string) ($g['id'] ?? '');
-        if (!preg_match('/^[a-f0-9]{16}$/', $id)) $id = (string) ($r['id'] ?? '') !== '' ? 'v' . substr(sha1((string) $r['id'] . '|' . $i), 0, 15) : '';
+        // Un id derivado («v…») también vale guardado: es el que hereda un reenvío de una respuesta de antes (BOD-24)
+        if (!preg_match('/^([a-f0-9]{16}|v[a-f0-9]{15})$/', $id)) $id = (string) ($r['id'] ?? '') !== '' ? 'v' . substr(sha1((string) $r['id'] . '|' . $i), 0, 15) : '';
         $o[] = ['id' => $id, 'nombre' => (string) ($g['nombre'] ?? ''), 'tipo' => ($g['tipo'] ?? '') === 'nino' ? 'nino' : 'adulto',
             'menu' => (string) ($g['menu'] ?? ''), 'menu_nombre' => (string) ($g['menu_nombre'] ?? ''), 'alergias' => (string) ($g['alergias'] ?? '')];
     }
@@ -359,9 +361,28 @@ function personas(array $r): array {
  * TODA cuenta de personas (panel, Excel, catering, lista de invitados, estudio, Padrino) lee por aquí;
  * leer rsvp.json a pelo contaría dos veces a un grupo que corrigió su respuesta.
  */
-/** Añade una respuesta; si es de un grupo, marca sustituida la vigente de ese grupo y vacía sus alergias. */
+/**
+ * Añade una respuesta; si es de un grupo, marca sustituida la vigente de ese grupo y vacía sus alergias.
+ * Se llama dentro del muta_json (bloqueo) del POST: candidatas, herencia y sustitución van en la misma escritura.
+ *
+ * Herencia del id (BOD-24, Seguridad 27-sep-2026): quien vuelve a responder por el enlace de su grupo conserva el
+ * `id` de cada persona cuyo nombre (clave_nombre) sale UNA sola vez entre las respuestas vigentes de ESE grupo y una
+ * sola vez en la nueva; así sigue sentada en su mesa. Si hay dos iguales en un lado o en otro, id nuevo («sin mesa»:
+ * mejor resentar que sentar a otro). Nunca se hereda de una respuesta sin `grupo` ni de otro grupo, y el id lo pone
+ * solo el servidor: api_rsvp genera siempre ids nuevos y nunca lee uno del formulario.
+ */
 function rsvp_anade(array &$d, array $rec): void {
     if (isset($rec['grupo'])) {
+        $viejos = [];
+        foreach ($d as $r) {
+            if (!is_array($r) || ($r['grupo'] ?? '') !== $rec['grupo'] || !empty($r['sustituido'])) continue;
+            foreach (personas($r) as $p) if ($p['id'] !== '') $viejos[clave_nombre($p['nombre'])][] = $p['id'];
+        }
+        $nuevos = array_count_values(array_map(fn($p) => clave_nombre((string) ($p['nombre'] ?? '')), (array) $rec['invitados']));
+        foreach ((array) $rec['invitados'] as $j => $p) {
+            $k = clave_nombre((string) ($p['nombre'] ?? ''));
+            if ($k !== '' && ($nuevos[$k] ?? 0) === 1 && count($viejos[$k] ?? []) === 1) $rec['invitados'][$j]['id'] = $viejos[$k][0];
+        }
         foreach ($d as $k => $r) {
             if (!is_array($r) || ($r['grupo'] ?? '') !== $rec['grupo'] || !empty($r['sustituido'])) continue;
             $d[$k]['sustituido'] = $rec['id'];
@@ -369,6 +390,44 @@ function rsvp_anade(array &$d, array $rec): void {
         }
     }
     $d[] = $rec;
+}
+
+/**
+ * La pareja marca desde el panel que una respuesta de la confirmación general es la misma que la que dio un grupo por su
+ * enlace (BOD-22, Seguridad 27-sep-2026: decisión humana con sesión, nunca automática por nombres, porque /rsvp está
+ * abierta a cualquiera y sustituir borra alergias). Se llama dentro del muta_json del POST. La general queda sustituida
+ * por la del grupo, con quién y cuándo, y pierde sus alergias (RGPD 5.1.c); a la del grupo no se le copia nada: es del
+ * grupo, no de la pareja. Devuelve '' si lo hizo; si no, el motivo, sin tocar nada.
+ */
+function rsvp_misma(array &$d, string $general, string $grupo): string {
+    $ig = $ic = null;
+    foreach ($d as $k => $r) {
+        if (!is_array($r) || !is_string($r['id'] ?? null) || $r['id'] === '') continue;
+        if ($r['id'] === $general) $ig = $k;
+        if ($r['id'] === $grupo) $ic = $k;
+    }
+    if ($ig === null || $ic === null || $ig === $ic) return 'no-existe';
+    if (!empty($d[$ig]['sustituido']) || (string) ($d[$ig]['grupo'] ?? '') !== '') return 'general';
+    if (!empty($d[$ic]['sustituido']) || (string) ($d[$ic]['grupo'] ?? '') === '') return 'grupo';
+    $d[$ig]['sustituido'] = $grupo;
+    $d[$ig]['sustituido_por'] = 'pareja';
+    $d[$ig]['sustituido_fecha'] = date('c');
+    foreach ((array) ($d[$ig]['invitados'] ?? []) as $j => $p) if (is_array($p)) $d[$ig]['invitados'][$j]['alergias'] = '';
+    return '';
+}
+
+/** Para cada respuesta general vigente, las vigentes de un grupo con algún nombre en común: [id general => [id grupo, …]]. */
+function rsvp_posibles_mismas(array $vigentes): array {
+    $o = [];
+    foreach ($vigentes as $g) {
+        if ((string) ($g['grupo'] ?? '') !== '' || (string) ($g['id'] ?? '') === '') continue;
+        $nom = array_map(fn($p) => clave_nombre($p['nombre']), personas($g));
+        foreach ($vigentes as $r) {
+            if ((string) ($r['grupo'] ?? '') === '' || (string) ($r['id'] ?? '') === '') continue;
+            if (array_intersect($nom, array_map(fn($p) => clave_nombre($p['nombre']), personas($r)))) $o[$g['id']][] = $r['id'];
+        }
+    }
+    return $o;
 }
 
 function rsvp_vigentes(string $slug): array {

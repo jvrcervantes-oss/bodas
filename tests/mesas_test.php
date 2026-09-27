@@ -180,16 +180,19 @@ ok($st === 200 && stripos($cab, 'no-store') !== false && strpos($hi, 'data-impri
 ok(strpos($b1, 'Alba Ruiz') !== false && strpos($b1, 'nueces') !== false && strpos($b1, 'Pescado') !== false && strpos($b1, 'huevo') !== false && strpos($b1, 'Hugo Sol') === false, 'hoja: la mesa 1 con sus personas, menús y alergias');
 ok(strpos($b2, 'Hugo Sol') !== false && strpos($b2, 'marisco') !== false && strpos($b2, 'Alba Ruiz') === false && strpos($b2, '4 personas') !== false, 'hoja: la mesa 2 con las suyas');
 
-// ---------------------------------------------------------------- 7. cancelación: el grupo Sol reenvía sin Juan → aviso, nadie se reasigna solo
+// ---------------------------------------------------------------- 7. cancelación: el grupo Sol reenvía sin Juan → aviso; los otros tres siguen sentados
+// BOD-24 (Seguridad 27-sep): el reenvío por el enlace del grupo hereda el id de quien sale una sola vez con ese nombre
+// en el grupo, así que Gema, Hugo e Ines conservan su silla y solo Juan sale como «ya no viene»
 $C2 = [$per('Gema Sol', 'carne'), $per('Hugo Sol', 'carne', 'marisco'), $per('Ines Sol', 'pescado')];
 muta_json(dir_boda($slug) . '/guardado/rsvp.json', function (array &$d) use ($resp, $C2) { rsvp_anade($d, $resp('rc2', $C2, true, 'gsol')); });
 $antes = plano();
 [, $h] = pide('GET', $host, '/panel/mesas');
 ok(strpos($h, 'Ya no viene: <b>Juan Sol</b> estaba en <b>Mesa 2</b>') !== false, 'aviso: «Ya no viene: Juan Sol estaba en la Mesa 2»');
-ok(substr_count($h, 'Ha vuelto a responder') === 3, 'los otros tres del grupo: «ha vuelto a responder», no «ya no viene»');
-ok(plano() == $antes && substr_count($h, 'class="mesa-grupo"') === 1, 'nadie se reasigna solo: el plano no cambia y los 3 salen sin mesa');
+ok(substr_count($h, 'Ha vuelto a responder') === 0, 'los otros tres del grupo heredan su id: ni «ha vuelto a responder» ni «ya no viene»');
+$rc2 = array_values(array_filter(lee_json(dir_boda($slug) . '/guardado/rsvp.json') ?? [], fn($r) => ($r['id'] ?? '') === 'rc2'))[0] ?? [];
+ok(plano() == $antes && array_column($rc2['invitados'] ?? [], 'id') === [$C[0]['id'], $C[1]['id'], $C[2]['id']], 'nadie se reasigna: el plano no cambia y los tres conservan su id');
 [, $hc] = pide('GET', $host, '/panel/catering');
-ok(preg_match('~Hugo Sol</td><td class="catering-mesa">Sin mesa</td>~', $hc) === 1, 'catering: la respuesta nueva de Hugo sale «Sin mesa» (no hereda la mesa por el nombre)');
+ok(preg_match('~Hugo Sol</td><td class="catering-mesa">Mesa 2</td>~', $hc) === 1, 'catering: Hugo sigue en la Mesa 2 tras el reenvío de su grupo');
 [, $hi] = pide('GET', $host, '/panel/mesas/imprimir');
 ok(strpos($hi, 'Juan Sol') === false && strpos($hi, 'ya no vienen') !== false, 'hoja: quien ya no viene no sale, y se avisa en pantalla');
 pide('POST', $host, '/panel/mesas', ['csrf' => $csrf, 'accion' => 'levantar', 'persona' => $C[3]['id']]);

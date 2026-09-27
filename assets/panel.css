@@ -188,6 +188,8 @@ table.t-corta { min-width: 0; }
 .catering-total td:last-child { text-align: right; }
 .alergia { color: var(--mal-t); font-weight: 500; }
 .rep { color: var(--warn-t); font-weight: 600; }
+.misma { font-size: 12px; }   /* «¿Es la misma que la de…?» bajo una respuesta general (BOD-22) */
+.misma-lista { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; }
 .t td > div { line-height: 22px; min-height: 22px; }   /* nombre, menú y alergia de cada persona en la misma fila */
 .enl-url { display: block; margin-top: 4px; font-size: 11px; color: var(--p-muted); word-break: break-all; font-family: ui-monospace, monospace; }
 .lista-simple { list-style: none; margin: 0; padding: 0; }

@@ -231,6 +231,41 @@ muta_json(dir_boda($slug) . '/config.json', function (array &$d) { $d['_estado']
 ok($st === 200 && strpos($h, 'está archivada') !== false && strpos($h, 'Subir fotos') === false && strpos($h, 'src="/g/') === false, 'archivada: la galería sin subir ni fotos rotas');
 muta_json(dir_boda($slug) . '/config.json', function (array &$d) { $d['_estado'] = 'activa'; });
 
+// ---------------------------------------------------------------- 3c. reenvío del grupo y «es la misma respuesta» (BOD-24, BOD-22)
+$rsvpF = dir_boda($slug) . '/guardado/rsvp.json';
+$tokPerez = inv_lee($slug)['grupos']['g:familia perez']['token'];
+$idMarta = personas(array_values(array_filter(lee_json($rsvpF), fn($r) => ($r['id'] ?? '') === 'rb'))[0])[0]['id'];
+[$st, $h] = pide('POST', '/api/rsvp', ['i' => $tokPerez, 'contacto' => '600000000', 'asiste_banquete' => 'si', 'asiste_ceremonia' => 'si', 'consent_alergias' => 'si', 'consent_acompanantes' => 'si',
+    'invitados' => [['nombre' => 'Ana Pérez', 'id' => $idMarta, 'alergias' => 'frutos secos'], ['nombre' => 'Carlos Pérez', 'id' => $idMarta]]]);
+$nueva = array_values(array_filter(lee_json($rsvpF), fn($r) => ($r['grupo'] ?? '') === $gid('g:familia perez') && empty($r['sustituido'])))[0] ?? [];
+ok($st === 200 && array_column($nueva['invitados'] ?? [], 'id') === array_column($A, 'id'), '(d) reenvío por el enlace: hereda los ids de la familia y descarta el id que llega en el formulario');
+[, $h] = pide('GET', '/panel/mesas');
+ok(strpos($h, 'Ha vuelto a responder') === false && strpos($h, 'Ya no viene') === false, 'reenvío del grupo: siguen sentados en Presidencia, sin avisos');
+// Carlos también respondió por la confirmación general, con una alergia que la del enlace no trae
+muta_json($rsvpF, function (array &$d) use ($per) { $d[] = ['id' => 'rgen', 'fecha_envio' => date('c'), 'invitados' => [$per('Carlos Pérez', 'general', 'marisco')], 'asiste_ceremonia' => true, 'asiste_banquete' => true, 'contacto' => '611111111']; });
+[, $h] = pide('GET', '/panel/respuestas');
+ok(strpos($h, 'misma=rgen&amp;con=' . $nueva['id']) !== false && strpos($h, '¿Es la misma que la de «Familia Pérez»?') !== false, 'respuestas: la general repetida ofrece juntarla con la del grupo');
+[, $h] = pide('GET', '/panel/respuestas?misma=rgen&con=' . $nueva['id']);
+ok(strpos($h, 'id="misma"') !== false && strpos($h, 'Carlos Pérez: marisco') !== false && strpos($h, 'action="/panel/respuestas/misma"') !== false, 'confirmación: las dos respuestas y el aviso de la alergia que se perdería');
+[, $h] = pide('GET', '/panel/respuestas?misma=' . $nueva['id'] . '&con=rgen');
+ok(strpos($h, 'id="misma"') === false, 'confirmación: al revés (grupo como general) no se ofrece');
+$antes = lee_json($rsvpF);
+[$st] = pide('POST', '/panel/respuestas/misma', ['general' => 'rgen', 'grupo' => $nueva['id']]);
+ok($st === 403 && lee_json($rsvpF) === $antes, '(g) sin CSRF: 403 y nada cambia');
+[$st] = pide('GET', '/panel/respuestas/misma?general=rgen&grupo=' . $nueva['id']);
+ok($st === 405 && lee_json($rsvpF) === $antes, 'por GET: 405 y nada cambia');
+// 'ra' es la respuesta del grupo que el reenvío acaba de sustituir
+foreach ([['rgen', 'ra', 'la del grupo ya sustituida'], ['ra', $nueva['id'], 'una «general» que tiene grupo'], ['rgen', 'noexiste', 'un id que no está'], ['rgen', '../x', 'un id con forma rara']] as [$g1, $g2, $q]) {
+    [$st] = pide('POST', '/panel/respuestas/misma', ['csrf' => $csrf, 'general' => $g1, 'grupo' => $g2]);
+    ok($st === 409 && lee_json($rsvpF) === $antes, "(f) $q: 409 y nada cambia");
+}
+[$st, , $cab] = pide('POST', '/panel/respuestas/misma', ['csrf' => $csrf, 'general' => 'rgen', 'grupo' => $nueva['id']]);
+$rg = array_values(array_filter(lee_json($rsvpF), fn($r) => ($r['id'] ?? '') === 'rgen'))[0] ?? [];
+ok($st === 303 && strpos($cab, 'Location: /panel/respuestas') !== false && ($rg['sustituido'] ?? '') === $nueva['id'] && ($rg['sustituido_por'] ?? '') === 'pareja'
+    && ($rg['invitados'][0]['alergias'] ?? 'x') === '', 'misma: la general deja de contar, anotada por la pareja y sin alergias');
+[, $h] = pide('GET', '/panel/respuestas');
+ok(strpos($h, 'misma=rgen') === false && strpos($h, '611111111') === false, 'respuestas: la general juntada ya no sale');
+
 // ---------------------------------------------------------------- 4. otra boda: su cookie no abre este panel
 $otra = 'otra-prueba';
 escribe_json(dir_boda($otra) . '/config.json', normaliza_config(config_inicial()));

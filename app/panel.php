@@ -455,6 +455,8 @@ function panel_respuestas(string $slug, array $c): string {
     if ($bus) $o .= '<span><b>' . $st['bus'] . '</b> en autobús</span>';
     $o .= '</div>';
     if ($rep) $o .= '<p class="aviso">Hay nombres que aparecen en más de una respuesta (marcados con «repetido»). Puede que alguien haya confirmado dos veces.</p>';
+    $mismas = rsvp_posibles_mismas($rsvps);
+    $o .= panel_misma_confirmar($c, $rsvps, $gnom);
     $o .= '<nav class="filtros chips" aria-label="Filtrar respuestas">' . panel_filtros('/panel/respuestas', $ops, $f) . '</nav>';
     $filas = '';
     foreach (array_reverse($rsvps) as $r) {
@@ -469,6 +471,12 @@ function panel_respuestas(string $slug, array $c): string {
             $menu .= '<div>' . h(nombre_menu($c, $p['menu'], $p['menu_nombre'])) . '</div>';
             $alerg .= '<div class="alergia">' . ($p['alergias'] !== '' ? h($p['alergias']) : '&nbsp;') . '</div>';
         }
+        // Respuesta general con nombres de un grupo que respondió por su enlace: la pareja decide si es la misma (BOD-22)
+        foreach ($mismas[(string) ($r['id'] ?? '')] ?? [] as $idg) {
+            $rg = array_values(array_filter($rsvps, fn($x) => ($x['id'] ?? '') === $idg))[0] ?? [];
+            $quien .= '<div class="misma"><a href="/panel/respuestas?' . h(http_build_query(['misma' => $r['id'], 'con' => $idg])) . '#misma">¿Es la misma que la de «'
+                . h($gnom[(string) ($rg['grupo'] ?? '')] ?? 'su grupo') . '»?</a></div>';
+        }
         $g = $gnom[(string) ($r['grupo'] ?? '')] ?? '';
         $hueco = $g !== '' ? '<div class="muted" aria-hidden="true">&nbsp;</div>' : '';   // menú y alergia a la altura de su persona
         $filas .= '<tr><td>' . ($g !== '' ? '<div class="muted">' . h($g) . '</div>' : '') . $quien . '</td>'
@@ -480,6 +488,62 @@ function panel_respuestas(string $slug, array $c): string {
     if ($filas === '') $o .= '<p class="vacio">' . ($rsvps ? 'Ninguna respuesta con ese filtro.' : 'Todavía no hay confirmaciones.') . '</p>';
     else $o .= '<div class="tabla-w"><table class="t"><thead><tr><th>Quién</th><th>Asistencia</th><th>Menú</th><th>Alergias</th>' . ($bus ? '<th>Bus</th>' : '') . '<th>Contacto</th><th>Enviado</th></tr></thead><tbody>' . $filas . '</tbody></table></div>';
     return $o . '<p class="nota">Si un grupo corrigió su respuesta por su enlace, vale la última. Las respuestas se borran el ' . h(fecha_larga(fecha_borrado((string) $c['fecha']), false)) . '.</p></section>';
+}
+
+/**
+ * Confirmación de «es la misma respuesta» (BOD-22, Seguridad 27-sep-2026): enseña las dos respuestas con sus alergias
+ * lado a lado y avisa si la general trae alergias que la del grupo no, porque al confirmar se borran. Solo con dos
+ * respuestas vigentes, la primera sin grupo y la segunda con grupo; si no, no enseña nada. El POST lo vuelve a comprobar.
+ */
+function panel_misma_confirmar(array $c, array $rsvps, array $gnom): string {
+    $idG = (string) ($_GET['misma'] ?? '');
+    $idC = (string) ($_GET['con'] ?? '');
+    if ($idG === '' || $idC === '') return '';
+    $porId = array_column(array_filter($rsvps, fn($r) => is_string($r['id'] ?? null)), null, 'id');
+    $gen = $porId[$idG] ?? null;
+    $gru = $porId[$idC] ?? null;
+    if (!$gen || !$gru || (string) ($gen['grupo'] ?? '') !== '' || (string) ($gru['grupo'] ?? '') === '') return '';
+    $lista = function (array $r): string {
+        $o = '<ul class="misma-lista">';
+        foreach (personas($r) as $p) $o .= '<li><b>' . h($p['nombre']) . '</b>' . ($p['alergias'] !== '' ? ' · alergias: ' . h($p['alergias']) : ' · sin alergias') . '</li>';
+        return $o . '</ul>';
+    };
+    // Alergias de la general que la del grupo no trae para esa persona (por nombre): se perderían al confirmar
+    $conAlergia = [];
+    foreach (personas($gru) as $p) if ($p['alergias'] !== '') $conAlergia[clave_nombre($p['nombre'])] = true;
+    $pierde = array_filter(personas($gen), fn($p) => $p['alergias'] !== '' && !isset($conAlergia[clave_nombre($p['nombre'])]));
+    $grupo = $gnom[(string) $gru['grupo']] ?? 'su grupo';
+    $o = '<section class="card misma-card" id="misma"><h2 class="h2">¿Es la misma respuesta?</h2>'
+        . '<p>Si lo es, cuenta solo la que «' . h($grupo) . '» mandó por su enlace, y la otra deja de contar en el panel, el Excel, el catering y el plano.</p>'
+        . '<div class="rej r-12"><div><h3 class="h3">Por la confirmación general</h3>' . $lista($gen) . '</div><div><h3 class="h3">Por el enlace de «' . h($grupo) . '»</h3>' . $lista($gru) . '</div></div>';
+    if ($pierde) {
+        $o .= '<p class="aviso">Ojo: la respuesta general trae alergias que la del enlace no trae ('
+            . h(implode(', ', array_map(fn($p) => $p['nombre'] . ': ' . $p['alergias'], $pierde)))
+            . '). Al confirmar se borran. Si siguen siendo ciertas, pedid al grupo que vuelva a responder por su enlace con ellas.</p>';
+    }
+    return $o . '<form method="post" action="/panel/respuestas/misma" class="fila-bot"><input type="hidden" name="csrf" value="' . h(panel_csrf()) . '">'
+        . '<input type="hidden" name="general" value="' . h($idG) . '"><input type="hidden" name="grupo" value="' . h($idC) . '">'
+        . '<button type="submit" class="btn">Sí, es la misma</button> <a class="btn b-papel" href="/panel/respuestas">No, dejar las dos</a></form></section>';
+}
+
+/** POST /panel/respuestas/misma (sesión ya exigida por rutas_panel; CSRF aquí). Todo se comprueba dentro del bloqueo. */
+function panel_respuestas_misma(string $slug, array $c, string $metodo): void {
+    if ($metodo !== 'POST') { header('Allow: POST'); http_response_code(405); exit; }
+    if (!panel_csrf_ok()) { http_response_code(403); exit; }
+    $general = (string) ($_POST['general'] ?? '');
+    $grupo = (string) ($_POST['grupo'] ?? '');
+    $motivo = 'no-existe';
+    if (preg_match('/^[A-Za-z0-9_-]{1,40}$/', $general) && preg_match('/^[A-Za-z0-9_-]{1,40}$/', $grupo)) {
+        $motivo = muta_json(dir_boda($slug) . '/guardado/rsvp.json', fn(array &$d) => rsvp_misma($d, $general, $grupo)) ?? 'disco';
+    }
+    if ($motivo !== '') {
+        http_response_code(409);
+        echo panel_pagina($slug, $c, 'respuestas', PANEL_SECCIONES['respuestas'][1], '<section class="card"><p>Esas respuestas ya no se pueden juntar: puede que una ya no cuente o que el grupo haya vuelto a responder.</p>'
+            . '<p><a class="btn b-papel" href="/panel/respuestas">Volver a Respuestas</a></p></section>');
+        return;
+    }
+    registra('respuesta general marcada como la misma que la de un grupo', ['slug' => $slug]);
+    header('Location: /panel/respuestas', true, 303);
 }
 
 // ---------------------------------------------------------------- música

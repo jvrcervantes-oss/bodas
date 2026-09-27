@@ -67,6 +67,42 @@ $d = [$rec('a1', 2, $g['gid']), $rec('a2', 1)];
 rsvp_anade($d, $rec('a3', 2, $g['gid']));
 ok(($d[0]['sustituido'] ?? '') === 'a3' && implode('', array_column($d[0]['invitados'], 'alergias')) === '' && empty($d[1]['sustituido'])
     && $d[2]['invitados'][0]['alergias'] === 'nueces', 'reenvío: anterior sustituida y sin alergias; otros grupos y la nueva intactos');
+
+// --- BOD-24 (Seguridad 27-sep): el reenvío del grupo conserva el id de quien sale UNA vez con ese nombre en el grupo
+$pp = fn(string $nombre, string $id = '') => ['id' => $id !== '' ? $id : bin2hex(random_bytes(8)), 'nombre' => $nombre, 'tipo' => 'adulto', 'menu' => 'general', 'menu_nombre' => 'Menú', 'alergias' => ''];
+$rr = fn(string $id, array $ps, string $grupo = '') => ['id' => $id, 'asiste_banquete' => true] + ($grupo !== '' ? ['grupo' => $grupo] : []) + ['invitados' => $ps];
+$d = [$rr('h1', [$pp('Ana Pérez', 'aaaaaaaaaaaaaaa1'), $pp('Leo', 'aaaaaaaaaaaaaaa2')], 'g1')];
+rsvp_anade($d, $rr('h2', [$pp('ana perez'), $pp('Leo'), $pp('Mía')], 'g1'));
+ok(array_column($d[1]['invitados'], 'id') === ['aaaaaaaaaaaaaaa1', 'aaaaaaaaaaaaaaa2', $d[1]['invitados'][2]['id']] && $d[1]['invitados'][2]['id'] !== 'aaaaaaaaaaaaaaa1',
+    '(a) reenvío con los mismos nombres (sin tildes ni mayúsculas): mismos ids; la persona nueva, id nuevo');
+$d = [$rr('h1', [$pp('Ana', 'bbbbbbbbbbbbbbb1'), $pp('Ana', 'bbbbbbbbbbbbbbb2'), $pp('Leo', 'bbbbbbbbbbbbbbb3')], 'g1')];
+rsvp_anade($d, $rr('h2', [$pp('Ana'), $pp('Leo'), $pp('Leo')], 'g1'));
+ok(!array_intersect(array_column($d[1]['invitados'], 'id'), ['bbbbbbbbbbbbbbb1', 'bbbbbbbbbbbbbbb2', 'bbbbbbbbbbbbbbb3']), '(b) dos «Ana» en la vieja o dos «Leo» en la nueva: id nuevo, no se adivina');
+$viejaV = ['id' => 'rv1', 'grupo' => 'g1', 'invitados' => [['nombre' => 'Ana'], ['nombre' => 'Leo']]];
+$idV = personas($viejaV)[0]['id'];
+$d = [$viejaV];
+rsvp_anade($d, $rr('h2', [$pp('Ana')], 'g1'));
+ok(str_starts_with($idV, 'v') && $d[1]['invitados'][0]['id'] === $idV && personas($d[1])[0]['id'] === $idV, '(c) respuesta de antes con id «v…»: se hereda y personas() lo conserva');
+$d = [$rr('h1', [$pp('Ana', 'ccccccccccccccc1')], 'g1'), $rr('h3', [$pp('Leo', 'ccccccccccccccc2')]), $rr('h4', [$pp('Mía', 'ccccccccccccccc3')], 'g2')];
+rsvp_anade($d, $rr('h5', [$pp('Leo'), $pp('Mía')], 'g1'));
+ok(!array_intersect(array_column($d[3]['invitados'], 'id'), ['ccccccccccccccc2', 'ccccccccccccccc3']) && empty($d[1]['sustituido']) && empty($d[2]['sustituido'])
+    && $d[1]['invitados'][0]['id'] === 'ccccccccccccccc2', '(e) nunca se hereda de una general ni de otro grupo, y esas quedan intactas');
+$d = [$rr('h1', [$pp('Ana', 'ddddddddddddddd1')], 'g1'), $rr('h2', [$pp('Ana', 'ddddddddddddddd2')], 'g1')];   // dos vigentes del grupo (datos de antes del arreglo)
+rsvp_anade($d, $rr('h3', [$pp('Ana')], 'g1'));
+ok(!in_array($d[2]['invitados'][0]['id'], ['ddddddddddddddd1', 'ddddddddddddddd2'], true) && $d[0]['sustituido'] === 'h3' && $d[1]['sustituido'] === 'h3', 'candidatas = todas las vigentes del grupo juntas: «Ana» en dos, ambigua');
+
+// --- BOD-22 (Seguridad 27-sep): «es la misma respuesta», solo general vigente sin grupo + del grupo vigente
+$base = [$rr('m1', [$pp('Ana') + ['alergias' => 'gluten']]), $rr('m2', [$pp('Ana')], 'g1'), $rr('m3', [$pp('Leo')], 'g1') + ['sustituido' => 'm2'], $rr('m4', [$pp('Mía')])];
+$d = $base; $r = rsvp_misma($d, 'm1', 'm2');
+ok($r === '' && $d[0]['sustituido'] === 'm2' && $d[0]['sustituido_por'] === 'pareja' && ($d[0]['sustituido_fecha'] ?? '') !== '' && $d[0]['invitados'][0]['alergias'] === ''
+    && $d[1] === $base[1], 'misma: la general queda sustituida por la del grupo, anotado quién y cuándo, sin alergias; la del grupo intacta');
+foreach ([['m1', 'm3', 'la del grupo ya sustituida'], ['m2', 'm1', 'la «general» con grupo'], ['m1', 'm4', 'la otra sin grupo'], ['m1', 'x9', 'id que no está'], ['m1', 'm1', 'la misma dos veces']] as [$a1, $a2, $q]) {
+    $d = $base; ok(rsvp_misma($d, $a1, $a2) !== '' && $d === $base, "misma rechazada sin tocar nada: $q");
+}
+$d = $base; rsvp_misma($d, 'm1', 'm2');
+ok(rsvp_misma($d, 'm1', 'm2') !== '', 'misma: una general ya sustituida no se vuelve a juntar');
+ok(rsvp_posibles_mismas([$base[0], $base[1], $base[3]]) === ['m1' => ['m2']], 'posibles: solo la general con un nombre del grupo');
+
 $c = config_inicial();
 [, $st, $menus] = panel_datos($slug, $c);
 ok($st['personas'] === 4 && array_sum(array_column($menus, 'n')) === 4, 'panel_datos cuenta sin sustituidas');
