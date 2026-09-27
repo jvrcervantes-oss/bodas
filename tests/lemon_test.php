@@ -272,6 +272,12 @@ $cm = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('c
 $cm = end($cm) ?: '';
 ok(strpos($cm, '«CASILLA-MEJORA-LITERAL»') !== false && strpos($cm, '27/09/2026 10:15') !== false && strpos($cm, euros($pm) . ', IVA incluido') !== false && strpos($cm, 'Lemon Squeezy') !== false,
     'correo de la mejora: casilla literal, fecha, importe y vendedor');
+ok(strpos($cm, str_repeat('=', 40)) !== false && strpos($cm, '- Duración:') !== false && strpos($cm, '- Garantía:') !== false && strpos($cm, '- Servicio:') !== false,
+    'correo de la mejora: resumen del 97.1 y condiciones íntegras al final (Legal)');
+// Sin casilla guardada: no escribe «» vacío y avisa al estudio
+$tgAntes = count(telegramas());
+$sinCasilla = texto_mejora_correo('corte', ['session_id' => 'ls_901', 'importe' => ['total' => $pm]], ['aceptacion' => ['fecha' => date('c')]]);
+ok(strpos($sinCasilla, '«»') === false && strpos($sinCasilla, 'marcasteis lo siguiente') === false && count(telegramas()) === $tgAntes + 1, 'mejora sin casilla: sin línea vacía y con aviso');
 ok((lee_json(dir_datos('mejoras', $tm . '.json'))['estado'] ?? '') === 'pagada', 'el pedido de mejora queda pagado');
 ok(facturas_emitidas() === 0, 'la mejora tampoco emite factura BODA-');
 // Otro cobro con el mismo token → duplicado; y una mejora nueva sobre una web ya Atelier → duplicado

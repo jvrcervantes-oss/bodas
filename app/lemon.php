@@ -330,28 +330,52 @@ function panel_mejora(string $slug, string $metodo): void {
 }
 
 /**
- * Correo de la mejora: soporte duradero de lo aceptado (art. 98.7 TRLGDCU). Repite LITERAL la casilla que se
- * enseñó y guardó al pagar (meta.aceptacion), con su fecha, el importe cobrado y quién vendía.
+ * Correo de la mejora: el soporte duradero de ESTA compra (arts. 97.1 y 98.7 TRLGDCU; Legal, 27-sep). No se
+ * apoya en la bienvenida: lleva su propio resumen (quién presta, quién vende, qué, cuánto, hasta cuándo,
+ * desistimiento, garantía), la casilla aceptada LITERAL con fecha y versión, y las condiciones ÍNTEGRAS al
+ * final. El enlace a /condiciones es solo una comodidad (enseña siempre la vigente). Si se quita algo de
+ * esto, cae la excepción del art. 103.m y la mejora vuelve a ser desistible.
  */
 function texto_mejora_correo(string $slug, array $ped, array $meta): string {
+    $L = textos_legales();
+    $E = empresa();
     $a = (array) ($meta['aceptacion'] ?? []);
     $fecha = ($a['fecha'] ?? '') !== '' ? date('d/m/Y H:i', strtotime((string) $a['fecha'])) : '';
     // El vendedor que se aceptó; si no quedó guardado, el de la fuente única de Legal (nunca escrito a mano)
-    $vend = (string) ($a['vendedor'] ?? '') !== '' ? (string) $a['vendedor'] : (string) (textos_legales()['vendedor'] ?? '');
+    $vend = (string) ($a['vendedor'] ?? '') !== '' ? (string) $a['vendedor'] : (string) ($L['vendedor'] ?? '');
     $num = (int) ($ped['ls']['order_number'] ?? 0);
     $total = (int) ($ped['importe']['total'] ?? 0);
-    // Mismo formato y frases que la bienvenida de Legal (correo.php): venta y cobro, condiciones, casilla literal con fecha y versión
+    $casilla = (string) ($a['desistimiento'] ?? '');
+    $cfg = lee_json(dir_boda($slug) . '/config.json') ?? [];
+    $borrado = fecha_larga(fecha_borrado((string) ($cfg['fecha'] ?? '')), false);
+    // Las condiciones que van en el cuerpo son las vigentes al enviar: si la versión cambió desde la aceptación, se deja rastro
+    if (($a['version'] ?? '') !== '' && $a['version'] !== ($L['version'] ?? '')) {
+        registra('ALERTA correo de mejora con condiciones de otra versión', ['slug' => $slug, 'aceptada' => $a['version'], 'enviada' => $L['version'] ?? '']);
+    }
+    // Sin la casilla literal no queda probado el consentimiento del 103.m: se avisa, y no se escribe una línea vacía
+    if ($casilla === '') {
+        registra('ALERTA mejora sin casilla 103.m', ['slug' => $slug]);
+        avisa_estudio('Mejora pagada sin la casilla de desistimiento guardada', "Mejora de $slug: la aceptación no guarda la casilla del art. 103.m. Revisar con Legal.", aviso_ref((string) ($ped['session_id'] ?? '')));
+    }
     return "¡Hecho! Vuestra web ya tiene el Pack Atelier.\n\n"
         . "Elegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis:\n" . url_boda($slug, 'panel/editar') . "\n\n"
         . "Guardad este correo: es la confirmación de la mejora.\n\n"
         . "RESUMEN\n"
+        . '- Servicio: ' . marca() . ', un producto de AxisWorks, que presta ' . $E['titular'] . ($E['nif'] !== '' ? ' (NIF ' . $E['nif'] . ')' : '') . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . ".\n"
         . '- Qué: paso de Pack Esencial a Pack Atelier en ' . url_boda($slug) . ".\n"
         . "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
         . ". El recibo y la factura os los envía $vend en otro correo.\n"
-        . '- Condiciones del servicio (las mismas que ya aceptasteis): ' . url_creador('condiciones') . "\n\n"
-        . 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
-        . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ":\n«" . (string) ($a['desistimiento'] ?? '') . "»\n\n"
-        . 'Dudas y reclamaciones: ' . empresa()['email'] . "\n\n" . marca_comercial_correo();
+        . '- Duración: podéis usar y cambiar los diseños Atelier mientras la web esté alojada' . ($borrado !== '' ? ", hasta el $borrado" : '') . ". La mejora no alarga el alojamiento.\n"
+        . "- Desistimiento: lo perdisteis al activarse la mejora, porque así lo pedisteis antes de pagar (casilla de abajo).\n"
+        . "- Garantía: los diseños tienen que funcionar como se describen durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
+        . '- Condiciones del servicio: van completas al final de este correo' . (($a['version'] ?? '') !== '' ? ' (versión ' . $a['version'] . ')' : '')
+        . '. También están en ' . url_creador('condiciones') . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n"
+        . '- Dudas y reclamaciones: ' . $E['email'] . "\n\n"
+        . ($casilla !== '' ? 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
+            . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ":\n«" . $casilla . "»\n\n" : '')
+        . marca_comercial_correo() . "\n\n"
+        . str_repeat('=', 40) . "\n\n"
+        . legal_a_texto(documento_legal('condiciones', 'Condiciones del servicio')) . "\n";
 }
 
 /** Mejora cobrada: valida contra su pedido congelado y marca la boda como Atelier. Idempotente, bajo el cerrojo. */
