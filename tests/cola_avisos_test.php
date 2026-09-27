@@ -46,6 +46,11 @@ if ($fase === 'falla') {
     ok($cola() === 3, 'bienvenida, aviso al owner y Telegram quedan en la cola (' . $cola() . ')');
     $n = cola_avisos_reintenta();
     ok($n['pendientes'] === 3 && $cola() === 3, 'si sigue fallando, siguen en la cola con un intento más');
+    $enCola = implode('', array_map('file_get_contents', glob(dir_datos('cola_avisos', '*.json')) ?: []));
+    ok(strpos($enCola, '/panel/clave') === false && strpos($enCola, '{{ENLACE_PANEL}}') !== false, 'la cola no guarda el enlace del panel, solo la marca');
+    ok(strpos($enCola, 'pareja@example.com') !== false && substr_count($enCola, '"tipo": "telegram"') === 1, 'hay un Telegram en cola');
+    $tg = array_values(array_filter(array_map(fn($f) => lee_json($f), glob(dir_datos('cola_avisos', '*.json')) ?: []), fn($a) => ($a['tipo'] ?? '') === 'telegram'))[0] ?? [];
+    ok(strpos((string) ($tg['texto'] ?? ''), '@') === false, 'el Telegram no lleva el email del comprador');
     // Fase 2 en otro proceso: sin CORREO_FALLA
     passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' envia ' . escapeshellarg($tmp), $rc);
     if ($rc !== 0) $fallos++;
@@ -59,4 +64,6 @@ if ($fase === 'falla') {
 $n = cola_avisos_reintenta();
 ok($n['enviados'] === 3 && $cola() === 0, 'con el envío de vuelta, el cron vacía la cola');
 ok(count(glob(dir_datos('telegram', '*')) ?: []) === 1, 'el Telegram sale una vez');
+$bien = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('correos', '*')) ?: []), fn($t) => strpos($t, 'Para: pareja@example.com') === 0))[0] ?? '';
+ok(strpos($bien, '/panel/clave') !== false && strpos($bien, '{{ENLACE_PANEL}}') === false, 'la bienvenida reintentada lleva un enlace del panel recién generado');
 exit($fallos ? 1 : 0);

@@ -92,16 +92,27 @@ function envia_correo(string $para, string $asunto, string $texto, array $adjunt
  */
 function envia_o_encola(array $aviso): bool {
     $ok = aviso_envia($aviso);
-    if (!$ok) {
-        $aviso += ['intentos' => 1, 'creado' => date('c')];
-        escribe_json(dir_datos('cola_avisos', date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.json'), $aviso);
-        registra('aviso encolado para reintento', ['tipo' => $aviso['tipo'] ?? '', 'asunto' => $aviso['asunto'] ?? '']);
-    }
+    if (!$ok) encola_aviso($aviso);
     return $ok;
 }
+function encola_aviso(array $aviso): void {
+    $aviso += ['intentos' => 1, 'creado' => date('c')];
+    escribe_json(dir_datos('cola_avisos', date('YmdHis') . '-' . bin2hex(random_bytes(4)) . '.json'), $aviso);
+    registra('aviso encolado para reintento', ['tipo' => $aviso['tipo'] ?? '', 'asunto' => $aviso['asunto'] ?? '']);
+}
+/** Marca del enlace del panel en una bienvenida encolada: el enlace real NUNCA se guarda en disco. */
+const ENLACE_PANEL_MARCA = '{{ENLACE_PANEL}}';
 function aviso_envia(array $a): bool {
     if (($a['tipo'] ?? '') === 'telegram') return telegram_envia((string) ($a['texto'] ?? ''));
-    return envia_correo((string) ($a['para'] ?? ''), (string) ($a['asunto'] ?? ''), (string) ($a['texto'] ?? ''), (array) ($a['adjuntos'] ?? []));
+    $texto = (string) ($a['texto'] ?? '');
+    // Bienvenida reintentada: el enlace de un solo uso se genera AHORA (en disco solo va su sha256,
+    // panel_auth.php) y con sus 14 días de vida enteros
+    $slug = (string) ($a['enlace_slug'] ?? '');
+    if ($slug !== '' && strpos($texto, ENLACE_PANEL_MARCA) !== false) {
+        if (!slug_valido($slug) || !boda_existe($slug)) return true;   // la boda ya no existe: nada que mandar
+        $texto = str_replace(ENLACE_PANEL_MARCA, panel_nuevo_enlace($slug), $texto);
+    }
+    return envia_correo((string) ($a['para'] ?? ''), (string) ($a['asunto'] ?? ''), $texto, (array) ($a['adjuntos'] ?? []));
 }
 /** Cron: reintenta la cola. Tras 20 intentos (≈ 20 días con el cron diario) se aparta y queda en el log. */
 function cola_avisos_reintenta(): array {
@@ -127,7 +138,7 @@ function cola_avisos_reintenta(): array {
 function telegram_envia(string $texto): bool {
     $token = (string) secreto('telegram_token');
     $chat = (string) secreto('telegram_chat');
-    if ($token === '' || $chat === '') return true;   // sin configurar: no hay a quién avisar (no se encola)
+    if ($token === '' || $chat === '') { registra('telegram sin configurar: aviso solo por correo'); return true; }   // no se encola
     if (defined('CORREO_A_FICHERO')) {
         if (defined('CORREO_FALLA')) return false;
         asegura_dir(dir_datos('telegram'));
@@ -192,7 +203,10 @@ function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
     $texto = texto_bienvenida($ped, $cfg, $enlace);
     $adjuntos = ['condiciones.html' => documento_legal('condiciones', 'Condiciones de contratación')];
     if (($ped['factura'] ?? '') !== '') $adjuntos[$ped['factura'] . '.html'] = (string) render_factura($ped['factura']);
-    envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), 'texto' => $texto, 'adjuntos' => $adjuntos]);
+    $aviso = ['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), 'texto' => $texto, 'adjuntos' => $adjuntos];
+    if (aviso_envia($aviso)) return;
+    // A la cola SIN el enlace del panel (revisor, 27-sep): se regenera al reintentar
+    encola_aviso(['texto' => texto_bienvenida($ped, $cfg, ENLACE_PANEL_MARCA), 'enlace_slug' => (string) $ped['slug']] + $aviso);
 }
 
 /** Resumen de una venta para el owner: pedido y pack, nunca datos de invitados. */
@@ -214,5 +228,7 @@ function correo_enlace_panel(string $slug, string $email, string $enlace): void 
 function avisa_estudio(string $asunto, string $texto): void {
     registra('AVISO ESTUDIO: ' . $asunto, ['texto' => $texto]);
     envia_o_encola(['tipo' => 'correo', 'para' => empresa()['email'], 'asunto' => '[BodaEnlace] ' . $asunto, 'texto' => $texto]);
-    envia_o_encola(['tipo' => 'telegram', 'texto' => 'BodaEnlace · ' . $asunto . "\n\n" . $texto]);
+    // Telegram es un tercero: sin emails de clientes (revisor, 27-sep). El detalle completo va solo al buzón propio
+    $sinEmail = (string) preg_replace('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', '[email en el correo]', $texto);
+    envia_o_encola(['tipo' => 'telegram', 'texto' => 'BodaEnlace · ' . $asunto . "\n\n" . $sinEmail]);
 }
