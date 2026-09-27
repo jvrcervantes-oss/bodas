@@ -278,11 +278,18 @@ function correo_enlace_panel(string $slug, string $email, string $enlace): void 
     envia_correo($email, 'Acceso a vuestro panel de boda', "Hola:\n\nAlguien ha pedido un enlace para elegir una nueva contraseña del panel de " . url_boda($slug) . ".\n\n$enlace\n\nSirve una sola vez y caduca en 14 días. Si no lo habéis pedido vosotros, ignorad este email: vuestra contraseña actual sigue funcionando.\n\n" . marca_comercial_correo());
 }
 
-/** Aviso al owner por correo (buzón de la marca) y por Telegram. Si alguno falla, a la cola del cron. */
-function avisa_estudio(string $asunto, string $texto): void {
-    registra('AVISO ESTUDIO: ' . $asunto, ['texto' => $texto]);
-    envia_o_encola(['tipo' => 'correo', 'para' => empresa()['email'], 'asunto' => '[BodaEnlace] ' . $asunto, 'texto' => $texto]);
-    // Telegram es un tercero: sin emails de clientes (revisor, 27-sep). El detalle completo va solo al buzón propio
-    $sinEmail = (string) preg_replace('/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/', '[email en el correo]', $texto);
-    envia_o_encola(['tipo' => 'telegram', 'texto' => 'BodaEnlace · ' . $asunto . "\n\n" . $sinEmail]);
+/**
+ * Aviso al owner por correo (buzón de la marca, con todo el detalle) y por Telegram. Si alguno falla, a la
+ * cola del cron. $titulo NUNCA lleva el slug: el nombre de la web suele ser el de la pareja (dato personal) y
+ * Telegram es un tercero (BOD-17). A Telegram solo va el título, una referencia neutra y dónde mirar.
+ */
+function avisa_estudio(string $titulo, string $texto, string $ref = ''): void {
+    registra('AVISO ESTUDIO: ' . $titulo, ['ref' => $ref, 'texto' => $texto]);
+    envia_o_encola(['tipo' => 'correo', 'para' => empresa()['email'], 'asunto' => '[BodaEnlace] ' . $titulo . ($ref !== '' ? ' · ' . $ref : ''), 'texto' => $texto]);
+    envia_o_encola(['tipo' => 'telegram', 'texto' => 'BodaEnlace · ' . $titulo . ($ref !== '' ? "\n" . $ref : '')
+        . "\n\nDetalle en el correo de " . empresa()['email'] . ' y en ' . url_creador('estudio')]);
+}
+/** Referencia neutra de un pedido para los avisos: el nº de LS, o un resumen del id (el de un regalo lleva el token de /listo). */
+function aviso_ref(string $sid): string {
+    return preg_match('/^ls_(\d{1,15})$/', $sid, $m) ? 'Pedido LS ' . $m[1] : 'Pedido ' . substr(hash('sha256', $sid), 0, 8);
 }

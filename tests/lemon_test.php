@@ -94,7 +94,8 @@ ok(count(glob(dir_datos('bodas', '*'), GLOB_ONLYDIR) ?: []) === 1, 'una sola web
 ok(correos_a('pareja@example.com') === 1, 'un solo correo de bienvenida');
 ok(correos_a('hola@bodaenlace.com') === 1, 'un solo aviso de venta al owner por correo');
 $tg = telegramas();
-ok(count($tg) === 1 && strpos($tg[0], 'Venta nueva: ana-y-luis (prueba)') !== false && strpos($tg[0], 'Lemon Squeezy #1001') !== false, 'un solo aviso de venta por Telegram, con el pedido');
+ok(count($tg) === 1 && strpos($tg[0], 'Venta nueva (prueba)') !== false && strpos($tg[0], 'Pedido LS 101') !== false, 'un solo aviso de venta por Telegram, con referencia neutra');
+ok(strpos($tg[0], 'ana-y-luis') === false && strpos($tg[0], 'Ana') === false && strpos($tg[0], '@example') === false, 'BOD-17: Telegram sin slug, nombres ni email');
 ok(facturas_emitidas() === 0, 'venta LS: ninguna factura BODA-');
 $ped = lee_json(dir_datos('pedidos', 'ls_101.json'));
 ok(($ped['factura'] ?? 'x') === '' && ($ped['pasarela'] ?? '') === 'lemon', 'pedido LS sin factura y con pasarela');
@@ -244,7 +245,8 @@ ok(mejora_bloqueo('corte') === '', 'boda Esencial pagada: se puede mejorar');
 ok(mejora_bloqueo('ana-y-luis') === 'sin-pedido', 'boda reembolsada: no se puede mejorar');
 function mejora_abierta(string $slug, int $precio): string {
     $t = bin2hex(random_bytes(16));
-    escribe_json(dir_datos('mejoras', $t . '.json'), ['tipo' => 'mejora', 'slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => 'lemon', 'estado' => 'abierta']);
+    escribe_json(dir_datos('mejoras', $t . '.json'), ['tipo' => 'mejora', 'slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => 'lemon', 'estado' => 'abierta',
+        'aceptacion' => ['fecha' => '2026-09-27T10:15:00+02:00', 'version' => 'x', 'desistimiento' => 'CASILLA-MEJORA-LITERAL', 'vendedor' => 'Lemon Squeezy', 'precio_cent' => $precio]]);
     return $t;
 }
 function ev_mejora(string $id, string $tok, string $slug): array {
@@ -265,6 +267,11 @@ ok($r === 'creada', 'mejora aplicada (3 entregas)');
 $bpc = lee_json(dir_boda('corte') . '/pedido.json') ?? [];
 ok(!empty($bpc['atelier']) && ($bpc['mejora']['session_id'] ?? '') === 'ls_901', 'la boda pasa a Atelier y guarda qué pedido la mejoró');
 ok(count(telegramas()) === $tgAntes + 1 && correos_a('pareja@example.com') === $paAntes + 1, 'un solo aviso por mejora (pareja + Telegram)');
+// Art. 98.7: el correo de la mejora repite literal la casilla aceptada, con su fecha, el importe y el vendedor
+$cm = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('correos', '*')) ?: []), fn($t) => strpos($t, 'Asunto: Ya tenéis el Pack Atelier') !== false));
+$cm = end($cm) ?: '';
+ok(strpos($cm, '«CASILLA-MEJORA-LITERAL»') !== false && strpos($cm, '27/09/2026 10:15') !== false && strpos($cm, euros($pm) . ', IVA incluido') !== false && strpos($cm, 'Lemon Squeezy') !== false,
+    'correo de la mejora: casilla literal, fecha, importe y vendedor');
 ok((lee_json(dir_datos('mejoras', $tm . '.json'))['estado'] ?? '') === 'pagada', 'el pedido de mejora queda pagado');
 ok(facturas_emitidas() === 0, 'la mejora tampoco emite factura BODA-');
 // Otro cobro con el mismo token → duplicado; y una mejora nueva sobre una web ya Atelier → duplicado
@@ -302,7 +309,9 @@ ok(!is_file(dir_datos('mejoras', 'abierta_marca.json')), 'mejora rechazada liber
 $tgAntes = count(telegramas());
 lemon_procesa_evento(evento('order_refunded', '901', '', 'corte'), lector(['901' => pedido_ls($pm, ['status' => 'refunded'])]));
 $tgs = telegramas();
-ok(count($tgs) === $tgAntes + 1 && strpos(implode("\n", $tgs), 'conserva el Atelier') !== false, 'reembolso de mejora: aviso propio');
+$aOwner = implode("\n", array_map('file_get_contents', array_filter(glob(dir_datos('correos', '*')) ?: [], fn($f) => strpos((string) file_get_contents($f), 'Para: hola@bodaenlace.com') === 0)));
+ok(count($tgs) === $tgAntes + 1 && strpos($aOwner, 'conserva el Atelier') !== false, 'reembolso de mejora: aviso propio (correo al owner)');
+ok(!array_filter($tgs, fn($t) => preg_match('/corte|ana-y-luis|marca\.bodaenlace|@example/', $t)), 'BOD-17: ningún Telegram lleva slug ni email');
 // El Padrino ve la mejora como mejora, no como venta nueva de Esencial
 $pr = array_values(array_filter(padrino_resumen()['pedidos'], fn($p) => $p['tipo'] === 'mejora'));
 ok(count($pr) >= 2 && !array_filter($pr, fn($p) => $p['pack'] !== 'atelier'), 'resumen del Padrino: tipo mejora, pack atelier');

@@ -42,7 +42,7 @@ function mapa_coords_de_texto(string $s): ?array {
 
 /** GET por HTTPS a un host fijo, sin redirecciones y con tope de bytes. [código, cuerpo] o null. */
 function mapa_http(string $url, int $maxBytes): ?array {
-    if (!function_exists('curl_init')) return null;
+    if (!function_exists('curl_init') || defined('SIN_RED')) return null;   // SIN_RED: pruebas (tests/)
     $buf = '';
     $ch = curl_init($url);
     curl_setopt_array($ch, [

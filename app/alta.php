@@ -92,7 +92,7 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
         registra('ALERTA pago sin pedido pendiente', ['sid' => $sid, 'slug' => $slug]);
         $ped['estado'] = 'sin-datos';
         escribe_json($fPedido, $ped);
-        avisa_estudio('Pago de web de boda sin datos del creador', "Pedido $sid ($slug). Cobrado" . (($ped['factura'] ?? '') !== '' ? " y facturado ({$ped['factura']})" : '') . "; la web no se ha podido crear. Contactar con {$ped['email']}.");
+        avisa_estudio('Pago de web de boda sin datos del creador', "Pedido $sid ($slug). Cobrado" . (($ped['factura'] ?? '') !== '' ? " y facturado ({$ped['factura']})" : '') . "; la web no se ha podido crear. Contactar con {$ped['email']}.", aviso_ref($sid));
         return $ped;
     }
 
@@ -128,7 +128,7 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
     @unlink(dir_datos('reservas', $ped['slug'] . '.json'));
     borra_arbol($pend);
     // Aviso al owner de cada venta (correo + Telegram). Tras 'creada': un reintento no lo repite
-    if (tipo_pago($ped) !== 'regalo') avisa_estudio('Venta nueva: ' . $slug . (!empty($ped['ls']['test']) ? ' (prueba)' : ''), texto_venta($ped));
+    if (tipo_pago($ped) !== 'regalo') avisa_estudio('Venta nueva' . (!empty($ped['ls']['test']) ? ' (prueba)' : ''), texto_venta($ped), aviso_ref($sid));
     registra('boda creada', ['slug' => $slug, 'sid' => $sid, 'factura' => $ped['factura']]);
     return $ped;
 }
