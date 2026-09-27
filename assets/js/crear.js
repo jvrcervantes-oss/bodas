@@ -1262,6 +1262,7 @@
         fetch(BASE + '/api/borrador', { method: 'POST', body: fl }).then(function (r) { return r.json(); }).then(function (j) {
           if (!j.ok) { window.alert(j.error || 'No se ha podido abrir el borrador.'); return; }
           guarda(CLAVE, JSON.stringify({ config: j.config, slug: j.slug || '', slugTocado: !!j.slug, foto: j.foto || '' }));
+          guarda(CLAVE_VISTOS, '{}');  // borrador nuevo: los pasos vistos del anterior no valen
           location.reload();
         }).catch(function () { window.alert('Sin conexión. Volved a abrir el enlace.'); });
       }
