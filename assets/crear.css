@@ -475,7 +475,7 @@
   .c-pm-num svg { width: 38px; height: 38px; transform: rotate(-90deg); }
   .c-pm-num circle { fill: none; stroke-width: 3; }
   .c-pm-fondo { stroke: var(--surface-high); }
-  .c-pm-arco { stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .7s var(--out); }
+  .c-pm-arco { stroke: var(--ok); stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .7s var(--out); }
   .c-pm-num b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--serif); font-size: 18px; font-weight: 400; }
   .c-pm-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
   .c-pm-txt small { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--bronze); }
@@ -487,7 +487,7 @@
   .c-pm-barra { display: flex; gap: 4px; margin-top: 10px; }
   .c-pm-barra i { flex: 1; height: 4px; border-radius: 4px; background: var(--surface-high); position: relative; overflow: hidden; }
   .c-pm-barra i::after { content: ''; position: absolute; inset: 0; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--out); }
-  .c-pm-barra i.hecho::after { transform: scaleX(1); }
+  .c-pm-barra i.hecho::after { transform: scaleX(1); background: var(--ok); }
   .c-pm-barra i.actual::after { transform: scaleX(.4); background: var(--rose); }
 
   /* Hoja con todos los pasos (<dialog> modal) */
@@ -509,7 +509,15 @@
     text-align: left; cursor: pointer; font-size: 14px; font-weight: 500; }
   .c-hoja li button[aria-current="step"] { background: var(--bronze-c); }
   .c-hoja-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; border: 1px solid var(--line); font-size: 12px; color: var(--ink-3); background: var(--paper); }
-  .c-hoja .hecho .c-hoja-n { background: var(--gold); border-color: var(--gold); color: #fff; }
+  .c-hoja .hecho .c-hoja-n { background: var(--ok); border-color: var(--ok); color: #fff; animation: c-late .45s var(--spring); }
+  .c-hoja .hecho .c-hoja-estado { color: var(--ok); font-weight: 500; }
+  .c-hoja .falta .c-hoja-estado { color: var(--rose); font-weight: 500; }
+  /* El paso en el que se está, ya completado: el número pasa a verde */
+  .c-pm.es-hecho .c-pm-num b { color: var(--ok); }
+  .c-pm.es-hecho .c-pm-num b::before { content: '✓'; }
+  .c-pm.es-hecho .c-pm-num b { font-size: 0; }
+  .c-pm.es-hecho .c-pm-num b::before { font-family: var(--sans); font-size: 16px; font-weight: 600; animation: c-late .45s var(--spring); }
+  @keyframes c-late { 0% { transform: scale(.4); } 60% { transform: scale(1.15); } }
   .c-hoja-estado { margin-left: auto; font-size: 12px; font-weight: 400; color: var(--ink-3); }
 
   /* «Ver mi web»: el botón que más destaca, con punto que late si hay cambios sin ver */
@@ -563,3 +571,6 @@
   .c-panel:not([hidden]) { animation: c-entra .38s var(--out); }
   @keyframes c-entra { from { opacity: 0; transform: translateX(28px); } }
 }
+
+/* Pasos completados en el carril de escritorio (27-sep-2026): mismo verde que en el móvil */
+.c-paso.hecho .c-paso-num { background: var(--ok); border-color: var(--ok); color: #fff; }

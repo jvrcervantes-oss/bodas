@@ -824,12 +824,14 @@
   hoja.addEventListener('close', function () { hoja.classList.remove('ve'); document.documentElement.classList.remove('c-sin-scroll'); });
   function pintaHoja() {
     listaPasos.textContent = '';
+    var fp = faltasPorPaso();
     ordenTabs.forEach(function (o, i) {
-      var hecho = o.k === 'estilo' && estiloListo;
-      var b = el('button', { type: 'button', class: hecho ? 'hecho' : '' }, [
+      var hecho = pasoHecho(o.k, fp), falta = !hecho && (vistos[o.k] || yaElegido) && fp[o.k];
+      var estado = hecho ? 'Completado' : falta ? (fp[o.k] === 1 ? 'Falta 1 dato' : 'Faltan ' + fp[o.k] + ' datos') : o.k === pasoActual ? 'Aquí' : '';
+      var b = el('button', { type: 'button', class: hecho ? 'hecho' : falta ? 'falta' : '' }, [
         el('span', { class: 'c-hoja-n', text: hecho ? '✓' : String(i + 1) }),
         el('span', { text: o.txt }),
-        el('span', { class: 'c-hoja-estado', text: o.k === pasoActual ? 'Aquí' : hecho ? 'Hecho' : vistos[o.k] ? 'Visto' : '' })]);
+        el('span', { class: 'c-hoja-estado', text: estado })]);
       if (o.k === pasoActual) b.setAttribute('aria-current', 'step');
       b.addEventListener('click', function () { cierraHoja(); vaAPaso(o.k); });
       listaPasos.appendChild(el('li', {}, [b]));
@@ -844,8 +846,41 @@
     dePasos.textContent = 'Paso ' + (i + 1) + ' de ' + ordenTabs.length;
     nomPaso.textContent = ordenTabs[i].txt;
     if (cambia) { nomPaso.classList.remove('c-pm-entra'); void nomPaso.offsetWidth; nomPaso.classList.add('c-pm-entra'); }
-    arco.lastChild.style.strokeDashoffset = 100 - (i + 1) / ordenTabs.length * 100;
-    Array.prototype.forEach.call(barraPasos.children, function (t, j) { t.className = j < i ? 'hecho' : j === i ? 'actual' : ''; });
+    pintaEstados();
+  }
+  // Un paso está completado (verde) cuando se ha pasado por él y el servidor no echa nada en falta
+  // en sus campos; Estilo, cuando se ha elegido; Publicar nunca: se completa pagando.
+  // Las faltas llegan con cada vista previa (pintaFaltan) y se reparten por el panel de su campo.
+  function faltasPorPaso() {
+    var fp = {};
+    Object.keys(ultimasFaltas || {}).forEach(function (k) {
+      var n = document.querySelector('[data-panel] [data-k="' + k + '"]'), panel = n && n.closest('[data-panel]');
+      var paso = panel ? panel.getAttribute('data-panel') : null;
+      var m = !paso && /^sec\.([^.]+)/.exec(k);
+      if (m) { var sx = st.secciones.filter(function (x) { return x.id === m[1]; })[0]; paso = sx && sx.tipo === 'rsvp' ? 'rsvp' : 'secciones'; }
+      if (!paso && k === 'codigo') paso = 'secciones';
+      if (paso) fp[paso] = (fp[paso] || 0) + 1;
+    });
+    return fp;
+  }
+  function pasoHecho(k, fp) {
+    if (k === 'publicar') return false;
+    if (k === 'estilo') return !!estiloListo;
+    return !!(vistos[k] || yaElegido) && !fp[k];
+  }
+  function pintaEstados() {
+    if (!numPaso) return;
+    var fp = faltasPorPaso(), hechos = 0;
+    var i = ordenTabs.map(function (o) { return o.k; }).indexOf(pasoActual);
+    ordenTabs.forEach(function (o, j) {
+      var h = pasoHecho(o.k, fp); if (h) hechos++;
+      var t = barraPasos.children[j]; if (t) t.className = h ? 'hecho' : j === i ? 'actual' : '';
+      var r = document.querySelector('.c-paso[data-tab="' + o.k + '"]');
+      if (r) { r.classList.toggle('hecho', h); r.querySelector('.c-paso-num').textContent = h ? '✓' : String(j + 1); }
+    });
+    arco.lastChild.style.strokeDashoffset = 100 - hechos / ordenTabs.length * 100;
+    tarjetaPaso.classList.toggle('es-hecho', pasoHecho(pasoActual, fp));
+    if (hoja.open) pintaHoja();
   }
   // Altura de lo que queda fijo arriba: la usan la vista previa y el salto al siguiente bloque
   function mideTope() { document.body.style.setProperty('--tope', (cabecera.offsetHeight + tarjetaPaso.offsetHeight) + 'px'); }
@@ -870,7 +905,7 @@
   var estiloListo = yaElegido || !!st.atelier;
   var falta = el('div', { class: 'c-falta', role: 'group', 'aria-label': 'Lo que falta del estilo' });
   ESTILO.forEach(function (x) {
-    falta.appendChild(el('span', { class: elegido[x[0]] ? 'si' : '', 'data-k': x[0] }, [el('i', { 'aria-hidden': 'true' }), el('span', { text: x[1] })]));
+    falta.appendChild(el('span', { class: elegido[x[0]] ? 'si' : '', 'data-estilo': x[0] }, [el('i', { 'aria-hidden': 'true' }), el('span', { text: x[1] })]));
   });
   var notaModo = propioEl.querySelector('.c-modo-nota');
   propioEl.insertBefore(falta, notaModo ? notaModo.nextSibling : propioEl.firstChild);
@@ -883,7 +918,7 @@
       if (!e.target.matches('input[type="radio"]')) return;
       var primera = !elegido[x[0]];
       elegido[x[0]] = true;
-      falta.querySelector('[data-k="' + x[0] + '"]').classList.add('si');
+      falta.querySelector('[data-estilo="' + x[0] + '"]').classList.add('si');
       if (compruebaEstilo()) return;
       // Baja sola al siguiente bloque que falta, solo la primera vez que se elige en este
       var sig = ESTILO.filter(function (y) { return !elegido[y[0]]; })[0];
@@ -902,6 +937,7 @@
     var ahora = !!st.atelier || (elegido.tema && elegido.fuente && elegido.deco);
     if (!ahora || estiloListo) return ahora;
     estiloListo = true;
+    pintaEstados();
     if (!ESTRECHO.matches) return true;
     avisoListo.classList.add('ve');
     auto = { desde: pideN, llego: false, tiempo: false };
@@ -989,6 +1025,7 @@
   var ultimasFaltas = {};
   function pintaFaltan(f) {
     ultimasFaltas = f;
+    if (typeof pintaEstados === 'function') pintaEstados();
     document.querySelectorAll('.c-mal').forEach(function (n) { n.classList.remove('c-mal'); });
     Object.keys(f).forEach(function (k) {
       var inp = document.querySelector('[data-k="' + k + '"]');
