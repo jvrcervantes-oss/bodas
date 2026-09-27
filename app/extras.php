@@ -176,7 +176,8 @@ function lemon_extra(string $id, array $o, array $custom): array {
         $fa = extra_fichero_abierta($slug, $clave);
         if ((lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
         if ($ped['email'] === '') $ped['email'] = (string) ($bp['email'] ?? '');
-        envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis ' . EXTRAS[$clave]['nombre'], 'texto' => texto_extra_correo($slug, $clave, $ped, $meta)]);
+        $dc = datos_extra_correo($slug, $clave, $ped, $meta);
+        envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis ' . EXTRAS[$clave]['nombre'], 'texto' => compra_texto($dc), 'html' => compra_html($dc)]);
         avisa_estudio('Extra «' . EXTRAS[$clave]['nombre'] . '»' . (!empty($ped['ls']['test']) ? ' (prueba)' : ''),
             'Web: ' . url_boda($slug) . "\nImporte: " . euros((int) ($ped['importe']['total'] ?? 0)) . ' (IVA ' . euros((int) ($ped['importe']['iva'] ?? 0)) . ")\n"
             . 'Pago: Lemon Squeezy #' . ($ped['ls']['order_number'] ?? '') . (!empty($ped['ls']['test']) ? ' (PRUEBA, modo test)' : '') . "\nComprador: " . $ped['email'], 'Pedido LS ' . $id);
@@ -217,6 +218,11 @@ function extra_recibo(string $slug, string $clave): string {
  * propio, la casilla aceptada LITERAL con fecha y versión, y las condiciones ÍNTEGRAS al final.
  */
 function texto_extra_correo(string $slug, string $clave, array $ped, array $meta): string {
+    return compra_texto(datos_extra_correo($slug, $clave, $ped, $meta));
+}
+
+/** Datos del correo del extra, UNA vez (las alertas se registran una sola vez); los pintan compra_texto y compra_html. */
+function datos_extra_correo(string $slug, string $clave, array $ped, array $meta): array {
     $L = textos_legales();
     $E = empresa_publica();
     $x = EXTRAS[$clave];
@@ -236,32 +242,31 @@ function texto_extra_correo(string $slug, string $clave, array $ped, array $meta
         avisa_estudio('Extra pagado sin la casilla guardada', "Extra $clave de $slug: la aceptación no guarda la casilla. Revisar con Legal.", aviso_ref((string) ($ped['session_id'] ?? '')));
     }
     $donde = $x['panel'] !== '' ? url_boda($slug, 'panel/' . $x['panel']) : url_boda($slug, 'panel');
-    return '¡Hecho! Vuestra web ya tiene «' . $x['nombre'] . "».\n\n"
-        . "Lo tenéis en vuestro panel:\n" . $donde . "\n\n"
-        . "Guardad este correo: es la confirmación de la compra.\n\n"
-        . "RESUMEN\n"
-        . '- Servicio: ' . marca() . ', un producto de AxisWorks' . ($E['nif'] !== ''
-            ? ', que presta ' . $E['titular'] . ' (NIF ' . $E['nif'] . ')' . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . '.'
-            : '. Está en pruebas: los datos de quien lo presta se publicarán antes de abrir la venta.') . "\n"
-        . '- Qué: ' . $x['nombre'] . ' para ' . url_boda($slug) . '. ' . $x['desc'] . "\n"
-        . "- Venta y cobro: $vend, que es quien os lo vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
-        . ". El recibo y la factura os los envía $vend en otro correo.\n"
-        . '- Duración: podéis usarlo mientras la web esté alojada' . ($borrado !== '' ? ", hasta el $borrado" : '') . ". El extra no alarga el alojamiento.\n"
-        // Condiciones, apartado 5 ter (Legal #133): servicio (103.a), desistible en 14 días pagando lo prestado (108.3) porque
-        // la pareja pidió que empezara ya. La base del cálculo es la misma duración que declara la línea anterior.
-        . '- Desistimiento: podéis desistir de este extra en los 14 días siguientes a la compra, escribiéndonos a ' . $E['email'] . '. '
-        . 'Como pedisteis que se activara ya, pagaréis la parte proporcional a lo ya prestado, por días entre la compra y la fecha de borrado de la web'
-        . ($borrado !== '' ? " ($borrado)" : '') . "; el resto os lo devuelve $vend por el mismo medio de pago en un máximo de 14 días. "
-        . "Al desistir, el extra se desactiva y la web sigue publicada (apartado 5 ter).\n"
-        . "- Garantía: tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
-        . '- Condiciones del servicio: van completas al final de este correo' . (($a['version'] ?? '') !== '' ? ' (versión ' . $a['version'] . ')' : '')
-        . '. También están en ' . url_creador('condiciones') . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n"
-        . '- Dudas y reclamaciones: ' . $E['email'] . "\n\n"
-        . ($casilla !== '' ? 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
-            . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ":\n«" . $casilla . "»\n\n" : '')
-        . marca_comercial_correo() . "\n\n"
-        . str_repeat('=', 40) . "\n\n"
-        . legal_a_texto(documento_legal('condiciones', 'Condiciones del servicio')) . "\n";
+    $titular = '¡Hecho! Vuestra web ya tiene «' . $x['nombre'] . '».';
+    return ['titular' => $titular, 'donde_intro' => 'Lo tenéis en vuestro panel:', 'donde' => $donde, 'que' => 'la compra',
+        'resumen' => [
+            ['Servicio', correo_linea_servicio($E)],
+            ['Qué', $x['nombre'] . ' para ' . url_boda($slug) . '. ' . $x['desc']],
+            ['Venta y cobro', "$vend, que es quien os lo vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
+                . ". El recibo y la factura os los envía $vend en otro correo."],
+            ['Duración', 'podéis usarlo mientras la web esté alojada' . ($borrado !== '' ? ", hasta el $borrado" : '') . '. El extra no alarga el alojamiento.'],
+            // Condiciones, apartado 5 ter (Legal #133): servicio (103.a), desistible en 14 días pagando lo prestado (108.3) porque
+            // la pareja pidió que empezara ya. La base del cálculo es la misma duración que declara la línea anterior.
+            ['Desistimiento', 'podéis desistir de este extra en los 14 días siguientes a la compra, escribiéndonos a ' . $E['email'] . '. '
+                . 'Como pedisteis que se activara ya, pagaréis la parte proporcional a lo ya prestado, por días entre la compra y la fecha de borrado de la web'
+                . ($borrado !== '' ? " ($borrado)" : '') . "; el resto os lo devuelve $vend por el mismo medio de pago en un máximo de 14 días. "
+                . 'Al desistir, el extra se desactiva y la web sigue publicada (apartado 5 ter).'],
+            ['Garantía', 'tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).'],
+            ['Condiciones del servicio', 'van completas al final de este correo' . (($a['version'] ?? '') !== '' ? ' (versión ' . $a['version'] . ')' : '')
+                . '. También están en ' . url_creador('condiciones') . ' (esa página enseña siempre la versión vigente; la vuestra es la de este correo).'],
+            ['Dudas y reclamaciones', (string) $E['email']],
+        ],
+        'marcasteis' => 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
+            . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ':',
+        'casilla' => $casilla,
+        'condiciones' => documento_legal('condiciones', 'Condiciones del servicio'),
+        'hero' => ['kicker' => 'Extra activado', 'titulo' => ['Ya tenéis ', $x['nombre'], ''], 'texto' => $x['desc'],
+            'boton' => ['Abrirlo en el panel', $donde], 'enlace' => $donde]];
 }
 
 /**

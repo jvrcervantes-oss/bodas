@@ -346,6 +346,11 @@ function panel_mejora(string $slug, string $metodo): void {
  * esto, cae la excepción del art. 103.m y la mejora vuelve a ser desistible.
  */
 function texto_mejora_correo(string $slug, array $ped, array $meta): string {
+    return compra_texto(datos_mejora_correo($slug, $ped, $meta));
+}
+
+/** Datos del correo de la mejora, UNA vez (las alertas se registran una sola vez); los pintan compra_texto y compra_html. */
+function datos_mejora_correo(string $slug, array $ped, array $meta): array {
     $L = textos_legales();
     $E = empresa_publica();
     $a = (array) ($meta['aceptacion'] ?? []);
@@ -366,27 +371,28 @@ function texto_mejora_correo(string $slug, array $ped, array $meta): string {
         registra('ALERTA mejora sin casilla 103.m', ['slug' => $slug]);
         avisa_estudio('Mejora pagada sin la casilla de desistimiento guardada', "Mejora de $slug: la aceptación no guarda la casilla del art. 103.m. Revisar con Legal.", aviso_ref((string) ($ped['session_id'] ?? '')));
     }
-    return "¡Hecho! Vuestra web ya tiene el Pack Atelier.\n\n"
-        . "Elegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis:\n" . url_boda($slug, 'panel/editar') . "\n\n"
-        . "Guardad este correo: es la confirmación de la mejora.\n\n"
-        . "RESUMEN\n"
-        . '- Servicio: ' . marca() . ', un producto de AxisWorks' . ($E['nif'] !== ''
-            ? ', que presta ' . $E['titular'] . ' (NIF ' . $E['nif'] . ')' . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . '.'
-            : '. Está en pruebas: los datos de quien lo presta se publicarán antes de abrir la venta.') . "\n"
-        . '- Qué: paso de Pack Esencial a Pack Atelier en ' . url_boda($slug) . ".\n"
-        . "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
-        . ". El recibo y la factura os los envía $vend en otro correo.\n"
-        . '- Duración: podéis usar y cambiar los diseños Atelier mientras la web esté alojada' . ($borrado !== '' ? ", hasta el $borrado" : '') . ". La mejora no alarga el alojamiento.\n"
-        . "- Desistimiento: lo perdisteis al activarse la mejora, porque así lo pedisteis antes de pagar (casilla de abajo).\n"
-        . "- Garantía: los diseños tienen que funcionar como se describen durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
-        . '- Condiciones del servicio: van completas al final de este correo' . (($a['version'] ?? '') !== '' ? ' (versión ' . $a['version'] . ')' : '')
-        . '. También están en ' . url_creador('condiciones') . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n"
-        . '- Dudas y reclamaciones: ' . $E['email'] . "\n\n"
-        . ($casilla !== '' ? 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
-            . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ":\n«" . $casilla . "»\n\n" : '')
-        . marca_comercial_correo() . "\n\n"
-        . str_repeat('=', 40) . "\n\n"
-        . legal_a_texto(documento_legal('condiciones', 'Condiciones del servicio')) . "\n";
+    $donde = url_boda($slug, 'panel/editar');
+    return ['titular' => '¡Hecho! Vuestra web ya tiene el Pack Atelier.',
+        'donde_intro' => 'Elegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis:', 'donde' => $donde, 'que' => 'la mejora',
+        'resumen' => [
+            ['Servicio', correo_linea_servicio($E)],
+            ['Qué', 'paso de Pack Esencial a Pack Atelier en ' . url_boda($slug) . '.'],
+            ['Venta y cobro', "$vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
+                . ". El recibo y la factura os los envía $vend en otro correo."],
+            ['Duración', 'podéis usar y cambiar los diseños Atelier mientras la web esté alojada' . ($borrado !== '' ? ", hasta el $borrado" : '') . '. La mejora no alarga el alojamiento.'],
+            ['Desistimiento', 'lo perdisteis al activarse la mejora, porque así lo pedisteis antes de pagar (casilla de abajo).'],
+            ['Garantía', 'los diseños tienen que funcionar como se describen durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).'],
+            ['Condiciones del servicio', 'van completas al final de este correo' . (($a['version'] ?? '') !== '' ? ' (versión ' . $a['version'] . ')' : '')
+                . '. También están en ' . url_creador('condiciones') . ' (esa página enseña siempre la versión vigente; la vuestra es la de este correo).'],
+            ['Dudas y reclamaciones', (string) $E['email']],
+        ],
+        'marcasteis' => 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
+            . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ':',
+        'casilla' => $casilla,
+        'condiciones' => documento_legal('condiciones', 'Condiciones del servicio'),
+        'hero' => ['kicker' => 'Pack Atelier', 'titulo' => ['Los diseños ', 'Atelier', ', desbloqueados'],
+            'texto' => 'Elegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis.',
+            'boton' => ['Elegir diseño', $donde], 'enlace' => $donde]];
 }
 
 /** Mejora cobrada: valida contra su pedido congelado y marca la boda como Atelier. Idempotente, bajo el cerrojo. */
@@ -448,7 +454,8 @@ function lemon_mejora(string $id, array $o, array $custom): array {
         $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
         if ((lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
         if ($ped['email'] === '') $ped['email'] = (string) ($bp['email'] ?? '');
-        envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis el Pack Atelier', 'texto' => texto_mejora_correo($slug, $ped, $meta)]);
+        $dc = datos_mejora_correo($slug, $ped, $meta);
+        envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis el Pack Atelier', 'texto' => compra_texto($dc), 'html' => compra_html($dc)]);
         avisa_estudio('Mejora a Atelier' . (!empty($ped['ls']['test']) ? ' (prueba)' : ''),
             'Web: ' . url_boda($slug) . "\nImporte: " . euros((int) ($ped['importe']['total'] ?? 0)) . ' (IVA ' . euros((int) ($ped['importe']['iva'] ?? 0)) . ")\n"
             . 'Pago: Lemon Squeezy #' . ($ped['ls']['order_number'] ?? '') . (!empty($ped['ls']['test']) ? ' (PRUEBA, modo test)' : '') . "\nComprador: " . $ped['email'], 'Pedido LS ' . $id);

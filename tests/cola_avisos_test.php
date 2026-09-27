@@ -48,6 +48,8 @@ if ($fase === 'falla') {
     ok($n['pendientes'] === 3 && $cola() === 3, 'si sigue fallando, siguen en la cola con un intento más');
     $enCola = implode('', array_map('file_get_contents', glob(dir_datos('cola_avisos', '*.json')) ?: []));
     ok(strpos($enCola, '/panel/clave') === false && strpos($enCola, '{{ENLACE_PANEL}}') !== false, 'la cola no guarda el enlace del panel, solo la marca');
+    $bq = array_values(array_filter(array_map(fn($f) => lee_json($f), glob(dir_datos('cola_avisos', '*.json')) ?: []), fn($a) => ($a['para'] ?? '') === 'pareja@example.com'))[0] ?? [];
+    ok(strpos((string) ($bq['html'] ?? ''), '{{ENLACE_PANEL}}') !== false && strpos((string) ($bq['html'] ?? ''), '/panel/clave') === false, 'la bienvenida encolada lleva su HTML, también con la marca y sin el enlace');
     ok(strpos($enCola, 'pareja@example.com') !== false && substr_count($enCola, '"tipo": "telegram"') === 1, 'hay un Telegram en cola');
     $tg = array_values(array_filter(array_map(fn($f) => lee_json($f), glob(dir_datos('cola_avisos', '*.json')) ?: []), fn($a) => ($a['tipo'] ?? '') === 'telegram'))[0] ?? [];
     ok(strpos((string) ($tg['texto'] ?? ''), '@') === false, 'el Telegram no lleva el email del comprador');
@@ -66,4 +68,10 @@ ok($n['enviados'] === 3 && $cola() === 0, 'con el envío de vuelta, el cron vac�
 ok(count(glob(dir_datos('telegram', '*')) ?: []) === 1, 'el Telegram sale una vez');
 $bien = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('correos', '*')) ?: []), fn($t) => strpos($t, 'Para: pareja@example.com') === 0))[0] ?? '';
 ok(strpos($bien, '/panel/clave') !== false && strpos($bien, '{{ENLACE_PANEL}}') === false, 'la bienvenida reintentada lleva un enlace del panel recién generado');
+// La versión HTML también se regenera, con el MISMO enlace que el texto (uno solo por correo) y escapado
+$hb = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('correos_html', '*')) ?: []), fn($t) => strpos($t, 'Web publicada') !== false))[0] ?? '';
+preg_match('~/panel/clave\?t=([a-f0-9]+)~', $bien, $mt);
+preg_match_all('~/panel/clave\?t=([a-f0-9]+)~', $hb, $mh);
+ok($hb !== '' && strpos($hb, '{{ENLACE_PANEL}}') === false && ($mt[1] ?? '') !== '' && $mh[1] && count(array_unique($mh[1])) === 1 && $mh[1][0] === $mt[1],
+    'la bienvenida HTML reintentada lleva el mismo enlace recién generado que el texto');
 exit($fallos ? 1 : 0);

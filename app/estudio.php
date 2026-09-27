@@ -248,9 +248,7 @@ function estudio_reenviar(string $slug): string {
     $email = (string) (($c['pareja']['email'] ?? '') ?: ((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['email'] ?? ''));
     if ($email === '') return 'Esta boda no tiene email registrado.';
     muta_json(panel_fichero($slug), function (array &$p) { $p['enlaces'] = []; });
-    $ok = envia_correo($email, 'Acceso a vuestro panel de boda',
-        "Hola:\n\nOs mandamos un enlace nuevo para entrar en el panel de " . url_boda($slug) . " y elegir vuestra contraseña:\n\n"
-        . panel_nuevo_enlace($slug) . "\n\nSirve una sola vez y caduca en 14 días. Los enlaces anteriores ya no funcionan.\n\n" . marca_comercial_correo());
+    $ok = correo_acceso_panel($slug, $email, panel_nuevo_enlace($slug), true);
     estudio_log('reenviar-acceso', ['slug' => $slug, 'enviado' => $ok]);
     return $ok ? 'Enlace enviado al email registrado de la pareja.' : 'No se ha podido enviar el email. Revisa el correo del servidor (BOD-6).';
 }

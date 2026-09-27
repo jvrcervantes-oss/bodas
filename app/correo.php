@@ -6,24 +6,36 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/correo_html.php';
+
 // TODO el correo del negocio sale de hola@bodaenlace.com (owner, 27-sep-2026: «es el único email para
 // todo lo que haga este negocio»), por SMTP autenticado con TLS: el mismo buzón que usa El Padrino. El
 // mail() del hosting rechazaba los envíos (medido el 27-sep: «correo no aceptado», BOD-6).
 function remitente(): string { return (string) secreto('smtp_usuario', secreto('mail_from', 'hola@' . BASE_DOMAIN)); }
 
-/** Mensaje MIME completo (cabeceras + cuerpo) de texto plano con adjuntos HTML. Puro: se prueba sin red. */
-function mensaje_mime(string $from, string $para, string $asunto, string $texto, array $adjuntos): string {
-    $b = 'b' . bin2hex(random_bytes(12));
+/**
+ * Mensaje MIME completo (cabeceras + cuerpo). Puro: se prueba sin red. Con $html, el cuerpo es multipart/alternative
+ * (text/plain primero y text/html al final: el último es el preferido, RFC 2046 §5.1.4); con adjuntos, todo eso va
+ * dentro de un multipart/mixed. Todas las partes en UTF-8 y base64.
+ */
+function mensaje_mime(string $from, string $para, string $asunto, string $texto, array $adjuntos, string $html = ''): string {
     $cab = "Date: " . date(DATE_RFC2822) . "\r\nFrom: " . marca_comercial_correo() . " <$from>\r\nTo: <$para>\r\nReply-To: $from\r\n"
         . "Subject: =?UTF-8?B?" . base64_encode($asunto) . "?=\r\nMessage-ID: <" . bin2hex(random_bytes(12)) . '@' . BASE_DOMAIN . ">\r\nMIME-Version: 1.0\r\n";
     // Texto en base64: sin líneas de más de 998 bytes ni puntos a principio de línea que corregir
-    $parte = "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $texto))));
+    $b64 = fn(string $t): string => chunk_split(base64_encode(str_replace("\n", "\r\n", str_replace("\r\n", "\n", $t))));
+    $parte = "Content-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . $b64($texto);
+    if ($html !== '') {
+        $a = 'a' . bin2hex(random_bytes(12));
+        $parte = "Content-Type: multipart/alternative; boundary=\"$a\"\r\n\r\n--$a\r\n" . $parte
+            . "--$a\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n" . $b64($html) . "--$a--\r\n";
+    }
     if (!$adjuntos) return $cab . $parte;
+    $b = 'b' . bin2hex(random_bytes(12));
     $m = $cab . "Content-Type: multipart/mixed; boundary=\"$b\"\r\n\r\n--$b\r\n" . $parte;
-    foreach ($adjuntos as $nombre => $html) {
+    foreach ($adjuntos as $nombre => $adj) {
         $nombre = preg_replace('/[^A-Za-z0-9._-]/', '', (string) $nombre);
         $m .= "--$b\r\nContent-Type: text/html; charset=UTF-8; name=\"$nombre\"\r\nContent-Disposition: attachment; filename=\"$nombre\"\r\nContent-Transfer-Encoding: base64\r\n\r\n"
-            . chunk_split(base64_encode((string) $html));
+            . chunk_split(base64_encode((string) $adj));
     }
     return $m . "--$b--\r\n";
 }
@@ -67,18 +79,21 @@ function smtp_envia(string $para, string $mime): string {
     return $err;
 }
 
-/** Envía texto plano + adjuntos HTML. Devuelve true si el servidor lo aceptó. Nunca lanza. */
-function envia_correo(string $para, string $asunto, string $texto, array $adjuntos = []): bool {
+/** Envía texto plano (+ su versión HTML si la hay) + adjuntos. Devuelve true si el servidor lo aceptó. Nunca lanza. */
+function envia_correo(string $para, string $asunto, string $texto, array $adjuntos = [], string $html = ''): bool {
     if (!filter_var($para, FILTER_VALIDATE_EMAIL) || preg_match('/[\r\n<>]/', $para)) return false;
     if (defined('CORREO_A_FICHERO')) {   // desarrollo local y pruebas: se deja en disco en vez de enviar
         if (defined('CORREO_FALLA')) return false;   // pruebas: servidor de correo caído
         asegura_dir(dir_datos('correos'));
-        file_put_contents(dir_datos('correos', date('Ymd-His') . '-' . bin2hex(random_bytes(3)) . '.txt'),
+        $base = date('Ymd-His') . '-' . bin2hex(random_bytes(3));
+        file_put_contents(dir_datos('correos', $base . '.txt'),
             "Para: $para\nAsunto: $asunto\n\n$texto\n\nAdjuntos: " . implode(', ', array_keys($adjuntos)));
+        // La versión HTML, aparte y con el mismo nombre: la carpeta correos/ la cuentan los tests por contenido
+        if ($html !== '') { asegura_dir(dir_datos('correos_html')); file_put_contents(dir_datos('correos_html', $base . '.html'), $html); }
         return !defined('CORREO_FALLA');
     }
     try {
-        $err = smtp_envia($para, mensaje_mime(remitente(), $para, $asunto, $texto, $adjuntos));
+        $err = smtp_envia($para, mensaje_mime(remitente(), $para, $asunto, $texto, $adjuntos, $html));
     } catch (Throwable $e) {
         $err = 'excepción: ' . $e->getMessage();
     }
@@ -105,14 +120,17 @@ const ENLACE_PANEL_MARCA = '{{ENLACE_PANEL}}';
 function aviso_envia(array $a): bool {
     if (($a['tipo'] ?? '') === 'telegram') return telegram_envia((string) ($a['texto'] ?? ''));
     $texto = (string) ($a['texto'] ?? '');
+    $html = (string) ($a['html'] ?? '');   // los avisos encolados antes del 27-sep no lo llevan: salen solo en texto
     // Bienvenida reintentada: el enlace de un solo uso se genera AHORA (en disco solo va su sha256,
-    // panel_auth.php) y con sus 14 días de vida enteros
+    // panel_auth.php) y con sus 14 días de vida enteros. UNO solo para las dos versiones del correo.
     $slug = (string) ($a['enlace_slug'] ?? '');
-    if ($slug !== '' && strpos($texto, ENLACE_PANEL_MARCA) !== false) {
+    if ($slug !== '' && (strpos($texto, ENLACE_PANEL_MARCA) !== false || strpos($html, ENLACE_PANEL_MARCA) !== false)) {
         if (!slug_valido($slug) || !boda_existe($slug)) return true;   // la boda ya no existe: nada que mandar
-        $texto = str_replace(ENLACE_PANEL_MARCA, panel_nuevo_enlace($slug), $texto);
+        $enlace = panel_nuevo_enlace($slug);
+        $texto = str_replace(ENLACE_PANEL_MARCA, $enlace, $texto);
+        $html = str_replace(ENLACE_PANEL_MARCA, h($enlace), $html);
     }
-    return envia_correo((string) ($a['para'] ?? ''), (string) ($a['asunto'] ?? ''), $texto, (array) ($a['adjuntos'] ?? []));
+    return envia_correo((string) ($a['para'] ?? ''), (string) ($a['asunto'] ?? ''), $texto, (array) ($a['adjuntos'] ?? []), $html);
 }
 /** Cron: reintenta la cola. Tras 20 intentos (≈ 20 días con el cron diario) se aparta y queda en el log. */
 function cola_avisos_reintenta(): array {
@@ -208,6 +226,11 @@ function legal_a_texto(string $html): string {
  * El enlace a /condiciones es solo una comodidad. Si se quita algo de esto, cae la excepción.
  */
 function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
+    return bienvenida_texto(datos_bienvenida($ped, $cfg, $enlace));
+}
+
+/** Los datos de la bienvenida, calculados UNA vez: de aquí salen la versión en texto y la HTML (nunca por separado). */
+function datos_bienvenida(array $ped, array $cfg, string $enlace): array {
     $L = textos_legales();
     $E = empresa_publica();
     $url = url_boda($ped['slug']);
@@ -225,44 +248,96 @@ function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
     if (($acept['version'] ?? '') !== '' && $acept['version'] !== ($L['version'] ?? '')) {
         registra('ALERTA bienvenida con condiciones de otra versión', ['slug' => (string) $ped['slug'], 'aceptada' => $acept['version'], 'enviada' => $L['version'] ?? '']);
     }
+    $resumen = [['Servicio', correo_linea_servicio($E)], ['Qué', "$pack, web de boda publicada en $url, alojada hasta el $borrado."]];
+    $resumen[] = ['factura' => ['Pago', euros($total) . ", IVA incluido. Factura: {$ped['factura']} (adjunta)."],
+        'lemon' => ['Venta y cobro', "$vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo."],
+        'regalo' => ['Pago', 'ninguno. Esta web os la regala ' . marca() . '.']][$tipo];
+    if ($tipo !== 'regalo') $resumen[] = ['Desistimiento', 'sobre la creación y publicación de la web lo perdisteis al publicarse, porque así lo pedisteis antes de pagar (casilla de abajo). Del alojamiento podéis desistir hasta 14 días después de la compra pagando la parte ya prestada (apartado 8 de las condiciones). Después, no hay reembolsos por cambio de opinión.'];
+    $resumen[] = ['Garantía', 'la web tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).'];
+    $resumen[] = ['Dudas y reclamaciones', (string) $E['email']];
+    $casillas = [(string) ($acept['condiciones'] ?? '')];
+    if (($acept['desistimiento'] ?? '') !== '') $casillas[] = (string) $acept['desistimiento'];
+    return ['url' => $url, 'enlace' => $enlace, 'borrado' => $borrado, 'email' => (string) $E['email'], 'resumen' => $resumen,
+        'marcasteis' => ($tipo !== 'regalo' ? 'Antes de pagar' : 'Al publicar') . ($fecha !== '' ? ' (' . date('d/m/Y H:i', strtotime($fecha)) . ')' : '')
+            . ' marcasteis lo siguiente' . (($acept['version'] ?? '') !== '' ? ' (condiciones, versión ' . $acept['version'] . ')' : '') . ':',
+        'casillas' => $casillas,
+        'condiciones_url' => url_creador('condiciones'),
+        'condiciones' => documento_legal('condiciones', 'Condiciones del servicio')];
+}
 
+function bienvenida_texto(array $d): string {
     return "¡Vuestra web de boda ya está publicada!\n\n"
-        . "Dirección: $url\n\n"
-        . "Para entrar en vuestro panel (respuestas de invitados, Excel, editar la web y descargar el ZIP), elegid vuestra contraseña con este enlace. Sirve una sola vez y caduca en 14 días:\n$enlace\n\n"
-        . "La web y las respuestas de vuestros invitados se mantienen hasta el $borrado. Ese día se borran las respuestas y la web pasa a una página de agradecimiento. Exportad el Excel antes si queréis conservarlas.\n\n"
+        . "Dirección: {$d['url']}\n\n"
+        . "Para entrar en vuestro panel (respuestas de invitados, Excel, editar la web y descargar el ZIP), elegid vuestra contraseña con este enlace. Sirve una sola vez y caduca en 14 días:\n{$d['enlace']}\n\n"
+        . "La web y las respuestas de vuestros invitados se mantienen hasta el {$d['borrado']}. Ese día se borran las respuestas y la web pasa a una página de agradecimiento. Exportad el Excel antes si queréis conservarlas.\n\n"
         . "Guardad este correo: es la confirmación de vuestro contrato.\n\n"
         . "RESUMEN DE LO CONTRATADO\n"
-        . '- Servicio: ' . marca() . ', un producto de AxisWorks' . ($E['nif'] !== ''
-            ? ', que presta ' . $E['titular'] . ' (NIF ' . $E['nif'] . ')' . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . '.'
-            : '. Está en pruebas: los datos de quien lo presta se publicarán antes de abrir la venta.') . "\n"
-        . "- Qué: $pack, web de boda publicada en $url, alojada hasta el $borrado.\n"
-        . ['factura' => '- Pago: ' . euros($total) . ", IVA incluido. Factura: {$ped['factura']} (adjunta).\n",
-            'lemon' => "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo.\n",
-            'regalo' => '- Pago: ninguno. Esta web os la regala ' . marca() . ".\n"][$tipo]
-        . ($tipo !== 'regalo' ? "- Desistimiento: sobre la creación y publicación de la web lo perdisteis al publicarse, porque así lo pedisteis antes de pagar (casilla de abajo). Del alojamiento podéis desistir hasta 14 días después de la compra pagando la parte ya prestada (apartado 8 de las condiciones). Después, no hay reembolsos por cambio de opinión.\n" : '')
-        . "- Garantía: la web tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
-        . "- Dudas y reclamaciones: {$E['email']}\n\n"
-        . ($tipo !== 'regalo' ? 'Antes de pagar' : 'Al publicar') . ($fecha !== '' ? ' (' . date('d/m/Y H:i', strtotime($fecha)) . ')' : '')
-        . ' marcasteis lo siguiente' . (($acept['version'] ?? '') !== '' ? ' (condiciones, versión ' . $acept['version'] . ')' : '') . ":\n"
-        . '«' . (string) ($acept['condiciones'] ?? '') . "»\n"
-        . (($acept['desistimiento'] ?? '') !== '' ? '«' . $acept['desistimiento'] . "»\n" : '') . "\n"
-        . 'Las condiciones completas van al final de este correo. También están en ' . url_creador('condiciones') . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n\n"
-        . "Cualquier duda: {$E['email']}\n\n" . marca_comercial_correo() . "\n\n"
+        . correo_resumen_texto($d['resumen']) . "\n"
+        . $d['marcasteis'] . "\n"
+        . implode('', array_map(fn($c) => '«' . $c . "»\n", $d['casillas'])) . "\n"
+        . 'Las condiciones completas van al final de este correo. También están en ' . $d['condiciones_url'] . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n\n"
+        . "Cualquier duda: {$d['email']}\n\n" . marca_comercial_correo() . "\n\n"
         . str_repeat('=', 40) . "\n\n"
-        . legal_a_texto(documento_legal('condiciones', 'Condiciones del servicio')) . "\n";
+        . legal_a_texto($d['condiciones']) . "\n";
+}
+
+/** La misma bienvenida con diseño (plantilla correo_html). Mismos datos que bienvenida_texto: nada se calcula dos veces. */
+function bienvenida_html(array $d): string {
+    return correo_html([
+        ['tipo' => 'hero', 'kicker' => 'Web publicada', 'titulo' => ['¡Vuestra web ya está ', 'en línea', '!'],
+            'texto' => 'Ya podéis compartirla con vuestros invitados.', 'url' => $d['url'],
+            'boton' => ['Elegir contraseña del panel', $d['enlace']], 'nota' => 'El enlace sirve una sola vez y caduca en 14 días.', 'enlace' => $d['enlace']],
+        ['tipo' => 'pasos', 'items' => [
+            'Con vuestra contraseña entráis en el panel: respuestas de invitados, Excel, editar la web y descargar el ZIP.',
+            [['La web y las respuestas de vuestros invitados se mantienen hasta el ', false], [$d['borrado'], true], ['. Ese día se borran las respuestas y la web pasa a una página de agradecimiento.', false]],
+            'Exportad el Excel antes si queréis conservarlas.']],
+        ['tipo' => 'caja', 'titulo' => 'Resumen de lo contratado', 'filas' => $d['resumen']],
+        ['tipo' => 'aviso', 'fuerte' => 'Guardad este correo:', 'texto' => 'es la confirmación de vuestro contrato. ' . $d['marcasteis']],
+        ['tipo' => 'citas', 'items' => $d['casillas']],
+        ['tipo' => 'texto', 'texto' => 'Las condiciones completas van al final de este correo, en letra pequeña. También están en ' . $d['condiciones_url'] . ' (esa página enseña siempre la versión vigente; la vuestra es la de este correo).'],
+        ['tipo' => 'legal', 'html' => correo_legal_html($d['condiciones'])],
+    ], 'Vuestra web ya está en línea: ' . preg_replace('~^https?://~', '', rtrim($d['url'], '/')));
 }
 
 function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
     $url = url_boda($ped['slug']);
-    $texto = texto_bienvenida($ped, $cfg, $enlace);
+    $d = datos_bienvenida($ped, $cfg, $enlace);
     // Sin adjunto de las condiciones: van enteras en el cuerpo (Legal, 27-sep, BOD-6). Solo una venta
     // por Stripe, hoy apagada, lleva su factura BODA- adjunta.
     $adjuntos = [];
     if (($ped['factura'] ?? '') !== '') $adjuntos[$ped['factura'] . '.html'] = (string) render_factura($ped['factura']);
-    $aviso = ['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')), 'texto' => $texto, 'adjuntos' => $adjuntos];
+    $aviso = ['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Vuestra web de boda: ' . preg_replace('~^https?://~', '', rtrim($url, '/')),
+        'texto' => bienvenida_texto($d), 'html' => bienvenida_html($d), 'adjuntos' => $adjuntos];
     if (aviso_envia($aviso)) return;
-    // A la cola SIN el enlace del panel (revisor, 27-sep): se regenera al reintentar
-    encola_aviso(['texto' => texto_bienvenida($ped, $cfg, ENLACE_PANEL_MARCA), 'enlace_slug' => (string) $ped['slug']] + $aviso);
+    // A la cola SIN el enlace del panel (revisor, 27-sep), ni en el texto ni en el HTML: se regenera al reintentar
+    $dm = ['enlace' => ENLACE_PANEL_MARCA] + $d;
+    encola_aviso(['texto' => bienvenida_texto($dm), 'html' => bienvenida_html($dm), 'enlace_slug' => (string) $ped['slug']] + $aviso);
+}
+
+/**
+ * Correo de una compra hecha desde el panel (extra o mejora a Atelier): soporte duradero de ESA compra. $d lo arma
+ * datos_extra_correo() o datos_mejora_correo() UNA vez, y de él salen las dos versiones (texto y HTML).
+ */
+function compra_texto(array $d): string {
+    return $d['titular'] . "\n\n"
+        . $d['donde_intro'] . "\n" . $d['donde'] . "\n\n"
+        . "Guardad este correo: es la confirmación de {$d['que']}.\n\n"
+        . "RESUMEN\n"
+        . correo_resumen_texto($d['resumen']) . "\n"
+        . ($d['casilla'] !== '' ? $d['marcasteis'] . "\n«" . $d['casilla'] . "»\n\n" : '')
+        . marca_comercial_correo() . "\n\n"
+        . str_repeat('=', 40) . "\n\n"
+        . legal_a_texto($d['condiciones']) . "\n";
+}
+function compra_html(array $d): string {
+    return correo_html([
+        ['tipo' => 'hero', 'ok' => true] + $d['hero'],
+        ['tipo' => 'caja', 'titulo' => 'Lo que habéis comprado', 'filas' => $d['resumen']],
+        ['tipo' => 'aviso', 'fuerte' => 'Guardad este correo:', 'texto' => "es la confirmación de {$d['que']}." . ($d['casilla'] !== '' ? ' ' . $d['marcasteis'] : '')],
+        ['tipo' => 'citas', 'items' => [$d['casilla']]],
+        ['tipo' => 'texto', 'texto' => 'Las condiciones del servicio van completas al final de este correo, en letra pequeña.'],
+        ['tipo' => 'legal', 'html' => correo_legal_html($d['condiciones'])],
+    ], $d['titular']);
 }
 
 /** Resumen de una venta para el owner: pedido y pack, nunca datos de invitados. */
@@ -276,8 +351,34 @@ function texto_venta(array $ped): string {
         . 'Panel del estudio: ' . url_creador('estudio');
 }
 
+/** «Recuperar acceso» del panel, pedido por la pareja. */
 function correo_enlace_panel(string $slug, string $email, string $enlace): void {
-    envia_correo($email, 'Acceso a vuestro panel de boda', "Hola:\n\nAlguien ha pedido un enlace para elegir una nueva contraseña del panel de " . url_boda($slug) . ".\n\n$enlace\n\nSirve una sola vez y caduca en 14 días. Si no lo habéis pedido vosotros, ignorad este email: vuestra contraseña actual sigue funcionando.\n\n" . marca_comercial_correo());
+    correo_acceso_panel($slug, $email, $enlace, false);
+}
+
+/**
+ * Correo con el enlace de un solo uso para elegir contraseña. $reenvio: lo manda el estudio (estudio_reenviar,
+ * que ya ha anulado los enlaces anteriores); si no, lo ha pedido alguien desde «Recuperar acceso».
+ * Directo, sin cola: el enlace caduca, y guardarlo en disco es justo lo que no se hace (ver ENLACE_PANEL_MARCA).
+ */
+function correo_acceso_panel(string $slug, string $email, string $enlace, bool $reenvio): bool {
+    [$texto, $html] = partes_acceso_panel($slug, $enlace, $reenvio);
+    return envia_correo($email, 'Acceso a vuestro panel de boda', $texto, [], $html);
+}
+/** [texto, html] del correo de acceso. Puro: se prueba sin enviar. */
+function partes_acceso_panel(string $slug, string $enlace, bool $reenvio): array {
+    $url = url_boda($slug);
+    $texto = $reenvio
+        ? "Hola:\n\nOs mandamos un enlace nuevo para entrar en el panel de $url y elegir vuestra contraseña:\n\n$enlace\n\nSirve una sola vez y caduca en 14 días. Los enlaces anteriores ya no funcionan.\n\n" . marca_comercial_correo()
+        : "Hola:\n\nAlguien ha pedido un enlace para elegir una nueva contraseña del panel de $url.\n\n$enlace\n\nSirve una sola vez y caduca en 14 días. Si no lo habéis pedido vosotros, ignorad este email: vuestra contraseña actual sigue funcionando.\n\n" . marca_comercial_correo();
+    $web = preg_replace('~^https?://~', '', rtrim($url, '/'));
+    $html = correo_html([
+        ['tipo' => 'hero', 'kicker' => 'Vuestro panel', 'titulo' => $reenvio ? ['Os mandamos un ', 'enlace nuevo', ''] : ['Elegid una ', 'contraseña nueva', ''],
+            'texto' => $reenvio ? "Para entrar en el panel de $web y elegir vuestra contraseña." : "Alguien ha pedido un enlace para elegir una nueva contraseña del panel de $web.",
+            'boton' => ['Elegir contraseña', $enlace], 'nota' => 'Sirve una sola vez y caduca en 14 días.', 'enlace' => $enlace],
+        ['tipo' => 'aviso', 'texto' => $reenvio ? 'Los enlaces anteriores ya no funcionan.' : 'Si no lo habéis pedido vosotros, ignorad este email: vuestra contraseña actual sigue funcionando.'],
+    ], $reenvio ? 'Enlace nuevo para entrar en vuestro panel' : 'Enlace para elegir una nueva contraseña del panel');
+    return [$texto, $html];
 }
 
 /**
