@@ -55,7 +55,7 @@ export default {
       try {
         const l = new URL(loc, 'https://' + BASE);
         if (l.hostname === BASE) salida.headers.set('location', 'https://' + host + l.pathname + l.search + l.hash);
-      } catch (e) { /* Location ilegible: se deja como vino */ }
+      } catch (e) { /* MUDO A PROPOSITO: Location ilegible; se deja como vino y el navegador decide, no hay dato que perder */ }
     }
     return salida;
   },
