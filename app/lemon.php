@@ -336,13 +336,22 @@ function panel_mejora(string $slug, string $metodo): void {
 function texto_mejora_correo(string $slug, array $ped, array $meta): string {
     $a = (array) ($meta['aceptacion'] ?? []);
     $fecha = ($a['fecha'] ?? '') !== '' ? date('d/m/Y H:i', strtotime((string) $a['fecha'])) : '';
-    $vend = (string) ($a['vendedor'] ?? '') !== '' ? (string) $a['vendedor'] : 'Lemon Squeezy';
+    // El vendedor que se aceptó; si no quedó guardado, el de la fuente única de Legal (nunca escrito a mano)
+    $vend = (string) ($a['vendedor'] ?? '') !== '' ? (string) $a['vendedor'] : (string) (textos_legales()['vendedor'] ?? '');
+    $num = (int) ($ped['ls']['order_number'] ?? 0);
+    $total = (int) ($ped['importe']['total'] ?? 0);
+    // Mismo formato y frases que la bienvenida de Legal (correo.php): venta y cobro, condiciones, casilla literal con fecha y versión
     return "¡Hecho! Vuestra web ya tiene el Pack Atelier.\n\n"
         . "Elegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis:\n" . url_boda($slug, 'panel/editar') . "\n\n"
-        . 'Importe: ' . euros((int) ($ped['importe']['total'] ?? 0)) . ', IVA incluido. Lo cobra ' . $vend . ', que es quien os lo vende'
-        . (($ped['ls']['order_number'] ?? 0) ? ' (pedido n.º ' . $ped['ls']['order_number'] . ')' : '') . ", y os ha enviado su recibo por email.\n\n"
-        . 'Al pagar' . ($fecha !== '' ? " ($fecha)" : '') . " marcasteis lo siguiente:\n«" . (string) ($a['desistimiento'] ?? '') . "»\n\n"
-        . "Cualquier duda: " . empresa()['email'] . "\n\n" . marca_comercial_correo();
+        . "Guardad este correo: es la confirmación de la mejora.\n\n"
+        . "RESUMEN\n"
+        . '- Qué: paso de Pack Esencial a Pack Atelier en ' . url_boda($slug) . ".\n"
+        . "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
+        . ". El recibo y la factura os los envía $vend en otro correo.\n"
+        . '- Condiciones del servicio (las mismas que ya aceptasteis): ' . url_creador('condiciones') . "\n\n"
+        . 'Antes de pagar' . ($fecha !== '' ? " ($fecha, hora de España)" : '') . ' marcasteis lo siguiente'
+        . (($a['version'] ?? '') !== '' ? ' (condiciones, versión ' . $a['version'] . ')' : '') . ":\n«" . (string) ($a['desistimiento'] ?? '') . "»\n\n"
+        . 'Dudas y reclamaciones: ' . empresa()['email'] . "\n\n" . marca_comercial_correo();
 }
 
 /** Mejora cobrada: valida contra su pedido congelado y marca la boda como Atelier. Idempotente, bajo el cerrojo. */
@@ -359,12 +368,12 @@ function lemon_mejora(string $id, array $o, array $custom): array {
         $meta = $fMeta !== '' ? lee_json($fMeta) : null;
         $slug = (string) ($meta['slug'] ?? $custom['slug'] ?? '');
         $ped = $ped ?: lemon_pedido_base($sid, $id, $o, $slug, $token, '', $meta['aceptacion'] ?? null) + ['tipo' => 'mejora', 'atelier' => ''];
-        $aviso = function (string $estado, string $asunto, string $texto) use (&$ped, $fPedido, $slug, $token) {
+        $aviso = function (string $estado, string $asunto, string $texto) use (&$ped, $fPedido, $slug, $token, $id) {
             $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
             if (slug_valido($slug) && (lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
             $ped['estado'] = $estado;
             escribe_json($fPedido, $ped);
-            avisa_estudio($asunto, $texto, 'Pedido LS ' . $ped['ls']['order_id']);
+            avisa_estudio($asunto, $texto, 'Pedido LS ' . $id);
             return $ped;
         };
         $previo = $fTok !== '' ? (string) ((lee_json($fTok) ?? [])['order_id'] ?? '') : '';
