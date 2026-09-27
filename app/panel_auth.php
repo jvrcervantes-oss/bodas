@@ -14,11 +14,20 @@ const PANEL_MIN_CLAVE = 10;
 
 function panel_fichero(string $slug): string { return dir_datos('bodas', $slug, 'panel.json'); }
 
+/** Nombre de la cookie de sesión del panel de esta boda (fuente única: la usa también el enlace por grupo). */
+function panel_cookie(string $slug): string { return 'bw_' . substr(hash('sha256', $slug), 0, 12); }
+
+/**
+ * ¿Es la pareja con la sesión del panel abierta? Sin su cookie ni se arranca la sesión: session_start()
+ * mandaría una cookie nueva a un invitado, y la web de invitados no pone cookies nuevas (Legal #133).
+ */
+function panel_sesion_presente(string $slug): bool { return isset($_COOKIE[panel_cookie($slug)]) && panel_autenticado($slug); }
+
 function panel_sesion(string $slug): void {
     if (session_status() === PHP_SESSION_ACTIVE) return;
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_only_cookies', '1');
-    session_name('bw_' . substr(hash('sha256', $slug), 0, 12));
+    session_name(panel_cookie($slug));
     session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'secure' => SCHEME === 'https', 'httponly' => true, 'samesite' => 'Strict']);
     session_start();
 }

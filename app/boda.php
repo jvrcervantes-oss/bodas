@@ -36,6 +36,9 @@ function rutas_boda(string $slug, string $ruta, string $metodo): void {
         return;
     }
     if ($ruta === 'api/rsvp') { api_rsvp($slug, $c, $metodo); return; }
+    // Enlace personal de un grupo (F1a, Seguridad #133). Un token con otra forma cae abajo en el
+    // mismo no_existe() que cualquier ruta que no existe.
+    if (preg_match('~^i/([A-Za-z0-9_-]{22})$~', $ruta, $m)) { pagina_grupo($slug, $c, $m[1], $metodo); return; }
     if ($ruta === 'api/libro') { api_libro($slug, $c, $metodo); return; }
     if ($ruta === 'acceso') { api_acceso($slug, $c, $metodo); return; }
     if (preg_match('~^g/([a-f0-9]{16})\.webp$~', $ruta, $m)) { sirve_galeria($slug, $c, $m[1]); }
@@ -61,12 +64,58 @@ function rutas_boda(string $slug, string $ruta, string $metodo): void {
 
 // ---------------------------------------------------------------- invitados
 
+/**
+ * Bots que piden la página para pintar la vista previa del enlace en cuanto la pareja lo manda
+ * (WhatsApp, Telegram, iMessage, que se hace pasar por facebookexternalhit…). No abren nada: sin
+ * este filtro todos los grupos saldrían «Abierto» nada más enviarles el mensaje. Es un filtro por
+ * User-Agent, así que la fecha de primer acceso es orientativa, no una prueba.
+ */
+function es_previsualizador(): bool {
+    return (bool) preg_match('~WhatsApp|facebookexternalhit|Facebot|meta-externalagent|TelegramBot|Twitterbot|Slackbot|Discordbot|LinkedInBot|SkypeUriPreview|Applebot|Googlebot|bingbot|Pinterest|redditbot|Embedly|Iframely|vkShare~i',
+        (string) ($_SERVER['HTTP_USER_AGENT'] ?? ''));
+}
+
+/**
+ * /i/<token>: la web normal abierta en la confirmación, con el saludo al grupo y sus nombres ya
+ * escritos (editables). El grupo sale SOLO del token (app/invitados.php); nunca se enseña nada de lo
+ * que ya contestaron (Legal #133: quien tenga el enlace no ve alergias ni datos de otros).
+ * Token desconocido = el mismo no_existe() que /no-existe, con las mismas cabeceras: las propias de
+ * esta ruta se ponen solo después de resolverlo.
+ */
+function pagina_grupo(string $slug, array $c, string $tok, string $metodo): void {
+    if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }   // como cualquier otra página
+    $rsvp = seccion_tipo($c, 'rsvp');
+    $g = $rsvp ? inv_grupo_por_token($slug, $tok) : null;
+    if (!$g) no_existe();
+    header('Referrer-Policy: no-referrer');   // el token está en la ruta: que no viaje a ningún enlace de fuera
+    // Primer acceso = fecha, sin IP ni nada más (Seguridad/Legal #133). No cuentan los bots de vista
+    // previa ni la propia pareja probando el enlace desde el panel.
+    if ($metodo === 'GET' && $g['abierto'] === '' && !es_previsualizador() && !panel_sesion_presente($slug)) inv_marca_abierto($slug, $g['gid']);
+    $ctx = ctx_live($slug) + [
+        'grupo' => ['nombre' => $g['nombre'], 'personas' => $g['personas'], 'token' => $tok],
+        // Los botones «Confirmar» de esta página siguen en el enlace del grupo, no en /<rsvp> sin token
+        'rsvp_ruta' => $rsvp['ruta'], 'rsvp_href' => '/i/' . $tok,
+    ];
+    $html = render_pagina($c, $rsvp['ruta'], $ctx);
+    if ($html === null) no_existe();
+    echo $html;
+}
+
 function api_rsvp(string $slug, array $c, string $metodo): void {
     if ($metodo !== 'POST') json_response(['ok' => false, 'error' => 'Método no permitido'], 405);
     $s = seccion_tipo($c, 'rsvp');
     if (!$s) json_response(['ok' => false, 'error' => 'Esta web no recoge confirmaciones.'], 404);
     if (clean_str($_POST['web'] ?? '') !== '') json_response(['ok' => true, 'personas' => 1]); // honeypot
     if (!limite('rsvp|' . $slug . '|' . ip_cliente(), 20, 3600)) json_response(['ok' => false, 'error' => 'Demasiados envíos seguidos. Prueba dentro de un rato.'], 429);
+    // Enlace de grupo: el grupo lo decide el token, nunca un campo «grupo» del formulario (Seguridad #133).
+    // Un token que ya no vale (rotado, o la pareja quitó el grupo) se rechaza: guardarlo sin grupo
+    // dejaría una respuesta que un reenvío ya no podría sustituir.
+    $grupo = null;
+    $tok = (string) ($_POST['i'] ?? '');
+    if ($tok !== '') {
+        $grupo = inv_grupo_por_token($slug, $tok);
+        if (!$grupo) json_response(['ok' => false, 'error' => 'Este enlace ya no es válido. Pedid a los novios el enlace nuevo.'], 404);
+    }
 
     $menus = array_values(array_filter($s['datos']['menus'], fn($m) => $m['nombre'] !== ''));
     if (!$menus) $menus = [menu_nuevo('general', 'Menú')];
@@ -85,7 +134,9 @@ function api_rsvp(string $slug, array $c, string $metodo): void {
         if (!isset($porId[$menu])) $menu = $tipo === 'nino' ? $defNino : $defAdulto;
         // Se guarda el id (manda) y una copia del nombre: si la pareja borra ese menú
         // después, el panel sigue sabiendo qué eligió esta persona
-        $invitados[] = ['nombre' => $nombre, 'tipo' => $tipo, 'menu' => $menu, 'menu_nombre' => $porId[$menu]['nombre'],
+        // `id` propio de cada persona (Seguridad #133): mesas y catering la señalan por él, nunca por
+        // nombre ni por posición, para que una alergia no acabe impresa en la mesa de otro
+        $invitados[] = ['id' => bin2hex(random_bytes(8)), 'nombre' => $nombre, 'tipo' => $tipo, 'menu' => $menu, 'menu_nombre' => $porId[$menu]['nombre'],
             'alergias' => clean_str($g['alergias'] ?? '', 300)];
     }
     if (!$invitados) json_response(['ok' => false, 'error' => 'Falta el nombre.']);
@@ -118,7 +169,19 @@ function api_rsvp(string $slug, array $c, string $metodo): void {
         'cancion' => clean_str($_POST['cancion'] ?? '', 150),
         'consentimientos' => ['alergias' => $hayAlergias, 'acompanantes' => count($invitados) > 1, 'version' => $L['version'] ?? ''],
     ];
-    $ok = muta_json(dir_boda($slug) . '/guardado/rsvp.json', function (array &$d) use ($rec) { $d[] = $rec; return true; }, MAX_BYTES_RSVP);
+    if ($grupo) $rec['grupo'] = $grupo['gid'];   // id estable del grupo, no el token: rotar el enlace no rompe el vínculo
+    // Un reenvío por el mismo enlace de grupo sustituye al anterior: se añade el registro nuevo y el
+    // viejo queda marcado `sustituido` (no se borra: es lo que el invitado mandó). Las dos cosas en la
+    // MISMA escritura del mismo fichero: o quedan las dos o ninguna.
+    $ok = muta_json(dir_boda($slug) . '/guardado/rsvp.json', function (array &$d) use ($rec) {
+        if (isset($rec['grupo'])) {
+            foreach ($d as $k => $r) {
+                if (is_array($r) && ($r['grupo'] ?? '') === $rec['grupo'] && empty($r['sustituido'])) $d[$k]['sustituido'] = $rec['id'];
+            }
+        }
+        $d[] = $rec;
+        return true;
+    }, MAX_BYTES_RSVP);
     if ($ok !== true) {
         registra('rsvp no guardado (tope o disco)', ['slug' => $slug]);
         json_response(['ok' => false, 'error' => 'No se ha podido guardar. Avisa a los novios, por favor.'], 507);
@@ -172,6 +235,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
     switch ($sub) {
         case '': echo panel_inicio($slug, $c); return;
         case 'excel': panel_excel($slug, $c); return;
+        case 'catering': panel_catering($slug, $c); return;
         case 'invitados': panel_invitados_accion($slug, $metodo); return;
         case 'zip': panel_zip($slug, $c); return;
         case 'factura':
@@ -263,11 +327,31 @@ function panel_recuperar(string $slug, array $c, string $metodo): void {
         . '<p class="panel-aux"><a href="/panel/entrar">Volver</a></p></section>');
 }
 
-/** Única lectura de quién viene (igual que personas() de EduCora). */
+/**
+ * Única lectura de quién viene (igual que personas() de EduCora). Cada persona sale con su `id`: el
+ * aleatorio que recibe al guardarse (desde el 27-sep-2026, Seguridad #133) o, en respuestas de
+ * antes, uno derivado del id del registro y de su posición, con «d» delante para distinguirlo.
+ * Es estable porque una respuesta guardada no se reescribe nunca (un reenvío añade otra). Sin id
+ * de registro no hay nada estable de donde sacarlo: '' («sin mesa» cuando existan las mesas).
+ */
 function personas(array $r): array {
-    return array_map(fn($g) => ['nombre' => (string) ($g['nombre'] ?? ''), 'tipo' => ($g['tipo'] ?? '') === 'nino' ? 'nino' : 'adulto',
-        'menu' => (string) ($g['menu'] ?? ''), 'menu_nombre' => (string) ($g['menu_nombre'] ?? ''), 'alergias' => (string) ($g['alergias'] ?? '')],
-        array_values(array_filter((array) ($r['invitados'] ?? []), 'is_array')));
+    $o = [];
+    foreach (array_values(array_filter((array) ($r['invitados'] ?? []), 'is_array')) as $i => $g) {
+        $id = (string) ($g['id'] ?? '');
+        if (!preg_match('/^[a-f0-9]{16}$/', $id)) $id = (string) ($r['id'] ?? '') !== '' ? 'd' . substr(sha1((string) $r['id'] . '|' . $i), 0, 15) : '';
+        $o[] = ['id' => $id, 'nombre' => (string) ($g['nombre'] ?? ''), 'tipo' => ($g['tipo'] ?? '') === 'nino' ? 'nino' : 'adulto',
+            'menu' => (string) ($g['menu'] ?? ''), 'menu_nombre' => (string) ($g['menu_nombre'] ?? ''), 'alergias' => (string) ($g['alergias'] ?? '')];
+    }
+    return $o;
+}
+
+/**
+ * Las respuestas que cuentan: todas menos las que un reenvío del mismo enlace de grupo sustituyó.
+ * TODA cuenta de personas (panel, Excel, catering, lista de invitados, estudio, Padrino) lee por aquí;
+ * leer rsvp.json a pelo contaría dos veces a un grupo que corrigió su respuesta.
+ */
+function rsvp_vigentes(string $slug): array {
+    return array_values(array_filter(lee_json(dir_boda($slug) . '/guardado/rsvp.json') ?? [], fn($r) => is_array($r) && empty($r['sustituido'])));
 }
 function clave_nombre(string $n): string {
     $n = mb_strtolower(trim((string) preg_replace('/\s+/', ' ', $n)), 'UTF-8');
@@ -275,7 +359,7 @@ function clave_nombre(string $n): string {
 }
 
 function panel_datos(string $slug, array $c): array {
-    $rsvps = lee_json(dir_boda($slug) . '/guardado/rsvp.json') ?? [];
+    $rsvps = rsvp_vigentes($slug);
     $st = ['personas' => 0, 'adultos' => 0, 'ninos' => 0, 'ceremonia' => 0, 'banquete' => 0, 'bus' => 0];
     $menus = [];
     foreach (menus_de($c) as $m) $menus[$m['id']] = ['nombre' => $m['nombre'], 'n' => 0];
@@ -311,6 +395,7 @@ function panel_inicio(string $slug, array $c): string {
     $o = '<header class="panel-head"><div><span class="kicker">Panel privado</span><h1>' . h(nombres($c)) . '</h1>'
         . '<p><a href="/" target="_blank" rel="noopener">' . h(preg_replace('~^https?://~', '', rtrim(url_boda($slug), '/'))) . '</a> · se mantiene hasta el ' . h(fecha_larga(fecha_borrado($c['fecha']), false)) . '</p></div>'
         . '<nav class="panel-acc"><a class="btn" href="/panel/editar">Editar la web</a><a class="btn btn-soft" href="/panel/excel">Descargar Excel</a>'
+        . '<a class="btn btn-soft" href="/panel/catering">Resumen para el catering</a>'
         . '<a class="btn btn-soft" href="/panel/zip">Descargar ZIP</a>' . (((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['factura'] ?? '') !== '' ? '<a class="btn btn-soft" href="/panel/factura" target="_blank" rel="noopener">Factura</a>' : '')
         . '<a class="panel-salir" href="/panel/salir">Salir</a></nav></header>';
     $o .= bloque_compartir($slug, $c);
@@ -407,6 +492,50 @@ function panel_excel(string $slug, array $c): void {
     }
     fclose($out);
     exit;
+}
+
+/**
+ * Resumen para el catering (F1b): la hoja que se imprime y se le da al restaurante. Solo con la
+ * sesión del panel (rutas_panel ya la exige) y sin caché en ningún sitio: lleva nombres con sus
+ * alergias, que son datos de salud (art. 9 RGPD). Cuenta a quienes van al BANQUETE con la misma
+ * cuenta por menú que el panel (panel_datos, sin respuestas sustituidas): el Excel filtrado por
+ * Banquete = Sí da lo mismo. La columna Mesa queda vacía hasta que exista el plano de mesas (F1d),
+ * que la rellenará por el `id` de persona, nunca por nombre.
+ */
+function panel_catering(string $slug, array $c): void {
+    header('Cache-Control: private, no-store');
+    [$rsvps, , $menus] = panel_datos($slug, $c);
+    $t = ['total' => 0, 'adultos' => 0, 'ninos' => 0];
+    $alergias = [];
+    foreach ($rsvps as $r) {
+        if (empty($r['asiste_banquete'])) continue;
+        foreach (personas($r) as $p) {
+            $t['total']++;
+            $t[$p['tipo'] === 'nino' ? 'ninos' : 'adultos']++;
+            if ($p['alergias'] !== '') $alergias[] = $p + ['menu_txt' => nombre_menu($c, $p['menu'], $p['menu_nombre'])];
+        }
+    }
+    usort($alergias, fn($a, $b) => clave_nombre($a['nombre']) <=> clave_nombre($b['nombre']));
+    $lugar = (string) ($c['convite']['lugar'] ?? '');
+    $cuando = trim(($c['fecha'] !== '' ? fecha_larga($c['fecha'], false) : '') . ($lugar !== '' ? ' · ' . $lugar : ''), ' ·');
+    $o = '<header class="panel-head"><div><span class="kicker">Resumen para el catering</span><h1>' . h(nombres($c)) . '</h1>'
+        . ($cuando !== '' ? '<p>' . h($cuando) . '</p>' : '')
+        // La hoja impresa envejece: se dice a qué hora se sacó para que nadie cocine con una vieja
+        . '<p>Datos del ' . h(date('d/m/Y')) . ' a las ' . h(date('H:i')) . '. Si llegan más confirmaciones, volved a imprimirlo.</p></div>'
+        . '<nav class="panel-acc no-print"><button type="button" class="btn" data-imprimir>Imprimir / guardar PDF</button><a class="btn btn-soft" href="/panel">Volver al panel</a></nav></header>';
+    $o .= '<section class="section catering"><div class="stat-row">';
+    foreach ([['total', 'en el banquete'], ['adultos', 'adultos'], ['ninos', 'niños/as']] as [$k, $txt]) $o .= '<div class="stat"><b>' . $t[$k] . '</b><span>' . $txt . '</span></div>';
+    $o .= '</div><h2 class="panel-h2">Por menú</h2><div class="table-wrap"><table><thead><tr><th>Menú</th><th>Personas</th></tr></thead><tbody>';
+    foreach ($menus as $m) $o .= '<tr><td>' . h($m['nombre']) . '</td><td>' . (int) $m['n'] . '</td></tr>';
+    $o .= '<tr class="catering-total"><td>Total</td><td>' . array_sum(array_column($menus, 'n')) . '</td></tr></tbody></table></div>';
+    $o .= '<h2 class="panel-h2">Alergias e intolerancias</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th><th>Mesa</th></tr></thead><tbody>';
+    if (!$alergias) $o .= '<tr><td colspan="4" class="vacio">Nadie de los que van al banquete ha indicado alergias.</td></tr>';
+    foreach ($alergias as $p) {
+        $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '') . '</td><td>' . h($p['menu_txt']) . '</td>'
+            . '<td class="alergia">' . h($p['alergias']) . '</td><td></td></tr>';
+    }
+    $o .= '</tbody></table></div><p class="panel-nota">Solo cuenta a quienes van al banquete. Si un grupo corrigió su respuesta, vale la última.</p></section>';
+    echo panel_marco($c, 'Resumen para el catering', $o, true, true);
 }
 
 /**

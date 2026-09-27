@@ -149,7 +149,7 @@ function padrino_resumen(): array {
         $ped = lee_json($d . '/pedido.json') ?? [];
         $arch = ($cfg['_estado'] ?? '') === 'archivada';
         $conf = 0;
-        if (!$arch) foreach (lee_json($d . '/guardado/rsvp.json') ?? [] as $r) $conf += count(personas($r));
+        if (!$arch) foreach (rsvp_vigentes($slug) as $r) $conf += count(personas($r));   // sin las sustituidas por un reenvío
         $fecha = (string) ($cfg['fecha'] ?? '');
         $bodas[] = [
             'slug' => $slug,

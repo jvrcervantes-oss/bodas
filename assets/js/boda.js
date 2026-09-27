@@ -143,16 +143,21 @@
       card.querySelectorAll('[data-for]').forEach(function (el) { el.htmlFor = id + '-' + el.getAttribute('data-for'); });
       var def = card.querySelector('input[type="radio"][data-f="menu"][value="' + menuDef[kind] + '"]');
       if (def) { def.checked = true; def.defaultChecked = true; }
+      bindRemove(card);
+      list.appendChild(card);
+      renumber();
+      card.querySelector('[data-f="nombre"]').focus();
+    }
+    function bindRemove(card) {
       card.querySelector('.guest-remove').addEventListener('click', function () {
         card.remove();
         renumber();
         var last = list.querySelectorAll('.guest');
         last[last.length - 1].querySelector('[data-f="nombre"]').focus();
       });
-      list.appendChild(card);
-      renumber();
-      card.querySelector('[data-f="nombre"]').focus();
     }
+    // Enlace de grupo: el servidor ya pinta una ficha por persona de la lista; se les da su «Quitar»
+    list.querySelectorAll('.guest .guest-remove').forEach(function (b) { bindRemove(b.closest('.guest')); });
 
     document.querySelectorAll('[data-add-guest]').forEach(function (b) {
       b.addEventListener('click', function () { add(b.getAttribute('data-add-guest')); });

@@ -204,7 +204,7 @@ function estudio_bodas(string $metodo): string {
         $ped = lee_json($d . '/pedido.json') ?? [];
         $arch = ($cfg['_estado'] ?? '') === 'archivada';
         $personas = 0;
-        if (!$arch) foreach (lee_json($d . '/guardado/rsvp.json') ?? [] as $r) $personas += count(personas($r));
+        if (!$arch) foreach (rsvp_vigentes($slug) as $r) $personas += count(personas($r));   // sin las sustituidas por un reenvío
         $origen = str_starts_with((string) ($ped['session_id'] ?? ''), 'cortesia_') ? 'Regalo' : (($ped['pasarela'] ?? '') === 'lemon' ? 'Lemon' : (($ped['factura'] ?? '') !== '' ? 'Pagada' : '—'));
         // El código usado vive en el pedido completo (pedidos/<id>.json), no en la copia de la boda
         if ($origen === 'Regalo') $ped['cortesia'] = (string) ((lee_json(dir_datos('pedidos', basename((string) $ped['session_id']) . '.json')) ?? [])['cortesia'] ?? '');

@@ -37,6 +37,8 @@ function render_pagina(array $c, string $ruta, array $ctx): ?string {
 function enlace(string $ruta, array $ctx): string {
     if ($ctx['modo'] === 'zip') return $ruta === '' ? 'index.html' : $ruta . '.html';
     if ($ctx['modo'] === 'preview') return '#' . ($ruta === '' ? 'inicio' : $ruta);
+    // Abierta por un enlace de grupo (/i/<token>): «Confirmar» vuelve a ese enlace, no a la confirmación sin grupo
+    if (($ctx['rsvp_href'] ?? '') !== '' && $ruta === ($ctx['rsvp_ruta'] ?? null)) return $ctx['rsvp_href'];
     return '/' . $ruta;
 }
 function a_interno(string $ruta, array $ctx, string $attrs = ''): string {
@@ -567,7 +569,10 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
     $d = $s['datos'];
     $intro = parrafos($d['texto'] ?? '', 'lede');
     switch ($s['tipo']) {
-        case 'rsvp': return envoltorio($s['titulo'], $intro . bloque_banquete((string) ($d['banquete'] ?? '')) . form_rsvp($c, $s, $ctx));
+        case 'rsvp':
+            // Enlace de grupo: saludo con el nombre que puso la pareja en su lista (texto plano, por h())
+            $saludo = isset($ctx['grupo']) ? '<p class="lede saludo-grupo"><strong>¡Hola, ' . h($ctx['grupo']['nombre']) . '!</strong></p>' : '';
+            return envoltorio($s['titulo'], $saludo . $intro . bloque_banquete((string) ($d['banquete'] ?? '')) . form_rsvp($c, $s, $ctx));
         case 'informacion': return envoltorio($s['titulo'], $intro . bloque_mapa($c, $ctx) . pagina_informacion($c) . tarjeta_menu($c));
         case 'transporte': return envoltorio($s['titulo'], $intro . bloque_transporte($c, $s, $ctx));
         case 'hoteles': return envoltorio($s['titulo'], $intro . lista_hoteles($d));
@@ -846,9 +851,31 @@ function form_rsvp(array $c, array $s, array $ctx): string {
         '{borrado}' => $c['fecha'] !== '' ? fecha_larga(fecha_borrado($c['fecha']), false) : '',
     ]);
     $conv = $c['convite']['lugar'] !== '';
+    // Enlace de grupo (/i/<token>): los nombres de la lista de la pareja ya escritos y editables.
+    // Solo esos nombres: nada de lo que el grupo haya contestado antes se enseña aquí (Legal #133).
+    $grupo = $ctx['modo'] === 'live' && isset($ctx['grupo']) ? $ctx['grupo'] : null;
+    $pre = $grupo ? array_values($grupo['personas']) : [];
+    $extra = '';
+    foreach (array_slice($pre, 1) as $n => $nombre) {
+        $i = $n + 1;
+        $radios = '';
+        foreach ($ms as $m) {
+            $desc = $m['descripcion'] !== '' ? '<small class="menu-desc">' . h(resumen($m['descripcion'], 90)) . '</small>' : '';
+            $radios .= '<label><input type="radio" data-f="menu" name="invitados[' . $i . '][menu]" value="' . h($m['id']) . '"' . ($m['id'] === $defAdulto ? ' checked' : '') . '> <span>' . h($m['nombre']) . $desc . '</span></label>';
+        }
+        // Misma ficha que #guestTpl, ya rellena; boda.js le pone el «Quitar» y la renumera
+        $extra .= '<fieldset class="guest" data-kind="adulto"><legend class="guest-head"><span class="guest-tag"></span><button type="button" class="guest-remove" aria-label="Quitar a esta persona">Quitar</button></legend>'
+            . '<input type="hidden" data-f="tipo" name="invitados[' . $i . '][tipo]" value="adulto">'
+            . '<div class="field"><label for="p' . $i . '-nombre">Nombre y apellidos</label><input type="text" id="p' . $i . '-nombre" data-f="nombre" name="invitados[' . $i . '][nombre]" autocomplete="off" maxlength="120" required value="' . h($nombre) . '"></div>'
+            . $menuField($radios)
+            . '<div class="field"><label for="p' . $i . '-alergias">Alergias o intolerancias</label><input type="text" id="p' . $i . '-alergias" data-f="alergias" name="invitados[' . $i . '][alergias]" maxlength="300" placeholder="Déjalo en blanco si come de todo"></div></fieldset>';
+    }
     ob_start(); ?>
 <form id="rsvpForm" class="stack" novalidate data-menu-nino="<?= h($defNino) ?>" data-menu-adulto="<?= h($defAdulto) ?>">
   <input type="text" name="web" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+<?php if ($grupo): // el servidor saca el grupo de este token, nunca de un campo «grupo» ?>
+  <input type="hidden" name="i" value="<?= h($grupo['token']) ?>">
+<?php endif; ?>
   <div class="guests-head">
     <span class="kicker">Quiénes venís</span>
     <p class="guests-hint">Uno confirma por todos: añadid a cada adulto y a cada peque.</p>
@@ -857,10 +884,11 @@ function form_rsvp(array $c, array $s, array $ctx): string {
     <fieldset class="guest" data-kind="adulto">
       <legend class="guest-head"><span class="guest-tag">Tú</span></legend>
       <input type="hidden" data-f="tipo" name="invitados[0][tipo]" value="adulto">
-      <div class="field"><label for="g0-nombre">Nombre y apellidos</label><input type="text" id="g0-nombre" data-f="nombre" name="invitados[0][nombre]" autocomplete="name" maxlength="120" required></div>
+      <div class="field"><label for="g0-nombre">Nombre y apellidos</label><input type="text" id="g0-nombre" data-f="nombre" name="invitados[0][nombre]" autocomplete="name" maxlength="120" required<?= $pre ? ' value="' . h($pre[0]) . '"' : '' ?>></div>
       <?= $menuField($menus) ?>
       <div class="field"><label for="g0-alergias">Alergias o intolerancias</label><input type="text" id="g0-alergias" data-f="alergias" name="invitados[0][alergias]" maxlength="300" placeholder="Déjalo en blanco si comes de todo"></div>
     </fieldset>
+<?= $extra ?>
   </div>
   <div class="guest-add">
     <button type="button" class="btn btn-add" data-add-guest="adulto"><span aria-hidden="true">+</span> Añadir adulto</button>

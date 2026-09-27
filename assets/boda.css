@@ -1439,3 +1439,22 @@ html:has(> body.is-preview)::-webkit-scrollbar{ display: none; }
 .inv-editar{ margin-top: var(--s-sm); }
 .inv-editar summary{ cursor: pointer; font-weight: 600; }
 @media (max-width: 700px){ .compartir-grid{ grid-template-columns: 1fr; } .qr-caja{ margin: 0 auto; } }
+
+/* Enlace personal por grupo (F1a): el enlace largo se parte en vez de ensanchar la tabla en el móvil */
+a.inv-btn{ text-decoration: none; display: inline-block; }
+.enl-url{ font-size: 12px; word-break: break-all; color: var(--ink-soft); }
+@media (max-width: 700px){ .enl-url{ display: none; } }
+.saludo-grupo{ margin-bottom: var(--s-sm); }
+/* Resumen para el catering (F1b): se imprime y se da al restaurante; fuera botones, fondo y adornos */
+.catering-total td{ font-weight: 600; }
+@media print{
+  .no-print, .site-nav, .tab-bar{ display: none !important; }
+  body.panel-body{ background: #fff; color: #000; }
+  .panel-body .wrap{ max-width: none; padding: 0; }
+  .panel-body .section{ padding: 0; margin: 0 0 16px; box-shadow: none; border: 0; background: none; }
+  .panel-body .stat b{ font-size: 22px; color: #000; }
+  .panel-body .table-wrap{ overflow: visible; }
+  .panel-body .table-wrap table{ font-size: 11pt; }
+  .panel-body .table-wrap tr{ break-inside: avoid; }
+  .panel-body .alergia{ color: #000; font-weight: 600; }
+}

@@ -58,6 +58,10 @@
   document.querySelectorAll('[data-copiar-enlace]').forEach(function (b) {
     b.addEventListener('click', function () { copia(b.getAttribute('data-copiar-enlace'), b.parentNode.querySelector('.copiado')); });
   });
+  // Resumen para el catering: la CSP no deja onclick en línea, así que el botón de imprimir va aquí
+  document.querySelectorAll('[data-imprimir]').forEach(function (b) {
+    b.addEventListener('click', function () { window.print(); });
+  });
   document.querySelectorAll('[data-copiar-pendientes]').forEach(function (b) {
     b.addEventListener('click', function () { copia(b.getAttribute('data-copiar-pendientes'), document.querySelector('.inv-copiado')); });
   });
