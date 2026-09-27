@@ -595,4 +595,8 @@
   [data-modo-estilo] .c-atelier-cab-sep .c-atelier-precio { display: none; }
   #estiloPropio { padding-left: 0; border-left: 0; }
   .c-seg-entra { animation: c-entra .38s var(--out); }
+  /* Con un diseño Atelier elegido, «Vuestro estilo» enseña igualmente sus opciones (pintaAtelier las oculta) */
+  [data-modo-estilo="propio"] #estiloPropio[hidden] { display: block; }
+  .c-modo-aviso { margin: 12px 0 0; padding: 12px 14px; border-radius: var(--r); background: var(--blush); color: var(--ink-2); font-size: 13px; }
+  .c-modo-aviso[hidden] { display: none; }
 }

@@ -868,7 +868,7 @@
   function pasoHecho(k, fp) {
     if (k === 'publicar') return false;
     if (k === 'estilo') return !!estiloListo;
-    return faltasRecibidas && !!(vistos[k] || yaElegido) && !fp[k];
+    return !!(faltasRecibidas && (vistos[k] || yaElegido) && !fp[k]);
   }
   function pintaEstados() {
     if (!numPaso) return;
@@ -878,7 +878,7 @@
       var h = pasoHecho(o.k, fp); if (h) hechos++;
       var t = barraPasos.children[j]; if (t) t.className = h ? 'hecho' : j === i ? 'actual' : '';
       var r = document.querySelector('.c-paso[data-tab="' + o.k + '"]');
-      if (r) { r.classList.toggle('hecho', h); r.querySelector('.c-paso-num').textContent = h ? '✓' : String(j + 1); }
+      if (r) { r.classList.toggle('hecho', !!h); r.querySelector('.c-paso-num').textContent = h ? '✓' : String(j + 1); }
     });
     arco.lastChild.style.strokeDashoffset = 100 - hechos / ordenTabs.length * 100;
     tarjetaPaso.classList.toggle('es-hecho', pasoHecho(pasoActual, fp));
@@ -929,12 +929,22 @@
     modoEstilo = m;
     panelEstilo.setAttribute('data-modo-estilo', m);
     seg.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-modo') === m ? 'true' : 'false'); });
-    if (m === 'propio' && st.atelier) esencial.querySelector('input').click();
+    pintaAvisoModo();
     // El contenido nuevo entra con el mismo deslizamiento que un paso
     var zona = m === 'premium' ? atelierEl : propioEl;
     zona.classList.remove('c-seg-entra'); void zona.offsetWidth; zona.classList.add('c-seg-entra');
   }
   panelEstilo.setAttribute('data-modo-estilo', modoEstilo);
+  // Cambiar a «Vuestro estilo» no borra el diseño elegido: se deja de usar al elegir aquí paleta,
+  // letra o adornos (revisor, 27-sep). Mientras tanto, un aviso lo dice.
+  var avisoModo = el('p', { class: 'c-modo-aviso', hidden: true });
+  propioEl.insertBefore(avisoModo, propioEl.firstChild);
+  function pintaAvisoModo() {
+    var a = st.atelier && D.atelier[st.atelier];
+    avisoModo.hidden = !(modoEstilo === 'propio' && a);
+    if (a) avisoModo.textContent = 'Tenéis elegido el diseño «' + a.nombre + '». Si elegís aquí una paleta, una letra o unos adornos, pasaréis al Pack Esencial y dejaréis ese diseño.';
+  }
+  atelierEl.addEventListener('change', pintaAvisoModo);
   var avisoListo = el('div', { class: 'c-toast', role: 'status' }, [el('i', { 'aria-hidden': 'true' }), el('span', { text: 'Estilo listo. Así queda vuestra web' })]);
   document.body.appendChild(avisoListo);
 
@@ -942,6 +952,8 @@
     // «click» y no «change»: tocar la opción que ya venía marcada por defecto también cuenta como elegirla
     x[2].addEventListener('click', function (e) {
       if (!e.target.matches('input[type="radio"]')) return;
+      // Elegir aquí con un diseño Atelier puesto es pasar al Esencial: lo hace la tarjeta Esencial
+      if (st.atelier) { esencial.querySelector('input').click(); pintaAvisoModo(); }
       var primera = !elegido[x[0]];
       elegido[x[0]] = true;
       falta.querySelector('[data-estilo="' + x[0] + '"]').classList.add('si');
