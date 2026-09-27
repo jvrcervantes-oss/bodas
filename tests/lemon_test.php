@@ -166,6 +166,7 @@ $acLs = ['fecha' => date('c'), 'version' => textos_legales()['version'], 'condic
 $tl2 = texto_bienvenida(['slug' => 'x', 'email' => 'a@b.c', 'pasarela' => 'lemon', 'factura' => '', 'aceptacion' => $acLs, 'ls' => ['order_number' => 77], 'importe' => ['total' => 12500]], $cfg, 'https://enlace');
 ok(strpos($tl2, '«' . $acLs['condiciones'] . '»') !== false && strpos($tl2, '«' . $acLs['desistimiento'] . '»') !== false, 'bienvenida LS: las dos casillas, literales');
 ok(strpos($tl2, 'CONDICIONES DEL SERVICIO') !== false && strpos($tl2, '8. DESISTIMIENTO Y REEMBOLSOS') !== false && strpos($tl2, 'ANEXO II') !== false, 'bienvenida LS: condiciones íntegras en el cuerpo');
+ok(strpos($tl2, 'Está en pruebas: los datos de quien lo presta') !== false && strpos($tl2, '00000000T') === false && strpos($tl2, 'Titular De Prueba') === false, 'bienvenida LS en pruebas: sin titular ni NIF, dice que está en pruebas');
 ok(strpos($tl2, 'pedido n.º 77') !== false && strpos($tl2, 'versión ' . $acLs['version']) !== false, 'bienvenida LS: número de pedido y versión de las condiciones');
 ok(!preg_match('~</?(p|h1|h2|ul|li|a|strong|em)\b~', $tl2), 'bienvenida: sin etiquetas HTML en el texto plano');
 correo_bienvenida(['slug' => 'x', 'email' => 'adj@b.c', 'pasarela' => 'lemon', 'factura' => '', 'aceptacion' => $acLs], $cfg, 'https://enlace');
@@ -196,7 +197,7 @@ $ep = empresa_publica();
 ok(titular_oculto() && $ep['nif'] === '' && $ep['domicilio'] === '' && $ep['titular'] === marca(), 'en pruebas: sin NIF, domicilio ni titular persona');
 ok(empresa()['nif'] === '' || empresa_completa(), 'empresa() intacta para el candado');
 $cond = documento_legal('condiciones', 'x');
-ok((empresa()['nif'] === '' || strpos($cond, empresa()['nif']) === false) && strpos($cond, 'Está en pruebas') !== false, 'condiciones del correo en pruebas: sin NIF, dicen que está en pruebas');
+ok((empresa()['nif'] === '' || strpos($cond, empresa()['nif']) === false) && strpos($cond, 'está en pruebas') !== false && strpos($cond, '«nosotros» es quien presta') !== false && strpos($cond, 'Quien presta el servicio con la marca') !== false, 'condiciones del correo en pruebas: sin NIF, dicen que está en pruebas');
 // Candado del modo test: una IP cualquiera sin sesión del estudio no abre el pago (tarjeta de prueba = web gratis)
 $_SERVER['REMOTE_ADDR'] = '203.0.113.9';
 ok(!lemon_checkout_permitido(), 'modo test: IP desconocida sin sesión del estudio no abre checkout');

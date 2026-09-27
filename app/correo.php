@@ -232,7 +232,9 @@ function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
         . "La web y las respuestas de vuestros invitados se mantienen hasta el $borrado. Ese día se borran las respuestas y la web pasa a una página de agradecimiento. Exportad el Excel antes si queréis conservarlas.\n\n"
         . "Guardad este correo: es la confirmación de vuestro contrato.\n\n"
         . "RESUMEN DE LO CONTRATADO\n"
-        . '- Servicio: ' . marca() . ', un producto de AxisWorks, que presta ' . $E['titular'] . ($E['nif'] !== '' ? ' (NIF ' . $E['nif'] . ')' : '') . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . ".\n"
+        . '- Servicio: ' . marca() . ', un producto de AxisWorks' . ($E['nif'] !== ''
+            ? ', que presta ' . $E['titular'] . ' (NIF ' . $E['nif'] . ')' . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . '.'
+            : '. Está en pruebas: los datos de quien lo presta se publicarán antes de abrir la venta.') . "\n"
         . "- Qué: $pack, web de boda publicada en $url, alojada hasta el $borrado.\n"
         . ['factura' => '- Pago: ' . euros($total) . ", IVA incluido. Factura: {$ped['factura']} (adjunta).\n",
             'lemon' => "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo.\n",

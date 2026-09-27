@@ -361,7 +361,9 @@ function texto_mejora_correo(string $slug, array $ped, array $meta): string {
         . "Elegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis:\n" . url_boda($slug, 'panel/editar') . "\n\n"
         . "Guardad este correo: es la confirmación de la mejora.\n\n"
         . "RESUMEN\n"
-        . '- Servicio: ' . marca() . ', un producto de AxisWorks, que presta ' . $E['titular'] . ($E['nif'] !== '' ? ' (NIF ' . $E['nif'] . ')' : '') . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . ".\n"
+        . '- Servicio: ' . marca() . ', un producto de AxisWorks' . ($E['nif'] !== ''
+            ? ', que presta ' . $E['titular'] . ' (NIF ' . $E['nif'] . ')' . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . '.'
+            : '. Está en pruebas: los datos de quien lo presta se publicarán antes de abrir la venta.') . "\n"
         . '- Qué: paso de Pack Esencial a Pack Atelier en ' . url_boda($slug) . ".\n"
         . "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '')
         . ". El recibo y la factura os los envía $vend en otro correo.\n"

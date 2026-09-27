@@ -15,7 +15,7 @@ $V = h($L['vendedor'] ?? '');
 <p>Versión del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
-<p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>Está en pruebas: los datos de quien presta el servicio se publicarán antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= h($E['titular']) ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
+<p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
 <p>La compra se la hacéis a <?= $V ?> (<?= h($L['vendedor_entidad'] ?? '') ?>), que actúa como vendedor final (en inglés, <em>Merchant of Record</em>): revende nuestro servicio, os cobra, os envía el recibo y la factura y liquida el IVA. Esa compra se rige por las <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" rel="noopener">condiciones de compra de <?= $V ?></a>.</p>
 <p>El servicio, es decir, crear, publicar y alojar vuestra web, lo prestamos nosotros y se rige por estas condiciones. Para cualquier cosa sobre la web podéis dirigiros siempre a nosotros. Nada de lo que digan las condiciones de <?= $V ?> ni estas limita los derechos que la ley os reconoce como consumidores.</p>
 
@@ -92,7 +92,7 @@ $V = h($L['vendedor'] ?? '');
 <p>Los mensajes y fotos del libro los publican vuestros invitados y aparecen al momento. Vosotros decidís qué se queda: podéis ocultar o borrar cualquiera desde el panel. La página del libro incluye un enlace para pedir la retirada de un contenido. Si nos llega un aviso fundado de que un mensaje o una foto es ilegal o vulnera derechos de alguien (por ejemplo, la imagen de un menor sin permiso), lo retiraremos sin esperar y os avisaremos.</p>
 
 <h2>11. Licencia del ZIP</h2>
-<p>El diseño, el código y la plantilla son de <?= h($E['titular']) ?>. Con la compra recibís una licencia para usar el ZIP de vuestra web:</p>
+<p>El diseño, el código y la plantilla son de <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Con la compra recibís una licencia para usar el ZIP de vuestra web:</p>
 <ul>
   <li>solo para vuestra boda y sin fines comerciales;</li>
   <li>podéis guardarlo, abrirlo y alojarlo donde queráis como recuerdo;</li>
@@ -133,7 +133,7 @@ $V = h($L['vendedor'] ?? '');
 <h2>Anexo II. Encargo de tratamiento de datos (artículo 28 del RGPD)</h2>
 
 <h2>II.1. Partes y papel de cada una</h2>
-<p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»), es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar. <?= $V ?> no es parte de este anexo: no recibe datos de invitados.</p>
+<p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?php if ($E['nif'] !== ''): ?><?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»),<?php else: ?>Quien presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»; sus datos se publicarán antes de abrir la venta)<?php endif; ?> es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar. <?= $V ?> no es parte de este anexo: no recibe datos de invitados.</p>
 <p>Aunque la pareja trate esos datos para una actividad personal, <?= $M ?> cumple igualmente todo lo que dice este anexo.</p>
 <p>Para dar soporte y llevar el servicio, <?= $M ?> solo ve cifras agregadas y anónimas de cada web, como el número total de personas que han confirmado. Nunca ve los datos de un invitado concreto ni cifras por menú o por alergia.</p>
 
