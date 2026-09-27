@@ -778,7 +778,11 @@
   // la lista de pasos), marcas de lo que falta del estilo, y al completarlo la vista previa sube
   // sola con «Seguir». Solo se ve en pantalla estrecha (crear.css); en escritorio no cambia nada.
   var pasoActual = ordenTabs.length ? ordenTabs[0].k : '';
+  // Pasos abiertos de verdad: se guardan junto al borrador para que, al volver, no salga en verde
+  // un paso que nunca se abrió solo porque no tiene datos obligatorios. Al editar, todos cuentan.
+  var CLAVE_VISTOS = 'boda_pasos_vistos_v1';
   var vistos = {};
+  if (MODO === 'crear' && lee(CLAVE)) { try { vistos = JSON.parse(lee(CLAVE_VISTOS) || '{}') || {}; } catch (e) { vistos = {}; } }
   var tarjetaPaso = el('div', { class: 'c-pm' });
   var botonPaso = el('button', { type: 'button', class: 'c-pm-btn', 'aria-haspopup': 'dialog', 'aria-controls': 'hojaPasos' });
   var arco = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -827,7 +831,7 @@
     listaPasos.textContent = '';
     var fp = faltasPorPaso();
     ordenTabs.forEach(function (o, i) {
-      var hecho = pasoHecho(o.k, fp), falta = !hecho && (vistos[o.k] || yaElegido) && fp[o.k];
+      var hecho = pasoHecho(o.k, fp), falta = !hecho && (vistos[o.k] || MODO === 'editar') && fp[o.k];
       var estado = hecho ? 'Completado' : falta ? (fp[o.k] === 1 ? 'Falta 1 dato' : 'Faltan ' + fp[o.k] + ' datos') : o.k === pasoActual ? 'Aquí' : '';
       var b = el('button', { type: 'button', class: hecho ? 'hecho' : falta ? 'falta' : '' }, [
         el('span', { class: 'c-hoja-n', text: hecho ? '✓' : String(i + 1) }),
@@ -843,7 +847,8 @@
     if (!numPaso || !ordenTabs.length) return;
     var i = Math.max(0, ordenTabs.map(function (o) { return o.k; }).indexOf(k));
     var cambia = ordenTabs[i].k !== pasoActual;
-    pasoActual = ordenTabs[i].k; vistos[pasoActual] = true;
+    pasoActual = ordenTabs[i].k;
+    if (!vistos[pasoActual]) { vistos[pasoActual] = true; if (MODO === 'crear') guarda(CLAVE_VISTOS, JSON.stringify(vistos)); }
     numPaso.textContent = i + 1;
     dePasos.textContent = 'Paso ' + (i + 1) + ' de ' + ordenTabs.length;
     nomPaso.textContent = ordenTabs[i].txt;
@@ -868,7 +873,7 @@
   function pasoHecho(k, fp) {
     if (k === 'publicar') return false;
     if (k === 'estilo') return !!estiloListo;
-    return !!(faltasRecibidas && (vistos[k] || yaElegido) && !fp[k]);
+    return !!(faltasRecibidas && (vistos[k] || MODO === 'editar') && !fp[k]);
   }
   function pintaEstados() {
     if (!numPaso) return;
