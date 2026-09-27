@@ -169,12 +169,14 @@ function padrino_resumen(): array {
         $pedidos[] = [
             'ref' => substr(hash('sha256', (string) ($p['session_id'] ?? basename($f))), 0, 16),
             'fecha' => (string) ($p['creado'] ?? ''),
-            'pack' => ((string) ($p['atelier'] ?? '')) !== '' ? 'atelier' : 'esencial',
+            'pack' => ((string) ($p['atelier'] ?? '')) !== '' || ($p['tipo'] ?? '') === 'mejora' ? 'atelier' : 'esencial',
             'total_cent' => (int) ($p['importe']['total'] ?? 0),
             'estado' => (string) ($p['estado'] ?? ''),
             'regalo' => str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_'),
             // Con LS el IVA lo liquida LS y los pedidos de prueba no son ingresos (Tesorero: encargo aparte)
             'pasarela' => (string) ($p['pasarela'] ?? (str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_') ? '' : 'stripe')),
+            // 'alta' = web nueva; 'mejora' = paso de Esencial a Atelier de una boda que ya existía (no es una venta nueva)
+            'tipo' => ($p['tipo'] ?? '') === 'mejora' ? 'mejora' : 'alta',
             'test' => !empty($p['ls']['test']),
             'reembolsado_cent' => (int) ($p['reembolso']['importe_cent'] ?? 0),
         ];

@@ -280,8 +280,11 @@ function mejora_bloqueo(string $slug): string {
 /** ¿Se puede ofrecer la mejora en este panel ahora? (la vista del constructor lo enseña o no) */
 function mejora_disponible(string $slug): bool {
     return pasarela() === 'lemon' && lemon_configurada() && lemon_checkout_permitido() && empresa_completa()
-        && precio_mejora_cent() > 0 && mejora_bloqueo($slug) === '';
+        && texto_mejora() !== '' && precio_mejora_cent() > 0 && mejora_bloqueo($slug) === '';
 }
+/** Casilla que acepta la pareja al pagar la mejora. SOLO la de Legal (`check_mejora`): la del alta dice
+ *  «que cree y publique nuestra web», falso para una web ya publicada (revisor, 27-sep). Sin ella no se vende. */
+function texto_mejora(): string { return (string) (textos_legales()['check_mejora'] ?? ''); }
 
 /** POST /panel/mejora (sesión del panel y CSRF ya exigidos por rutas_panel + aquí). Devuelve la URL de pago. */
 function panel_mejora(string $slug, string $metodo): void {
@@ -289,11 +292,11 @@ function panel_mejora(string $slug, string $metodo): void {
     if (!panel_csrf_ok()) json_response(['ok' => false, 'error' => 'La sesión ha caducado. Recarga la página.'], 403);
     if (!limite('mejora|' . $slug, 10, 3600, true)) json_response(['ok' => false, 'error' => 'Demasiados intentos. Prueba dentro de un rato.'], 429);
     // En modo test, el mismo candado que el alta: solo el estudio (sesión o IP) abre el pago
-    if (pasarela() !== 'lemon' || !lemon_configurada() || !lemon_checkout_permitido() || !empresa_completa()) {
+    if (pasarela() !== 'lemon' || !lemon_configurada() || !lemon_checkout_permitido() || !empresa_completa() || texto_mejora() === '') {
         json_response(['ok' => false, 'error' => 'La mejora todavía no está disponible. Escribidnos y os ayudamos.'], 503);
     }
     $L = textos_legales();
-    if (($_POST['acepto_desistimiento'] ?? '') !== 'si') json_response(['ok' => false, 'error' => 'Marca la casilla para continuar.'], 422);
+    if (($_POST['acepto_mejora'] ?? '') !== 'si') json_response(['ok' => false, 'error' => 'Marca la casilla para continuar.'], 422);
     $precio = precio_mejora_cent();
     if ($precio <= 0) { registra('ALERTA mejora con importe no positivo', ['precio' => $precio]); json_response(['ok' => false, 'error' => 'La mejora no está disponible ahora mismo.'], 503); }
     $tok = bin2hex(random_bytes(16));
@@ -305,7 +308,7 @@ function panel_mejora(string $slug, string $metodo): void {
         if ((lee_json($fa)['hasta'] ?? 0) > time()) return 'abierta';
         escribe_json(dir_datos('mejoras', $tok . '.json'), ['tipo' => 'mejora', 'slug' => $slug, 'creado' => time(), 'precio_cent' => $precio,
             'pasarela' => 'lemon', 'estado' => 'abierta', 'aceptacion' => ['fecha' => date('c'), 'version' => $L['version'] ?? '',
-                'desistimiento' => (string) ($L['check_mejora'] ?? $L['check_desistimiento'] ?? '')]]);
+                'desistimiento' => texto_mejora()]]);
         escribe_json($fa, ['token' => $tok, 'hasta' => time() + LEMON_CADUCIDAD_S + 60]);
         return '';
     });
@@ -339,7 +342,9 @@ function lemon_mejora(string $id, array $o, array $custom): array {
         $meta = $fMeta !== '' ? lee_json($fMeta) : null;
         $slug = (string) ($meta['slug'] ?? $custom['slug'] ?? '');
         $ped = $ped ?: lemon_pedido_base($sid, $id, $o, $slug, $token, '', $meta['aceptacion'] ?? null) + ['tipo' => 'mejora', 'atelier' => ''];
-        $aviso = function (string $estado, string $asunto, string $texto) use (&$ped, $fPedido) {
+        $aviso = function (string $estado, string $asunto, string $texto) use (&$ped, $fPedido, $slug, $token) {
+            $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
+            if (slug_valido($slug) && (lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
             $ped['estado'] = $estado;
             escribe_json($fPedido, $ped);
             avisa_estudio($asunto, $texto);
@@ -359,7 +364,10 @@ function lemon_mejora(string $id, array $o, array $custom): array {
             $ped['motivos'] = $motivos;
             return $aviso('no-conforme', 'Pago de mejora que no cuadra', "Pedido LS $id ($slug) cobrado pero no cuadra con la mejora: " . implode(', ', $motivos) . ". No se ha cambiado nada. Revisar en Lemon Squeezy.");
         }
-        $bloqueo = mejora_bloqueo($slug);
+        // Reintento tras un corte: la boda ya quedó marcada por ESTE pedido → se remata el cierre (no es un duplicado)
+        $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
+        $yaAplicada = ($bp['mejora']['session_id'] ?? '') === $sid;
+        $bloqueo = $yaAplicada ? '' : mejora_bloqueo($slug);
         if ($bloqueo === 'ya-atelier') {
             return $aviso('duplicado', 'Mejora pagada en una web que ya era Atelier', "Pedido LS $id ($slug): la web ya tenía el Pack Atelier. Devolver este cobro desde Lemon Squeezy.");
         }
@@ -368,19 +376,17 @@ function lemon_mejora(string $id, array $o, array $custom): array {
             return $aviso('no-conforme', 'Mejora pagada en una web que no la admite', "Pedido LS $id ($slug): $bloqueo. No se ha cambiado nada. Revisar.");
         }
         // Aplicar: la boda puede usar cualquier diseño Atelier desde el panel, sin límite de cambios
-        $fb = dir_boda($slug) . '/pedido.json';
-        $bp = lee_json($fb) ?? [];
-        $bp['atelier'] = true;
-        $bp['mejora'] = ['session_id' => $sid, 'fecha' => date('c'), 'importe_cent' => (int) ($o['total'] ?? 0)];
-        escribe_json($fb, $bp);
+        if (!$yaAplicada) {
+            $bp['atelier'] = true;
+            $bp['mejora'] = ['session_id' => $sid, 'fecha' => date('c'), 'importe_cent' => (int) ($o['total'] ?? 0)];
+            escribe_json(dir_boda($slug) . '/pedido.json', $bp);
+        }
         $meta['estado'] = 'pagada';
         $meta['session_id'] = $sid;
         escribe_json($fMeta, $meta);
         $fa = dir_datos('mejoras', 'abierta_' . $slug . '.json');
         if ((lee_json($fa)['token'] ?? '') === $token) @unlink($fa);
         if ($ped['email'] === '') $ped['email'] = (string) ($bp['email'] ?? '');
-        $ped['estado'] = 'creada';
-        escribe_json($fPedido, $ped);
         envia_o_encola(['tipo' => 'correo', 'para' => $ped['email'], 'asunto' => 'Ya tenéis el Pack Atelier',
             'texto' => "¡Hecho! Vuestra web ya tiene el Pack Atelier.\n\nElegid el diseño que queráis desde vuestro panel, y cambiadlo cuantas veces queráis:\n"
                 . url_boda($slug, 'panel/editar') . "\n\nEl cobro lo ha gestionado Lemon Squeezy, que os ha enviado por email el recibo del pago.\n\n"
@@ -388,6 +394,8 @@ function lemon_mejora(string $id, array $o, array $custom): array {
         avisa_estudio('Mejora a Atelier: ' . $slug . (!empty($ped['ls']['test']) ? ' (prueba)' : ''),
             'Web: ' . url_boda($slug) . "\nImporte: " . euros((int) ($ped['importe']['total'] ?? 0)) . ' (IVA ' . euros((int) ($ped['importe']['iva'] ?? 0)) . ")\n"
             . 'Pago: Lemon Squeezy #' . ($ped['ls']['order_number'] ?? '') . (!empty($ped['ls']['test']) ? ' (PRUEBA, modo test)' : '') . "\nComprador: " . $ped['email']);
+        $ped['estado'] = 'creada';
+        escribe_json($fPedido, $ped);
         registra('mejora a Atelier aplicada', ['slug' => $slug, 'sid' => $sid]);
         return $ped;
     });
@@ -414,7 +422,10 @@ function lemon_reembolso(string $id, array $o, array $custom): string {
             $ped['estado'] = 'reembolsado';
         }
         escribe_json($fPedido, $ped);
-        $web = ($ped['estado_previo'] ?? $ped['estado']) === 'creada' ? ' La web ' . url_boda((string) $ped['slug']) . ' sigue publicada: decide si retirarla.' : '';
+        $aplicado = ($ped['estado_previo'] ?? $ped['estado']) === 'creada';
+        $web = !$aplicado ? '' : (($ped['tipo'] ?? '') === 'mejora'
+            ? ' Era la mejora a Pack Atelier de ' . url_boda((string) $ped['slug']) . ': la boda conserva el Atelier; decide si quitarlo.'
+            : ' La web ' . url_boda((string) $ped['slug']) . ' sigue publicada: decide si retirarla.');
         avisa_estudio('Reembolso ' . ($total ? 'total' : 'parcial') . ' de una web de boda', "Pedido LS $id ({$ped['slug']})." . $web);
         return (string) $ped['estado'];
     });

@@ -121,7 +121,7 @@
     btn.addEventListener('click', function () {
       if (!chk.checked) { msg.textContent = 'Marca la casilla para continuar.'; return; }
       var fd = new FormData();
-      fd.append('csrf', D.csrf); fd.append('acepto_desistimiento', 'si');
+      fd.append('csrf', D.csrf); fd.append('acepto_mejora', 'si');
       btn.disabled = true; msg.textContent = 'Abriendo el pago…';
       fetch('/panel/mejora', { method: 'POST', body: fd })
         .then(function (r) { return r.json(); })

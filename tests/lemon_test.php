@@ -257,6 +257,37 @@ ok(mejora_bloqueo('corte') === 'ya-atelier', 'una web Atelier ya no ofrece la me
 [$st, $r] = lemon_procesa_evento(ev_mejora('904', str_repeat('c', 32), 'corte'), lector(['904' => pedido_ls($pm)]));
 ok($r === 'sin-datos', 'mejora sin su pedido en el servidor: sin-datos');
 
+// 15. Mejora: corte a mitad, reembolso, marca abierta, resumen del Padrino y texto de Legal
+// Corte entre marcar la boda y cerrar el pedido: el reintento remata (no es un duplicado) y el aviso sale
+$t = pendiente('corte-mejora', $precio);
+lemon_procesa_evento(evento('order_created', '950', $t, 'corte-mejora'), lector(['950' => pedido_ls($precio)]));
+$tm = mejora_abierta('corte-mejora', $pm);
+$bp = lee_json(dir_boda('corte-mejora') . '/pedido.json');
+escribe_json(dir_boda('corte-mejora') . '/pedido.json', $bp + ['atelier' => true, 'mejora' => ['session_id' => 'ls_951']]);
+$bp2 = lee_json(dir_boda('corte-mejora') . '/pedido.json'); $bp2['atelier'] = true; escribe_json(dir_boda('corte-mejora') . '/pedido.json', $bp2);
+escribe_json(dir_datos('pedidos', 'ls_951.json'), lemon_pedido_base('ls_951', '951', pedido_ls($pm), 'corte-mejora', $tm, '', null) + ['tipo' => 'mejora', 'atelier' => '']);
+escribe_json(dir_datos('ls_tokens', $tm . '.json'), ['order_id' => '951']);
+$tgAntes = count(telegramas());
+[$st, $r] = lemon_procesa_evento(ev_mejora('951', $tm, 'corte-mejora'), lector(['951' => pedido_ls($pm)]));
+ok($r === 'creada' && count(telegramas()) === $tgAntes + 1, 'mejora cortada a medias: el reintento la remata y avisa');
+// Rechazada (no-conforme) libera la marca abierta: la pareja puede reintentar sin esperar
+$t = pendiente('marca', $precio);
+lemon_procesa_evento(evento('order_created', '960', $t, 'marca'), lector(['960' => pedido_ls($precio)]));
+$tm = mejora_abierta('marca', $pm);
+escribe_json(dir_datos('mejoras', 'abierta_marca.json'), ['token' => $tm, 'hasta' => time() + 1800]);
+lemon_procesa_evento(ev_mejora('961', $tm, 'marca'), lector(['961' => pedido_ls($pm - 1)]));
+ok(!is_file(dir_datos('mejoras', 'abierta_marca.json')), 'mejora rechazada libera la marca abierta');
+// Reembolso de una mejora: el aviso dice que la boda conserva el Atelier
+$tgAntes = count(telegramas());
+lemon_procesa_evento(evento('order_refunded', '901', '', 'corte'), lector(['901' => pedido_ls($pm, ['status' => 'refunded'])]));
+$tgs = telegramas();
+ok(count($tgs) === $tgAntes + 1 && strpos(implode("\n", $tgs), 'conserva el Atelier') !== false, 'reembolso de mejora: aviso propio');
+// El Padrino ve la mejora como mejora, no como venta nueva de Esencial
+$pr = array_values(array_filter(padrino_resumen()['pedidos'], fn($p) => $p['tipo'] === 'mejora'));
+ok(count($pr) >= 2 && !array_filter($pr, fn($p) => $p['pack'] !== 'atelier'), 'resumen del Padrino: tipo mejora, pack atelier');
+// Sin la casilla de Legal propia de la mejora, no se ofrece (la del alta dice «que cree y publique»)
+ok(texto_mejora() === (string) (textos_legales()['check_mejora'] ?? ''), 'la casilla de la mejora es solo la de Legal (check_mejora), nunca la del alta');
+
 // Limpieza
 borra_arbol_test($tmp);
 function borra_arbol_test(string $d): void {
