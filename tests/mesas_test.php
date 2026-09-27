@@ -117,6 +117,7 @@ ok($st === 400, 'clave fuera de la lista: 400 (' . $st . ')');
 ok($st === 403, 'sin CSRF: 403');
 [$st, $j] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'mesas', 'acepto_extra' => 'si', 'precio_cent' => 1]);
 ok($st === 409 && strpos((string) $j, 'no est') !== false && !glob(dir_datos('extras', '*.json')) && !is_file($ls . '/checkout_1.json'), 'el plano de mesas: 409 «no está a la venta», sin pedido ni checkout (' . $st . ')');
+ok(!is_file(extra_fichero_abierta($slug, 'mesas')), 'y sin marca de «pago abierto» del plano');
 [$st] = pide('POST', $host, '/panel/extra', ['csrf' => $csrf, 'clave' => 'idiomas', 'acepto_extra' => 'si']);
 ok($st === 409, 'extra de la lista que aún no se vende: 409');
 // (el 422 de «sin la casilla» ya no se alcanza por HTTP: ningún extra está a la venta; su tubería la cubre extras_test.php)
@@ -241,6 +242,18 @@ ok(!extra_activo($slug, 'mesas') && strpos($h, 'Crear mesa') === false && strpos
 ok($st !== 303 && count(plano()['mesas'] ?? []) === 3, 'archivada: el POST no escribe (' . $st . ')');
 [$st, , $cab] = pide('GET', $host, '/panel/mesas/imprimir');
 ok($st !== 200, 'archivada: la hoja para el restaurante no se abre (' . $st . ')');
+[, $hc] = pide('GET', $host, '/panel/catering');
+ok(strpos($hc, '<th>Mesa</th>') === false && count(plano()['mesas'] ?? []) === 3, 'archivada: el catering no saca la columna Mesa aunque el plano siga guardado');
+
+// ---------------------------------------------------------------- 11. web REGALADA con código (sin ningún pedido de LS): también tiene el plano
+$reg = 'regalo-prueba';
+$cr = $c; escribe_json(dir_boda($reg) . '/config.json', $cr);
+escribe_json(dir_boda($reg) . '/pedido.json', ['session_id' => 'cortesia_prueba', 'email' => 'pareja@example.com']);
+escribe_json(panel_fichero($reg), ['hash' => password_hash('clave-de-prueba-2', PASSWORD_DEFAULT), 'gen' => 0]);
+$cookie = '';
+pide('POST', $reg . '.bodaenlace.com', '/panel/entrar', ['clave' => 'clave-de-prueba-2']);
+[$st, $h] = pide('GET', $reg . '.bodaenlace.com', '/panel/mesas');
+ok($st === 200 && strpos($h, 'Crear mesa') !== false && strpos($h, 'Comprar por') === false, 'web regalada: /panel/mesas con la herramienta, sin compra (' . $st . ')');
 
 proc_terminate($srv); proc_close($srv);
 proc_terminate($sim); proc_close($sim);
