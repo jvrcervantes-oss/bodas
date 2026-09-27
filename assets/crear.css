@@ -63,7 +63,8 @@
 .c-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--gold); }
 
 /* ---------- rejilla editor / vista previa ---------- */
-.c-grid { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; gap: 24px; padding: 16px 28px 32px; align-items: start; }
+.c-grid { display: grid; grid-template-columns: minmax(340px, 460px) minmax(0, 1fr); gap: 24px; padding: 16px 28px 32px; align-items: start; }
+.c-grid > * { min-width: 0; }
 .c-editor { padding: 26px 24px 28px; border-radius: var(--r-lg); background: var(--paper); border: 1px solid var(--line-soft); box-shadow: var(--e1); }
 .c-panel { display: flex; flex-direction: column; gap: 16px; }
 .c-panel[hidden] { display: none; }
@@ -99,7 +100,7 @@
 .c-borrar { align-self: flex-start; }
 
 /* paletas en tarjeta */
-.c-temas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.c-temas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .c-tema { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px 8px 10px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-tema input { position: absolute; opacity: 0; pointer-events: none; }
@@ -124,7 +125,7 @@
 /* Colección Atelier */
 .c-atelier-cab { display: flex; justify-content: space-between; align-items: baseline; }
 .c-atelier-precio { font-size: 12px; font-weight: 600; color: var(--bronze); }
-.c-atelier { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-atelier { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-atelier-card { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-atelier-card input { position: absolute; opacity: 0; pointer-events: none; }
@@ -134,7 +135,7 @@
 .c-atelier-card.is-bloq { opacity: .5; cursor: not-allowed; }
 .c-atelier-img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; border-radius: 10px; background: var(--surface-c); }
 .c-atelier-propio { display: grid; place-items: center; font-family: var(--serif); font-style: italic; font-size: 34px; color: var(--ink-3); background: linear-gradient(135deg, #fff, var(--surface-c)); }
-.c-atelier-txt { display: flex; flex-direction: column; gap: 1px; padding: 0 2px; }
+.c-atelier-txt { display: flex; flex-direction: column; gap: 1px; padding: 0 2px; min-width: 0; }
 .c-atelier-txt small { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--bronze); }
 .c-atelier-txt b { font-family: var(--serif); font-weight: 400; font-size: 15px; }
 .c-atelier-txt span { font-size: 11px; line-height: 1.4; color: var(--ink-3); }
@@ -151,11 +152,11 @@
 
 
 /* tipografía: muestra con los nombres */
-.c-fuentes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-fuentes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-fuente { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px 10px; border-radius: var(--r-lg);
   background: var(--surface-low); border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-fuente input { position: absolute; opacity: 0; pointer-events: none; }
-.c-fuente-muestra { font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; }
+.c-fuente-muestra { max-width: 100%; font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Petit Formal Script (Sobria) ocupa ~190 px a 22 px frente a 120-165 de las demás: se iguala el ancho */
 .c-fuente-sobria .c-fuente-muestra { font-size: 17px; }
 .c-fuente small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
@@ -165,7 +166,7 @@
 [data-si-otro-sitio][hidden] { display: none; }
 
 /* decoración en tarjeta con miniatura */
-.c-decos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.c-decos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .c-deco { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--surface-low);
   border: 1px solid var(--line-soft); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .c-deco input { position: absolute; opacity: 0; pointer-events: none; }
@@ -308,7 +309,7 @@
   .c-pareja { justify-content: center; }
   .c-pareja-txt, .c-salir { display: none; }
   .c-main { margin-left: 76px; }
-  .c-grid { grid-template-columns: minmax(320px, 420px) 1fr; }
+  .c-grid { grid-template-columns: minmax(320px, 420px) minmax(0, 1fr); }
 }
 @media (max-width: 900px) {
   .c-rail { display: none; }
@@ -335,7 +336,7 @@
 @media (max-width: 460px) {
   .c-fila { flex-direction: column; }
   .c-hora { flex-basis: auto; }
-  .c-temas { grid-template-columns: repeat(2, 1fr); }
+  .c-temas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .c-editor { padding: 20px 16px; }
   .c-top-tit h1 { font-size: 15px; }
 }
@@ -395,3 +396,63 @@
 .c-dlg-error { color: #B3261E; }
 .c-dlg-cerrar { justify-self: end; }
 .c-dlg-zona .c-link-mal { justify-self: start; }
+
+/* ---------- móvil cómodo (27-sep-2026) ----------
+   El creador en un teléfono: la rejilla desbordaba (1fr crecía al ancho de las muestras de letra),
+   las pestañas se quedaban arriba al bajar por un paso de 2.000 px, los campos a 14 px hacían
+   zoom en iPhone al tocarlos, y la vista previa metía un móvil dibujado dentro del móvil. */
+.c-sigue { display: none; }
+@media (max-width: 900px) {
+  /* Pestañas pegadas bajo la cabecera, con aviso de que hay más a la derecha */
+  .c-tabs { position: sticky; top: 60px; z-index: 14; margin: 0; padding: 0 10px; background: rgba(253, 251, 249, .96);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    -webkit-mask-image: linear-gradient(90deg, #000 88%, transparent); mask-image: linear-gradient(90deg, #000 88%, transparent); }
+  .c-tabs.al-final { -webkit-mask-image: none; mask-image: none; }
+  .c-tabs button { padding: 14px 12px; }
+  .c-tabs button::before { content: attr(data-num) '. '; color: var(--ink-3); font-weight: 400; }
+  .c-panel { scroll-margin-top: 120px; }
+  .c-sec { scroll-margin-top: 130px; }
+
+  /* Sin zoom al escribir (iOS amplía todo campo por debajo de 16 px) */
+  .c-campo input, .c-campo textarea, .c-slug input, .c-galeria-item input, .c-dlg-url, .c-previa select { font-size: 16px; }
+
+  /* Dedos, no ratón: mínimo ~40 px */
+  .c-mini { width: 40px; height: 40px; font-size: 14px; }
+  .c-orden button { width: 40px; height: 40px; }
+  .c-item-cab .c-link, .c-hotel-cab .c-link, .c-borrar { min-height: 40px; padding: 8px 4px; }
+  .c-check { min-height: 40px; align-items: center; }
+  .c-check input { width: 22px; height: 22px; margin: 0; }
+  .c-switch { width: 46px; height: 28px; }
+  .c-switch::after { top: 4px; left: 4px; width: 20px; height: 20px; }
+  .c-switch:checked::after { transform: translateX(18px); }
+  .c-sec-fila { padding: 4px 12px; }
+  .c-btn-sm { min-height: 42px; }
+
+  /* Anterior / Siguiente al pie de cada paso: sin volver arriba a buscar la pestaña */
+  .c-sigue { display: flex; gap: 10px; margin-top: 8px; padding-top: 18px; border-top: 1px solid var(--line-soft); }
+  .c-sigue .b-btn { flex: 1; min-height: 48px; padding: 0 14px; font-size: 14px; }
+  .c-sigue .c-sigue-ant { flex: 0 0 auto; }
+
+  /* Botón de la vista previa con texto (el icono solo no se entendía), accesible siempre */
+  .c-top-acc .c-ver-previa span, .c-top-acc .c-ver-editor span { display: inline; }
+  .c-top-acc .c-ver-previa, .c-top-acc .c-ver-editor { padding: 0 12px; }
+
+  /* Vista previa: la web a todo el ancho, sin barra de navegador ni marco de teléfono dibujados */
+  body[data-ver="previa"] .c-grid { padding: 0; }
+  .c-navegador { height: calc(100dvh - 60px - 49px); min-height: 0; border: 0; border-radius: 0; box-shadow: none; background: #fff; }
+  .c-nav-barra { gap: 8px; padding: 8px 12px; flex-wrap: wrap; }
+  .c-dots { display: none; }
+  .c-previa select { max-width: none; flex: 1; min-height: 40px; }
+  .c-marco, .c-marco[data-disp="movil"] { padding: 0; }
+  .c-marco[data-disp="movil"] iframe { width: 100%; border: 0; border-radius: 0; box-shadow: none; }
+}
+@media (max-width: 460px) {
+  .c-grid { padding: 10px 10px 24px; }
+  .c-editor { padding: 20px 14px; }
+  .c-top { gap: 10px; padding: 0 12px; }
+  .c-top-acc { gap: 8px; }
+  /* En el teléfono no cabe el texto de «Publicar» junto a «Vista previa»: se queda el de la vista */
+  .c-top-acc #irPublicar span, .c-top-acc #guardarTop span { display: none; }
+  .c-atelier-esencial { gap: 10px; }
+  .c-atelier-esencial .c-atelier-img { width: 56px; }
+}

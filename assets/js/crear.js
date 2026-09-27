@@ -718,6 +718,25 @@
     tabs.forEach(function (t) { t.setAttribute('aria-selected', t.getAttribute('data-tab') === k ? 'true' : 'false'); });
     document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== k; });
     if (!sinCambiarVista) document.body.setAttribute('data-ver', 'editor');
+    centraTab(k);
+  }
+  // Móvil: la fila de pestañas se desplaza sola hasta la activa y avisa si quedan más a la derecha
+  var barraTabs = document.querySelector('.c-tabs');
+  var ESTRECHO = window.matchMedia('(max-width: 900px)');
+  function centraTab(k) {
+    var t = document.getElementById('tab-' + k);
+    if (!barraTabs || !t || !ESTRECHO.matches) return;
+    barraTabs.scrollTo({ left: t.offsetLeft - (barraTabs.clientWidth - t.offsetWidth) / 2, behavior: 'smooth' });
+  }
+  function marcaFinalTabs() {
+    if (barraTabs) barraTabs.classList.toggle('al-final', barraTabs.scrollLeft + barraTabs.clientWidth >= barraTabs.scrollWidth - 4);
+  }
+  if (barraTabs) { barraTabs.addEventListener('scroll', marcaFinalTabs, { passive: true }); window.addEventListener('resize', marcaFinalTabs); marcaFinalTabs(); }
+  // Al cambiar de paso en el móvil se empieza por arriba del paso, no a media página
+  function subeAlPaso(k) {
+    if (!ESTRECHO.matches) return;
+    var p = document.querySelector('[data-panel="' + k + '"]');
+    if (p) p.scrollIntoView({ block: 'start' });
   }
   // Y al revés: cambiar de pestaña lleva la vista previa a la página que esa pestaña edita
   function paginaDeTab(k) {
@@ -729,7 +748,25 @@
   }
   // Pestañas de arriba y pasos del carril (al crear) manejan lo mismo
   tabs.forEach(function (t) {
-    t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); });
+    t.addEventListener('click', function () { var k = t.getAttribute('data-tab'); muestraTab(k); irAPagina(paginaDeTab(k)); subeAlPaso(k); });
+  });
+  // Anterior / Siguiente al pie de cada paso (solo se ven en pantalla estrecha, ver crear.css)
+  var ordenTabs = Array.prototype.map.call(document.querySelectorAll('[role="tab"][data-tab]'), function (t, i) {
+    t.setAttribute('data-num', i + 1);
+    return { k: t.getAttribute('data-tab'), txt: t.textContent };
+  });
+  ordenTabs.forEach(function (o, i) {
+    var panel = document.querySelector('[data-panel="' + o.k + '"]');
+    if (!panel) return;
+    var nav = el('div', { class: 'c-sigue' });
+    [[ordenTabs[i - 1], 'b-btn b-paper c-sigue-ant', '← Anterior'], [ordenTabs[i + 1], 'b-btn b-dark', null]].forEach(function (x) {
+      if (!x[0]) return;
+      var dest = x[0];
+      var bt = el('button', { type: 'button', class: x[1], text: x[2] || 'Siguiente: ' + dest.txt + ' →' });
+      bt.addEventListener('click', function () { muestraTab(dest.k); irAPagina(paginaDeTab(dest.k)); subeAlPaso(dest.k); });
+      nav.appendChild(bt);
+    });
+    panel.appendChild(nav);
   });
   var tabsArriba = document.querySelectorAll('[role="tab"][data-tab]');
   tabsArriba.forEach(function (t, i) {
