@@ -219,6 +219,12 @@ function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
     $ls = (array) ($ped['ls'] ?? []);
     $pack = ($ped['atelier'] ?? '') !== '' ? 'Pack Atelier' : 'Pack Esencial';
     $total = (int) ($ped['importe']['total'] ?? 0);
+    $num = (int) ($ls['order_number'] ?? 0);
+    // Las condiciones que van en el cuerpo son las vigentes al enviar: si la versión cambió entre la
+    // aceptación y el pago, se deja rastro para revisarlo a mano (revisor, 27-sep)
+    if (($acept['version'] ?? '') !== '' && $acept['version'] !== ($L['version'] ?? '')) {
+        registra('ALERTA bienvenida con condiciones de otra versión', ['slug' => (string) $ped['slug'], 'aceptada' => $acept['version'], 'enviada' => $L['version'] ?? '']);
+    }
 
     return "¡Vuestra web de boda ya está publicada!\n\n"
         . "Dirección: $url\n\n"
@@ -229,9 +235,9 @@ function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
         . '- Servicio: ' . marca() . ', un producto de AxisWorks, que presta ' . $E['titular'] . ($E['nif'] !== '' ? ' (NIF ' . $E['nif'] . ')' : '') . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . ".\n"
         . "- Qué: $pack, web de boda publicada en $url, alojada hasta el $borrado.\n"
         . ['factura' => '- Pago: ' . euros($total) . ", IVA incluido. Factura: {$ped['factura']} (adjunta).\n",
-            'lemon' => "- Venta y cobro: $vend, que es quien os la vende (vendedor final), pedido n.º " . (string) ($ls['order_number'] ?? '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo.\n",
+            'lemon' => "- Venta y cobro: $vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo.\n",
             'regalo' => '- Pago: ninguno. Esta web os la regala ' . marca() . ".\n"][$tipo]
-        . ($tipo !== 'regalo' ? "- Desistimiento: lo perdisteis al publicarse la web, porque así lo pedisteis antes de pagar (casilla de abajo). No hay reembolsos por cambio de opinión; sí los que exige la ley (apartado 8 de las condiciones).\n" : '')
+        . ($tipo !== 'regalo' ? "- Desistimiento: sobre la creación y publicación de la web lo perdisteis al publicarse, porque así lo pedisteis antes de pagar (casilla de abajo). Del alojamiento podéis desistir hasta 14 días después de la compra pagando la parte ya prestada (apartado 8 de las condiciones). Después, no hay reembolsos por cambio de opinión.\n" : '')
         . "- Garantía: la web tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).\n"
         . "- Dudas y reclamaciones: {$E['email']}\n\n"
         . ($tipo !== 'regalo' ? 'Antes de pagar' : 'Al publicar') . ($fecha !== '' ? ' (' . date('d/m/Y H:i', strtotime($fecha)) . ')' : '')

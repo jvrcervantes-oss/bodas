@@ -139,6 +139,13 @@ function api_pagar(string $metodo): void {
     if (!$cortesia && !$configurada) {
         json_response(['ok' => false, 'error' => 'Todavía no está a la venta. Podéis montar vuestra web y verla tal cual; abrimos la contratación muy pronto.'], 503);
     }
+    // Los textos legales (casillas, condiciones, correo) dicen que vende Lemon Squeezy: con Stripe seríamos
+    // nosotros el vendedor y la prueba del consentimiento guardada sería falsa. Cerrado hasta que Legal
+    // redacte los textos de Stripe (Legal + revisor, 27-sep-2026)
+    if (!$cortesia && $pasarela === 'stripe') {
+        registra('ALERTA pago bloqueado: pasarela stripe sin textos legales propios (vendedor = Lemon Squeezy)');
+        json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);
+    }
     if (!$cortesia && $pasarela === 'stripe' && secreto('stripe_tax_rate') === '') {
         registra('ALERTA pago bloqueado: falta stripe_tax_rate');
         json_response(['ok' => false, 'error' => 'La venta está en pausa un momento. Vuelve a intentarlo más tarde.'], 503);

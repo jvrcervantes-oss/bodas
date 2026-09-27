@@ -178,7 +178,8 @@ foreach (['condiciones', 'privacidad', 'aviso-legal'] as $doc) {
     ok(strpos($h, 'Lemon Squeezy') !== false && strpos($h, 'Stripe') === false && strpos($h, 'axisworks.studio') === false, "$doc nombra a LS, no a Stripe, y el dominio es el del producto");
 }
 $cond = legal_a_texto(documento_legal('condiciones', 'c'));
-ok(stripos($cond, 'parte proporcional') === false && stripos($cond, 'factura simplificada') === false, 'condiciones sin devolución proporcional prometida ni factura propia');
+ok(stripos($cond, 'parte proporcional a lo ya prestado') !== false && stripos($cond, 'factura simplificada') === false, 'condiciones: avisan del pago proporcional del alojamiento (108.3/108.4) y sin factura propia');
+ok(stripos(textos_legales()['check_desistimiento'], 'no se puede pedir') === false && stripos(textos_legales()['check_mejora'], 'no se puede pedir') === false, 'casillas sin renuncia previa al reembolso (art. 10 TRLGDCU)');
 $tf = texto_bienvenida($base + ['factura' => 'BODA-2026-0001'], $cfg, 'https://enlace');
 ok(strpos($tf, 'BODA-2026-0001') !== false && stripos($tf, 'regala') === false, 'correo Stripe con factura intacto');
 

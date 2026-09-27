@@ -38,13 +38,16 @@ return [
 
     'check_galeria_pareja' => 'Tenemos derecho a publicar estas fotos y las personas que salen, o sus padres si son menores, están de acuerdo.',
 
-    // Art. 103.m TRLGDCU: consentimiento expreso + reconocimiento de la pérdida, ANTES de pagar. Nombra a
-    // quien presta (el titular) y a quien vende (LS), y se guarda literal en el pedido (Legal #109).
-    'check_desistimiento' => 'Pido a {titular} ({marca}) que cree y publique nuestra web ya, antes de que acaben los 14 días para desistir. Sé que, en cuanto se publique, perdemos el derecho de desistimiento, también frente a {vendedor}, que es quien nos la vende, y que por eso no se puede pedir el reembolso por cambio de opinión.',
+    // Art. 103.m TRLGDCU: consentimiento expreso + reconocimiento de la pérdida, ANTES de pagar, solo para la
+    // creación y publicación. El alojamiento es servicio (103.a): desistible con pago proporcional (108.3), y hay
+    // que avisarlo aquí o el 108.4 obliga a devolverlo todo (consulta fresca de Legal, 27-sep). Nombra a quien
+    // presta y a quien vende, sin renuncias previas («no se puede pedir reembolso» sería nula, art. 10), y se
+    // guarda literal en el pedido.
+    'check_desistimiento' => 'Pedimos a {titular} ({marca}) que cree y publique nuestra web ya, antes de que acaben los 14 días para desistir. Sabemos que quien nos la vende es {vendedor}, que en cuanto se publique perdemos el derecho de desistimiento sobre la creación y publicación de la web, y que si desistimos del alojamiento dentro de esos 14 días pagaremos la parte proporcional a lo ya prestado.',
 
     // Mejora Esencial → Atelier desde el panel (condiciones, apartado 5 bis). La web ya está publicada, así que
     // la casilla del alta («que cree y publique») sería falsa. Misma estructura del 103.m: petición expresa +
     // reconocimiento de la pérdida, nombrando a quien presta y a quien vende. Se guarda literal en el pedido
     // de la mejora y el correo de confirmación de la mejora tiene que repetirla (art. 98.7).
-    'check_mejora' => 'Pido a {titular} ({marca}) que active ya el Pack Atelier en nuestra web, con las condiciones del servicio que ya aceptamos. Sé que, en cuanto se active, perdemos el derecho de desistimiento de esta mejora, también frente a {vendedor}, que es quien nos la vende, y que por eso no se puede pedir su reembolso por cambio de opinión.',
+    'check_mejora' => 'Pedimos a {titular} ({marca}) que active ya el Pack Atelier en nuestra web, con las condiciones del servicio que ya aceptamos. Sabemos que quien nos lo vende es {vendedor} y que, en cuanto se active, perdemos el derecho de desistimiento de esta mejora.',
 ];

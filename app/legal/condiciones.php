@@ -1,8 +1,10 @@
 <?php
 // Condiciones del servicio + Anexo de encargo de tratamiento (art. 28 RGPD).
 // Versión 2026-09-27 (Legal): Lemon Squeezy (LS) es el vendedor (Merchant of Record) y nosotros prestamos
-// el servicio; sin reembolsos por desistimiento una vez publicada la web (decisión del owner, 27-sep),
-// solo los que exige la ley. Se incluye dentro de un <main> ya maquetado y en el cuerpo del correo de
+// el servicio. Owner (27-sep): «no se puede pedir reembolso», hasta donde la ley lo permite: el desistimiento
+// se pierde en la creación y publicación (103.m), pero el alojamiento es servicio (103.a) y se puede desistir en
+// 14 días pagando lo prestado (108.3); fuera de eso, solo las devoluciones legales (consulta fresca de Legal).
+// Si el owner fija el reparto del precio creación/alojamiento, se escribe aquí con precio_*_cent(). Se incluye dentro de un <main> ya maquetado y en el cuerpo del correo de
 // bienvenida (legal_a_texto): nada de maquetación que no sea h1/h2/p/ul/li/a. $E lo define la app.
 // Precio y marca SIEMPRE por sus funciones; el vendedor, por textos.php.
 $L = textos_legales();
@@ -49,7 +51,7 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>5 bis. Pasar del Pack Esencial al Atelier</h2>
 <p>Desde el panel podéis pasar vuestra web del Pack Esencial al Atelier. La mejora cuesta la diferencia entre los precios vigentes de los dos packs el día que la pagáis, y el panel os enseña el importe, IVA incluido, antes de pagar. Es una compra aparte que también os vende y os cobra <?= $V ?>, con estas mismas condiciones.</p>
-<p>Antes de pagarla marcáis una casilla en la que pedís que el Pack Atelier se active ya y reconocéis que, en cuanto se active, perdéis el derecho de desistimiento de la mejora, también frente a <?= $V ?>. Os lo confirmamos por email. Por eso, una vez activada, no se puede pedir su reembolso por cambio de opinión, salvo en los casos que exige la ley (apartado 8).</p>
+<p>Antes de pagarla marcáis una casilla en la que pedís que el Pack Atelier se active ya y reconocéis que, en cuanto se active, perdéis el derecho de desistimiento de la mejora (artículo 103.m de la misma ley): es un diseño que se entrega al momento y no alarga el alojamiento. Os lo confirmamos por email. Por eso, una vez activada, no se puede pedir su reembolso por cambio de opinión, salvo en los casos que exige la ley (apartado 8).</p>
 <p>Con el Pack Atelier podéis cambiar de diseño de la colección cuantas veces queráis mientras la web esté alojada. Si volvéis a un estilo del Pack Esencial, no se devuelve nada de la mejora.</p>
 
 <h2>6. Plazo de entrega</h2>
@@ -65,20 +67,21 @@ $V = h($L['vendedor'] ?? '');
 <p>Lo borrado no se puede recuperar. Si queréis conservar las respuestas, exportad el Excel y guardad las fotos antes de esa fecha. Podéis pedirnos que borremos antes la web entera escribiendo a <?= h($E['email']) ?>.</p>
 
 <h2>8. Desistimiento y reembolsos</h2>
-<p>Como consumidores, la ley os da en general 14 días naturales desde la compra para desistir sin dar motivos.</p>
-<p>Vuestra web es contenido digital que se hace con vuestros datos y se entrega al momento de pagar, a petición vuestra. Por eso, antes de pagar marcáis una casilla en la que pedís a <?= h($E['titular']) ?> que la cree y la publique ya, y reconocéis que, en cuanto se publique, perdéis el derecho de desistimiento, también frente a <?= $V ?> (artículo 103.m de la Ley General para la Defensa de los Consumidores y Usuarios). El correo de bienvenida os confirma esa petición y ese reconocimiento, con su fecha.</p>
-<p><strong>Una vez publicada la web, no se puede pedir el reembolso por desistimiento ni por cambio de opinión.</strong></p>
-<p>Solo se devuelve dinero en los casos en que la ley lo exige:</p>
+<p>Como consumidores, la ley os da en general 14 días naturales desde la compra para desistir sin dar motivos. Lo que compráis tiene dos partes, y el desistimiento funciona distinto en cada una.</p>
+<p>La primera parte es crear y publicar vuestra web y entregaros el ZIP. Es contenido digital hecho con vuestros datos que se entrega al momento de pagar, a petición vuestra. Por eso, antes de pagar marcáis una casilla en la que pedís a <?= h($E['titular']) ?> que la cree y la publique ya y reconocéis que, en cuanto se publique, perdéis el derecho de desistimiento sobre esta parte (artículo 103.m de la Ley General para la Defensa de los Consumidores y Usuarios).</p>
+<p>La segunda parte es el alojamiento de la web, el panel y el formulario de asistencia hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda. Sobre esta parte podéis desistir en los 14 días siguientes a la compra. Como pedís que empiece ya, si desistís tendréis que pagar la parte proporcional a lo ya prestado: la creación y publicación de la web, que ya está hecha, y el tiempo de alojamiento transcurrido hasta que nos lo comuniquéis; se os devuelve el resto, por el mismo medio de pago, en un máximo de 14 días. Al desistir del alojamiento, la web se da de baja con el aviso del final de este apartado.</p>
+<p>El correo de bienvenida os confirma vuestra petición y vuestro reconocimiento, con su fecha. Pasados esos 14 días, no se devuelve dinero por cambio de opinión.</p>
+<p>Además del desistimiento del alojamiento, se devuelve dinero en estos casos:</p>
 <ul>
   <li>si habéis pagado y la web no llega a publicarse, y no lo resolvemos cuando nos aviséis: se devuelve todo lo pagado;</li>
   <li>si se os cobra dos veces o un importe distinto del que os enseñamos antes de pagar: se devuelve lo cobrado de más;</li>
-  <li>si la web no funciona como se describe aquí y no lo arreglamos: lo que corresponda según la garantía del apartado 9.</li>
+  <li>si la web no funciona como se describe aquí: según la garantía del apartado 9.</li>
 </ul>
-<p>Esas devoluciones se hacen a través de <?= $V ?>, por el mismo medio de pago. Nada de este apartado limita los derechos que la ley os reconozca como consumidores. Si, aun así, la ley os reconoce el derecho de desistimiento en algún caso, basta con que nos lo digáis por email a <?= h($E['email']) ?>; podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
-<p>Si el pago se devuelve por decisión de <?= $V ?> o porque lo anuláis con vuestro banco, el servicio queda sin pagar y podremos dar de baja la web. Antes os avisaremos por email y tendréis 7 días para exportar el Excel y descargar el ZIP. Al darla de baja, se borran los datos de la web como en el apartado 7.</p>
+<p>Esas devoluciones se hacen a través de <?= $V ?>, por el mismo medio de pago. Nada de este apartado limita los derechos que la ley os reconoce como consumidores. Para desistir basta con decírnoslo por email a <?= h($E['email']) ?>; podéis usar el modelo del anexo I, aunque no es obligatorio.</p>
+<p>Si <?= $V ?> devuelve todo lo pagado por la web, o vuestro banco anula el pago y <?= $V ?> confirma la devolución, el servicio queda sin pagar y daremos de baja la web: os avisaremos por email y tendréis 7 días para exportar el Excel y descargar el ZIP; después se borran los datos como en el apartado 7. Mientras un contracargo esté en disputa, podremos dejar la web en pausa, sin borrar nada, hasta que se resuelva. Si lo que se devuelve es solo la mejora al Pack Atelier, la web vuelve al Pack Esencial y sigue alojada. Si desistís del alojamiento, la web se da de baja con el mismo aviso de 7 días.</p>
 
 <h2>9. Garantía</h2>
-<p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos a nosotros, que somos quienes prestamos el servicio, y lo arreglaremos sin coste. Si no lo arreglamos en un plazo razonable, podéis pedir una rebaja del precio o, si el fallo es importante, resolver el contrato y recuperar lo pagado en la medida que fija la ley. Si hay que devolver dinero, lo hacemos a través de <?= $V ?>. Es la garantía legal que os da la ley y no la limitamos.</p>
+<p>La web tiene que funcionar como se describe en estas condiciones durante todo el tiempo de alojamiento. Si algo no funciona, avisadnos a nosotros, que somos quienes prestamos el servicio, y lo arreglaremos sin coste. El orden es el que marca la ley: primero lo arreglamos; si no lo arreglamos en un plazo razonable, podéis pedir una rebaja proporcional del precio o, si el fallo no es menor, resolver el contrato y recuperar lo pagado en la medida que fija la ley. Si hay que devolver dinero, lo hacemos a través de <?= $V ?>. Es la garantía legal que os da la ley y no la limitamos.</p>
 
 <h2>10. Vuestros textos y vuestras fotos</h2>
 <p>Los textos y la foto que ponéis en la web son vuestros y seguís siendo sus titulares. Al subirlos nos dais permiso para alojarlos y mostrarlos en vuestra web mientras dure el servicio, y para nada más.</p>
@@ -116,10 +119,10 @@ $V = h($L['vendedor'] ?? '');
 <p>Estas condiciones se rigen por la ley española. Si residís en otro país de la Unión Europea, conserváis la protección que os dan las normas de consumo de ese país que no se pueden excluir por contrato. Podéis reclamar ante los tribunales de vuestro domicilio.</p>
 
 <h2>Anexo I. Modelo de formulario de desistimiento</h2>
-<p>Solo tiene efecto en los casos en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
-<p>A la atención de <?= h($E['titular']) ?> (<?= $M ?>), <?= h($E['domicilio']) ?>, <?= h($E['email']) ?>:</p>
+<p>Sirve para desistir del alojamiento en los 14 días siguientes a la compra, o en cualquier otro caso en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
+<p>A la atención de <?= h($E['titular']) ?> (<?= $M ?>), <?= h($E['domicilio']) ?>, <?= h($E['email']) ?>, o de <?= $V ?>:</p>
 <ul>
-  <li>Por la presente os comunico que desisto del contrato de la web de boda publicada en: ____________</li>
+  <li>Por la presente os comunico que desisto del contrato (del alojamiento) de la web de boda publicada en: ____________</li>
   <li>Fecha de compra y número de pedido de <?= $V ?>: ____________</li>
   <li>Nombre de quien compró: ____________</li>
   <li>Dirección de quien compró: ____________</li>
