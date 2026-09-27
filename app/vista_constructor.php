@@ -26,7 +26,8 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'atelierPermitido' => !$editar || !empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier']),
         // Mejora Esencial → Atelier desde el panel: precio vigente calculado aquí (app/lemon.php), nunca en el navegador
         'mejora' => $editar && mejora_disponible($slug)
-            ? ['precio' => euros(precio_mejora_cent()), 'check' => texto_mejora()] : null,
+            ? ['precio' => euros(precio_mejora_cent()), 'check' => texto_mejora(), 'condiciones' => BASE_PATH . '/condiciones',
+               'vendedor' => (string) (textos_legales()['vendedor'] ?? ''), 'vendedorTerminos' => (string) (textos_legales()['vendedor_terminos'] ?? '')] : null,
         'fotoUrl' => $modo === 'editar' && is_file(dir_boda($slug) . '/foto.webp') ? '/foto?v=' . filemtime(dir_boda($slug) . '/foto.webp') : '',
     ];
     // Fotos de la galería con su firma para verlas en el editor (el navegador no manda la cookie al iframe)

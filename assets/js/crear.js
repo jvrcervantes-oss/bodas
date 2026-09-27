@@ -130,7 +130,11 @@
     });
     return el('div', { class: 'c-atelier-nota c-mejora' }, [
       el('p', { class: 'c-ayuda', text: 'Vuestra web tiene el Pack Esencial. Con el Pack Atelier podréis usar cualquiera de estos diseños y cambiarlo cuantas veces queráis. Pagáis solo la diferencia.' }),
-      el('label', { class: 'c-check' }, [chk, el('span', { text: D.mejora.check })]),
+      // Los enlaces son la condición de Legal para que la casilla nombre solo la marca (textos.php, check_mejora)
+      el('label', { class: 'c-check' }, [chk, el('span', {}, [el('span', { text: D.mejora.check + ' ' }),
+        el('a', { href: D.mejora.condiciones, target: '_blank', rel: 'noopener', text: 'Condiciones del servicio' }),
+        el('span', { text: ' · ' }),
+        el('a', { href: D.mejora.vendedorTerminos, target: '_blank', rel: 'noopener', text: 'Condiciones de compra de ' + D.mejora.vendedor })])]),
       btn, msg]);
   }
   pintaAtelier();

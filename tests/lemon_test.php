@@ -172,7 +172,11 @@ $adj = array_values(array_filter(array_map('file_get_contents', glob(dir_datos('
 ok(count($adj) === 1 && preg_match('/Adjuntos: *$/', rtrim($adj[0])) === 1, 'bienvenida sin ningún adjunto (spam): ' . count($adj));
 // Casillas y legales: sin marcadores sin sustituir, vendedor en un solo sitio, sin la promesa de devolución proporcional
 foreach (textos_legales() as $k => $v) if (is_string($v)) ok(!preg_match('/\{(titular|marca|vendedor)\}/', $v), "textos.php $k sin marcadores sin sustituir");
-ok(strpos(textos_legales()['check_desistimiento'], 'Lemon Squeezy') !== false && strpos(textos_legales()['check_condiciones_regalo'], 'Lemon') === false, 'casilla de pago nombra al vendedor; la de regalo no');
+ok(strpos(textos_legales()['check_condiciones'], 'Lemon Squeezy') !== false && strpos(textos_legales()['check_condiciones_regalo'], 'Lemon') === false, 'casilla de condiciones de pago nombra al vendedor; la de regalo no');
+// Owner + Legal (27-sep tarde): las casillas nombran la marca, no a la persona; la identidad va en condiciones y aviso legal
+$tit = (string) (empresa()['titular'] ?? '');
+foreach (['check_condiciones', 'check_condiciones_regalo', 'check_desistimiento', 'check_mejora'] as $k)
+    ok(($tit === '' || strpos(textos_legales()[$k], $tit) === false) && strpos(textos_legales()[$k], MARCA) !== false, "$k nombra la marca y no al titular");
 $E = empresa();
 foreach (['condiciones', 'privacidad', 'aviso-legal'] as $doc) {
     $h = documento_legal($doc, $doc);
