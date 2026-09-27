@@ -916,7 +916,11 @@ function form_rsvp(array $c, array $s, array $ctx): string {
       <label><input type="checkbox" name="asiste_ceremonia" value="si" checked> Ceremonia</label>
       <label><input type="checkbox" name="asiste_banquete" value="si" checked> Banquete</label>
     </div>
+<?php if ($grupo): // por este enlace, «confirmar por su cuenta» sustituiría la respuesta del grupo entero ?>
+    <p class="guests-note">Vale para todo el grupo. Si alguien no va a todo, decídselo a los novios.</p>
+<?php else: ?>
     <p class="guests-note">Vale para todo el grupo. Si alguien no va a todo, que confirme por su cuenta.</p>
+<?php endif; ?>
   </div>
 <?php else: ?>
   <input type="hidden" name="asiste_ceremonia" value="si"><input type="hidden" name="asiste_banquete" value="si">

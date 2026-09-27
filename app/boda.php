@@ -88,6 +88,7 @@ function pagina_grupo(string $slug, array $c, string $tok, string $metodo): void
     $g = $rsvp ? inv_grupo_por_token($slug, $tok) : null;
     if (!$g) no_existe();
     header('Referrer-Policy: no-referrer');   // el token está en la ruta: que no viaje a ningún enlace de fuera
+    header('Cache-Control: private, no-store');   // lleva los nombres del grupo
     // Primer acceso = fecha, sin IP ni nada más (Seguridad/Legal #133). No cuentan los bots de vista
     // previa ni la propia pareja probando el enlace desde el panel.
     if ($metodo === 'GET' && $g['abierto'] === '' && !es_previsualizador() && !panel_sesion_presente($slug)) inv_marca_abierto($slug, $g['gid']);
@@ -504,7 +505,7 @@ function panel_excel(string $slug, array $c): void {
  * sesión del panel (rutas_panel ya la exige) y sin caché en ningún sitio: lleva nombres con sus
  * alergias, que son datos de salud (art. 9 RGPD). Cuenta a quienes van al BANQUETE con la misma
  * cuenta por menú que el panel (panel_datos, sin respuestas sustituidas): el Excel filtrado por
- * Banquete = Sí da lo mismo. La columna Mesa queda vacía hasta que exista el plano de mesas (F1d),
+ * Banquete = Sí da lo mismo. La columna Mesa se añade con el plano de mesas (F1d),
  * que la rellenará por el `id` de persona, nunca por nombre.
  */
 function panel_catering(string $slug, array $c): void {
@@ -533,11 +534,11 @@ function panel_catering(string $slug, array $c): void {
     $o .= '</div><h2 class="panel-h2">Por menú</h2><div class="table-wrap"><table><thead><tr><th>Menú</th><th>Personas</th></tr></thead><tbody>';
     foreach ($menus as $m) $o .= '<tr><td>' . h($m['nombre']) . '</td><td>' . (int) $m['n'] . '</td></tr>';
     $o .= '<tr class="catering-total"><td>Total</td><td>' . array_sum(array_column($menus, 'n')) . '</td></tr></tbody></table></div>';
-    $o .= '<h2 class="panel-h2">Alergias e intolerancias</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th><th>Mesa</th></tr></thead><tbody>';
-    if (!$alergias) $o .= '<tr><td colspan="4" class="vacio">Nadie de los que van al banquete ha indicado alergias.</td></tr>';
+    $o .= '<h2 class="panel-h2">Alergias e intolerancias</h2><div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Menú</th><th>Alergias</th></tr></thead><tbody>';
+    if (!$alergias) $o .= '<tr><td colspan="3" class="vacio">Nadie de los que van al banquete ha indicado alergias.</td></tr>';
     foreach ($alergias as $p) {
         $o .= '<tr><td>' . h($p['nombre']) . ($p['tipo'] === 'nino' ? ' <span class="muted">(niño/a)</span>' : '') . '</td><td>' . h($p['menu_txt']) . '</td>'
-            . '<td class="alergia">' . h($p['alergias']) . '</td><td></td></tr>';
+            . '<td class="alergia">' . h($p['alergias']) . '</td></tr>';
     }
     $o .= '</tbody></table></div><p class="panel-nota">Solo cuenta a quienes van al banquete. Si un grupo corrigió su respuesta, vale la última.</p></section>';
     echo panel_marco($c, 'Resumen para el catering', $o, true, true);

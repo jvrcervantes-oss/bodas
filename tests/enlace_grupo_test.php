@@ -80,6 +80,20 @@ $html = (string) ob_get_clean();
 ok(strpos($html, 'catering-total"><td>Total</td><td>4<') !== false, 'catering suma 4, igual que el panel');
 ok(substr_count($html, 'class="alergia">nueces') === 2, 'catering lista una alergia por grupo vigente (2), no la sustituida');
 
+// --- página del grupo: sin «que confirme por su cuenta», que por este enlace sustituiría al grupo entero
+$ci = config_inicial();
+$ci['convite']['lugar'] = 'Finca';   // la nota solo sale si se pregunta a qué se asiste y hay convite
+foreach ($ci['secciones'] as &$sx) if ($sx['tipo'] === 'rsvp') $sx['datos']['asistencia'] = true;
+unset($sx);
+$cr = normaliza_config($ci);   // como una boda guardada: con la ruta de cada sección
+$srsvp = seccion_tipo($cr, 'rsvp');
+$ctxg = ctx_live($slug) + ['grupo' => ['nombre' => $g['nombre'], 'personas' => $g['personas'], 'token' => $tokFam],
+    'rsvp_ruta' => $srsvp['ruta'], 'rsvp_href' => '/i/' . $tokFam];
+$fg = (string) render_pagina($cr, $srsvp['ruta'], $ctxg);   // igual que pagina_grupo()
+$fn = (string) render_pagina($cr, $srsvp['ruta'], ctx_live($slug));
+ok(strpos($fg, 'decídselo a los novios') !== false && strpos($fg, 'que confirme por su cuenta') === false, 'página del grupo: no invita a confirmar por separado');
+ok(strpos($fn, 'que confirme por su cuenta') !== false, 'confirmación general: mantiene la nota de siempre');
+
 // limpieza
 $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmp, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST);
 foreach ($it as $f) $f->isDir() ? @rmdir($f->getPathname()) : @unlink($f->getPathname());
