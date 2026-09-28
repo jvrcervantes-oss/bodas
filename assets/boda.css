@@ -1194,9 +1194,11 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .atelier-lacre{ background: #E5DED4 url(img/atelier/lino.webp) center top / 100% auto no-repeat; }
 .atelier-lacre .hero-left{ padding: 46px 30px 42px; background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 14px 22px rgb(45 41 38 / .2)); }
 .atelier-lacre .hero-text .kicker{ font-family: 'Cinzel', Georgia, serif; letter-spacing: .22em; color: #6B635B; }
-.sello-bronce{ position: relative; display: block; width: 124px; margin: 16px auto 8px; }
+.sello-bronce{ position: relative; display: block; width: 124px; margin: 16px auto 8px; container-type: inline-size; }
 .sello-bronce img{ display: block; width: 100%; }
-.sello-bronce b{ position: absolute; left: 26%; top: 25%; width: 46%; height: 46%; display: grid; place-items: center; font-family: 'Pinyon Script', cursive; font-weight: 400; font-size: 34px; line-height: 1;
+/* Iniciales en Cinzel dentro del hueco del laurel (36 % del sello, centro al 47 % de alto). En caligráfica a 34 px se salían
+   y pisaban el laurel (owner, 28-sep-2026). En cqw: escalan con el sello a cualquier tamaño. */
+.sello-bronce b{ position: absolute; left: 32%; top: 29.5%; width: 36%; height: 36%; display: grid; place-items: center; font-family: 'Cinzel', Georgia, serif; font-weight: 400; font-size: 10.5cqw; letter-spacing: .02em; line-height: 1;
   color: rgb(66 36 20 / .92); text-shadow: 0 1px 0 rgb(255 222 186 / .7), 0 -1px 1px rgb(30 14 6 / .6); }
 .lac-sello{ animation: aparece 1.4s var(--ease-out) both, respira 4s ease-in-out 1.4s infinite; }
 @keyframes respira{ 0%, 100%{ transform: none; filter: drop-shadow(0 4px 6px rgb(60 35 20 / .25)); } 50%{ transform: scale(1.03); filter: drop-shadow(0 8px 14px rgb(156 105 78 / .35)); } }
@@ -1322,10 +1324,10 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 .entrada-ceramica .tal-olivo{ height: 40px; } .entrada-ceramica .tal-mono span{ font-size: 15px; }
 .entrada-lacre{ --so-papel: #FAF8F5; --so-forro: #E5DED4 url(img/atelier/lino.webp) center / cover; --so-t: .6s; }
 .entrada-lacre .en-papel{ background: #E5DED4 url(img/atelier/lino.webp) center / cover; }
-.en-sello-lacre{ width: 32%; background: none; box-shadow: none; }
+.en-sello-lacre{ width: 32%; background: none; box-shadow: none; container-type: inline-size; }
 .en-sello-lacre::before{ display: none; }
 .en-sello-lacre img{ position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 5px 8px rgb(60 35 20 / .35)); }
-.en-sello-lacre b{ font-size: clamp(20px, 6vw, 30px); color: rgb(92 55 36 / .9); text-shadow: 0 1px 0 rgb(255 226 196 / .45), 0 -1px 1px rgb(40 20 10 / .55); }
+.en-sello-lacre b{ top: -3cqw; font-family: 'Cinzel', Georgia, serif; font-size: 10.5cqw; letter-spacing: .02em; color: rgb(92 55 36 / .9); text-shadow: 0 1px 0 rgb(255 226 196 / .45), 0 -1px 1px rgb(40 20 10 / .55); }
 .entrada-lacre.abre .en-sello{ animation: so-rompe .7s cubic-bezier(.5, 0, .7, .4) forwards; }
 @keyframes so-rompe{ 25%{ scale: 1.18; rotate: -7deg; } 100%{ scale: .4; rotate: 20deg; opacity: 0; filter: blur(4px); } }
 .en-poema{ font-family: 'Pinyon Script', cursive; font-size: clamp(18px, 5vw, 24px); color: #9C694E; }
