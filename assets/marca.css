@@ -35,6 +35,10 @@
   --gold: #c5a059;
   --rose: #a86b68;
   --rose-2: #9c5f5c;
+  /* Fondo de lo que lleva texto blanco encima (botones rosa): #A86B68 daba 4,2:1 y el mínimo AA para texto normal es 4,5.
+     Estos dan 5,0 y 6,1. El rosa de titulares, iconos y detalles sigue siendo --rose (owner, 28-sep-2026) */
+  --rose-btn: #98605d;
+  --rose-btn-2: #8a5350;
   --rose-c: #f9e5e3;
   --blush: #fcf4f2;
   --sage: #6b8072;
@@ -72,7 +76,7 @@ img { max-width: 100%; }
 .b-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 26px; border-radius: var(--pill);
   font-weight: 500; font-size: 15px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: filter .2s, background .2s, border-color .2s, box-shadow .2s, transform .15s; }
 .b-btn:active { transform: scale(.98); }
-.b-rose { position: relative; overflow: hidden; isolation: isolate; background: linear-gradient(90deg, var(--rose), var(--rose-2)); color: #fff; box-shadow: var(--e-rose); }
+.b-rose { position: relative; overflow: hidden; isolation: isolate; background: linear-gradient(90deg, var(--rose-btn), var(--rose-btn-2)); color: #fff; box-shadow: var(--e-rose); }
 .b-rose:hover { filter: brightness(1.05); }
 /* Brillo de papel satinado (motion, 28-sep-2026): un reflejo cruza el botón al pasar el ratón y se hunde con muelle al pulsar.
    Solo transform: el reflejo es un ::after que se desplaza, no un fondo animado. */

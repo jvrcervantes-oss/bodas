@@ -107,7 +107,7 @@
 .l-demo-tit { font-size: 12px; color: var(--ink-2); flex: 1; }
 .l-demo-disp { display: flex; gap: 4px; padding: 3px; border-radius: var(--pill); background: var(--surface-high); font-size: 12px; }
 .l-demo-disp b, .l-demo-disp span { padding: 4px 12px; border-radius: var(--pill); font-weight: 500; }
-.l-demo-disp b { background: var(--rose); color: #fff; }
+.l-demo-disp b { background: var(--rose-btn); color: #fff; }   /* texto blanco: el tono de botón, con contraste AA */
 .l-demo-cuerpo { display: grid; grid-template-columns: 280px 1fr; gap: 24px; padding: 24px; }
 .l-demo-lado { display: flex; flex-direction: column; gap: 14px; }
 .l-demo-lado ul { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
