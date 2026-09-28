@@ -118,8 +118,9 @@ function pagina_landing(): string {
       <div class="l-hero-txt">
         <?php // Punto salvia que respira en vez de la flor (owner, 28-sep-2026, artifact «Chips BodaEnlace») ?>
         <span class="l-chip"><span class="l-punto" aria-hidden="true"></span>Web de boda con confirmación de asistencia</span>
-        <?php // Motion (28-sep-2026): cada palabra en su span para la entrada escalonada (landing.css → «entrada del hero»); el trazo dorado subraya «tan bonita» ?>
-        <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">vuestra</span> <span class="w">boda,</span> <em class="w">tan bonita<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em> <span class="w">como</span> <span class="w">el</span> <span class="w">gran</span> <span class="w">día</span></h1>
+        <?php // Motion (28-sep-2026): cada palabra en su span para la entrada escalonada (landing.css → «entrada del hero»); el trazo dorado subraya la parte en cursiva ?>
+        <?php // Titular del owner (28-sep-2026): el anterior, «tan bonita como el gran día», era casi el de bodas.com ?>
+        <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">vuestra</span> <span class="w">boda,</span> <span class="w">hecha</span> <span class="w">para</span> <span class="w">un</span> <em class="w">día inolvidable<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em></h1>
         <p class="l-lede">Todo lo que necesitáis para organizar vuestra boda, en un solo lugar. Cread vuestra web desde el móvil o el ordenador, sin código y en minutos.</p>
         <div class="l-ctas">
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
