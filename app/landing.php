@@ -83,8 +83,8 @@ function pagina_landing(): string {
 <meta charset="UTF-8">
 <?php if (OCULTO): ?><meta name="robots" content="noindex, nofollow">
 <?php endif; ?><meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= h(marca()) ?> — La web de vuestra boda con confirmación de asistencia</title>
-<meta name="description" content="Cread la web de vuestra boda en un rato: confirmación de asistencia con menú y alergias, mapa de la ceremonia y el convite, galería, libro de invitados, música y lista de bodas. Desde <?= h($total) ?> en un pago único.">
+<title>Web de boda con confirmación de asistencia | <?= h(marca()) ?></title>
+<meta name="description" content="Cread vuestra web de boda en minutos: confirmación de asistencia con menú y alergias, plano de mesas, galería, libro de invitados y música. Pago único, sin suscripción.">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
 <meta property="og:title" content="<?= h(marca()) ?> — La web de vuestra boda">
 <meta property="og:description" content="Confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Pago único de <?= h($total) ?>.">
@@ -119,8 +119,8 @@ function pagina_landing(): string {
         <?php // Punto salvia que respira en vez de la flor (owner, 28-sep-2026, artifact «Chips BodaEnlace») ?>
         <span class="l-chip"><span class="l-punto" aria-hidden="true"></span>Web de boda con confirmación de asistencia</span>
         <?php // Motion (28-sep-2026): cada palabra en su span para la entrada escalonada (landing.css → «entrada del hero»); el trazo dorado subraya la parte en cursiva ?>
-        <?php // Titular del owner (28-sep-2026): el anterior, «tan bonita como el gran día», era casi el de bodas.com ?>
-        <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">vuestra</span> <span class="w">boda,</span> <span class="w">hecha</span> <span class="w">para</span> <span class="w">un</span> <em class="w">día inolvidable<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em></h1>
+        <?php // Titular y <title> del owner (28-sep-2026): llevan «web de boda» tal cual, la búsqueda principal; el anterior («tan bonita como el gran día») era casi el de bodas.com ?>
+        <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">boda</span> <em class="w">que lo organiza todo<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em></h1>
         <p class="l-lede">Todo lo que necesitáis para organizar vuestra boda, en un solo lugar. Cread vuestra web desde el móvil o el ordenador, sin código y en minutos.</p>
         <div class="l-ctas">
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
