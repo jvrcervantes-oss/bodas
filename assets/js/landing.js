@@ -41,7 +41,7 @@
       ['Carmen', 'Menú de pescado · sin marisco'],
     ];
     let i = 0, t = null, quieta = false;
-    // se para mientras el ratón o el foco están sobre el vídeo y las tarjetas (WCAG 2.2.2)
+    // se para mientras el ratón está sobre el vídeo y las tarjetas (WCAG 2.2.2); no hay nada enfocable ahí mientras rota
     const zona = flota.closest('.l-hero-vis') || flota;
     zona.addEventListener('pointerenter', () => { quieta = true; });
     zona.addEventListener('pointerleave', () => { quieta = false; });
@@ -140,10 +140,13 @@
     botones.forEach((b, n) => b.addEventListener('click', () => { clearInterval(rota); rota = null; parar = true; pon(n); }));
     // la rotación se para mientras el ratón o el foco están en el bloque (WCAG 2.2.2)
     const demo = previa.closest('.l-demo') || previa;
-    demo.addEventListener('pointerenter', () => { quieta = true; });
-    demo.addEventListener('pointerleave', () => { quieta = false; });
-    demo.addEventListener('focusin', () => { quieta = true; });
-    demo.addEventListener('focusout', () => { quieta = false; });
+    // dos marcas: si el foco sigue dentro, que el ratón salga no reanuda la rotación
+    let encima = false, enfocada = false;
+    const sync = () => { quieta = encima || enfocada; };
+    demo.addEventListener('pointerenter', () => { encima = true; sync(); });
+    demo.addEventListener('pointerleave', () => { encima = false; sync(); });
+    demo.addEventListener('focusin', () => { enfocada = true; sync(); });
+    demo.addEventListener('focusout', e => { enfocada = demo.contains(e.relatedTarget); sync(); });
     if (!menos && hayIO) {
       new IntersectionObserver(es => {
         clearInterval(rota);
