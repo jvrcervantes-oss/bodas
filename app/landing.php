@@ -140,8 +140,9 @@ function pagina_landing(): string {
       <div class="l-hero-vis">
         <div class="l-marco">
           <img class="l-marco-fondo" src="<?= BASE_PATH ?>/assets/img/landing/papel.webp" alt="" width="1376" height="768">
-          <?php // Spot v8 (infraestructura/remotion, Spot-Bodas-ES) recodificado para web: 540×960, sin audio ?>
-          <video class="l-spot" src="<?= BASE_PATH ?>/assets/img/landing/spot-v8.mp4" poster="<?= BASE_PATH ?>/assets/img/landing/spot-v8-poster.webp" width="540" height="960" autoplay muted loop playsinline preload="metadata" aria-label="Vídeo de ejemplo: cómo se crea una web de boda con <?= h(marca()) ?>, sus paletas, los diseños Atelier, la confirmación de asistencia y los dos packs"></video>
+          <?php // Spot v9 (infraestructura/remotion, Spot-Bodas-ES, 28-sep-2026: titular y textos de la landing actual, app regrabada
+                // con el sello de lacre nuevo) recodificado para web: 540×960, sin audio, 300 kb/s a dos pasadas ?>
+          <video class="l-spot" src="<?= BASE_PATH ?>/assets/img/landing/spot-v9.mp4" poster="<?= BASE_PATH ?>/assets/img/landing/spot-v9-poster.webp" width="540" height="960" autoplay muted loop playsinline preload="metadata" aria-label="Vídeo de ejemplo: cómo se crea una web de boda con <?= h(marca()) ?>, sus paletas, los diseños Atelier, la confirmación de asistencia y los dos packs"></video>
           <span class="l-ejemplo">Ejemplo</span>
         </div>
         <div class="l-flota l-flota-a" aria-hidden="true">
