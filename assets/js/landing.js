@@ -40,9 +40,13 @@
       ['Jorge y Marta', 'Menú vegetariano · sin lactosa'],
       ['Carmen', 'Menú de pescado · sin marisco'],
     ];
-    let i = 0, t = null;
+    let i = 0, t = null, quieta = false;
+    // se para mientras el ratón o el foco están sobre el vídeo y las tarjetas (WCAG 2.2.2)
+    const zona = flota.closest('.l-hero-vis') || flota;
+    zona.addEventListener('pointerenter', () => { quieta = true; });
+    zona.addEventListener('pointerleave', () => { quieta = false; });
     const siguiente = () => {
-      if (document.hidden) return;
+      if (document.hidden || quieta) return;
       flota.classList.add('cambia');
       setTimeout(() => {
         i = (i + 1) % ejemplos.length;
@@ -103,10 +107,16 @@
     const botones = [...pal.querySelectorAll('button[data-tema]')];
     const base = pal.dataset.base;
     let actual = botones.findIndex(b => b.classList.contains('on'));
-    let rota = null, parar = false, ocupado = false;
+    let rota = null, parar = false, ocupado = false, pedida = null, quieta = false;
+    // al acabar un cambio se aplica el último clic que llegó en medio (si no, el botón parecía no responder)
+    const libera = () => {
+      ocupado = false;
+      if (pedida !== null) { const p = pedida; pedida = null; pon(p); }
+    };
     const pon = n => {
       // una sola transición a la vez: dos seguidas dejaban dos capturas apiladas
-      if (n === actual || ocupado) return;
+      if (ocupado) { pedida = n; return; }
+      if (n === actual) return;
       const b = botones[n];
       const vieja = previa.querySelector('img');
       if (!vieja) return;
@@ -118,20 +128,26 @@
       nueva.height = 800;
       nueva.src = base + b.dataset.tema + '.webp';
       // si la captura no carga (tema nuevo sin captura), se queda la anterior
-      nueva.addEventListener('error', () => { ocupado = false; });
+      nueva.addEventListener('error', libera);
       nueva.addEventListener('load', () => {
         actual = n;
         botones.forEach(x => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on ? 'true' : 'false'); });
         vieja.after(nueva);
         requestAnimationFrame(() => requestAnimationFrame(() => nueva.classList.add('in')));
-        setTimeout(() => { vieja.remove(); nueva.classList.remove('l-previa-nueva', 'in'); ocupado = false; }, 650);
+        setTimeout(() => { vieja.remove(); nueva.classList.remove('l-previa-nueva', 'in'); libera(); }, 650);
       });
     };
     botones.forEach((b, n) => b.addEventListener('click', () => { clearInterval(rota); rota = null; parar = true; pon(n); }));
+    // la rotación se para mientras el ratón o el foco están en el bloque (WCAG 2.2.2)
+    const demo = previa.closest('.l-demo') || previa;
+    demo.addEventListener('pointerenter', () => { quieta = true; });
+    demo.addEventListener('pointerleave', () => { quieta = false; });
+    demo.addEventListener('focusin', () => { quieta = true; });
+    demo.addEventListener('focusout', () => { quieta = false; });
     if (!menos && hayIO) {
       new IntersectionObserver(es => {
         clearInterval(rota);
-        if (es[0].isIntersecting && !parar) rota = setInterval(() => { if (!document.hidden) pon((actual + 1) % botones.length); }, 2600);
+        if (es[0].isIntersecting && !parar) rota = setInterval(() => { if (!document.hidden && !quieta) pon((actual + 1) % botones.length); }, 2600);
       }, { threshold: .4 }).observe(previa);
     }
   }

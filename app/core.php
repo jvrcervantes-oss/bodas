@@ -118,7 +118,7 @@ function stripe_modo_live(): bool {
 
 // Versión de los assets para romper la caché del CDN de Hostinger (sirve CSS viejo
 // si la URL no cambia — memoria reference_hostinger_cdn_css_sin_version).
-define('ASSETS_V', substr(md5((string) @filemtime(WEB_DIR . '/assets/boda.css') . (string) @filemtime(WEB_DIR . '/assets/js/boda.js') . (string) @filemtime(WEB_DIR . '/assets/js/panel.js') . (string) @filemtime(WEB_DIR . '/assets/js/crear.js') . (string) @filemtime(WEB_DIR . '/assets/crear.css') . (string) @filemtime(WEB_DIR . '/assets/landing.css') . (string) @filemtime(WEB_DIR . '/assets/js/landing.js') .(string) @filemtime(WEB_DIR . '/assets/marca.css') . (string) @filemtime(WEB_DIR . '/assets/panel.css')), 0, 8));
+define('ASSETS_V', substr(md5((string) @filemtime(WEB_DIR . '/assets/boda.css') . (string) @filemtime(WEB_DIR . '/assets/js/boda.js') . (string) @filemtime(WEB_DIR . '/assets/js/panel.js') . (string) @filemtime(WEB_DIR . '/assets/js/crear.js') . (string) @filemtime(WEB_DIR . '/assets/crear.css') . (string) @filemtime(WEB_DIR . '/assets/landing.css') . (string) @filemtime(WEB_DIR . '/assets/js/landing.js') . (string) @filemtime(WEB_DIR . '/assets/marca.css') . (string) @filemtime(WEB_DIR . '/assets/panel.css')), 0, 8));
 
 function h($v): string { return htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 
