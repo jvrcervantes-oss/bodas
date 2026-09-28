@@ -30,6 +30,8 @@ const ICONOS_L = [
     'mesa' => 'M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0zM10.4 4.2a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM10.4 19.8a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM2.6 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM18.2 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0z',   // mesa redonda con cuatro sillas redondas
     'campana' => 'M3 17h18M5 17a7 7 0 0 1 14 0M12 10V8.5M10.5 8.5h3M4.5 20h15',   // campana de servir (catering)
     'marco' => 'M3.5 5h17v14h-17zM7 9.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0zM3.5 17l5-5 4 4 3-3 5 5',   // marco de foto (galería)
+    // «Respuestas» del menú del panel (vista_constructor.php, por variable: un grep de il('lista') no lo ve)
+    'lista' => 'M9 3h6v3H9zM7 4.5H5V21h14V4.5h-2M8 11h8M8 15h8M8 19h5',             // hoja con renglones
 ];
 /**
  * Logo de la marca: anillos + dominio (MARCA_WEB), con el .com en cursiva. ÚNICO sitio donde se
