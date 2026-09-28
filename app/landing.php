@@ -128,11 +128,14 @@ function pagina_landing(): string {
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
           <a class="b-btn b-paper" href="#pasos">Cómo funciona</a>
         </div>
-        <dl class="l-datos">
-          <div><dt><?= h($total) ?></dt><dd>Desde, pago único al publicar</dd></div>
-          <div><dt>0 €</dt><dd>Crear y probar la web</dd></div>
-          <div><dt><?= (int) MESES_ALOJAMIENTO ?> meses</dt><dd>Online después de la boda</dd></div>
-        </dl>
+        <?php // Tres fichas en ordenador y lista vertical en móvil (owner, 28-sep-2026). Antes eran tres cifras iguales
+              // («125 €», «0 €», «2 meses») y «0 €» junto al precio se leía como otro precio. .l-movil solo se ve en móvil,
+              // donde cada dato va en una frase («Desde 125 €, pago único…», «Online hasta 2 meses…») ?>
+        <ul class="l-datos">
+          <li><span class="l-datos-ck"><?= il('check', 'i i-sm') ?></span><span><b>Gratis</b> <span class="l-datos-s">crearla y probarla</span></span></li>
+          <li><span class="l-datos-ck"><?= il('check', 'i i-sm') ?></span><span><b>Desde <?= h($total) ?></b><span class="l-movil">,</span> <span class="l-datos-s">pago único al publicar</span></span></li>
+          <li><span class="l-datos-ck"><?= il('check', 'i i-sm') ?></span><span><b>Online <span class="l-movil">hasta </span><?= (int) MESES_ALOJAMIENTO ?> meses</b> <span class="l-datos-s">después de la boda</span></span></li>
+        </ul>
       </div>
       <div class="l-hero-vis">
         <div class="l-marco">
