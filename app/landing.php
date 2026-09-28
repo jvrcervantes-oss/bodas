@@ -125,7 +125,7 @@ function pagina_landing(): string {
         <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">boda</span> <em class="w">que lo organiza todo<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em></h1>
         <p class="l-lede">Todo lo que necesitáis para planificar vuestra boda, en un solo lugar. Cread vuestra web desde el móvil o el ordenador en pocos minutos.</p>
         <div class="l-ctas">
-          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
+          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar la web <?= il('flecha', 'i i-sm i-arrow') ?></a>
           <a class="b-btn b-paper" href="#pasos">Cómo funciona</a>
         </div>
         <?php // Tres fichas en ordenador y lista vertical en móvil (owner, 28-sep-2026). Antes eran tres cifras iguales
