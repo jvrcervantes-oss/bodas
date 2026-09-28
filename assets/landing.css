@@ -224,7 +224,7 @@
   .l-final { flex-direction: column; align-items: flex-start; padding: 36px 28px; }
 }
 @media (max-width: 560px) {
-  /* Móvil (26-sep-2026): botones de la cabecera a todo el ancho y cifras con aire */
+  /* Móvil (26-sep-2026): botones de la cabecera a todo el ancho */
   .l-hero .l-ctas .b-btn { flex: 1 1 100%; justify-content: center; }
   /* Datos del hero: lista vertical, cada dato en una frase */
   .l-datos { grid-template-columns: 1fr; gap: 10px; }
