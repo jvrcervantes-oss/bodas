@@ -53,7 +53,7 @@ html, body { height: 100%; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: var(--pill); border: 1px solid transparent; font-size: 13.5px; font-weight: 500; cursor: pointer; text-decoration: none; white-space: nowrap; background: none; transition: transform .15s var(--spring), filter .2s, background .2s; }
 .btn:active { transform: scale(.97); }
 .btn:disabled { opacity: .55; cursor: default; }
-.b-rosa { background: linear-gradient(90deg, var(--rose-2), #8c5350); color: #fff; box-shadow: 0 6px 18px rgba(168, 107, 104, .28); }
+.b-rosa { background: linear-gradient(90deg, var(--rose-btn), var(--rose-btn-2)); color: #fff; box-shadow: 0 6px 18px rgba(168, 107, 104, .28); }
 .b-rosa:hover { filter: brightness(1.06); }
 .b-papel { background: var(--paper); border-color: var(--line); color: var(--ink); }
 .b-papel:hover { background: var(--surface-high); }
