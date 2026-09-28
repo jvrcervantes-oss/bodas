@@ -1198,7 +1198,7 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .sello-bronce img{ display: block; width: 100%; }
 /* Iniciales en Cinzel dentro del hueco del laurel (36 % del sello, centro al 47 % de alto). En caligráfica a 34 px se salían
    y pisaban el laurel (owner, 28-sep-2026). En cqw: escalan con el sello a cualquier tamaño. */
-.sello-bronce b{ position: absolute; left: 32%; top: 29.5%; width: 36%; height: 36%; display: grid; place-items: center; font-family: 'Cinzel', Georgia, serif; font-weight: 400; font-size: 10.5cqw; letter-spacing: .02em; line-height: 1;
+.sello-bronce b{ position: absolute; left: 32%; top: 29.5%; width: 36%; height: 36%; display: grid; place-items: center; font-family: 'Cinzel', Georgia, serif; font-weight: 400; font-size: 13px; font-size: 10.5cqw; letter-spacing: .02em; line-height: 1;
   color: rgb(66 36 20 / .92); text-shadow: 0 1px 0 rgb(255 222 186 / .7), 0 -1px 1px rgb(30 14 6 / .6); }
 .lac-sello{ animation: aparece 1.4s var(--ease-out) both, respira 4s ease-in-out 1.4s infinite; }
 @keyframes respira{ 0%, 100%{ transform: none; filter: drop-shadow(0 4px 6px rgb(60 35 20 / .25)); } 50%{ transform: scale(1.03); filter: drop-shadow(0 8px 14px rgb(156 105 78 / .35)); } }
