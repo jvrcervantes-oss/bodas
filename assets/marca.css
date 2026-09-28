@@ -72,8 +72,17 @@ img { max-width: 100%; }
 .b-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 26px; border-radius: var(--pill);
   font-weight: 500; font-size: 15px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: filter .2s, background .2s, border-color .2s, box-shadow .2s, transform .15s; }
 .b-btn:active { transform: scale(.98); }
-.b-rose { background: linear-gradient(90deg, var(--rose), var(--rose-2)); color: #fff; box-shadow: var(--e-rose); }
+.b-rose { position: relative; overflow: hidden; isolation: isolate; background: linear-gradient(90deg, var(--rose), var(--rose-2)); color: #fff; box-shadow: var(--e-rose); }
 .b-rose:hover { filter: brightness(1.05); }
+/* Brillo de papel satinado (motion, 28-sep-2026): un reflejo cruza el botón al pasar el ratón y se hunde con muelle al pulsar.
+   Solo transform: el reflejo es un ::after que se desplaza, no un fondo animado. */
+.b-rose::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .34) 48%, transparent 64%); transform: translateX(-120%); }
+@media (hover: hover) {
+  .b-rose:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(168, 107, 104, .34); transition: filter .2s, box-shadow .3s, transform .45s cubic-bezier(.34, 1.56, .64, 1); }
+  .b-rose:hover::after { transform: translateX(120%); transition: transform .9s cubic-bezier(.22, 1, .36, 1); }
+}
+.b-rose:active { transform: scale(.97); transition-duration: .12s; }
 .b-paper { background: rgba(255, 255, 255, .9); border-color: var(--line); color: var(--ink); box-shadow: var(--e1); }
 .b-paper:hover { background: var(--surface-high); border-color: rgba(138, 115, 80, .4); }
 .b-dark { background: var(--espresso); color: #fff; }

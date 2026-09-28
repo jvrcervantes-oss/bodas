@@ -40,10 +40,11 @@ function logo_marca(string $cls, string $href, string $antes = '', bool $tld = t
 }
 
 function il(string $n, string $cls = 'i'): string {
-    if ($n === 'anillos') {   // logo de la marca: dos anillos enlazados y un corazón (SVG de la owner, 26-sep-2026), relleno
+    if ($n === 'anillos') {   // logo de la marca: dos anillos enlazados y un corazón (SVG de la owner, 26-sep-2026), relleno.
+                              // pathLength="1" en los anillos: la cabecera de la landing los dibuja al cargar (landing.css → «logo»)
         return '<svg class="' . $cls . '" viewBox="26 80 1027 918" aria-hidden="true">'
-            . '<path d="M599.02,966.83l46.65-44.85c15.66.11,31.02,6.31,46.81,7.48,137.91,10.19,262.45-78.65,287.53-215.98,35.91-196.63-149.85-361.49-341.23-301.85-168.78,52.6-239.62,258.98-138.33,404.47-.76,4.51-41.28,32.79-46.08,32.82-3.64.02-14.61-18.26-17-22.36-108.59-186.7-2.02-428.17,206.04-477.17,254.34-59.89,471.91,188.86,378.03,433.06-64.16,166.9-255.38,249.88-422.43,184.38Z"/>'
-            . '<path d="M480.98,363.03l-46.65,44.85c-15.66-.11-31.02-6.31-46.81-7.48-137.91-10.19-262.45,78.65-287.53,215.98-35.91,196.63,149.85,361.49,341.23,301.85,168.78-52.6,239.62-258.98,138.33-404.47.76-4.51,41.28-32.79,46.08-32.82,3.64-.02,14.61,18.26,17,22.36,108.59,186.7,2.02,428.17-206.04,477.17-254.34,59.89-471.91-188.86-378.03-433.06,64.18-166.94,255.35-249.84,422.43-184.38Z"/>'
+            . '<path pathLength="1" d="M599.02,966.83l46.65-44.85c15.66.11,31.02,6.31,46.81,7.48,137.91,10.19,262.45-78.65,287.53-215.98,35.91-196.63-149.85-361.49-341.23-301.85-168.78,52.6-239.62,258.98-138.33,404.47-.76,4.51-41.28,32.79-46.08,32.82-3.64.02-14.61-18.26-17-22.36-108.59-186.7-2.02-428.17,206.04-477.17,254.34-59.89,471.91,188.86,378.03,433.06-64.16,166.9-255.38,249.88-422.43,184.38Z"/>'
+            . '<path pathLength="1" d="M480.98,363.03l-46.65,44.85c-15.66-.11-31.02-6.31-46.81-7.48-137.91-10.19-262.45,78.65-287.53,215.98-35.91,196.63,149.85,361.49,341.23,301.85,168.78-52.6,239.62-258.98,138.33-404.47.76-4.51,41.28-32.79,46.08-32.82,3.64-.02,14.61,18.26,17,22.36,108.59,186.7,2.02,428.17-206.04,477.17-254.34,59.89-471.91-188.86-378.03-433.06,64.18-166.94,255.35-249.84,422.43-184.38Z"/>'
             . '<path d="M472.65,92.09c30.5-4.45,47.13,7.65,66.64,28.85,3.44.6,15.49-14.59,19.4-17.56,55.58-42.06,131.44,26.89,75.78,91.51-27.83,32.31-64.73,61.5-93.76,93.23l-4.7-2.74c-23.67-32.08-93.33-79.31-106.2-114.12-12.29-33.22,6.32-73.84,42.84-79.18Z"/></svg>';
     }
     if ($n === 'flor') {   // cinco pétalos y botón central
@@ -111,7 +112,8 @@ function pagina_landing(): string {
     <div class="l-wrap l-hero-grid">
       <div class="l-hero-txt">
         <span class="l-chip"><?= il('flor', 'i i-sm') ?>Web de boda con confirmación de asistencia</span>
-        <h1>La web de vuestra boda, <em>tan bonita</em> como el gran día</h1>
+        <?php // Motion (28-sep-2026): cada palabra en su span para la entrada escalonada (landing.css → «entrada del hero»); el trazo dorado subraya «tan bonita» ?>
+        <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">vuestra</span> <span class="w">boda,</span> <em class="w">tan bonita<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em> <span class="w">como</span> <span class="w">el</span> <span class="w">gran</span> <span class="w">día</span></h1>
         <p class="l-lede">Montadla en un rato, desde el móvil o el ordenador: confirmación de asistencia con menú y alergias, mapa de la ceremonia y el convite, galería, libro de invitados, música y lista de bodas. Sin tocar código.</p>
         <div class="l-ctas">
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
@@ -128,7 +130,6 @@ function pagina_landing(): string {
           <img class="l-marco-fondo" src="<?= BASE_PATH ?>/assets/img/landing/papel.webp" alt="" width="1376" height="768">
           <?php // Spot v8 (infraestructura/remotion, Spot-Bodas-ES) recodificado para web: 540×960, sin audio ?>
           <video class="l-spot" src="<?= BASE_PATH ?>/assets/img/landing/spot-v8.mp4" poster="<?= BASE_PATH ?>/assets/img/landing/spot-v8-poster.webp" width="540" height="960" autoplay muted loop playsinline preload="metadata" aria-label="Vídeo de ejemplo: cómo se crea una web de boda con <?= h(marca()) ?>, sus paletas, los diseños Atelier, la confirmación de asistencia y los dos packs"></video>
-          <script src="<?= BASE_PATH ?>/assets/js/landing.js?v=<?= h(ASSETS_V) ?>"></script>
           <span class="l-ejemplo">Ejemplo</span>
         </div>
         <div class="l-flota l-flota-a" aria-hidden="true">
@@ -243,10 +244,12 @@ function pagina_landing(): string {
               <li class="off"><?= il('mas', 'i i-sm') ?>Sección propia<span class="l-sw"></span></li>
             </ul>
             <span class="overline overline-bronze">Colores</span>
-            <span class="l-swatches l-swatches-sm"><?php foreach ($paletas as $i => $col): ?><i class="<?= $i === 'rosa' ? 'on' : '' ?>" style="background:<?= h($col) ?>"></i><?php endforeach; ?></span>
+            <?php // Paletas de verdad: cada botón cambia la captura por la de la web de ejemplo en esa paleta (assets/img/landing/paleta-<tema>.webp,
+                  // hechas con render_pagina en modo zip, 28-sep-2026). Si se añade un tema a TEMAS, falta su captura: landing.js no cambia a una que no existe ?>
+            <span class="l-swatches l-swatches-sm l-paletas" data-base="<?= BASE_PATH ?>/assets/img/landing/paleta-"><?php foreach (TEMAS as $i => $t): ?><button type="button" class="<?= $i === 'rosa' ? 'on' : '' ?>" data-tema="<?= h($i) ?>" aria-label="Paleta <?= h($t[0]) ?>" aria-pressed="<?= $i === 'rosa' ? 'true' : 'false' ?>" style="background:<?= h($t[2]) ?>"></button><?php endforeach; ?></span>
           </div>
           <div class="l-demo-previa">
-            <img src="<?= BASE_PATH ?>/assets/img/landing/demo-escritorio.webp" alt="Ejemplo de la vista previa en ordenador de una web de boda" width="1280" height="800" loading="lazy">
+            <img src="<?= BASE_PATH ?>/assets/img/landing/paleta-rosa.webp" alt="Ejemplo de la vista previa en ordenador de una web de boda" width="1280" height="800" loading="lazy">
             <span class="l-ejemplo">Ejemplo</span>
           </div>
         </div>
@@ -369,6 +372,8 @@ function pagina_landing(): string {
     <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>
+<?php // Al final: el motion toca la cabecera, el hero y las secciones, que ya tienen que existir (la CSP no deja scripts en línea) ?>
+<script src="<?= BASE_PATH ?>/assets/js/landing.js?v=<?= h(ASSETS_V) ?>"></script>
 </body>
 </html>
 <?php
