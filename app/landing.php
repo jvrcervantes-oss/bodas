@@ -66,6 +66,8 @@ function pagina_landing(): string {
     $E = empresa();
     $paletas = array_map(fn($t) => $t[2], TEMAS);
     $ejemplo = 'lucia-y-marcos.' . BASE_DOMAIN;
+    // Una sola descripción para Google (meta description) y para compartir (og:description), owner 28-sep-2026
+    $descripcion = 'Cread vuestra web de boda en minutos: confirmación de asistencia con menú y alergias, plano de mesas, galería, libro de invitados y música. Pago único, sin suscripción.';
     $faq = [
         ['¿Cuánto cuesta?', "Dos packs, IVA incluido: Esencial, $total; y Atelier, $totalAtelier, con un diseño ilustrado y animado. Se paga una sola vez, cuando publicáis la web. Crearla y verla en la vista previa no cuesta nada: podéis probar todo lo que queráis antes de pagar. No hay suscripción."],
         ['¿Podemos cambiar la web después de publicarla?', 'Sí. Desde vuestro panel privado editáis textos, secciones, fotos y colores cuando queráis, también desde el móvil, y los cambios se ven al momento.'],
@@ -84,10 +86,10 @@ function pagina_landing(): string {
 <?php if (OCULTO): ?><meta name="robots" content="noindex, nofollow">
 <?php endif; ?><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Web de boda con confirmación de asistencia | <?= h(marca()) ?></title>
-<meta name="description" content="Cread vuestra web de boda en minutos: confirmación de asistencia con menú y alergias, plano de mesas, galería, libro de invitados y música. Pago único, sin suscripción.">
+<meta name="description" content="<?= h($descripcion) ?>">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
 <meta property="og:title" content="Web de boda con confirmación de asistencia | <?= h(marca()) ?>">
-<meta property="og:description" content="Cread vuestra web de boda en minutos: confirmación de asistencia con menú y alergias, plano de mesas, galería, libro de invitados y música. Pago único, sin suscripción.">
+<meta property="og:description" content="<?= h($descripcion) ?>">
 <meta property="og:type" content="website">
 <meta property="og:image" content="<?= h(url_creador('assets/img/landing/demo-escritorio.webp')) ?>">
 <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/marca.css?v=<?= h(ASSETS_V) ?>">
@@ -121,7 +123,7 @@ function pagina_landing(): string {
         <?php // Motion (28-sep-2026): cada palabra en su span para la entrada escalonada (landing.css → «entrada del hero»); el trazo dorado subraya la parte en cursiva ?>
         <?php // Titular y <title> del owner (28-sep-2026): llevan «web de boda» tal cual, la búsqueda principal; el anterior («tan bonita como el gran día») era casi el de bodas.com ?>
         <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">boda</span> <em class="w">que lo organiza todo<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em></h1>
-        <p class="l-lede">Todo lo que necesitáis para planificar vuestra boda, en un solo lugar. Cread vuestra web desde el móvil o el ordenador, en pocos minutos.</p>
+        <p class="l-lede">Todo lo que necesitáis para planificar vuestra boda, en un solo lugar. Cread vuestra web desde el móvil o el ordenador en pocos minutos.</p>
         <div class="l-ctas">
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Probar el constructor <?= il('flecha', 'i i-sm i-arrow') ?></a>
           <a class="b-btn b-paper" href="#pasos">Cómo funciona</a>
