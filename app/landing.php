@@ -164,7 +164,6 @@ function pagina_landing(): string {
           <span class="overline">Todo en una web</span>
           <h2>Cada detalle resuelto, antes de decir el <em>«sí, quiero»</em></h2>
         </div>
-        <p>Lo que vuestros invitados necesitan saber y lo que vosotros necesitáis recoger, en un solo enlace.</p>
       </div>
       <div class="l-cards">
         <article class="l-card">
