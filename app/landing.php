@@ -25,8 +25,11 @@ const ICONOS_L = [
     'escudo' => 'M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z',
     'ojo' => 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
     'mas' => 'M12 5v14M5 12h14',
-    'mesa' => 'M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 3v2M12 19v2M3 12h2M19 12h2',   // mesa redonda con cuatro sillas
-    'lista' => 'M9 3h6v3H9zM7 4.5H5V21h14V4.5h-2M8 11h8M8 15h8M8 19h5',             // hoja con renglones (catering)
+    // Iconos de «Qué incluye» elegidos por el owner el 28-sep-2026 (artifact «Iconos BodaEnlace»): las rayas de la mesa
+    // se leían como un sol, el portapapeles era de oficina y el ojo decía «vista», no «fotos»
+    'mesa' => 'M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0zM10.4 4.2a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM10.4 19.8a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM2.6 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM18.2 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0z',   // mesa redonda con cuatro sillas redondas
+    'campana' => 'M3 17h18M5 17a7 7 0 0 1 14 0M12 10V8.5M10.5 8.5h3M4.5 20h15',   // campana de servir (catering)
+    'marco' => 'M3.5 5h17v14h-17zM7 9.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0zM3.5 17l5-5 4 4 3-3 5 5',   // marco de foto (galería)
 ];
 /**
  * Logo de la marca: anillos + dominio (MARCA_WEB), con el .com en cursiva. ÚNICO sitio donde se
@@ -168,13 +171,13 @@ function pagina_landing(): string {
         </article>
         <?php // Mapa, lista de bodas y «menús y transporte» fuera (owner, 27-sep: «lo menos interesante»); el autobús pasa a la tarjeta de confirmación ?>
         <article class="l-card">
-          <span class="l-card-ico"><?= il('ojo') ?></span>
+          <span class="l-card-ico"><?= il('marco') ?></span>
           <h3>Galería y libro de invitados</h3>
           <p>Vuestras fotos, y un libro donde los invitados os dejan mensajes y fotos. Todo protegido con un código que solo tienen ellos.</p>
           <span class="l-card-pie">Protegido con código <?= il('escudo', 'i i-sm') ?></span>
         </article>
         <article class="l-card l-card-salvia">
-          <span class="l-card-ico"><?= il('lista') ?></span>
+          <span class="l-card-ico"><?= il('campana') ?></span>
           <h3>Resumen para el catering</h3>
           <p>Cuántos hay de cada menú y cada alergia con su nombre y su mesa, listo para imprimir o guardar en PDF y dárselo al restaurante.</p>
           <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
