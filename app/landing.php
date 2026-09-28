@@ -86,8 +86,8 @@ function pagina_landing(): string {
 <title>Web de boda con confirmación de asistencia | <?= h(marca()) ?></title>
 <meta name="description" content="Cread vuestra web de boda en minutos: confirmación de asistencia con menú y alergias, plano de mesas, galería, libro de invitados y música. Pago único, sin suscripción.">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
-<meta property="og:title" content="<?= h(marca()) ?> — La web de vuestra boda">
-<meta property="og:description" content="Confirmación de asistencia con menú y alergias, cuenta atrás, música, hoteles y lista de bodas. Pago único de <?= h($total) ?>.">
+<meta property="og:title" content="Web de boda con confirmación de asistencia | <?= h(marca()) ?>">
+<meta property="og:description" content="Cread vuestra web de boda en minutos: confirmación de asistencia con menú y alergias, plano de mesas, galería, libro de invitados y música. Pago único, sin suscripción.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="<?= h(url_creador('assets/img/landing/demo-escritorio.webp')) ?>">
 <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/marca.css?v=<?= h(ASSETS_V) ?>">
