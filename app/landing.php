@@ -283,7 +283,7 @@ function pagina_landing(): string {
           <span class="overline">Colección Atelier</span>
           <h2>Diseños ilustrados, <em>como papelería fina</em></h2>
         </div>
-        <p><?= count(ATELIER) ?> diseños, cada uno con su paleta, sus letras y su ilustración. La invitación llega en un sobre cerrado: vuestros invitados rompen el sello, se abre la solapa y aparece la web. Pack Atelier: <?= h($totalAtelier) ?>, IVA incluido.</p>
+        <p><?= count(ATELIER) ?> diseños, cada uno con su paleta, sus letras y su ilustración. La invitación llega en un sobre animado.</p>
       </div>
       <div class="l-atelier-grid">
 <?php foreach (ATELIER as $k => $a): ?>
