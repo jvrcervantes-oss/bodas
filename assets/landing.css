@@ -90,7 +90,10 @@
 
 /* pasos */
 .l-pasos { padding-top: 0; background: linear-gradient(180deg, var(--surface), var(--blush) 50%, var(--surface)); }
-.l-guirnalda { display: block; width: 100%; height: 190px; object-fit: cover; object-position: top; mix-blend-mode: multiply; opacity: .85; margin-bottom: 8px; }
+/* Guirnalda en lápiz bronce, entera y fundida hacia abajo (pintada sobre blanco: multiply la funde con el fondo) */
+.l-guirnalda { position: relative; height: clamp(170px, 24vw, 290px); margin-bottom: 4px; pointer-events: none; mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent); mask-image: linear-gradient(180deg, #000 62%, transparent); }
+.l-guirnalda img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top; }
 .l-pasos-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .l-pasos-lista li { padding: 32px 28px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); }
 .l-num { display: block; font-family: var(--serif); font-size: 44px; line-height: 1; color: var(--rose-c); -webkit-text-stroke: 1px var(--rose); margin-bottom: 14px; }
@@ -252,7 +255,6 @@
   .l-demo-pie { margin: 0 16px 16px; }
   .l-demo-cuerpo { padding: 16px; }
   .l-demo-previa img { height: 300px; }
-  .l-guirnalda { height: 120px; }
 }
 @media (max-width: 400px) {
   .l-top-cta { font-size: 12px; min-height: 36px; }
@@ -321,6 +323,10 @@
 /* ---- la tarjeta «Confirmación recibida» cambia de ejemplo (landing.js) ---- */
 .l-flota-a > span:last-child { transition: opacity .35s var(--out), transform .45s var(--out); }
 .l-flota-a.cambia > span:last-child { opacity: 0; transform: translateY(8px); }
+
+/* ---- la guirnalda de «Cómo funciona» crece hacia abajo al llegar (landing.js pone .rv-g e .in) ---- */
+.l-guirnalda.rv-g img { clip-path: inset(0 0 100% 0); transform: translateY(-10px); }
+.l-guirnalda.rv-g.in img { clip-path: inset(0 0 0 0); transform: none; transition: clip-path 2s var(--out), transform 2s var(--out); }
 
 /* ---- revelado escalonado de las secciones (solo lo que landing.js marca con .rv) ---- */
 .rv { opacity: 0; transform: translateY(26px); filter: blur(4px); }

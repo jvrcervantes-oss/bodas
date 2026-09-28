@@ -99,6 +99,18 @@
     }));
   }
 
+  // Guirnalda de «Cómo funciona»: las ramas crecen hacia abajo una vez, al llegar. Solo si está por debajo de la pantalla al cargar.
+  const guir = document.querySelector('.l-guirnalda');
+  if (guir && !menos && hayIO && guir.getBoundingClientRect().top >= innerHeight) {
+    guir.classList.add('rv-g');
+    const ob = new IntersectionObserver(es => {
+      if (!es[0].isIntersecting) return;
+      ob.disconnect();
+      guir.classList.add('in');
+    }, { rootMargin: '0px 0px -10% 0px' });
+    ob.observe(guir);
+  }
+
   // Constructor: cada paleta enseña la captura de la web de ejemplo en esa paleta, con fundido.
   // Rotan solas mientras el bloque está a la vista, hasta que el visitante toca una.
   const pal = document.querySelector('.l-paletas');

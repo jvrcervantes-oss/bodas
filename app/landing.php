@@ -207,7 +207,9 @@ function pagina_landing(): string {
   </section>
 
   <section class="l-sec l-pasos" id="pasos">
-    <img class="l-guirnalda" src="<?= BASE_PATH ?>/assets/img/landing/guirnalda.webp" alt="" width="1376" height="768">
+    <?php // Guirnalda en lápiz bronce (owner, 28-sep-2026): las mismas flores de la acuarela pasadas a dibujo, entera y fundida hacia
+          // abajo. Antes la acuarela se recortaba a una franja de 190 px. Crece hacia abajo al llegar (landing.js) ?>
+    <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-bronce.webp" alt="" width="1376" height="640" loading="lazy" decoding="async"></div>
     <div class="l-wrap">
       <div class="l-sec-cab l-centro">
         <span class="overline">Fácil y al momento</span>
