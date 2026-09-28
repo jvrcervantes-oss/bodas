@@ -116,7 +116,8 @@ function pagina_landing(): string {
     <img class="l-deco l-deco-hero-b" src="<?= BASE_PATH ?>/assets/img/landing/enredadera-2.webp" alt="" width="896" height="1200">
     <div class="l-wrap l-hero-grid">
       <div class="l-hero-txt">
-        <span class="l-chip"><?= il('flor', 'i i-sm') ?>Web de boda con confirmación de asistencia</span>
+        <?php // Punto salvia que respira en vez de la flor (owner, 28-sep-2026, artifact «Chips BodaEnlace») ?>
+        <span class="l-chip"><span class="l-punto" aria-hidden="true"></span>Web de boda con confirmación de asistencia</span>
         <?php // Motion (28-sep-2026): cada palabra en su span para la entrada escalonada (landing.css → «entrada del hero»); el trazo dorado subraya «tan bonita» ?>
         <h1><span class="w">La</span> <span class="w">web</span> <span class="w">de</span> <span class="w">vuestra</span> <span class="w">boda,</span> <em class="w">tan bonita<svg class="l-trazo" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><path pathLength="1" d="M2 7C25 2 55 2 98 6"/></svg></em> <span class="w">como</span> <span class="w">el</span> <span class="w">gran</span> <span class="w">día</span></h1>
         <p class="l-lede">Todo lo que necesitáis para organizar vuestra boda, en un solo lugar. Cread vuestra web desde el móvil o el ordenador, sin código y en minutos.</p>
@@ -358,7 +359,7 @@ function pagina_landing(): string {
     <div class="l-wrap">
       <div class="l-final">
         <div>
-          <span class="l-chip l-chip-dark"><?= il('flor', 'i i-sm') ?>Vuestro momento es ahora</span>
+          <span class="l-chip l-chip-dark"><?= il('corazon', 'i i-sm') ?>Vuestro momento es ahora</span>
           <h2>Cread hoy la web que vuestros invitados van a abrir una y otra vez</h2>
           <p>Sin suscripciones. Un único pago al publicar, y la web vuestra hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</p>
         </div>

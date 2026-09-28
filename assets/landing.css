@@ -312,6 +312,10 @@
 @keyframes l-aparece { from { opacity: 0; } }
 @keyframes l-pop { from { opacity: 0; transform: translateY(10px) scale(.85); } }
 
+/* ---- chip del hero: punto salvia que respira (crece y mengua en 3,2 s); quieto con «reducir movimiento» ---- */
+.l-punto { width: 8px; height: 8px; flex-shrink: 0; border-radius: 50%; background: var(--sage); animation: l-respira 3.2s ease-in-out infinite; }
+@keyframes l-respira { 0%, 100% { transform: scale(.8); opacity: .7; } 50% { transform: scale(1.1); opacity: 1; } }
+
 /* ---- la tarjeta «Confirmación recibida» cambia de ejemplo (landing.js) ---- */
 .l-flota-a > span:last-child { transition: opacity .35s var(--out), transform .45s var(--out); }
 .l-flota-a.cambia > span:last-child { opacity: 0; transform: translateY(8px); }
