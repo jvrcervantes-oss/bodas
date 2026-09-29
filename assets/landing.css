@@ -196,8 +196,12 @@
 @media (max-width: 900px) { .l-packs { grid-template-columns: 1fr; row-gap: 48px; } }
 
 /* faq */
-.l-faq { max-width: 800px; }
-.l-faq-item { border-radius: var(--r-lg); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); margin-bottom: 12px; }
+.l-faq { max-width: 1040px; }
+/* dos columnas independientes: abrir una pregunta solo alarga su columna */
+.l-faq-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; align-items: start; }
+.l-faq-col { display: grid; gap: 12px; min-width: 0; }
+@media (max-width: 900px) { .l-faq-cols { grid-template-columns: 1fr; } }
+.l-faq-item { border-radius: var(--r-lg); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); }
 .l-faq-item summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 24px;
   font-family: var(--sans); font-weight: 500; font-size: 16px; }   /* preguntas en Poppins semigruesa (owner, 26-sep-2026) */
 .l-faq-item summary::-webkit-details-marker { display: none; }

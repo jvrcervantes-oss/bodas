@@ -72,7 +72,7 @@
       ['.l-demo', null],
       ['.l-atelier-grid', '.l-atelier-card'],
       ['.l-packs', '.l-precio-card'],
-      ['.l-faq', '.l-faq-item'],
+      ['.l-faq-col', '.l-faq-item'],
       ['.l-final', null],
     ];
     const alto = innerHeight;

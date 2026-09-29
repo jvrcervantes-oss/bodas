@@ -369,12 +369,20 @@ function pagina_landing(): string {
         <span class="overline">Preguntas frecuentes</span>
         <h2>Todo lo que necesitáis saber</h2>
       </div>
-<?php foreach ($faq as [$q, $a]): ?>
-      <details class="l-faq-item">
-        <summary><?= h($q) ?><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
-        <p><?= h($a) ?></p>
-      </details>
+      <?php // Dos columnas de cuatro, todas plegadas (owner, 29-sep-2026, artifact «Preguntas de BodaEnlace», opción «Dos columnas»).
+            // El orden de lectura sigue siendo el de $faq: primero la columna izquierda entera y luego la derecha ?>
+      <div class="l-faq-cols">
+<?php foreach (array_chunk($faq, (int) ceil(count($faq) / 2)) as $col): ?>
+        <div class="l-faq-col">
+<?php foreach ($col as [$q, $a]): ?>
+          <details class="l-faq-item">
+            <summary><?= h($q) ?><svg class="i i-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p><?= h($a) ?></p>
+          </details>
 <?php endforeach; ?>
+        </div>
+<?php endforeach; ?>
+      </div>
     </div>
   </section>
 
