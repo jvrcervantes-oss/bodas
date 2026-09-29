@@ -207,14 +207,12 @@ function pagina_landing(): string {
   </section>
 
   <section class="l-sec l-pasos" id="pasos">
-    <?php // Guirnalda en acuarela rosa colgando sobre el título (owner, 29-sep-2026): la acuarela de Freepik del revés, a todo el
-          // ancho y fundida hacia abajo. Sustituye al lápiz bronce del 28-sep. Licencia gratuita de Freepik: crédito en el aviso legal
-          // (owner: no en la landing). Solo para la landing: la licencia gratuita no cubre meterla en las plantillas de boda.
-          // Origen: Freepik «Watercolor soft pink flower garden background», bajada el 29-sep-2026 (2000 px) de
-          // https://img.magnific.com/free-vector/watercolor-soft-pink-flower-garden-background_65186-3352.jpg ?>
-    <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela.webp"
-      srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela-1000.webp 1000w, <?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela.webp 2000w"
-      sizes="100vw" alt="" width="2000" height="713" loading="lazy" decoding="async"></div>
+    <?php // Guirnalda en acuarela colgando sobre el título (owner, 29-sep-2026): dibujada por código en el estudio, sin licencias
+          // de terceros (artifact «Flores de Cómo funciona», opción «colgando», semilla 1000, a 1178 px de ancho y 2x). A todo el
+          // ancho y fundida hacia abajo. Para rehacerla, se exporta el canvas de esa opción y semilla. ?>
+    <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-flores.webp"
+      srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-flores-1200.webp 1178w, <?= BASE_PATH ?>/assets/img/landing/guirnalda-flores.webp 2356w"
+      sizes="100vw" alt="" width="2356" height="448" loading="lazy" decoding="async"></div>
     <div class="l-wrap">
       <div class="l-sec-cab l-centro">
         <span class="overline">Fácil y al momento</span>

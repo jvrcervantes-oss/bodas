@@ -42,10 +42,7 @@ function rutas_creador(string $ruta, string $metodo): void {
             if (!empresa_completa() || titular_oculto()) {
                 echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(marca()) . ' todavía no está a la venta. '
                     . 'Publicaremos aquí el texto completo, con los datos de quién presta el servicio, antes de abrir la contratación.</p>'
-                    . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p>'
-                    // El crédito de la acuarela de la landing es obligatorio ya (licencia gratuita de Freepik, BOD-29), también antes de la venta
-                    . ($ruta === 'aviso-legal' ? '<p>La acuarela de flores de la página principal es de Freepik (<a href="https://www.freepik.com/" rel="noopener">freepik.com</a>) y se usa con su licencia.</p>' : '')
-                    . '</article>');
+                    . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
                 return;
             }
             analitica_vista($ruta);
