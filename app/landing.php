@@ -311,16 +311,27 @@ function pagina_landing(): string {
         </div>
         <p><?= count(ATELIER) ?> diseños, cada uno con su paleta, sus letras y su ilustración. La invitación llega en un sobre animado.</p>
       </div>
-      <div class="l-atelier-grid">
+      <?php // Una destacada y los seis en miniatura para cambiarla (owner, 29-sep-2026, artifact «Atelier compacta BodaEnlace»,
+            // https://claude.ai/artifact/KEgNUz1PvjUb8s7VZafhCC): la rejilla de seis tarjetas grandes medía ~1.600 px en ordenador
+            // y ~4.400 en el móvil. Los seis paneles van en el HTML (el que no se ve, con hidden); landing.js solo cambia cuál ?>
+<?php $atDef = isset(ATELIER['lacre']) ? 'lacre' : array_key_first(ATELIER); ?>
+      <div class="l-at-caja" data-atelier-caja>
 <?php foreach (ATELIER as $k => $a): ?>
-        <article class="l-atelier-card">
-          <div class="l-atelier-img"><img src="<?= BASE_PATH ?>/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
-          <div class="l-atelier-meta"><span class="overline overline-bronze"><?= h($a['categoria']) ?></span><span class="l-atelier-precio"><?= h($totalAtelier) ?> <small>IVA incl.</small></span></div>
-          <h3><?= h($a['nombre']) ?></h3>
-          <p><?= h($a['desc']) ?></p>
-          <a class="b-btn b-dark l-atelier-btn" href="<?= BASE_PATH ?>/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a>
-        </article>
+        <div class="l-at-panel" id="atelier-<?= h($k) ?>" data-atelier-panel="<?= h($k) ?>"<?= $k === $atDef ? '' : ' hidden' ?>>
+          <div class="l-at-foto"><img src="<?= BASE_PATH ?>/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
+          <div class="l-at-info">
+            <span class="overline overline-bronze"><?= h($a['categoria']) ?></span>
+            <h3><?= h($a['nombre']) ?></h3>
+            <p><?= h($a['desc']) ?></p>
+            <div class="l-at-fila"><span class="l-atelier-precio"><?= h($totalAtelier) ?> <small>IVA incl.</small></span><a class="b-btn b-dark l-atelier-btn" href="<?= BASE_PATH ?>/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a></div>
+          </div>
+        </div>
 <?php endforeach; ?>
+        <div class="l-at-minis" role="group" aria-label="Diseños de la Colección Atelier">
+<?php foreach (ATELIER as $k => $a): ?>
+          <button type="button" class="l-at-mini" data-atelier="<?= h($k) ?>" aria-controls="atelier-<?= h($k) ?>" aria-pressed="<?= $k === $atDef ? 'true' : 'false' ?>" aria-label="<?= h($a['nombre']) ?>"><img src="<?= BASE_PATH ?>/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="" width="330" height="440" loading="lazy"></button>
+<?php endforeach; ?>
+        </div>
       </div>
     </div>
   </section>

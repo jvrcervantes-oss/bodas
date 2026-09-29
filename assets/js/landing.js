@@ -70,7 +70,7 @@
       ['.l-cards', '.l-card'],
       ['.l-pasos-lista', 'li'],
       ['.l-demo', null],
-      ['.l-atelier-grid', '.l-atelier-card'],
+      ['.l-at-caja', null],
       ['.l-packs', '.l-precio-card'],
       ['.l-faq-col', '.l-faq-item'],
       ['.l-final', null],
@@ -97,6 +97,15 @@
       c.querySelectorAll(':scope > ' + hijo).forEach((h, n) => marca(h, n));
     }));
   }
+
+  // Colección Atelier: cada miniatura enseña su diseño en grande. Los seis paneles ya están en el HTML; aquí solo se cambia cuál se ve
+  const atCaja = document.querySelector('[data-atelier-caja]');
+  if (atCaja) atCaja.addEventListener('click', e => {
+    const b = e.target.closest('[data-atelier]');
+    if (!b) return;
+    atCaja.querySelectorAll('[data-atelier-panel]').forEach(p => { p.hidden = p.dataset.atelierPanel !== b.dataset.atelier; });
+    atCaja.querySelectorAll('[data-atelier]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
 
   // Chat del Paso 3: el mensaje de la pareja y la respuesta entran uno tras otro, una vez, al llegar. Solo si está por debajo de la pantalla al cargar.
   const wa = document.querySelector('.l-wa');

@@ -163,18 +163,26 @@
 .l-tique-gratis { padding: 1px 8px; border-radius: var(--pill); background: var(--sage-c); color: var(--sage); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 
 /* Colección Atelier */
-.l-atelier-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-.l-atelier-card { display: flex; flex-direction: column; padding: 12px 12px 18px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); transition: box-shadow .25s, border-color .25s, transform .25s; }
-.l-atelier-card:hover { box-shadow: var(--e2); border-color: rgba(197, 160, 89, .5); transform: translateY(-2px); }
-.l-atelier-img { position: relative; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-c); }
-.l-atelier-img img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; }
-.l-atelier-img .l-ejemplo { right: 10px; bottom: 10px; }
-.l-atelier-meta { display: flex; justify-content: space-between; align-items: center; margin: 16px 6px 4px; }
+/* una destacada a la izquierda y, a la derecha, su texto y los seis en miniatura para cambiarla (owner, 29-sep-2026) */
+.l-at-caja { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-areas: "foto info" "foto minis"; column-gap: 40px; row-gap: 12px; align-items: center;
+  padding: 24px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); }
+.l-at-panel { display: contents; }
+.l-at-panel[hidden] { display: none; }
+.l-at-foto { grid-area: foto; position: relative; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-c); }
+.l-at-foto img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; }
+.l-at-foto .l-ejemplo { right: 10px; bottom: 10px; }
+.l-at-info { grid-area: info; align-self: end; display: grid; gap: 10px; min-width: 0; }
+.l-at-info h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.05; }
+.l-at-info p { margin: 0; max-width: 44ch; font-size: 14px; color: var(--ink-2); }
+.l-at-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.l-at-minis { grid-area: minis; align-self: start; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.l-at-mini { padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; background: none; cursor: pointer; transition: border-color .2s, transform .2s; }
+.l-at-mini img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; }
+.l-at-mini:hover { transform: translateY(-2px); }
+.l-at-mini[aria-pressed="true"] { border-color: var(--rose); transform: translateY(-3px); }
 .l-atelier-precio { font-family: var(--serif); font-size: 18px; }
 .l-atelier-precio small { font-family: var(--sans); font-size: 11px; color: var(--ink-3); }
-.l-atelier-card h3 { margin: 0 6px 6px; font-family: var(--serif); font-weight: 400; font-size: 22px; }
-.l-atelier-card p { margin: 0 6px 16px; font-size: 14px; color: var(--ink-2); flex: 1; }
-.l-atelier-btn { margin: 0 6px; min-height: 44px; font-size: 14px; border-radius: var(--r); }
+.l-atelier-btn { min-height: 44px; font-size: 14px; border-radius: var(--r); }
 
 /* precio */
 .l-precio { display: grid; grid-template-columns: 1fr 460px; gap: 64px; align-items: center; }
@@ -256,7 +264,9 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 1080px) {
-  .l-atelier-grid { grid-template-columns: repeat(2, 1fr); }
+  .l-at-caja { grid-template-columns: 1fr; grid-template-areas: "foto" "info" "minis"; row-gap: 18px; padding: 14px; }
+  .l-at-foto img { aspect-ratio: 4 / 3.4; }
+  .l-at-info { align-self: start; }
   .l-nav { display: none; }
   .l-cards { grid-template-columns: repeat(2, 1fr); }
   /* A 2 columnas: las 4 tarjetas en 2 filas y el plano, con su captura al lado, cierra a lo ancho. Sin `order`:
@@ -289,7 +299,8 @@
   .l-datos li { display: flex; align-items: center; gap: 12px; padding: 0; border: 0; border-radius: 0; background: none; font-size: 14.5px; color: var(--ink-2); }
   .l-datos b, .l-datos-s { display: inline; font-size: inherit; line-height: 1.45; }
   .l-movil { display: inline; }
-  .l-atelier-grid { grid-template-columns: 1fr; }
+  .l-at-minis { gap: 6px; margin-top: 0; }
+  .l-at-info h3 { font-size: 28px; }
   .l-wrap, .l-top-in { padding: 0 16px; }
   .l-top-in { height: 64px; }
   .l-logo { font-size: 18px; }
