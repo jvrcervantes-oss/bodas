@@ -22,6 +22,7 @@ const ICONOS_L = [
     'check' => 'M20 6 9 17l-5-5',
     'lapiz' => 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
     'enlace' => 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+    'enviar' => 'M22 2 11 13M22 2l-7 20-4-9-9-4z',
     'escudo' => 'M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z',
     'ojo' => 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
     'mas' => 'M12 5v14M5 12h14',
@@ -239,7 +240,7 @@ function pagina_landing(): string {
         </li>
         <li>
           <div class="l-paso-esc" aria-hidden="true"><span class="l-paso-sobre"><span class="l-precio-sello"><?= il('anillos', 'i i-anillos') ?></span></span>
-            <span class="l-paso-enviado"><svg class="i i-sm" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>Enviado</span></div>
+            <span class="l-paso-enviado"><?= il('enviar', 'i i-sm') ?>Enviado</span></div>
           <span class="l-paso-n">Paso 3</span>
           <h3>Compartid el enlace</h3>
           <p>Al publicar, la web queda online al momento. Mandad el enlace por WhatsApp y las confirmaciones llegan a vuestro panel.</p>

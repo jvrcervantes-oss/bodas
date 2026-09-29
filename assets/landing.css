@@ -115,9 +115,6 @@
 .l-pasos-lista h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 0 0 10px; }
 .l-pasos-lista p { margin: 0 0 18px; font-size: 14px; color: var(--ink-2); }
 .l-swatches { display: flex; gap: 8px; }
-.l-swatches i { width: 22px; height: 22px; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--line); }
-.l-swatches-sm i { width: 20px; height: 20px; }
-.l-swatches i.on { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--rose); }
 .l-paso-pie { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--rose); word-break: break-all; }
 
 /* constructor */
