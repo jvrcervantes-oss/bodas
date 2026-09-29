@@ -13,8 +13,6 @@
 .l-logo .i-anillos { width: 29px; height: 26px; fill: currentColor; stroke: none; margin-right: -2px; }   /* a la altura de las letras altas de «bodaenlace» */
 .l-logo-web span { letter-spacing: -.01em; }
 .l-logo-web em { font-style: italic; color: var(--rose); }
-.l-pie-marca { display: inline-flex; align-items: center; gap: 10px; }
-/* «by AxisWorks» enlaza a la web del estudio (owner, 26-sep-2026); va fuera del logo porque un enlace no puede ir dentro de otro */
 .l-pie-by { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); text-decoration: none; padding-top: 3px; }
 .l-pie-by:hover { color: var(--rose); }
 .l-nav { display: flex; gap: 28px; }
@@ -257,11 +255,22 @@
 .l-btn-ghost:hover { background: rgba(255, 255, 255, .16); }
 
 /* pie */
-.l-pie { border-top: 1px solid var(--line-soft); padding: 32px 0; }
-.l-pie-in { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-.l-pie nav { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 13px; }
+.l-pie { margin-top: 24px; padding: 56px 0 28px; background: var(--blush); border-top: 1px solid rgba(168, 107, 104, .12); }
+.l-pie-in { display: grid; justify-items: center; gap: 16px; text-align: center; }
+.l-pie-anillos { color: var(--rose); line-height: 0; }
+.l-pie-anillos .i-anillos { width: 52px; height: 46px; fill: currentColor; stroke: none; }
+.l-pie-lema { margin: 0; font-family: var(--serif); font-style: italic; font-size: 26px; line-height: 1.2; color: var(--ink); }
+.l-pie-lema em { color: var(--rose); }
+.l-pie nav { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 14px; font-size: 14px; }
 .l-pie nav a { color: var(--ink-2); text-decoration: none; }
 .l-pie nav a:hover { color: var(--rose); }
+.l-pie-sep { width: 5px; height: 5px; background: var(--gold); transform: rotate(45deg); opacity: .7; }
+.l-pie-mail { font-size: 14px; font-weight: 500; color: var(--rose-btn-2); text-decoration: none; }
+.l-pie-mail:hover { text-decoration: underline; }
+.l-pie-baja { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; margin: 18px 0 0; font-size: 12px; color: var(--ink-3); }
+/* «© 2026 BodaEnlace» en versalitas, igual que «by AxisWorks» (owner, 29-sep-2026) */
+.l-pie-baja span:first-child { font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.l-pie-baja .l-pie-by { padding-top: 0; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1080px) {

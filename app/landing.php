@@ -433,10 +433,15 @@ function pagina_landing(): string {
   </section>
 </main>
 
+<?php // Pie centrado en rosa pálido (owner, 29-sep-2026, artifact «Pie de BodaEnlace», https://claude.ai/artifact/KhFdBNiKiYkGx1ajBWhXgU):
+      // anillos (enlace a la portada), lema, legales con rombos dorados, el correo y la línea de © con «by AxisWorks» ?>
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
-    <span class="l-pie-marca"><?= logo_marca('l-logo l-logo-pie', BASE_PATH . '/', '', false) ?><a class="l-pie-by" href="https://axisworks.studio/" target="_blank" rel="noopener">by AxisWorks</a></span>
-    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
+    <a class="l-pie-anillos" href="<?= BASE_PATH ?>/" aria-label="<?= h(MARCA_WEB) ?>"><?= il('anillos', 'i i-anillos') ?></a>
+    <p class="l-pie-lema">Vuestra boda, <em>en un enlace</em></p>
+    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><span class="l-pie-sep" aria-hidden="true"></span><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><span class="l-pie-sep" aria-hidden="true"></span><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a></nav>
+    <a class="l-pie-mail" href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a>
+    <p class="l-pie-baja"><span>© <?= date('Y') ?> <?= h(marca()) ?></span><span aria-hidden="true">·</span><a class="l-pie-by" href="https://axisworks.studio/" target="_blank" rel="noopener">by AxisWorks</a></p>
   </div>
 </footer>
 <?php // Al final: el motion toca la cabecera, el hero y las secciones, que ya tienen que existir (la CSP no deja scripts en línea) ?>
