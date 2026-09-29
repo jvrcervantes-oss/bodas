@@ -290,7 +290,7 @@ function pagina_landing(): string {
         <?php // Tique de tres pasos (owner, 29-sep-2026, artifact «Probadlo gratis BodaEnlace», https://claude.ai/artifact/QvXnH3RB4SiJs8ePEZ8GXL):
               // crear y la vista previa a 0 €, publicar desde el pack Esencial. El precio sale de precio_total_cent(), nunca escrito a mano ?>
         <div class="l-demo-pie">
-          <h3>¿Lo <em>probáis</em>?</h3>
+          <p class="l-tique-tit">¿Lo <em>probáis</em>?</p>
           <ul class="l-tique" aria-label="Qué se paga y cuándo">
             <li><small>Crear</small><b>0 €</b><span class="l-tique-gratis">Gratis</span></li>
             <li><small>Vista previa</small><b>0 €</b><span class="l-tique-gratis">Gratis</span></li>

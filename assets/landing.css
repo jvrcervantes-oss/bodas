@@ -151,8 +151,8 @@
 /* «¿Lo probáis?» como tique de tres pasos: crear y vista previa a 0 €, publicar con su precio (owner, 29-sep-2026) */
 .l-demo-pie { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 24px; align-items: center; margin: 0 24px 24px; padding: 18px 22px; border-radius: var(--r-lg);
   background: var(--paper); border: 1px solid var(--line-soft); box-shadow: var(--e1); }
-.l-demo-pie h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.1; }
-.l-demo-pie h3 em { color: var(--rose); }
+.l-tique-tit { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.1; }
+.l-tique-tit em { color: var(--rose); }
 .l-tique { display: flex; justify-content: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
 .l-tique li { display: grid; justify-items: center; align-content: start; gap: 2px; padding: 8px 22px; text-align: center; }
 .l-tique li + li { border-left: 1.5px dashed var(--line); }
