@@ -330,6 +330,17 @@
   .l-datos li { display: flex; align-items: center; gap: 12px; padding: 0; border: 0; border-radius: 0; background: none; font-size: 14.5px; color: var(--ink-2); }
   .l-datos b, .l-datos-s { display: inline; font-size: inherit; line-height: 1.45; }
   .l-movil { display: inline; }
+  .l-no-movil { display: none; }
+  /* Hero en el móvil (owner, 29-sep-2026): sin el chip, frase corta y el vídeo justo debajo, antes de los botones y los datos.
+     .l-hero-txt se deshace (display: contents) para poder ordenar sus piezas junto al vídeo */
+  .l-hero .l-chip { display: none; }
+  .l-hero-grid { display: flex; flex-direction: column; gap: 0; }
+  .l-hero-txt { display: contents; }
+  .l-hero h1 { order: 1; margin-top: 0; }
+  .l-lede { order: 2; margin-bottom: 40px; }   /* la tarjeta «Confirmación recibida» asoma por encima del vídeo */
+  .l-hero-vis { order: 3; margin-bottom: 28px; }
+  .l-hero .l-ctas { order: 4; }
+  .l-datos { order: 5; }
   .l-at-minis { gap: 6px; margin-top: 0; }
   .l-at-info h3 { font-size: 28px; }
   .l-wrap, .l-top-in { padding: 0 16px; }
