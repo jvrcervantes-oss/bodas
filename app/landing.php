@@ -321,10 +321,13 @@ function pagina_landing(): string {
         <h2>Dos packs, <em>todo incluido</em></h2>
         <p>Sin suscripciones ni extras. Pagáis una vez, cuando la web está como queréis.</p>
       </div>
+      <?php // Tarjetas de invitación (owner, 29-sep-2026, artifact «Precio de BodaEnlace»): papelería con filete; la Atelier con sello de lacre y doble filete dorado ?>
       <div class="l-packs">
         <div class="l-precio-card">
-          <span class="overline overline-bronze">Esencial</span>
+          <span class="overline overline-bronze">Pack</span>
+          <h3 class="l-precio-nombre">Esencial</h3>
           <div class="l-precio-cifra"><b><?= h($total) ?></b><span>IVA incluido · pago único</span></div>
+          <span class="l-precio-orn" aria-hidden="true"><?= il('flor', 'i') ?></span>
           <ul>
             <li><?= il('check', 'i i-sm') ?>Web publicada al momento, con todas vuestras secciones</li>
             <li><?= il('check', 'i i-sm') ?>Confirmaciones con menú y alergias por invitado</li>
@@ -337,8 +340,11 @@ function pagina_landing(): string {
           <a class="b-btn b-paper" href="<?= BASE_PATH ?>/crear">Empezar gratis</a>
         </div>
         <div class="l-precio-card l-precio-atelier">
-          <span class="overline">Atelier · diseño ilustrado</span>
+          <span class="l-precio-sello" aria-hidden="true"><?= il('anillos', 'i i-anillos') ?></span>
+          <span class="overline">Pack · diseño ilustrado</span>
+          <h3 class="l-precio-nombre">Atelier</h3>
           <div class="l-precio-cifra"><b><?= h($totalAtelier) ?></b><span>IVA incluido · pago único</span></div>
+          <span class="l-precio-orn" aria-hidden="true"><?= il('flor', 'i') ?></span>
           <ul>
             <li><?= il('check', 'i i-sm') ?>Todo lo del pack Esencial</li>
             <li><?= il('check', 'i i-sm') ?>Uno de los <?= count(ATELIER) ?> diseños de la Colección Atelier</li>
