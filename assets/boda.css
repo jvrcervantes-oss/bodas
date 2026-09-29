@@ -411,7 +411,11 @@ b, strong{ font-weight: 500; }
     transition: color .2s var(--ease), border-color .2s var(--ease);
   }
   .nav-links a:hover{ color: var(--primary); }
-  .nav-links a[aria-current="page"]{ color: var(--primary); border-bottom-color: var(--accent); }
+  /* Sección actual: subrayado del color de acento que crece desde el centro; al pasar el ratón, el mismo subrayado (owner, 29-sep-2026) */
+  .nav-links a{ position: relative; }
+  .nav-links a::after{ content: ''; position: absolute; left: 50%; right: 50%; bottom: 6px; height: 1.5px; background: var(--accent); transition: left .3s var(--ease), right .3s var(--ease); }
+  .nav-links a:hover::after, .nav-links a[aria-current="page"]::after{ left: 0; right: 0; }
+  .nav-links a[aria-current="page"]{ color: var(--primary); }
   .nav-cta{ display: inline-flex; min-height: 44px; padding: 0 1.5rem; box-shadow: none; }
   .nav-cta[aria-current="page"]{ background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1.5px var(--accent); }
 }
@@ -608,15 +612,14 @@ main.home{ display: flex; flex-direction: column; }
   .save-card{ max-width: 560px; padding: 2rem; }
   .countdown-item b{ font-size: 30px; line-height: 40px; }
   .event-list{ max-width: 1000px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .quick-grid{
-    max-width: 1000px;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    align-items: stretch;
-  }
-  .q-rsvp{ grid-column: span 2; }
+  .event-list > :only-child{ grid-column: 1 / -1; justify-self: center; width: 100%; max-width: 520px; }
+  /* Tarjetas de la portada (owner, 29-sep-2026): filas flexibles de tres; la de confirmar vale por dos y la de música ocupa la fila.
+     Una fila con dos tarjetas las reparte a la mitad en vez de dejar un hueco, sea cual sea el número de secciones activas */
+  .quick-grid{ max-width: 1000px; flex-direction: row; flex-wrap: wrap; align-items: stretch; }
+  .quick-grid > .q-card{ flex: 1 1 calc((100% - 2 * var(--s-md)) / 3); min-width: 0; }
+  .quick-grid > .q-rsvp{ flex-basis: calc((100% - 2 * var(--s-md)) / 3 * 2 + var(--s-md)); }
+  .quick-grid > .q-music{ flex-basis: 100%; }
   .q-pair{ grid-column: span 2; }
-  .q-music{ grid-column: 1 / -1; }
   .itinerary-head{ max-width: 40rem; }
 }
 @media (max-width: 900px){ .hero-left{ display: contents; } }
@@ -923,7 +926,8 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .deco-guirnalda{ display: block; align-self: stretch; margin: -8px calc(-1 * var(--gutter)) -26px; pointer-events: none; }
 .deco-guirnalda img{ display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
 .deco-pie{ display: flex; justify-content: center; overflow: hidden; margin-top: var(--s-md); pointer-events: none; }
-.deco-pie img{ flex: none; width: max(100%, 520px); max-width: 900px; height: auto; mix-blend-mode: multiply; }
+.deco-pie img{ flex: none; width: max(100%, 520px); max-width: 900px; height: auto; mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }   /* sin corte a los lados */
 .deco-flores main > .wrap{ position: relative; overflow: hidden; }
 .deco-flores main > .wrap::before{ content: ''; display: block; height: 130px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 0;
   background: url(img/deco/flores-portada-movil.svg) top center / max(100%, 420px) auto no-repeat; mix-blend-mode: multiply; pointer-events: none;
