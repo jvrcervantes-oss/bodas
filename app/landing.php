@@ -295,7 +295,7 @@ function pagina_landing(): string {
           <ul class="l-tique" aria-label="Qué se paga y cuándo">
             <li><small>Crear</small><b>0 €</b><span class="l-tique-ok"><?= il('check', 'i') ?>Gratis</span></li>
             <li><small>Vista previa</small><b>0 €</b><span class="l-tique-ok"><?= il('check', 'i') ?>Gratis</span></li>
-            <li class="l-tique-pago"><small>Publicar, desde</small><b><?= h($total) ?></b><span class="l-tique-ok">IVA incl.</span></li>
+            <li class="l-tique-pago"><small>Publicar, desde</small><b><?= h($total) ?></b><span class="l-tique-iva">IVA incl.</span></li>
           </ul>
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Abrir el constructor</a>
         </div>
