@@ -34,7 +34,7 @@
 .l-hamb[aria-expanded="true"] span::after { transform: translateY(-5px) rotate(-45deg); }
 .l-hoja { position: absolute; left: 0; right: 0; top: 100%; display: grid; padding: 8px 24px 18px; background: var(--surface); border-top: 1px solid var(--line-soft); box-shadow: 0 18px 30px rgba(38, 34, 32, .1); }
 .l-hoja[hidden] { display: none; }
-.l-hoja { max-height: calc(100vh - 64px); max-height: calc(100dvh - 64px); overflow-y: auto; overscroll-behavior: contain; }   /* móvil apaisado: no se sale de la pantalla */
+.l-hoja { max-height: calc(100vh - var(--top-h, 76px)); max-height: calc(100dvh - var(--top-h, 76px)); overflow-y: auto; overscroll-behavior: contain; }   /* móvil apaisado: no se sale de la pantalla */
 .l-hoja a { display: flex; justify-content: space-between; align-items: center; padding: 13px 4px; border-bottom: 1px solid var(--line-soft); font-family: var(--serif); font-size: 24px; color: var(--ink); text-decoration: none; }
 .l-hoja a::after { content: '→'; font-family: var(--sans); font-size: 14px; color: var(--ink-3); }
 .l-hoja a.on { color: var(--rose); }
