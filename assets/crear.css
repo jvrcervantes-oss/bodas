@@ -145,6 +145,11 @@
 .c-atelier-esencial { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 14px; }
 .c-atelier-cab-sep { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line-soft); }
 #estiloPropio { padding-left: 12px; border-left: 2px solid var(--bronze-c); }
+/* Paleta, Tipografía y Decoración: cada título separado de sus opciones y cada grupo del siguiente (owner, 29-sep-2026: iban pegados,
+   porque este bloque no heredaba el gap de .c-panel) */
+#estiloPropio { display: flex; flex-direction: column; gap: 12px; }
+#estiloPropio .c-hr { margin: 14px 0; }
+#estiloPropio .c-ayuda { margin: -4px 0 0; }
 .c-atelier-esencial .c-atelier-img { width: 72px; flex-shrink: 0; aspect-ratio: 1; font-size: 26px; }
 .c-atelier-esencial .c-atelier-txt small { color: var(--ink-2); }
 #estiloPropio[hidden] { display: none; }
@@ -599,7 +604,7 @@
   #estiloPropio { padding-left: 0; border-left: 0; }
   .c-seg-entra { animation: c-entra .38s var(--out); }
   /* Con un diseño Atelier elegido, «Vuestro estilo» enseña igualmente sus opciones (pintaAtelier las oculta) */
-  [data-modo-estilo="propio"] #estiloPropio[hidden] { display: block; }
+  [data-modo-estilo="propio"] #estiloPropio[hidden] { display: flex; }
   .c-modo-aviso { margin: 12px 0 0; padding: 12px 14px; border-radius: var(--r); background: var(--blush); color: var(--ink-2); font-size: 13px; }
   .c-modo-aviso[hidden] { display: none; }
 }
