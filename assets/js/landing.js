@@ -99,7 +99,7 @@
     }));
   }
 
-  // Guirnalda de «Cómo funciona»: las ramas crecen hacia abajo una vez, al llegar. Solo si está por debajo de la pantalla al cargar.
+  // Guirnalda de «Cómo funciona»: la acuarela aparece y baja un poco una vez, al llegar. Solo si está por debajo de la pantalla al cargar.
   const guir = document.querySelector('.l-guirnalda');
   if (guir && !menos && hayIO && guir.getBoundingClientRect().top >= innerHeight) {
     guir.classList.add('rv-g');

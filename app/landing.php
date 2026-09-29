@@ -207,9 +207,11 @@ function pagina_landing(): string {
   </section>
 
   <section class="l-sec l-pasos" id="pasos">
-    <?php // Guirnalda en lápiz bronce (owner, 28-sep-2026): las mismas flores de la acuarela pasadas a dibujo, entera y fundida hacia
-          // abajo. Antes la acuarela se recortaba a una franja de 190 px. Crece hacia abajo al llegar (landing.js) ?>
-    <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-bronce.webp" alt="" width="1376" height="640" loading="lazy" decoding="async"></div>
+    <?php // Guirnalda en acuarela rosa colgando sobre el título (owner, 29-sep-2026): la acuarela de Freepik del revés, a todo el
+          // ancho y fundida hacia abajo. Sustituye al lápiz bronce del 28-sep. Licencia gratuita: el crédito va en el pie ?>
+    <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela.webp"
+      srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela-1000.webp 1000w, <?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela.webp 2000w"
+      sizes="100vw" alt="" width="2000" height="713" loading="lazy" decoding="async"></div>
     <div class="l-wrap">
       <div class="l-sec-cab l-centro">
         <span class="overline">Fácil y al momento</span>
@@ -383,7 +385,7 @@ function pagina_landing(): string {
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
     <span class="l-pie-marca"><?= logo_marca('l-logo l-logo-pie', BASE_PATH . '/', '', false) ?><a class="l-pie-by" href="https://axisworks.studio/" target="_blank" rel="noopener">by AxisWorks</a></span>
-    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
+    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a><a href="https://www.freepik.com/" target="_blank" rel="noopener">Acuarela de flores: Freepik</a></nav>
   </div>
 </footer>
 <?php // Al final: el motion toca la cabecera, el hero y las secciones, que ya tienen que existir (la CSP no deja scripts en línea) ?>
