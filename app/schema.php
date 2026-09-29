@@ -95,9 +95,9 @@ const ATELIER = [
 ];
 
 // Decoración (estructura visual), independiente de la paleta. Owner, 25-sep-2026.
-// Las acuarelas son las de su maqueta de Stitch (assets/img/deco/).
+// «Flores de acuarela»: guirnalda de rosas pintada con código (assets/img/deco/flores-*.svg, 29-sep-2026); antes eran las acuarelas de la maqueta de Stitch.
 const DECORACIONES = [
-    'flores'    => ['Flores de acuarela', 'Guirnalda y enredaderas en pastel'],
+    'flores'    => ['Flores de acuarela', 'Guirnalda de rosas en acuarela'],
     'eucalipto' => ['Eucalipto', 'Una rama sobre los nombres'],
     'sobre'     => ['Sobre', 'La invitación en un sobre con lacre'],
     'ninguna'   => ['Sin adornos', 'Solo tipografía y color'],

@@ -388,7 +388,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
       <img class="hero-sprig" src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140">
 <?php elseif ($c['decoracion'] === 'flores'): ?>
-      <img class="deco-guirnalda" src="<?= h($A) ?>img/deco/guirnalda.webp" alt="" width="1376" height="768">
+      <picture class="deco-guirnalda"><source media="(max-width: 900px)" srcset="<?= h($A) ?>img/deco/flores-portada-movil.svg" width="520" height="250"><img src="<?= h($A) ?>img/deco/flores-portada.svg" alt="" width="1200" height="330"></picture>
 <?php endif; ?>
       <div class="hero-text">
 <?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
@@ -514,7 +514,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
   <div class="sprig-foot" aria-hidden="true"><img src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140"></div>
 <?php elseif ($c['decoracion'] === 'flores'): ?>
-  <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/enredadera.webp" alt="" width="896" height="1200"><img src="<?= h($A) ?>img/deco/enredadera-2.webp" alt="" width="896" height="1200"></div>
+  <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/flores-pie.svg" alt="" width="900" height="170"></div>
 <?php endif; ?>
 </main>
 <?php
