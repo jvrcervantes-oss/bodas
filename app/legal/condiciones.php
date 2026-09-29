@@ -5,7 +5,7 @@
 // la «e», decisión del owner del 27-sep: el plano de mesas va incluido en los dos packs, también regalados (§2), y
 // §5 ter queda sin ningún extra a la venta, con las reglas generales para cuando se venda uno).
 // Versión 2026-09-29 (Legal, consulta del 29-sep): en pruebas el servicio se presta solo por invitación con códigos de
-// regalo; §1 lo explica (qué no se aplica a una web de regalo, códigos personales) y §8 y el anexo II valen también al canjear.
+// regalo; §1 lo explica (qué no se aplica a una web de regalo, códigos personales) y la licencia del ZIP (§11) y el anexo II valen también al canjear.
 // Por qué §5 ter conserva sus reglas sin extras a la venta: el circuito de compra sigue en el código (álbum, idiomas y
 // dominio lo usarán) y el anexo I y el §8 las citan; quitarlas y volver a ponerlas en F2 es reescribir texto ya revisado.
 // Van en condicional («cuando haya alguno a la venta») para no describir como vigente una venta que no existe.

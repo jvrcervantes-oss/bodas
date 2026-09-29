@@ -12,7 +12,7 @@
 return [
     // 2026-09-27e: cambia el texto de las condiciones que acepta check_condiciones (§2 y §5 ter: el plano de mesas va
     // incluido en los packs). La versión que se guarda con cada aceptación es esta, así que sube con las condiciones.
-    // 2026-09-29: §1 (servicio por invitación con códigos de regalo en pruebas), §8 y anexo II también al canjear (Legal).
+    // 2026-09-29: §1 (servicio por invitación con códigos de regalo en pruebas), licencia del ZIP (§11) y anexo II también al canjear (Legal).
     'version' => '2026-09-29',
 
     'vendedor' => 'Lemon Squeezy',

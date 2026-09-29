@@ -59,6 +59,8 @@ ok($st === 200 && !empty($j['ok']), 'en pruebas: un código válido publica la w
 $priv = pagina_privacidad($c, []);
 ok(titular_oculto() && strpos($priv, '00000000T') === false && strpos($priv, 'Calle de Prueba') === false && strpos($priv, 'Titular de Prueba') === false,
     'en pruebas: la privacidad de la web publicada no lleva titular, NIF ni domicilio');
+$canje = json_decode((string) (file($tmp . '/cortesia/canjes.jsonl') ?: [''])[0], true) ?: [];
+ok(($canje['modo'] ?? '') === 'pruebas' && ($canje['motivo'] ?? '') === 'prueba en pruebas', 'en pruebas: el registro del canje para el gestor lleva modo y motivo');
 function pagina(int $puerto, string $ruta): string {
     $ch = curl_init('http://127.0.0.1:' . $puerto . $ruta);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['Host: bodaenlace.com']]);
