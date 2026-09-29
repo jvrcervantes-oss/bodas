@@ -297,6 +297,9 @@
 .simple-main .nota { font-size: 14px; color: var(--ink-2); }
 .legal h2 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 32px 0 8px; }
 .legal p, .legal li { color: var(--ink-2); }
+/* Enlaces de los textos legales: al pasar el cursor, rosa como el pie de la landing (owner, 29-sep-2026) */
+.legal a { transition: color .2s; }
+.legal a:hover { color: var(--rose); }
 
 /* ---------- pantallas medianas y móvil ---------- */
 @media (max-width: 1180px) {
