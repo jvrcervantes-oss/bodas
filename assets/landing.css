@@ -157,15 +157,6 @@
 .l-atelier-card p { margin: 0 6px 16px; font-size: 14px; color: var(--ink-2); flex: 1; }
 .l-atelier-btn { margin: 0 6px; min-height: 44px; font-size: 14px; border-radius: var(--r); }
 
-/* confianza */
-.l-confianza { padding: 40px 0; }
-.l-confianza-lista { list-style: none; margin: 0; padding: 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; border-radius: var(--r-xl);
-  background: var(--sage-c); background: linear-gradient(135deg, #f2f7f4, var(--blush)); border: 1px solid rgba(222, 213, 203, .6); }
-.l-confianza-lista li { display: flex; gap: 14px; align-items: flex-start; }
-.l-confianza-lista .i { color: var(--sage); margin-top: 2px; }
-.l-confianza-lista span { font-size: 14px; color: var(--ink-2); }
-.l-confianza-lista b { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
-
 /* precio */
 .l-precio { display: grid; grid-template-columns: 1fr 460px; gap: 64px; align-items: center; }
 .l-precio > div > p { color: var(--ink-2); max-width: 26rem; }
@@ -246,7 +237,6 @@
   .l-demo-cuerpo { grid-template-columns: 1fr; }
   .l-demo-lado { display: none; }
   .l-demo-pie { flex-direction: column; align-items: flex-start; }
-  .l-confianza-lista { grid-template-columns: 1fr; }
   .l-final { flex-direction: column; align-items: flex-start; padding: 36px 28px; }
 }
 @media (max-width: 560px) {

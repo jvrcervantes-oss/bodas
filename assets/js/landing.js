@@ -71,7 +71,6 @@
       ['.l-pasos-lista', 'li'],
       ['.l-demo', null],
       ['.l-atelier-grid', '.l-atelier-card'],
-      ['.l-confianza-lista', null],
       ['.l-packs', '.l-precio-card'],
       ['.l-faq', '.l-faq-item'],
       ['.l-final', null],
