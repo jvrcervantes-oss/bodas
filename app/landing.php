@@ -288,13 +288,14 @@ function pagina_landing(): string {
           </div>
         </div>
         <?php // Tique de tres pasos (owner, 29-sep-2026, artifact «Probadlo gratis BodaEnlace», https://claude.ai/artifact/QvXnH3RB4SiJs8ePEZ8GXL):
-              // crear y la vista previa a 0 €, publicar desde el pack Esencial. El precio sale de precio_total_cent(), nunca escrito a mano ?>
+              // crear y la vista previa a 0 €, publicar desde el pack Esencial. Estilo «Limpio, todo en Poppins» (owner, 29-sep-2026,
+              // https://claude.ai/artifact/5ALMs3gHmAxF7rQ8YDxE4u): casillas con números de app, check verde y la de publicar en rosa. El precio sale de precio_total_cent(), nunca escrito a mano ?>
         <div class="l-demo-pie">
-          <p class="l-tique-tit">¿Lo <em>probáis</em>?</p>
+          <p class="l-tique-tit">¿Lo probáis?<small>Solo se paga al publicar.</small></p>
           <ul class="l-tique" aria-label="Qué se paga y cuándo">
-            <li><small>Crear</small><b>0 €</b><span class="l-tique-gratis">Gratis</span></li>
-            <li><small>Vista previa</small><b>0 €</b><span class="l-tique-gratis">Gratis</span></li>
-            <li class="l-tique-pago"><small>Publicar</small><b>desde <?= h($total) ?> <span>IVA incl.</span></b></li>
+            <li><small>Crear</small><b>0 €</b><span class="l-tique-ok"><?= il('check', 'i') ?>Gratis</span></li>
+            <li><small>Vista previa</small><b>0 €</b><span class="l-tique-ok"><?= il('check', 'i') ?>Gratis</span></li>
+            <li class="l-tique-pago"><small>Publicar, desde</small><b><?= h($total) ?></b><span class="l-tique-ok">IVA incl.</span></li>
           </ul>
           <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Abrir el constructor</a>
         </div>

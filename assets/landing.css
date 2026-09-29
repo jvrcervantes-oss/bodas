@@ -151,16 +151,17 @@
 /* «¿Lo probáis?» como tique de tres pasos: crear y vista previa a 0 €, publicar con su precio (owner, 29-sep-2026) */
 .l-demo-pie { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 24px; align-items: center; margin: 0 24px 24px; padding: 18px 22px; border-radius: var(--r-lg);
   background: var(--paper); border: 1px solid var(--line-soft); box-shadow: var(--e1); }
-.l-tique-tit { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: 1.1; }
-.l-tique-tit em { color: var(--rose); }
-.l-tique { display: flex; justify-content: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
-.l-tique li { display: grid; justify-items: center; align-content: start; gap: 2px; padding: 8px 22px; text-align: center; }
-.l-tique li + li { border-left: 1.5px dashed var(--line); }
-.l-tique small { font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
-.l-tique b { font-family: var(--serif); font-weight: 400; font-size: 30px; line-height: 1; color: var(--sage); }
-.l-tique .l-tique-pago b { font-size: 24px; color: var(--ink); white-space: nowrap; }
-.l-tique .l-tique-pago b span { font-family: var(--sans); font-size: 11px; color: var(--ink-3); }
-.l-tique-gratis { padding: 1px 8px; border-radius: var(--pill); background: var(--sage-c); color: var(--sage); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.l-tique-tit { margin: 0; font-family: var(--sans); font-weight: 600; font-size: 19px; line-height: 1.3; letter-spacing: -.01em; }
+.l-tique-tit small { display: block; font-weight: 400; font-size: 13px; color: var(--ink-3); letter-spacing: 0; }
+.l-tique { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.l-tique li { display: grid; gap: 2px; padding: 12px 14px; border-radius: 12px; background: var(--surface-low); }
+.l-tique small { font-size: 12px; color: var(--ink-3); }
+.l-tique b { font-weight: 600; font-size: 22px; line-height: 1.2; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.l-tique-ok { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 500; color: var(--sage); }
+.l-tique-ok .i { width: 13px; height: 13px; stroke-width: 2.4; }
+.l-tique .l-tique-pago { background: var(--rose-c); }
+.l-tique .l-tique-pago b { color: var(--rose-btn-2); }
+.l-tique .l-tique-pago .l-tique-ok { color: var(--ink-3); font-weight: 400; }
 
 /* Colección Atelier */
 /* una destacada a la izquierda y, a la derecha, su texto y los seis en miniatura para cambiarla (owner, 29-sep-2026) */
@@ -318,10 +319,10 @@
   .l-precio-card { padding: 40px 24px 28px; }
   .l-precio-cifra b { font-size: 50px; }
   .l-demo-pie { margin: 0 16px 16px; }
-  .l-tique li { flex: 1; padding: 6px 8px; }
-  .l-tique b { font-size: 24px; } .l-tique .l-tique-pago b { font-size: 18px; }
-  .l-tique .l-tique-pago b span { display: block; margin-top: 4px; }   /* «IVA incl.» debajo: en 360 px no cabe al lado */
-  .l-tique small { font-size: 9.5px; }
+  .l-tique { gap: 6px; }
+  .l-tique li { padding: 10px; }
+  .l-tique b { font-size: 18px; }
+  .l-tique small { font-size: 11px; line-height: 1.3; min-height: 2.6em; }   /* «Vista previa» y «Publicar, desde» van en dos líneas: los importes quedan a la misma altura */
   .l-demo-cuerpo { padding: 16px; }
   .l-demo-previa img { height: 300px; }
 }
