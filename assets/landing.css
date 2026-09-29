@@ -351,7 +351,7 @@
 .l-wa.rv-wa .l-wa-b { opacity: 0; transform: translateY(8px) scale(.96); }
 .l-wa.rv-wa.in .l-wa-b { opacity: 1; transform: none; transition: opacity .45s var(--out), transform .45s var(--out); transition-delay: .5s; }
 .l-wa.rv-wa.in .l-wa-entra { transition-delay: 1.3s; }
-@media print { .l-wa.rv-wa .l-wa-b { opacity: 1; transform: none; } }
+@media print { .l-wa.rv-wa .l-wa-b, .l-guirnalda.rv-g img { opacity: 1; transform: none; filter: none; } }
 
 /* ---- revelado escalonado de las secciones (solo lo que landing.js marca con .rv) ---- */
 .rv { opacity: 0; transform: translateY(26px); filter: blur(4px); }
