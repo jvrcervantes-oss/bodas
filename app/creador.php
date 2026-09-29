@@ -43,13 +43,13 @@ function rutas_creador(string $ruta, string $metodo): void {
             if (!empresa_completa()) {
                 echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(marca()) . ' todavía no está a la venta. '
                     . 'Publicaremos aquí el texto completo, con los datos de quién presta el servicio, antes de abrir la contratación.</p>'
-                    . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
+                    . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>', false);
                 return;
             }
             analitica_vista($ruta);
             ob_start();
             include APP_DIR . '/legal/' . $ruta . '.php';
-            echo pagina_simple($t, '<article class="legal">' . ob_get_clean() . '</article>');
+            echo pagina_simple($t, '<article class="legal">' . ob_get_clean() . '</article>', false);
             return;
         case 'api/vista-previa':
             api_vista_previa($metodo, url_creador('assets/'));
@@ -315,12 +315,13 @@ function listo_muestra(array $ped): void {
 }
 
 /** Página sencilla del creador (legales, éxito). */
-function pagina_simple(string $titulo, string $cuerpo): string {
+/** $conTitulo = false cuando el cuerpo ya trae su <h1> (los textos legales), para no repetir el título (owner, 29-sep-2026). */
+function pagina_simple(string $titulo, string $cuerpo, bool $conTitulo = true): string {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="robots" content="noindex">' . favicon_links()
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
         . '<header class="s-top">' . logo_marca('c-marca', BASE_PATH . '/') . '</header>'
-        . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo . '</main>' . pie_creador() . '</body></html>';
+        . '<main class="simple-main">' . ($conTitulo ? '<h1>' . h($titulo) . '</h1>' : '') . $cuerpo . '</main>' . pie_creador() . '</body></html>';
 }
 
 function pie_creador(): string {

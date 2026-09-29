@@ -72,6 +72,7 @@ foreach (['/aviso-legal', '/condiciones', '/privacidad'] as $r) {
     $h = pagina($puerto, $r);
     ok(strpos($h, '00000000T') === false && strpos($h, 'Calle de Prueba') === false && strpos($h, 'Titular de Prueba') === false, "en pruebas: $r sin titular, NIF ni domicilio");
     ok(strpos($h, 'todavía no está a la venta. Publicaremos') === false && substr_count($h, '<h2>') >= 3, "en pruebas: $r con el texto entero");
+    ok(substr_count($h, '<h1') === 1, "en pruebas: $r con un solo título");
 }
 
 // Cobro real: los datos vuelven solos y los regalos se abren
