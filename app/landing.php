@@ -221,21 +221,26 @@ function pagina_landing(): string {
         <h2>Vuestra web en tres pasos</h2>
         <p>No hace falta saber de diseño ni de informática. Lo que escribís se ve al instante en la vista previa.</p>
       </div>
+      <?php // Papelería (owner, 29-sep-2026, artifact «Tres pasos de BodaEnlace»): cada paso es un objeto de boda dibujado en
+            // HTML/CSS: el muestrario de papeles con las paletas reales, la tarjeta con los nombres y el sobre con el sello ?>
       <ol class="l-pasos-lista">
         <li>
-          <span class="l-num">01</span>
+          <div class="l-paso-esc" aria-hidden="true"><span class="l-abanico"><?php foreach (array_slice(array_values($paletas), 0, 7) as $k => $col): ?><i style="background:<?= h($col) ?>;--g:<?= ($k - 3) * 13 ?>deg"></i><?php endforeach; ?></span></div>
+          <span class="l-paso-n">Paso 1</span>
           <h3>Elegid el estilo</h3>
           <p><?= count(TEMAS) ?> paletas, <?= count(FUENTES) ?> tipografías y <?= count(DECORACIONES) ?> decoraciones para montar el vuestro, o uno de los <?= count(ATELIER) ?> diseños ilustrados de la Colección Atelier.</p>
-          <span class="l-swatches"><?php foreach ($paletas as $col): ?><i style="background:<?= h($col) ?>"></i><?php endforeach; ?></span>
         </li>
         <li>
-          <span class="l-num">02</span>
+          <div class="l-paso-esc" aria-hidden="true"><span class="l-paso-tarjeta"><small>Nuestra boda</small><b>Lucía &amp; Marcos</b><span>12 · 06 · 2027 · Sevilla</span></span></div>
+          <span class="l-paso-n">Paso 2</span>
           <h3>Rellenad datos y foto</h3>
           <p>Nombres, fecha, lugares, vuestra foto y las secciones que queráis: activad, quitad y ordenad las páginas.</p>
           <span class="l-paso-pie"><?= il('lapiz', 'i i-sm') ?>Vista previa en directo</span>
         </li>
         <li>
-          <span class="l-num">03</span>
+          <div class="l-paso-esc" aria-hidden="true"><span class="l-paso-sobre"><span class="l-precio-sello"><?= il('anillos', 'i i-anillos') ?></span></span>
+            <span class="l-paso-enviado"><svg class="i i-sm" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>Enviado</span></div>
+          <span class="l-paso-n">Paso 3</span>
           <h3>Compartid el enlace</h3>
           <p>Al publicar, la web queda online al momento. Mandad el enlace por WhatsApp y las confirmaciones llegan a vuestro panel.</p>
           <span class="l-paso-pie"><?= il('enlace', 'i i-sm') ?><?= h($ejemplo) ?></span>

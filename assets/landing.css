@@ -96,8 +96,23 @@
   -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent); mask-image: linear-gradient(180deg, #000 58%, transparent); }
 .l-guirnalda img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .l-pasos-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.l-pasos-lista li { padding: 32px 28px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); }
-.l-num { display: block; font-family: var(--serif); font-size: 44px; line-height: 1; color: var(--rose-c); -webkit-text-stroke: 1px var(--rose); margin-bottom: 14px; }
+.l-pasos-lista li { padding: 14px 14px 28px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); text-align: center; }
+.l-pasos-lista li > :not(.l-paso-esc) { margin-inline: 14px; }
+/* Papelería (owner, 29-sep-2026): una escena por paso dentro de la tarjeta, con el radio de la tarjeta menos su margen */
+.l-paso-esc { position: relative; display: grid; place-items: center; height: 180px; margin-bottom: 22px; border-radius: calc(var(--r-xl) - 14px); background: linear-gradient(180deg, var(--blush), var(--surface)); overflow: hidden; }
+.l-paso-n { display: block; font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.l-abanico { position: relative; width: 150px; height: 120px; }
+.l-abanico i { position: absolute; left: 50%; bottom: 0; width: 44px; height: 108px; margin-left: -22px; border-radius: 10px; border: 3px solid #fff; box-shadow: 0 2px 6px rgba(38, 34, 32, .14); transform: rotate(var(--g)); transform-origin: 50% 92%; }
+.l-paso-tarjeta { display: block; width: 176px; padding: 18px 12px; background: #fffdf9; border: 1px solid rgba(197, 160, 89, .5); border-radius: 12px; box-shadow: var(--e2); transform: rotate(-3deg); }
+.l-paso-tarjeta small { display: block; font-size: 8px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+.l-paso-tarjeta b { display: block; margin: 4px 0; font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 25px; line-height: 1.2; color: var(--rose); }
+.l-paso-tarjeta span { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.l-paso-sobre { position: relative; display: block; width: 170px; height: 112px; border-radius: 12px; background: #efd9d4; box-shadow: var(--e2); overflow: hidden; }
+.l-paso-sobre::before { content: ''; position: absolute; inset: 0 0 auto; height: 66px; background: #e3c6c0; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.l-paso-sobre .l-precio-sello { top: 64px; width: 44px; height: 44px; transform: translate(-50%, -50%) rotate(-8deg); }
+.l-paso-sobre .l-precio-sello .i-anillos { width: 23px; height: 21px; }
+.l-paso-enviado { position: absolute; right: 18px; top: 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--sage); }
+.l-paso-enviado .i { width: 16px; height: 16px; }
 .l-pasos-lista h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 0 0 10px; }
 .l-pasos-lista p { margin: 0 0 18px; font-size: 14px; color: var(--ink-2); }
 .l-swatches { display: flex; gap: 8px; }
