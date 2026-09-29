@@ -49,10 +49,10 @@ $c['fecha'] = date('Y-m-d', strtotime('+200 days'));
 $c['ceremonia']['lugar'] = 'Ayuntamiento'; $c['ceremonia']['hora'] = '12:00';
 $base = ['config' => json_encode($c), 'acepto_condiciones' => 'si'];
 
-// 0. En pruebas (lemon_test por defecto) el titular no se publica, así que los regalos están cerrados y las
-//    páginas legales no enseñan NIF ni domicilio (owner + revisor, 27-sep)
-[$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-en-pruebas', 'codigo' => $codigo]);
-ok($st === 503 && empty($j['ok']), 'en pruebas: el código de regalo no publica (' . $st . ')');
+// 0. En pruebas (lemon_test por defecto) el titular no se publica, pero los regalos SÍ se canjean (owner, 29-sep)
+//    y las páginas legales salen enteras sin NIF ni domicilio. El canje de verdad se prueba en el punto 1.
+[$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-en-pruebas', 'codigo' => 'AAAAA-BBBBB-CCCCC']);
+ok($st === 422 && empty($j['ok']), 'en pruebas: un código falso se rechaza como no válido, no como cerrado (' . $st . ')');
 function pagina(int $puerto, string $ruta): string {
     $ch = curl_init('http://127.0.0.1:' . $puerto . $ruta);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['Host: bodaenlace.com']]);
@@ -63,6 +63,7 @@ function pagina(int $puerto, string $ruta): string {
 foreach (['/aviso-legal', '/condiciones', '/privacidad'] as $r) {
     $h = pagina($puerto, $r);
     ok(strpos($h, '00000000T') === false && strpos($h, 'Calle de Prueba') === false && strpos($h, 'Titular de Prueba') === false, "en pruebas: $r sin titular, NIF ni domicilio");
+    ok(strpos($h, 'todavía no está a la venta. Publicaremos') === false && substr_count($h, '<h2>') >= 3, "en pruebas: $r con el texto entero");
 }
 
 // Cobro real: los datos vuelven solos y los regalos se abren

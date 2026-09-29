@@ -8,6 +8,7 @@ $V = h($L['vendedor'] ?? '');
 <h1>Aviso legal</h1>
 
 <h2>Quién está detrás de esta web</h2>
+<?php if ($E['nif'] !== ''): ?>
 <p><?= $M ?> es un producto de AxisWorks, el nombre comercial con el que <?= h($E['titular']) ?> ofrece el creador de webs de boda de <?= h(BASE_DOMAIN) ?> y las webs que se publican en sus subdominios.</p>
 <ul>
   <li>Titular: <?= h($E['titular']) ?></li>
@@ -15,6 +16,12 @@ $V = h($L['vendedor'] ?? '');
   <li>Domicilio: <?= h($E['domicilio']) ?></li>
   <li>Email: <?= h($E['email']) ?></li>
 </ul>
+<?php else: ?>
+<p><?= $M ?> es un producto de AxisWorks que ofrece el creador de webs de boda de <?= h(BASE_DOMAIN) ?> y las webs que se publican en sus subdominios. El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta.</p>
+<ul>
+  <li>Email: <?= h($E['email']) ?></li>
+</ul>
+<?php endif; ?>
 
 <h2>Para qué sirve esta web</h2>
 <p>Desde aquí se crea y se aloja una web de boda. La venta y el cobro los hace <?= $V ?> (<?= h($L['vendedor_entidad'] ?? '') ?>) como vendedor final; el servicio lo prestamos nosotros. Las condiciones están en las <a href="<?= BASE_PATH ?>/condiciones">condiciones del servicio</a> y el uso de los datos, en la <a href="<?= BASE_PATH ?>/privacidad">política de privacidad</a>.</p>
@@ -24,7 +31,7 @@ $V = h($L['vendedor'] ?? '');
 <p>Para avisarnos, escribe a <?= h($E['email']) ?> indicando la dirección de la web y qué contenido es.</p>
 
 <h2>Propiedad intelectual</h2>
-<p>El diseño, el código y los textos propios del creador y de la plantilla de boda son de <?= h($E['titular']) ?>. No se pueden copiar, vender ni distribuir sin permiso, salvo lo que permita la licencia del ZIP descrita en las condiciones del servicio.</p>
+<p>El diseño, el código y los textos propios del creador y de la plantilla de boda son de <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. No se pueden copiar, vender ni distribuir sin permiso, salvo lo que permita la licencia del ZIP descrita en las condiciones del servicio.</p>
 
 <h2>Enlaces a otras webs</h2>
 <p>El pago se hace en la página de <?= $V ?>, que es suya y se rige por sus propias <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" rel="noopener">condiciones de compra</a> y su <a href="<?= h($L['vendedor_privacidad'] ?? '') ?>" rel="noopener">política de privacidad</a>.</p>

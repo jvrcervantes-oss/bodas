@@ -37,9 +37,10 @@ function rutas_creador(string $ruta, string $metodo): void {
         case 'condiciones': case 'privacidad': case 'aviso-legal':
             header('Content-Security-Policy: ' . CSP_CREADOR);
             $t = ['condiciones' => 'Condiciones del servicio', 'privacidad' => 'Privacidad', 'aviso-legal' => 'Aviso legal'][$ruta];
-            $E = empresa();
-            // Sin titular, NIF y domicilio (BOD-1), o en pruebas (titular_oculto, owner 27-sep): se dice la verdad
-            if (!empresa_completa() || titular_oculto()) {
+            // En pruebas (titular_oculto, owner 27-sep) el texto va entero pero sin nombre, NIF ni domicilio: los amigos
+            // que canjean un código leen lo que aceptan (owner, 29-sep). Sin titular en secrets.php (BOD-1): se dice la verdad
+            $E = empresa_publica();
+            if (!empresa_completa()) {
                 echo pagina_simple($t, '<article class="legal"><h1>' . h($t) . '</h1><p>' . h(marca()) . ' todavía no está a la venta. '
                     . 'Publicaremos aquí el texto completo, con los datos de quién presta el servicio, antes de abrir la contratación.</p>'
                     . '<p>Para cualquier pregunta: <a href="mailto:' . h($E['email']) . '">' . h($E['email']) . '</a>.</p></article>');
@@ -121,9 +122,9 @@ function api_pagar(string $metodo): void {
         if (cortesia_bloqueada() || !limite('cortesia|' . ip_cliente(), 10, 3600, true)) {
             json_response(['ok' => false, 'error' => 'Demasiados intentos con códigos. Prueba dentro de un rato.'], 429);
         }
-        // Sin titular en los textos legales no se publica ninguna web, ni regalada (BOD-1). En pruebas el titular
-        // no se publica (titular_oculto), así que los códigos quedan cerrados hasta el cobro real (revisor, 27-sep)
-        if (!empresa_completa() || titular_oculto()) {
+        // Sin titular en secrets.php no se publica ninguna web, ni regalada (BOD-1). En pruebas SÍ se canjean (owner,
+        // 29-sep: códigos para amigos que dan feedback): las condiciones salen enteras, sin nombre, NIF ni domicilio
+        if (!empresa_completa()) {
             json_response(['ok' => false, 'error' => 'Los códigos de regalo se activan en cuanto terminemos los datos legales del servicio. Os avisamos.'], 503);
         }
         $cortesia = cortesia_busca($codigo);

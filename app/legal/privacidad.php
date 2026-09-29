@@ -13,12 +13,19 @@ $V = h($L['vendedor'] ?? '');
 <p>Los datos de los invitados que responden en cada web de boda no los tratamos por nuestra cuenta: los tratamos por encargo de cada pareja. Cada web tiene su propio aviso de privacidad para invitados.</p>
 
 <h2>Responsable</h2>
+<?php if ($E['nif'] !== ''): ?>
 <ul>
   <li><?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?>, un producto de AxisWorks, su nombre comercial</li>
   <li>NIF: <?= h($E['nif']) ?></li>
   <li>Domicilio: <?= h($E['domicilio']) ?></li>
   <li>Email: <?= h($E['email']) ?></li>
 </ul>
+<?php else: ?>
+<p>Quien presta el servicio con la marca <?= $M ?>, un producto de AxisWorks. El servicio está en pruebas y todavía no se vende: su nombre, NIF y domicilio se publicarán aquí antes de abrir la venta.</p>
+<ul>
+  <li>Email: <?= h($E['email']) ?></li>
+</ul>
+<?php endif; ?>
 
 <h2>Mientras montáis la web en el creador</h2>
 <p>El borrador (textos, fechas, lugares, foto) se guarda en el almacenamiento local de vuestro navegador, salvo que pulséis «Seguir en otro dispositivo». No nos llega nada más hasta que publicáis. Si borráis los datos del navegador, el borrador que solo esté ahí se pierde.</p>
