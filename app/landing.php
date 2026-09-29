@@ -209,13 +209,14 @@ function pagina_landing(): string {
   </section>
 
   <section class="l-sec l-pasos" id="pasos">
-    <?php // Guirnalda en acuarela colgando sobre el título (owner, 29-sep-2026): dibujada por código en el estudio, sin licencias
-          // de terceros (artifact «Flores de Cómo funciona», https://claude.ai/artifact/QiNuvWwPhHiN579y1nhgeH,
-          // opción «colgando», semilla 1000, a 1178 px de ancho y 2x). A todo el
-          // ancho y fundida hacia abajo. Para rehacerla, se exporta el canvas de esa opción y semilla. ?>
-    <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-flores.webp"
-      srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-flores-1200.webp 1178w, <?= BASE_PATH ?>/assets/img/landing/guirnalda-flores.webp 2356w"
-      sizes="100vw" alt="" width="2356" height="448" loading="lazy" decoding="async"></div>
+    <?php // Guirnalda colgando de una rama sobre el título (owner, 29-sep-2026): las rosas cuelgan enteras de una rama fina que
+          // cruza de lado a lado, en vez de salir cortadas por el borde de arriba. Dibujada por código en el estudio, sin licencias
+          // (artifact «Guirnalda de Cómo funciona», https://claude.ai/artifact/VxnTovGpVazaDk5b1enVqd, opción «rama», semilla 24201),
+          // exportada a 2x: 1178 px de ancho para ordenador y 388 px para móvil, cada una compuesta para su ancho. ?>
+    <div class="l-guirnalda"><picture>
+      <source media="(max-width: 600px)" srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-rama-movil.webp" width="776" height="340">
+      <img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-rama.webp" alt="" width="2356" height="500" loading="lazy" decoding="async">
+    </picture></div>
     <div class="l-wrap">
       <div class="l-sec-cab l-centro">
         <span class="overline">Fácil y al momento</span>

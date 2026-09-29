@@ -87,10 +87,12 @@
 
 /* pasos */
 .l-pasos { padding-top: 0; background: linear-gradient(180deg, var(--surface), var(--blush) 50%, var(--surface)); }
-/* Guirnalda en acuarela colgando sobre el título (owner, 29-sep-2026), dibujada en el estudio: a todo el ancho y fundida
-   hacia abajo. Fondo transparente; multiply la funde con el degradado. En móvil recorta los lados, nunca se encoge */
-.l-guirnalda { position: relative; height: clamp(130px, 19vw, 300px); margin-bottom: 4px; pointer-events: none; mix-blend-mode: multiply;
-  -webkit-mask-image: linear-gradient(180deg, #000 58%, transparent); mask-image: linear-gradient(180deg, #000 58%, transparent); }
+/* Guirnalda colgando de una rama sobre el título (owner, 29-sep-2026), dibujada en el estudio: la rama marca el borde de arriba
+   y las rosas quedan enteras. Fondo transparente; multiply la funde con el degradado. Alto = el de la imagen a ese ancho
+   (1178×250 → 21,2vw; en móvil su versión de 388×170 → 43,6vw), con techo para pantallas muy anchas: allí solo recorta el vacío de abajo */
+.l-guirnalda { position: relative; height: clamp(170px, 21.2vw, 300px); margin-bottom: 4px; pointer-events: none; mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent); mask-image: linear-gradient(180deg, #000 70%, transparent); }
+@media (max-width: 600px) { .l-guirnalda { height: 43.6vw; } }
 .l-guirnalda img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .l-pasos-lista { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
 .l-pasos-lista li { padding: 14px 14px 28px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); text-align: center; }
