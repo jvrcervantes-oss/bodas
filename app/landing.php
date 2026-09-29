@@ -99,19 +99,29 @@ function pagina_landing(): string {
 </head>
 <body class="l">
 
+<?php // Menú con sección activa (owner, 29-sep-2026, artifact «Menú de BodaEnlace», https://claude.ai/artifact/KxQa68jkVjYbsF7g11zxnx):
+      // subrayado rosa bajo la sección en la que se está, y en pantallas estrechas (antes sin menú) un botón que abre las secciones.
+      // Una sola lista de secciones para los dos menús; landing.js engancha por el href (#id de la sección), nunca por el rótulo
+$secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constructor' => 'Constructor', 'atelier' => 'Atelier', 'precio' => 'Precio', 'preguntas' => 'Preguntas']; ?>
 <header class="l-top">
   <div class="l-top-in">
     <?= logo_marca('l-logo l-logo-web', BASE_PATH . '/') ?>
     <nav class="l-nav" aria-label="Secciones">
-      <a href="#incluye">Qué incluye</a>
-      <a href="#pasos">Cómo funciona</a>
-      <a href="#constructor">Constructor</a>
-      <a href="#atelier">Atelier</a>
-      <a href="#precio">Precio</a>
-      <a href="#preguntas">Preguntas</a>
+<?php foreach ($secciones as $id => $t): ?>
+      <a href="#<?= $id ?>"><?= h($t) ?></a>
+<?php endforeach; ?>
+      <span class="l-nav-raya" aria-hidden="true"></span>
     </nav>
-    <a class="b-btn b-rose l-top-cta" href="<?= BASE_PATH ?>/crear">Crear nuestra web</a>
+    <div class="l-top-dcha">
+      <a class="b-btn b-rose l-top-cta" href="<?= BASE_PATH ?>/crear">Crear nuestra web</a>
+      <button type="button" class="l-hamb" aria-label="Secciones" aria-expanded="false" aria-controls="l-hoja" data-menu-movil hidden><span></span></button>
+    </div>
   </div>
+  <nav class="l-hoja" id="l-hoja" aria-label="Secciones (menú desplegable)" hidden>
+<?php foreach ($secciones as $id => $t): ?>
+    <a href="#<?= $id ?>"><?= h($t) ?></a>
+<?php endforeach; ?>
+  </nav>
 </header>
 
 <main>

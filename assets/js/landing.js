@@ -28,6 +28,46 @@
     mira();
   }
 
+  // Menú: sección activa. Engancha por el href (#id) de cada enlace; marca .on y aria-current en los dos menús y mueve la raya
+  const navs = [...document.querySelectorAll('.l-nav a[href^="#"], .l-hoja a[href^="#"]')];
+  const raya = document.querySelector('.l-nav-raya');
+  const secs = [...new Set(navs.map(a => a.getAttribute('href').slice(1)))].map(id => document.getElementById(id)).filter(Boolean);
+  if (secs.length) {
+    let pendS = false, actual;
+    const marcaSec = () => {
+      pendS = false;
+      const y = (top ? top.offsetHeight : 0) + innerHeight * 0.25;
+      let cur = null;
+      for (const s of secs) if (s.getBoundingClientRect().top <= y) cur = s;
+      if (cur && cur.getBoundingClientRect().bottom < y) cur = null;   // pasada la última sección (cierre y pie): ninguna activa
+      const id = cur ? cur.id : null;
+      if (id === actual) return;
+      actual = id;
+      navs.forEach(a => {
+        const on = a.getAttribute('href') === '#' + id;
+        a.classList.toggle('on', on);
+        if (on) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+      });
+      const on = document.querySelector('.l-nav a.on');
+      if (raya) { if (on) { raya.style.left = on.offsetLeft + 'px'; raya.style.width = on.offsetWidth + 'px'; raya.style.opacity = 1; } else raya.style.opacity = 0; }
+    };
+    addEventListener('scroll', () => { if (!pendS) { pendS = true; requestAnimationFrame(marcaSec); } }, { passive: true });
+    addEventListener('resize', () => { actual = undefined; marcaSec(); });
+    marcaSec();
+  }
+
+  // Menú de pantallas estrechas: el botón abre y cierra la hoja de secciones; se cierra al elegir una, con Escape o al ensanchar
+  const hamb = document.querySelector('[data-menu-movil]');
+  const hoja = hamb && document.getElementById(hamb.getAttribute('aria-controls'));
+  if (hamb && hoja) {
+    hamb.hidden = false;
+    const abre = si => { hamb.setAttribute('aria-expanded', String(si)); hoja.hidden = !si; };
+    hamb.addEventListener('click', () => abre(hoja.hidden));
+    hoja.addEventListener('click', e => { if (e.target.closest('a')) abre(false); });
+    addEventListener('keydown', e => { if (e.key === 'Escape' && !hoja.hidden) { abre(false); hamb.focus(); } });
+    matchMedia('(min-width: 1081px)').addEventListener('change', e => { if (e.matches) abre(false); });
+  }
+
   // Tarjeta «Confirmación recibida» del hero: va cambiando de ejemplo mientras el hero está a la vista.
   // Son datos de ejemplo, como el vídeo que lleva el rótulo «Ejemplo»; la tarjeta es aria-hidden.
   const flota = document.querySelector('.l-flota-a');
