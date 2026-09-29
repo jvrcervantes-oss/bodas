@@ -45,4 +45,10 @@ DirectoryIndex index.php
   ExpiresByType application/javascript "access plus 30 days"
   ExpiresByType image/webp "access plus 30 days"
   ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 30 days"
+</IfModule>
+
+# Las flores de acuarela son SVG de 125-275 KB: comprimidos bajan a 26-55 KB (29-sep-2026)
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE image/svg+xml text/css application/javascript text/html
 </IfModule>
