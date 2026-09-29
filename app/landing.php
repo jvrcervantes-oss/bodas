@@ -287,10 +287,16 @@ function pagina_landing(): string {
             <span class="l-ejemplo">Ejemplo</span>
           </div>
         </div>
+        <?php // Tique de tres pasos (owner, 29-sep-2026, artifact «Probadlo gratis BodaEnlace», https://claude.ai/artifact/QvXnH3RB4SiJs8ePEZ8GXL):
+              // crear y la vista previa a 0 €, publicar desde el pack Esencial. El precio sale de precio_total_cent(), nunca escrito a mano ?>
         <div class="l-demo-pie">
-          <span class="l-flota-ico"><?= il('flor') ?></span>
-          <p><b>¿Lo probáis?</b> Crear la web y verla en la vista previa es gratis. Solo se paga al publicar.</p>
-          <a class="b-btn b-gold" href="<?= BASE_PATH ?>/crear">Abrir el constructor</a>
+          <h3>¿Lo <em>probáis</em>?</h3>
+          <ul class="l-tique" aria-label="Qué se paga y cuándo">
+            <li><small>Crear</small><b>0 €</b><span class="l-tique-gratis">Gratis</span></li>
+            <li><small>Vista previa</small><b>0 €</b><span class="l-tique-gratis">Gratis</span></li>
+            <li class="l-tique-pago"><small>Publicar</small><b>desde <?= h($total) ?> <span>IVA incl.</span></b></li>
+          </ul>
+          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Abrir el constructor</a>
         </div>
       </div>
     </div>
