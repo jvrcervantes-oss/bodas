@@ -25,6 +25,7 @@ const ICONOS_L = [
     'escudo' => 'M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z',
     'ojo' => 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
     'mas' => 'M12 5v14M5 12h14',
+    'libro' => 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M9 8h6',   // libro de invitados (aviso del cierre)
     // Iconos de «Qué incluye» elegidos por el owner el 28-sep-2026 (artifact «Iconos BodaEnlace»): las rayas de la mesa
     // se leían como un sol, el portapapeles era de oficina y el ojo decía «vista», no «fotos»
     'mesa' => 'M8 12a4 4 0 1 0 8 0 4 4 0 1 0-8 0zM10.4 4.2a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM10.4 19.8a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM2.6 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0zM18.2 12a1.6 1.6 0 1 0 3.2 0 1.6 1.6 0 1 0-3.2 0z',   // mesa redonda con cuatro sillas redondas
@@ -388,15 +389,26 @@ function pagina_landing(): string {
 
   <section class="l-sec">
     <div class="l-wrap">
+      <?php // Cierre con la web en el móvil de un invitado y los avisos que le van llegando a la pareja (owner, 29-sep-2026,
+            // artifact «Cierre de BodaEnlace», https://claude.ai/artifact/6UnQZmVnoWvk4Nz8bTqFAT, opción «Con la web en el móvil»).
+            // Los avisos son de ejemplo y cuentan lo que hace el panel: confirmaciones, canciones con votos y el libro ?>
       <div class="l-final">
-        <div>
+        <div class="l-final-txt">
           <span class="l-chip l-chip-dark"><?= il('corazon', 'i i-sm') ?>Vuestro momento es ahora</span>
-          <h2>Cread hoy la web que vuestros invitados van a abrir una y otra vez</h2>
+          <h2>Cread hoy la web que vuestros invitados van a abrir <em>una y otra vez</em></h2>
           <p>Sin suscripciones. Un único pago al publicar, y la web vuestra hasta <?= (int) MESES_ALOJAMIENTO ?> meses después de la boda.</p>
+          <div class="l-final-ctas">
+            <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Crear nuestra web</a>
+            <a class="b-btn l-btn-ghost" href="#precio">Ver precio</a>
+          </div>
         </div>
-        <div class="l-final-ctas">
-          <a class="b-btn b-rose" href="<?= BASE_PATH ?>/crear">Crear nuestra web</a>
-          <a class="b-btn l-btn-ghost" href="#precio">Ver precio</a>
+        <div class="l-final-tel" aria-hidden="true">
+          <div class="l-final-pant"><img src="<?= BASE_PATH ?>/assets/img/landing/demo-movil.webp" alt="" width="780" height="1560" loading="lazy" decoding="async"></div>
+          <div class="l-final-avisos">
+            <div class="l-aviso"><span class="l-aviso-ic l-aviso-rosa"><?= il('check', 'i i-sm') ?></span><span><b>Carmen ha confirmado</b><small>2 personas · menú de carne</small></span></div>
+            <div class="l-aviso"><span class="l-aviso-ic l-aviso-salvia"><?= il('musica', 'i i-sm') ?></span><span><b>Nueva canción propuesta</b><small>por Javi · 4 votos</small></span></div>
+            <div class="l-aviso"><span class="l-aviso-ic l-aviso-oro"><?= il('libro', 'i i-sm') ?></span><span><b>Mensaje en el libro</b><small>de la tía Rosa</small></span></div>
+          </div>
         </div>
       </div>
     </div>
