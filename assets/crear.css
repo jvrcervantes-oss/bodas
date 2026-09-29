@@ -150,6 +150,7 @@
 #estiloPropio { display: flex; flex-direction: column; gap: 12px; }
 #estiloPropio .c-hr { margin: 14px 0; }
 #estiloPropio .c-ayuda { margin: -4px 0 0; }
+#estiloPropio > .c-modo-nota, #estiloPropio > .c-modo-aviso, #estiloPropio > .c-falta { margin-top: 0; }   /* el gap ya los separa */
 .c-atelier-esencial .c-atelier-img { width: 72px; flex-shrink: 0; aspect-ratio: 1; font-size: 26px; }
 .c-atelier-esencial .c-atelier-txt small { color: var(--ink-2); }
 #estiloPropio[hidden] { display: none; }
