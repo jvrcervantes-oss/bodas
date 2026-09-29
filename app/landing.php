@@ -22,7 +22,6 @@ const ICONOS_L = [
     'check' => 'M20 6 9 17l-5-5',
     'lapiz' => 'M4 20h4L19 9l-4-4L4 16zM13 7l4 4',
     'enlace' => 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
-    'enviar' => 'M22 2 11 13M22 2l-7 20-4-9-9-4z',
     'escudo' => 'M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z',
     'ojo' => 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
     'mas' => 'M12 5v14M5 12h14',
@@ -224,7 +223,10 @@ function pagina_landing(): string {
         <p>No hace falta saber de diseño ni de informática. Lo que escribís se ve al instante en la vista previa.</p>
       </div>
       <?php // Papelería (owner, 29-sep-2026, artifact «Tres pasos de BodaEnlace»): cada paso es un objeto de boda dibujado en
-            // HTML/CSS: el muestrario de papeles con las paletas reales, la tarjeta con los nombres y el sobre con el sello ?>
+            // HTML/CSS: el muestrario de papeles con las paletas reales y la tarjeta con los nombres. El Paso 3 es un trozo de
+            // chat de WhatsApp (owner, 29-sep-2026, artifact «Paso 3 de BodaEnlace», https://claude.ai/artifact/ST4KLaDZPUoAhSaNpnd2Td,
+            // opción «Conversación», colores WhatsApp): la pareja manda el mensaje que el panel deja escrito (bloque_compartir) y
+            // una amiga contesta. Solo dibujo de chat: ni logo ni nombre de WhatsApp dentro de la escena ?>
       <ol class="l-pasos-lista">
         <li>
           <div class="l-paso-esc" aria-hidden="true"><span class="l-abanico"><?php foreach (array_slice(array_values($paletas), 0, 7) as $k => $col): ?><i style="background:<?= h($col) ?>;--g:<?= ($k - 3) * 13 ?>deg"></i><?php endforeach; ?></span></div>
@@ -240,8 +242,13 @@ function pagina_landing(): string {
           <span class="l-paso-pie"><?= il('lapiz', 'i i-sm') ?>Vista previa en directo</span>
         </li>
         <li>
-          <div class="l-paso-esc" aria-hidden="true"><span class="l-paso-sobre"><span class="l-precio-sello"><?= il('anillos', 'i i-anillos') ?></span></span>
-            <span class="l-paso-enviado"><?= il('enviar', 'i i-sm') ?>Enviado</span></div>
+          <div class="l-paso-esc" aria-hidden="true"><div class="l-wa">
+            <div class="l-wa-cab"><span class="l-wa-av">C</span><span class="l-wa-nom">Carmen<small>en línea</small></span></div>
+            <div class="l-wa-cuerpo">
+              <div class="l-wa-b l-wa-sale">¡Nos casamos! Toda la info y la confirmación aquí: <span class="l-wa-url"><?= h($ejemplo) ?></span><span class="l-wa-h">20:14 <svg viewBox="0 0 16 10"><path d="M1 5.5 4 8.5 10 1.5M6.5 7.5l1 1 6-7"/></svg></span></div>
+              <div class="l-wa-b l-wa-entra">¡¡Qué ilusión!! Ya hemos confirmado los dos<span class="l-wa-h">20:19</span></div>
+            </div>
+          </div></div>
           <span class="l-paso-n">Paso 3</span>
           <h3>Compartid el enlace</h3>
           <p>Al publicar, la web queda online al momento. Mandad el enlace por WhatsApp y las confirmaciones llegan a vuestro panel.</p>

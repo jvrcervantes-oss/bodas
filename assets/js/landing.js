@@ -98,6 +98,18 @@
     }));
   }
 
+  // Chat del Paso 3: el mensaje de la pareja y la respuesta entran uno tras otro, una vez, al llegar. Solo si está por debajo de la pantalla al cargar.
+  const wa = document.querySelector('.l-wa');
+  if (wa && !menos && hayIO && wa.getBoundingClientRect().top >= innerHeight) {
+    wa.classList.add('rv-wa');
+    const ow = new IntersectionObserver(es => {
+      if (!es[0].isIntersecting) return;
+      ow.disconnect();
+      wa.classList.add('in');
+    }, { rootMargin: '0px 0px -15% 0px' });
+    ow.observe(wa);
+  }
+
   // Guirnalda de «Cómo funciona»: la acuarela aparece y baja un poco una vez, al llegar. Solo si está por debajo de la pantalla al cargar.
   const guir = document.querySelector('.l-guirnalda');
   if (guir && !menos && hayIO && guir.getBoundingClientRect().top >= innerHeight) {

@@ -106,12 +106,20 @@
 .l-paso-tarjeta small { display: block; font-size: 8px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
 .l-paso-tarjeta b { display: block; margin: 4px 0; font-family: var(--serif); font-weight: 400; font-style: italic; font-size: 25px; line-height: 1.2; color: var(--rose); }
 .l-paso-tarjeta span { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
-.l-paso-sobre { position: relative; display: block; width: 170px; height: 112px; border-radius: 12px; background: #efd9d4; box-shadow: var(--e2); overflow: hidden; }
-.l-paso-sobre::before { content: ''; position: absolute; inset: 0 0 auto; height: 66px; background: #e3c6c0; clip-path: polygon(0 0, 100% 0, 50% 100%); }
-.l-paso-sobre .l-precio-sello { top: 64px; width: 44px; height: 44px; transform: translate(-50%, -50%) rotate(-8deg); }
-.l-paso-sobre .l-precio-sello .i-anillos { width: 23px; height: 21px; }
-.l-paso-enviado { position: absolute; right: 18px; top: 16px; display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 500; color: var(--sage); }
-.l-paso-enviado .i { width: 16px; height: 16px; }
+/* Paso 3: trozo de chat con los colores de WhatsApp (owner, 29-sep-2026). Letra del sistema, como en un móvil */
+.l-wa { position: absolute; inset: 12px 12px 0; display: flex; flex-direction: column; border-radius: 14px 14px 0 0; background: #efe7de; box-shadow: var(--e2); overflow: hidden; text-align: left;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.l-wa-cab { flex: none; display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #f0f2f5; border-bottom: 1px solid rgba(0, 0, 0, .05); }
+.l-wa-av { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--rose); color: #fff; font-size: 9px; font-weight: 600; }
+.l-wa-nom { font-size: 11px; font-weight: 600; line-height: 1.1; color: #111b21; }
+.l-wa-nom small { display: block; font-size: 9px; font-weight: 400; color: #667781; }
+.l-wa-cuerpo { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 5px; padding: 8px 9px 10px; }
+.l-wa-b { max-width: 84%; padding: 5px 7px 4px; border-radius: 8px; font-size: 10.5px; line-height: 1.35; color: #111b21; box-shadow: 0 1px .5px rgba(11, 20, 26, .13); }
+.l-wa-sale { align-self: flex-end; background: #d9fdd3; border-top-right-radius: 2px; }
+.l-wa-entra { align-self: flex-start; background: #fff; border-top-left-radius: 2px; }
+.l-wa-url { color: #027eb5; white-space: nowrap; }
+.l-wa-h { float: right; display: inline-flex; align-items: center; gap: 2px; margin: 4px 0 -2px 8px; font-size: 8.5px; color: #667781; }
+.l-wa-h svg { width: 14px; height: 9px; fill: none; stroke: #53bdeb; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .l-pasos-lista h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 0 0 10px; }
 .l-pasos-lista p { margin: 0 0 18px; font-size: 14px; color: var(--ink-2); }
 .l-swatches { display: flex; gap: 8px; }
@@ -337,6 +345,11 @@
 /* ---- la guirnalda de «Cómo funciona» aparece y se asienta al llegar (landing.js pone .rv-g e .in) ---- */
 .l-guirnalda.rv-g img { opacity: 0; transform: translateY(-12px); filter: blur(3px); }
 .l-guirnalda.rv-g.in img { opacity: 1; transform: none; filter: none; transition: opacity 1.4s var(--out), transform 1.4s var(--out), filter 1.4s var(--out); }
+
+/* ---- el chat del Paso 3: los mensajes entran uno tras otro al llegar (landing.js pone .rv-wa e .in) ---- */
+.l-wa.rv-wa .l-wa-b { opacity: 0; transform: translateY(8px) scale(.96); }
+.l-wa.rv-wa.in .l-wa-b { opacity: 1; transform: none; transition: opacity .45s var(--out), transform .45s var(--out); transition-delay: .5s; }
+.l-wa.rv-wa.in .l-wa-entra { transition-delay: 1.3s; }
 
 /* ---- revelado escalonado de las secciones (solo lo que landing.js marca con .rv) ---- */
 .rv { opacity: 0; transform: translateY(26px); filter: blur(4px); }
