@@ -116,7 +116,7 @@ function pagina_landing(): string {
 <main>
   <section class="l-hero">
     <img class="l-deco l-deco-hero-a" src="<?= BASE_PATH ?>/assets/img/landing/enredadera.webp" alt="" width="896" height="1200">
-    <img class="l-deco l-deco-hero-b" src="<?= BASE_PATH ?>/assets/img/landing/enredadera-2.webp" alt="" width="896" height="1200">
+    <?php // Sin la enredadera de la izquierda (owner, 29-sep-2026, artifact «Flor del hero»: «Sin flor»): era una imagen girada y se le veía el corte ?>
     <div class="l-wrap l-hero-grid">
       <div class="l-hero-txt">
         <?php // Punto salvia que respira en vez de la flor (owner, 28-sep-2026, artifact «Chips BodaEnlace») ?>
