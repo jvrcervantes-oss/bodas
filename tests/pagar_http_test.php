@@ -27,6 +27,7 @@ $raiz = dirname(__DIR__);
 foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia'] as $m) require_once $raiz . '/app/' . $m . '.php';
 $secretos(['pasarela' => 'lemon']);
 [$idCod, $codigo] = cortesia_crea(1, false, date('Y-m-d', strtotime('+30 days')), 'prueba');
+[, $codigoPruebas] = cortesia_crea(1, false, date('Y-m-d', strtotime('+30 days')), 'prueba en pruebas');
 $L = textos_legales();
 
 $puerto = 18000 + random_int(0, 999);
@@ -53,6 +54,11 @@ $base = ['config' => json_encode($c), 'acepto_condiciones' => 'si'];
 //    y las páginas legales salen enteras sin NIF ni domicilio. El canje de verdad se prueba en el punto 1.
 [$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-en-pruebas', 'codigo' => 'AAAAA-BBBBB-CCCCC']);
 ok($st === 422 && empty($j['ok']), 'en pruebas: un código falso se rechaza como no válido, no como cerrado (' . $st . ')');
+[$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-en-pruebas', 'codigo' => $codigoPruebas]);
+ok($st === 200 && !empty($j['ok']), 'en pruebas: un código válido publica la web (' . $st . ' ' . json_encode($j) . ')');
+$priv = pagina_privacidad($c, []);
+ok(titular_oculto() && strpos($priv, '00000000T') === false && strpos($priv, 'Calle de Prueba') === false && strpos($priv, 'Titular de Prueba') === false,
+    'en pruebas: la privacidad de la web publicada no lleva titular, NIF ni domicilio');
 function pagina(int $puerto, string $ruta): string {
     $ch = curl_init('http://127.0.0.1:' . $puerto . $ruta);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => ['Host: bodaenlace.com']]);

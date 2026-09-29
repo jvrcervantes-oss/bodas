@@ -95,9 +95,12 @@ function empresa(): array {
 }
 /**
  * Owner, 27-sep-2026 (decisión suya, avisado de que la LSSI/RGPD/TRLGDCU piden la identidad a la vista): mientras
- * el cobro esté en PRUEBAS no se publican titular, NIF ni domicilio. En pruebas nadie de fuera puede contratar
+ * el cobro esté en PRUEBAS no se publican titular, NIF ni domicilio. En pruebas nadie de fuera puede COMPRAR
  * (lemon_checkout_permitido). Al pasar a cobro real (hard stop del owner) vuelven a salir solos: vender de verdad
  * sin identidad no se permite. empresa() sigue completa para el candado de empresa_completa().
+ * ACEPTADO: owner, 29-sep-2026 — en pruebas SÍ se canjean códigos de regalo (amigos que prueban gratis y dan
+ * feedback) y publican webs reales con los textos legales enteros pero sin su identidad; se le avisó de que la
+ * LSSI pide la identidad a la vista y eligió esta salida frente a publicar sus datos.
  */
 function titular_oculto(): bool {
     if (pasarela() === 'stripe') return !stripe_modo_live();
