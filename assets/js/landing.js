@@ -52,7 +52,7 @@
       if (raya) { if (on) { raya.style.left = on.offsetLeft + 'px'; raya.style.width = on.offsetWidth + 'px'; raya.style.opacity = 1; } else raya.style.opacity = 0; }
     };
     addEventListener('scroll', () => { if (!pendS) { pendS = true; requestAnimationFrame(marcaSec); } }, { passive: true });
-    addEventListener('resize', () => { actual = undefined; marcaSec(); });
+    addEventListener('resize', () => { actual = undefined; if (!pendS) { pendS = true; requestAnimationFrame(marcaSec); } }, { passive: true });
     marcaSec();
   }
 
@@ -64,6 +64,7 @@
     const abre = si => { hamb.setAttribute('aria-expanded', String(si)); hoja.hidden = !si; };
     hamb.addEventListener('click', () => abre(hoja.hidden));
     hoja.addEventListener('click', e => { if (e.target.closest('a')) abre(false); });
+    document.addEventListener('click', e => { if (!hoja.hidden && !hoja.contains(e.target) && !hamb.contains(e.target)) abre(false); });
     addEventListener('keydown', e => { if (e.key === 'Escape' && !hoja.hidden) { abre(false); hamb.focus(); } });
     matchMedia('(min-width: 1081px)').addEventListener('change', e => { if (e.matches) abre(false); });
   }
