@@ -208,7 +208,10 @@ function pagina_landing(): string {
 
   <section class="l-sec l-pasos" id="pasos">
     <?php // Guirnalda en acuarela rosa colgando sobre el título (owner, 29-sep-2026): la acuarela de Freepik del revés, a todo el
-          // ancho y fundida hacia abajo. Sustituye al lápiz bronce del 28-sep. Licencia gratuita: el crédito va en el pie ?>
+          // ancho y fundida hacia abajo. Sustituye al lápiz bronce del 28-sep. Licencia gratuita de Freepik: crédito en el aviso legal
+          // (owner: no en la landing). Solo para la landing: la licencia gratuita no cubre meterla en las plantillas de boda.
+          // Origen: Freepik «Watercolor soft pink flower garden background», bajada el 29-sep-2026 (2000 px) de
+          // https://img.magnific.com/free-vector/watercolor-soft-pink-flower-garden-background_65186-3352.jpg ?>
     <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela.webp"
       srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela-1000.webp 1000w, <?= BASE_PATH ?>/assets/img/landing/guirnalda-acuarela.webp 2000w"
       sizes="100vw" alt="" width="2000" height="713" loading="lazy" decoding="async"></div>
@@ -385,7 +388,7 @@ function pagina_landing(): string {
 <footer class="l-pie">
   <div class="l-wrap l-pie-in">
     <span class="l-pie-marca"><?= logo_marca('l-logo l-logo-pie', BASE_PATH . '/', '', false) ?><a class="l-pie-by" href="https://axisworks.studio/" target="_blank" rel="noopener">by AxisWorks</a></span>
-    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a><a href="https://www.freepik.com/" target="_blank" rel="noopener">Acuarela de flores: Freepik</a></nav>
+    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a><a href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a></nav>
   </div>
 </footer>
 <?php // Al final: el motion toca la cabecera, el hero y las secciones, que ya tienen que existir (la CSP no deja scripts en línea) ?>

@@ -25,6 +25,7 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>Propiedad intelectual</h2>
 <p>El diseño, el código y los textos propios del creador y de la plantilla de boda son de <?= h($E['titular']) ?>. No se pueden copiar, vender ni distribuir sin permiso, salvo lo que permita la licencia del ZIP descrita en las condiciones del servicio.</p>
+<p>La acuarela de flores de la página principal es de Freepik (<a href="https://www.freepik.com/" rel="noopener">freepik.com</a>) y se usa con su licencia.</p>
 
 <h2>Enlaces a otras webs</h2>
 <p>El pago se hace en la página de <?= $V ?>, que es suya y se rige por sus propias <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" rel="noopener">condiciones de compra</a> y su <a href="<?= h($L['vendedor_privacidad'] ?? '') ?>" rel="noopener">política de privacidad</a>.</p>
