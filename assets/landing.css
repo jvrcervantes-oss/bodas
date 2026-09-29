@@ -117,7 +117,8 @@
 .l-wa-b { max-width: 84%; padding: 5px 7px 4px; border-radius: 8px; font-size: 10.5px; line-height: 1.35; color: #111b21; box-shadow: 0 1px .5px rgba(11, 20, 26, .13); }
 .l-wa-sale { align-self: flex-end; background: #d9fdd3; border-top-right-radius: 2px; }
 .l-wa-entra { align-self: flex-start; background: #fff; border-top-left-radius: 2px; }
-.l-wa-url { color: #027eb5; white-space: nowrap; }
+/* la URL baja entera a su línea; solo se parte si no cabe ni sola (un dominio largo en un móvil de 320 px) */
+.l-wa-url { display: inline-block; max-width: 100%; color: #027eb5; overflow-wrap: anywhere; }
 .l-wa-h { float: right; display: inline-flex; align-items: center; gap: 2px; margin: 4px 0 -2px 8px; font-size: 8.5px; color: #667781; }
 .l-wa-h svg { width: 14px; height: 9px; fill: none; stroke: #53bdeb; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .l-pasos-lista h3 { font-family: var(--serif); font-weight: 400; font-size: 22px; margin: 0 0 10px; }
@@ -350,6 +351,7 @@
 .l-wa.rv-wa .l-wa-b { opacity: 0; transform: translateY(8px) scale(.96); }
 .l-wa.rv-wa.in .l-wa-b { opacity: 1; transform: none; transition: opacity .45s var(--out), transform .45s var(--out); transition-delay: .5s; }
 .l-wa.rv-wa.in .l-wa-entra { transition-delay: 1.3s; }
+@media print { .l-wa.rv-wa .l-wa-b { opacity: 1; transform: none; } }
 
 /* ---- revelado escalonado de las secciones (solo lo que landing.js marca con .rv) ---- */
 .rv { opacity: 0; transform: translateY(26px); filter: blur(4px); }
