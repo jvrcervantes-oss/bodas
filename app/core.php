@@ -111,6 +111,10 @@ function favicon_links(string $base = BASE_PATH): string {
     return '<link rel="icon" href="' . $base . '/assets/img/favicon.ico" sizes="48x48"><link rel="icon" href="' . $base . '/assets/img/favicon.svg" type="image/svg+xml">'
         . '<link rel="apple-touch-icon" href="' . $base . '/assets/img/apple-touch-icon.png">';
 }
+/** Email como enlace mailto: en los textos legales y sus pies (owner, 29-sep-2026). */
+function email_enlace(string $e): string {
+    return $e === '' ? '' : '<a href="mailto:' . h($e) . '">' . h($e) . '</a>';
+}
 function empresa_publica(): array {
     $e = empresa();
     if (!titular_oculto()) return $e;

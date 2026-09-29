@@ -10,7 +10,7 @@ $M = h(marca());
 <p>Este aviso explica qué pasa con los datos que das al confirmar tu asistencia, pedir canciones o escribir en el libro de invitados de esta web, y con las fotos que se publican en ella.</p>
 
 <h2>Quién usa tus datos</h2>
-<p>Los datos los recogen y los usan <?= h($pareja) ?>, para organizar su boda. Son los responsables. Contacto: <?= h($b['email']) ?>.</p>
+<p>Los datos los recogen y los usan <?= h($pareja) ?>, para organizar su boda. Son los responsables. Contacto: <?= email_enlace($b['email']) ?>.</p>
 <p>La web la aloja <?= $M ?>, un producto de AxisWorks<?= $E['titular'] !== marca() ? ' (' . h($E['titular']) . ')' : '' ?>, que guarda los datos por encargo de <?= h($pareja) ?> y no los usa para nada propio.</p>
 
 <h2>Qué datos y para qué</h2>
@@ -25,7 +25,7 @@ $M = h(marca());
   <li>Lista de invitados y enlace personal: <?= h($pareja) ?> pueden haber anotado tu nombre y el de tu grupo (por ejemplo, «Familia García») en una lista privada, para ver quién falta por contestar y enviar a cada grupo su propio enlace. Quien abre ese enlace ve el nombre del grupo y los nombres de sus personas tal como los escribieron <?= h($pareja) ?>, para no tener que escribirlos; nunca ve las respuestas ya enviadas, las alergias ni los datos de contacto. La primera vez que se abre el enlace guardamos solo la fecha y la hora, para que <?= h($pareja) ?> sepan que ha llegado; no guardamos tu dirección IP ni tu navegador, y es un dato orientativo. Cualquiera que tenga el enlace puede responder por el grupo: no lo reenvíes fuera de él. Si respondéis otra vez por el mismo enlace, la respuesta nueva sustituye a la anterior; la anterior no se muestra a nadie y se borra con el resto de los datos de la boda.</li>
   <li>Mesa: si <?= h($pareja) ?> hacen un plano de mesas, la mesa que te asignen. Sirve para colocaros y para que el catering sepa dónde servir cada menú. Al sentarte se guarda también una copia de tu nombre, solo para avisar a <?= h($pareja) ?> si dejas de venir o cambias tu respuesta; se quita cuando te quitan del plano y, si no, se borra con el resto.</li>
 </ul>
-<p>Base legal: el consentimiento que das al enviar el formulario, que en el caso de las alergias es explícito. Puedes retirarlo cuando quieras escribiendo a <?= h($b['email']) ?>; lo que ya se hizo antes sigue siendo válido. Si quieres que se retire un mensaje o una foto tuya del libro o de la galería, escribe a <?= h($b['email']) ?> y se quitará.</p>
+<p>Base legal: el consentimiento que das al enviar el formulario, que en el caso de las alergias es explícito. Puedes retirarlo cuando quieras escribiendo a <?= email_enlace($b['email']) ?>; lo que ya se hizo antes sigue siendo válido. Si quieres que se retire un mensaje o una foto tuya del libro o de la galería, escribe a <?= email_enlace($b['email']) ?> y se quitará.</p>
 
 <h2>Si respondes por otras personas</h2>
 <p>Si das datos de otras personas de tu grupo, confirmas que se lo has contado y que están de acuerdo, o que eres su padre, madre o tutor si son menores. Enséñales este aviso.</p>
@@ -43,5 +43,5 @@ $M = h(marca());
 <p>El mapa de la ceremonia y el convite es una imagen que hace <?= $M ?> con datos de OpenStreetMap: al verlo, tu navegador no se conecta con nadie más. Para situar los sitios, la dirección del lugar (no la tuya) se consulta una vez en el buscador de OpenStreetMap (Fundación OpenStreetMap, Reino Unido). Los botones «Ver mapa» abren Google Maps y, desde ese momento, se aplica la política de privacidad de Google.</p>
 
 <h2>Tus derechos</h2>
-<p>Puedes pedir ver tus datos, corregirlos, borrarlos, limitar su uso, oponerte o recibirlos en un formato que puedas llevar a otro sitio. Escribe a <?= h($b['email']) ?>. Si no obtienes respuesta, puedes escribir a <?= $M ?> (<?= h($E['email']) ?>), que avisará a <?= h($pareja) ?> y les ayudará a atenderte.</p>
+<p>Puedes pedir ver tus datos, corregirlos, borrarlos, limitar su uso, oponerte o recibirlos en un formato que puedas llevar a otro sitio. Escribe a <?= email_enlace($b['email']) ?>. Si no obtienes respuesta, puedes escribir a <?= $M ?> (<?= email_enlace($E['email']) ?>), que avisará a <?= h($pareja) ?> y les ayudará a atenderte.</p>
 <p>También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>

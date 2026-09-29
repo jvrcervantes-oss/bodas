@@ -325,5 +325,5 @@ function pagina_simple(string $titulo, string $cuerpo, bool $conTitulo = true): 
 }
 
 function pie_creador(): string {
-    return '<footer class="c-pie"><a href="' . BASE_PATH . '/condiciones">Condiciones</a><a href="' . BASE_PATH . '/privacidad">Privacidad</a><a href="' . BASE_PATH . '/aviso-legal">Aviso legal</a><span>' . h(empresa()['email']) . '</span></footer>';
+    return '<footer class="c-pie"><a href="' . BASE_PATH . '/condiciones">Condiciones</a><a href="' . BASE_PATH . '/privacidad">Privacidad</a><a href="' . BASE_PATH . '/aviso-legal">Aviso legal</a>' . email_enlace(empresa()['email']) . '</footer>';
 }

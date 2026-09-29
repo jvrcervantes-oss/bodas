@@ -18,12 +18,12 @@ $V = h($L['vendedor'] ?? '');
   <li><?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?>, un producto de AxisWorks, su nombre comercial</li>
   <li>NIF: <?= h($E['nif']) ?></li>
   <li>Domicilio: <?= h($E['domicilio']) ?></li>
-  <li>Email: <?= h($E['email']) ?></li>
+  <li>Email: <?= email_enlace($E['email']) ?></li>
 </ul>
 <?php else: ?>
 <p>Quien presta el servicio con la marca <?= $M ?>, un producto de AxisWorks. El servicio está en pruebas y todavía no se vende: su nombre, NIF y domicilio se publicarán aquí antes de abrir la venta.</p>
 <ul>
-  <li>Email: <?= h($E['email']) ?></li>
+  <li>Email: <?= email_enlace($E['email']) ?></li>
 </ul>
 <?php endif; ?>
 
@@ -82,5 +82,5 @@ $V = h($L['vendedor'] ?? '');
 <p>Además, como cualquier web, los servidores de nuestro alojamiento y de Cloudflare registran las peticiones (IP y hora) por seguridad y para el funcionamiento técnico.</p>
 
 <h2>Vuestros derechos</h2>
-<p>Podéis pedirnos ver vuestros datos, corregirlos, borrarlos, limitar su uso, oponeros a su tratamiento o recibirlos en un formato que podáis llevar a otro sitio. Escribid a <?= h($E['email']) ?>. Os responderemos en un mes como máximo.</p>
+<p>Podéis pedirnos ver vuestros datos, corregirlos, borrarlos, limitar su uso, oponeros a su tratamiento o recibirlos en un formato que podáis llevar a otro sitio. Escribid a <?= email_enlace($E['email']) ?>. Os responderemos en un mes como máximo.</p>
 <p>Si creéis que no hemos tratado bien vuestros datos, podéis reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>
