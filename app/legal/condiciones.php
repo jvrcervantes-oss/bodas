@@ -4,6 +4,8 @@
 // añadió los extras de pago y el plano de mesas, F1c/F1d, revisión #133: §2, §5 ter, §7, §8, §13, anexo II.2 y II.6;
 // la «e», decisión del owner del 27-sep: el plano de mesas va incluido en los dos packs, también regalados (§2), y
 // §5 ter queda sin ningún extra a la venta, con las reglas generales para cuando se venda uno).
+// Versión 2026-09-29 (Legal, consulta del 29-sep): en pruebas el servicio se presta solo por invitación con códigos de
+// regalo; §1 lo explica (qué no se aplica a una web de regalo, códigos personales) y §8 y el anexo II valen también al canjear.
 // Por qué §5 ter conserva sus reglas sin extras a la venta: el circuito de compra sigue en el código (álbum, idiomas y
 // dominio lo usarán) y el anexo I y el §8 las citan; quitarlas y volver a ponerlas en F2 es reescribir texto ya revisado.
 // Van en condicional («cuando haya alguno a la venta») para no describir como vigente una venta que no existe.
@@ -22,10 +24,10 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión 2026-09-27e, del 27 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-09-29, del 29 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
-<p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
+<p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta. Mientras tanto, el servicio solo se presta por invitación: quien presta el servicio entrega personalmente un código de regalo a cada pareja, y esa pareja sabe quién es. Con un código de regalo no compráis nada, no pagáis nada y no interviene <?= $V ?>; lo que estas condiciones dicen de la compra, el pago, el recibo o el desistimiento no se aplica a una web de regalo. Los códigos son personales y no se pueden ceder ni revender. Si os dan un código que no os entregó quien presta el servicio, no lo uséis y escribidnos a <?= h($E['email']) ?>: os diremos quién presta el servicio antes de que publiquéis nada.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= h($E['email']) ?>.</p>
 <p>La compra se la hacéis a <?= $V ?> (<?= h($L['vendedor_entidad'] ?? '') ?>), que actúa como vendedor final (en inglés, <em>Merchant of Record</em>): revende nuestro servicio, os cobra, os envía el recibo y la factura y liquida el IVA. Esa compra se rige por las <a href="<?= h($L['vendedor_terminos'] ?? '') ?>" rel="noopener">condiciones de compra de <?= $V ?></a>.</p>
 <p>El servicio, es decir, crear, publicar y alojar vuestra web, lo prestamos nosotros y se rige por estas condiciones. Para cualquier cosa sobre la web podéis dirigiros siempre a nosotros. Nada de lo que digan las condiciones de <?= $V ?> ni estas limita los derechos que la ley os reconoce como consumidores.</p>
 
@@ -116,7 +118,7 @@ $V = h($L['vendedor'] ?? '');
 <p>Los mensajes y fotos del libro los publican vuestros invitados y aparecen al momento. Vosotros decidís qué se queda: podéis ocultar o borrar cualquiera desde el panel. La página del libro incluye un enlace para pedir la retirada de un contenido. Si nos llega un aviso fundado de que un mensaje o una foto es ilegal o vulnera derechos de alguien (por ejemplo, la imagen de un menor sin permiso), lo retiraremos sin esperar y os avisaremos.</p>
 
 <h2>11. Licencia del ZIP</h2>
-<p>El diseño, el código y la plantilla son de <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Con la compra recibís una licencia para usar el ZIP de vuestra web:</p>
+<p>El diseño, el código y la plantilla son de <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Con la compra o el canje de un código de regalo recibís una licencia para usar el ZIP de vuestra web:</p>
 <ul>
   <li>solo para vuestra boda y sin fines comerciales;</li>
   <li>podéis guardarlo, abrirlo y alojarlo donde queráis como recuerdo;</li>
@@ -158,7 +160,7 @@ $V = h($L['vendedor'] ?? '');
 <h2>Anexo II. Encargo de tratamiento de datos (artículo 28 del RGPD)</h2>
 
 <h2>II.1. Partes y papel de cada una</h2>
-<p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?php if ($E['nif'] !== ''): ?><?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»),<?php else: ?>Quien presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»; sus datos se publicarán antes de abrir la venta)<?php endif; ?> es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar. <?= $V ?> no es parte de este anexo: no recibe datos de invitados.</p>
+<p>La pareja que contrata la web es la responsable de los datos de sus invitados: decide para qué se recogen y los usa para organizar su boda. <?php if ($E['nif'] !== ''): ?><?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»),<?php else: ?>Quien presta el servicio con la marca <?= $M ?> (en este anexo, «<?= $M ?>»; sus datos se publicarán antes de abrir la venta)<?php endif; ?> es el encargado: los guarda y los muestra a la pareja en el panel, por encargo suyo. Este anexo forma parte del contrato y se acepta al comprar o al canjear un código de regalo. <?= $V ?> no es parte de este anexo: no recibe datos de invitados.</p>
 <p>Aunque la pareja trate esos datos para una actividad personal, <?= $M ?> cumple igualmente todo lo que dice este anexo.</p>
 <p>Para dar soporte y llevar el servicio, <?= $M ?> solo ve cifras agregadas y anónimas de cada web, como el número total de personas que han confirmado. Nunca ve los datos de un invitado concreto ni cifras por menú o por alergia.</p>
 

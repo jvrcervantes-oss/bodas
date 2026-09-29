@@ -9,8 +9,9 @@
 //    un reintento del mismo pedido no gasta otro uso.
 //  - Límites: 10 intentos/hora por IP (en cerrado si el disco falla) y 200 FALLOS al día en
 //    total; los canjes buenos no cuentan para el tope global.
-//  - Regalar el servicio es autoconsumo (art. 12.3 LIVA): lleva IVA sobre el coste y no se
-//    hace factura BODA-. Por eso cada canje queda en un registro para el gestor (BOD-4).
+//  - Regalar el servicio puede ser autoconsumo (art. 12.3 LIVA, IVA sobre el coste) o, si es para
+//    probar y promocionar el producto, demostración no sujeta (art. 7.4º): lo decide el gestor (BOD-4,
+//    punto 5). No se hace factura BODA-; cada canje queda en un registro para él, con su modo y motivo.
 // Los códigos se crean con `tools/bodas.py cortesia` (repo del estudio), que añade la línea aquí.
 declare(strict_types=1);
 

@@ -208,7 +208,8 @@ function pagina_landing(): string {
 
   <section class="l-sec l-pasos" id="pasos">
     <?php // Guirnalda en acuarela colgando sobre el título (owner, 29-sep-2026): dibujada por código en el estudio, sin licencias
-          // de terceros (artifact «Flores de Cómo funciona», opción «colgando», semilla 1000, a 1178 px de ancho y 2x). A todo el
+          // de terceros (artifact «Flores de Cómo funciona», https://claude.ai/artifact/QiNuvWwPhHiN579y1nhgeH,
+          // opción «colgando», semilla 1000, a 1178 px de ancho y 2x). A todo el
           // ancho y fundida hacia abajo. Para rehacerla, se exporta el canvas de esa opción y semilla. ?>
     <div class="l-guirnalda"><img src="<?= BASE_PATH ?>/assets/img/landing/guirnalda-flores.webp"
       srcset="<?= BASE_PATH ?>/assets/img/landing/guirnalda-flores-1200.webp 1178w, <?= BASE_PATH ?>/assets/img/landing/guirnalda-flores.webp 2356w"

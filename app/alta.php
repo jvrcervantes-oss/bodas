@@ -160,7 +160,9 @@ function alta_cortesia(string $token, string $hash, array $cod): ?array {
         $ped = alta_publica($ped, $pend, $meta, $fPedido, $sid, $token, $slug);
         cortesia_registra(['codigo' => $cod['id'] ?? '', 'hash' => substr($hash, 0, 12), 'slug' => $ped['slug'], 'pareja' => $ped['nombre'],
             'email' => $ped['email'], 'pack' => $ped['atelier'] !== '' ? 'Atelier' : 'Esencial', 'precio_catalogo_cent' => precio_total_cent($ped),
-            'fin_alojamiento' => fecha_borrado((string) ($cfg['fecha'] ?? '')), 'ip' => ip_cliente(), 'estado' => $ped['estado'] ?? '']);
+            'fin_alojamiento' => fecha_borrado((string) ($cfg['fecha'] ?? '')), 'ip' => ip_cliente(), 'estado' => $ped['estado'] ?? '',
+            // Para el gestor (BOD-4, Administración 29-sep): si el canje fue en pruebas (amigos que prueban) o con cobro real, y el porqué del código
+            'modo' => titular_oculto() ? 'pruebas' : 'real', 'motivo' => (string) ($cod['nota'] ?? '')]);
         return $ped;
     });
 }
