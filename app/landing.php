@@ -86,6 +86,7 @@ function pagina_landing(): string {
 <?php if (OCULTO): ?><meta name="robots" content="noindex, nofollow">
 <?php endif; ?><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Web de boda con confirmación de asistencia | <?= h(marca()) ?></title>
+<?= favicon_links() ?>
 <meta name="description" content="<?= h($descripcion) ?>">
 <link rel="canonical" href="<?= h(url_creador()) ?>">
 <meta property="og:title" content="Web de boda con confirmación de asistencia | <?= h(marca()) ?>">

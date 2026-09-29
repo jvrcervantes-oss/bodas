@@ -59,6 +59,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= h($titulo) ?> — <?= h(marca()) ?></title>
+<?= favicon_links() ?>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/marca.css?v=<?= h(ASSETS_V) ?>">
 <link rel="stylesheet" href="<?= BASE_PATH ?>/assets/crear.css?v=<?= h(ASSETS_V) ?>">

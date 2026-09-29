@@ -124,7 +124,7 @@ function panel_pagina(string $slug, array $c, string $sec, string $titulo, strin
     $scripts = ($o['qr'] ?? false) ? '<script src="/assets/js/vendor/qrcode.js?v=' . h(ASSETS_V) . '" defer></script>' : '';
     $scripts .= '<script src="/assets/js/panel.js?v=' . h(ASSETS_V) . '" defer></script>';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(nombres($c) !== '' ? nombres($c) : MARCA) . '</title><meta name="robots" content="noindex, nofollow">'
+        . '<title>' . h($titulo) . ' — ' . h(nombres($c) !== '' ? nombres($c) : MARCA) . '</title><meta name="robots" content="noindex, nofollow">' . favicon_links('')
         . '<link rel="stylesheet" href="/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="/assets/panel.css?v=' . h(ASSETS_V) . '">' . $scripts . '</head>'
         . '<body class="p-body"><a class="saltar" href="#contenido">Saltar al contenido</a><div class="app">'
         . '<aside class="rail no-print" aria-label="Menú del panel">' . logo_marca('marca', '/panel')
@@ -142,7 +142,7 @@ function panel_pagina(string $slug, array $c, string $sec, string $titulo, strin
 function panel_acceso_marco(array $c, string $titulo, string $cuerpo): string {
     header('Cache-Control: private, no-store');
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(nombres($c) !== '' ? nombres($c) : MARCA) . '</title><meta name="robots" content="noindex, nofollow">'
+        . '<title>' . h($titulo) . ' — ' . h(nombres($c) !== '' ? nombres($c) : MARCA) . '</title><meta name="robots" content="noindex, nofollow">' . favicon_links('')
         . '<link rel="stylesheet" href="/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="/assets/panel.css?v=' . h(ASSETS_V) . '"></head>'
         . '<body class="p-body p-acceso"><main class="acceso" id="contenido">' . logo_marca('marca', '/')
         . '<div class="card acceso-card"><p class="over">Panel de ' . h(nombres($c) !== '' ? nombres($c) : 'vuestra boda') . '</p>' . $cuerpo . '</div></main></body></html>';
@@ -152,7 +152,7 @@ function panel_acceso_marco(array $c, string $titulo, string $cuerpo): string {
 function panel_hoja_marco(array $c, string $titulo, string $cuerpo): string {
     header('Cache-Control: private, no-store');
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(nombres($c)) . '</title><meta name="robots" content="noindex, nofollow">'
+        . '<title>' . h($titulo) . ' — ' . h(nombres($c)) . '</title><meta name="robots" content="noindex, nofollow">' . favicon_links('')
         . '<link rel="stylesheet" href="/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="/assets/panel.css?v=' . h(ASSETS_V) . '">'
         . '<script src="/assets/js/panel.js?v=' . h(ASSETS_V) . '" defer></script></head>'
         . '<body class="p-body p-hoja"><main class="hoja" id="contenido">' . $cuerpo . '</main></body></html>';

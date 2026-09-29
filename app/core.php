@@ -106,6 +106,11 @@ function titular_oculto(): bool {
     if (pasarela() === 'stripe') return !stripe_modo_live();
     return lemon_test();
 }
+/** Favicon de BodaEnlace (owner, 29-sep-2026: «Tarjeta blush»). Solo en páginas de la marca; las webs de boda son de la pareja y no lo llevan. */
+function favicon_links(string $base = BASE_PATH): string {
+    return '<link rel="icon" href="' . $base . '/assets/img/favicon.ico" sizes="48x48"><link rel="icon" href="' . $base . '/assets/img/favicon.svg" type="image/svg+xml">'
+        . '<link rel="apple-touch-icon" href="' . $base . '/assets/img/apple-touch-icon.png">';
+}
 function empresa_publica(): array {
     $e = empresa();
     if (!titular_oculto()) return $e;
