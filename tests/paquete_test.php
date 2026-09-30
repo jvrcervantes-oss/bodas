@@ -266,5 +266,15 @@ $cI = normaliza_config(crudo(['foto' => true, 'decoracion' => 'eucalipto', 'foto
 $hI = pagina_inicio($cI, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
 ok(!hay($hI, 'mf-r ') && !hay($hI, 'deco-g-fuera') && hay($hI, 'deco-guirnalda'), 'ramos: la Instantánea no tiene ramos y conserva su guirnalda en ordenador');
 
+// Fundida en el móvil: la guirnalda va entre la fecha y la bienvenida (deco-entre), solo con foto Fundida y flores o eucalipto
+foreach (['flores' => 'flores-portada-movil', 'eucalipto' => 'eucalipto-portada-movil'] as $deco => $img) {
+    $cF = normaliza_config(crudo(['foto' => true, 'decoracion' => $deco, 'foto_estilo' => 'fundida']));
+    $hF = pagina_inicio($cF, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+    ok(substr_count($hF, 'deco-entre') === 1 && hay($hF, $img . '.webp'), "fundida en móvil: {$deco} lleva su guirnalda entre la fecha y la bienvenida");
+    ok(is_file($raiz . '/assets/img/deco/' . $img . '.webp'), "fundida en móvil: existe {$img}.webp");
+}
+$hA = pagina_inicio(normaliza_config(crudo(['foto' => true, 'decoracion' => 'flores', 'foto_estilo' => 'arco'])), ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+ok(!hay($hA, 'deco-entre'), 'fundida en móvil: solo la Fundida lleva la guirnalda entre la fecha y la bienvenida');
+
 echo $fallos ? "ROJO: " . ($n - $fallos) . "/$n\n" : "VERDE: $n/$n\n";
 exit($fallos ? 1 : 0);

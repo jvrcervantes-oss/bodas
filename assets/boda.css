@@ -1566,6 +1566,14 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 /* Ramos de esquina (owner, 30-sep-2026, artifact «Ramos junto a la foto»): solo en ordenador. Cada ramo son dos imágenes: los tallos
    (.mf-r-atras) van detrás de la foto y las flores/hojas (.mf-r-delante) por delante. Medidas en cqw (1 % del ancho del marco). */
 .mf-r{ display: none; position: absolute; height: auto; max-width: none; pointer-events: none; }
+/* Fundida en el móvil (owner, 30-sep-2026): la guirnalda no va sobre la foto, queda entre la fecha y la bienvenida */
+.deco-entre{ display: none; pointer-events: none; }
+@media (max-width: 900px){
+  .hero--mf-fundida .mf-g, .hero--mf-fundida .deco-guirnalda{ display: none; }
+  .deco-entre{ display: block; margin: 4px 0 -18px; }
+  .deco-flores .deco-entre{ margin-bottom: -46px; }   /* las flores llevan más hueco por debajo de lo que cuelga */
+  .deco-entre img{ display: block; width: 100%; max-width: 460px; height: auto; margin: 0 auto; mix-blend-mode: multiply; }
+}
 .mf-marco, .mf-papel{ isolation: isolate; }
 .mf-papel{ position: relative; }
 @media (min-width: 901px){

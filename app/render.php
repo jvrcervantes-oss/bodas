@@ -442,6 +442,9 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endif; ?>    </div>
 <?php endif; ?>
   </section>
+<?php if ($fe === 'fundida' && in_array($c['decoracion'], ['flores', 'eucalipto'], true)): ?>
+  <div class="deco-entre" aria-hidden="true"><img src="<?= h($A) ?>img/deco/<?= $c['decoracion'] === 'flores' ? 'flores-portada-movil.webp" width="520" height="250' : 'eucalipto-portada-movil.webp" width="520" height="190' ?>" alt=""></div>
+<?php endif; ?>
 
 <?php if ($po['titulo'] !== '' || $po['frase'] !== '' || $po['texto'] !== '' || $po['vestimenta'] !== ''): ?>
   <section class="letter rv">
