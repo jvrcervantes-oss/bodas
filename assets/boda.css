@@ -956,7 +956,10 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 @media (min-width: 901px){
   .fuente-formal .hero-names, .fuente-jardin .hero-names, .fuente-botanica .hero-names{ font-size: 76px; line-height: 88px; }
   .fuente-ciudad .hero-names{ font-size: 88px; line-height: 96px; }
-  .fuente-sobria .hero-names{ --fs: 62px; line-height: 76px; }
+  /* en escritorio el texto vive en su columna (junto a la foto), no en toda la ventana: se mide contra ella */
+  .fuente-sobria .hero-left{ container-type: inline-size; }
+  .fuente-sobria .hero--solo .hero-left{ width: 100%; }   /* sin foto la columna es shrink-to-fit y la contención la dejaría a 0 */
+  .fuente-sobria .hero-names{ --fs: 62px; line-height: 76px; font-size: min(var(--fs), calc((100cqw - 8px) / (var(--nl, 14) * .66))); }
 }
 .fuente-moderna .hero-names{ font-weight: 300; letter-spacing: .01em; }
 
