@@ -279,12 +279,6 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
   <div class="nav-bar">
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu" aria-label="Abrir menú"><?= ico('M4 7h16M4 12h16M4 17h16') ?><span class="nav-toggle-txt">Menú</span></button>
     <?= a_interno('', $ctx, 'class="nav-brand"') ?><span class="nav-names"><?= h($nom ?: 'Vuestros nombres') ?></span><span class="nav-sub">Nuestra boda</span></a>
-    <ul class="nav-links">
-      <li><?= a_interno('', $ctx, $ruta === '' ? 'aria-current="page"' : '') ?>Inicio</a></li>
-<?php foreach ($secs as $s): if ($s['tipo'] === 'rsvp') continue; ?>
-      <li><?= a_interno($s['ruta'], $ctx, $ruta === $s['ruta'] ? 'aria-current="page"' : '') ?><?= h($s['titulo']) ?></a></li>
-<?php endforeach; ?>
-    </ul>
 <?php if ($rsvp): ?>
     <?= a_interno($rsvp['ruta'], $ctx, 'class="btn nav-cta"') ?><?= h($rsvp['titulo']) ?></a>
     <?= a_interno($rsvp['ruta'], $ctx, 'class="nav-heart" aria-label="' . h($rsvp['titulo']) . '"') ?><?= ico(ICONOS['corazon']) ?></a>
