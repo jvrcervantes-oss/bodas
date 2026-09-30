@@ -277,7 +277,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 
 <nav class="site-nav" aria-label="Navegación principal">
   <div class="nav-bar">
-    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu" aria-label="Abrir menú"><?= ico('M4 7h16M4 12h16M4 17h16') ?></button>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu" aria-label="Abrir menú"><?= ico('M4 7h16M4 12h16M4 17h16') ?><span class="nav-toggle-txt">Menú</span></button>
     <?= a_interno('', $ctx, 'class="nav-brand"') ?><span class="nav-names"><?= h($nom ?: 'Vuestros nombres') ?></span><span class="nav-sub">Nuestra boda</span></a>
     <ul class="nav-links">
       <li><?= a_interno('', $ctx, $ruta === '' ? 'aria-current="page"' : '') ?>Inicio</a></li>

@@ -73,7 +73,8 @@
       nav.classList.toggle('open', open);
       document.body.classList.toggle('nav-lock', open);
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      if (open && closeBtn) closeBtn.focus();
+      // en el ordenador no hay botón de cerrar (el cajón es una hoja bajo la barra): el foco va al primer enlace
+      if (open) { var f = (closeBtn && closeBtn.offsetParent !== null) ? closeBtn : nav.querySelector('#siteMenu a'); if (f) f.focus(); }
       if (!open) btn.focus();
     }
     btn.addEventListener('click', function () { setOpen(!nav.classList.contains('open')); });
@@ -86,6 +87,10 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && nav.classList.contains('open')) setOpen(false);
+    });
+    // Hoja de escritorio: un clic fuera de la barra y de la hoja la cierra
+    document.addEventListener('click', function (e) {
+      if (nav.classList.contains('open') && !nav.contains(e.target)) setOpen(false);
     });
   }
 
