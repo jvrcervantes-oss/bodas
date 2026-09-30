@@ -387,7 +387,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php if ($c['atelier'] !== ''): ?>
       <?= arte_atelier($c, $A) ?>
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
-      <img class="hero-sprig" src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140">
+      <picture class="deco-guirnalda"><source media="(max-width: 900px)" srcset="<?= h($A) ?>img/deco/eucalipto-portada-movil.webp" width="520" height="190"><img src="<?= h($A) ?>img/deco/eucalipto-portada.webp" alt="" width="1200" height="330"></picture>
 <?php elseif ($c['decoracion'] === 'flores' && !$floresEnFoto): ?>
       <picture class="deco-guirnalda"><source media="(max-width: 900px)" srcset="<?= h($A) ?>img/deco/flores-portada-movil.webp" width="520" height="250"><img src="<?= h($A) ?>img/deco/flores-portada.webp" alt="" width="1200" height="330"></picture>
 <?php endif; ?>
@@ -517,7 +517,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php if ($c['atelier'] !== ''): ?>
   <div class="atelier-pie" aria-hidden="true"></div>
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
-  <div class="sprig-foot" aria-hidden="true"><img src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140"></div>
+  <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/eucalipto-pie.webp" alt="" width="900" height="170"></div>
 <?php elseif ($c['decoracion'] === 'flores'): ?>
   <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/flores-pie.webp" alt="" width="900" height="170"></div>
 <?php endif; ?>

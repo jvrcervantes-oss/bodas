@@ -427,7 +427,6 @@ main.home{ display: flex; flex-direction: column; }
   padding: var(--s-md) var(--gutter) 0;
   overflow: hidden;
 }
-.hero-sprig{ width: 192px; height: auto; margin-bottom: -8px; opacity: .9; pointer-events: none; }
 .hero-text{ text-align: center; margin-bottom: var(--s-md); }
 .hero-text .kicker{ letter-spacing: .25em; margin-bottom: 4px; }
 .hero-names{
@@ -580,8 +579,6 @@ main.home{ display: flex; flex-direction: column; }
 .round-btn{ width: 48px; height: 48px; border-radius: var(--pill); background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .2s var(--ease), transform .15s var(--ease); }
 .round-btn:hover{ background: var(--primary); }
 .round-btn:active{ transform: scale(.95); }
-.sprig-foot{ display: flex; justify-content: center; padding: var(--s-sm) var(--gutter); }
-.sprig-foot img{ width: 96px; height: auto; opacity: .6; transform: rotate(180deg); pointer-events: none; }
 
 @media (min-width: 901px){
   .hero{
@@ -595,7 +592,6 @@ main.home{ display: flex; flex-direction: column; }
     overflow: visible;
   }
   .hero-left{ display: flex; flex-direction: column; align-items: center; }
-  .hero-sprig{ width: 260px; }
   .hero-names{ font-size: 56px; line-height: 68px; letter-spacing: .02em; }
   .hero-text .kicker{ font-size: 12px; }
   .section-title{ font-size: 40px; line-height: 52px; letter-spacing: .04em; }
@@ -920,14 +916,19 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .deco-pie{ display: flex; justify-content: center; overflow: hidden; margin-top: var(--s-md); pointer-events: none; }
 .deco-pie img{ flex: none; width: max(100%, 520px); max-width: 900px; height: auto; mix-blend-mode: multiply;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }   /* sin corte a los lados */
-.deco-flores main > .wrap{ position: relative; overflow: hidden; }
-.deco-flores main > .wrap::before{ content: ''; display: block; height: 130px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 0;
+.deco-flores main > .wrap, .deco-eucalipto main > .wrap{ position: relative; overflow: hidden; }
+.deco-flores main > .wrap::before, .deco-eucalipto main > .wrap::before{ content: ''; display: block; height: 130px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 0;
   background: url(img/deco/flores-portada-movil.webp) top center / max(100%, 420px) auto no-repeat; mix-blend-mode: multiply; pointer-events: none;
   -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.deco-eucalipto main > .wrap::before{ background-image: url(img/deco/eucalipto-portada-movil.webp); }
 @media (min-width: 901px){
   .deco-guirnalda{ margin: -40px -6% -56px; }
-  .deco-flores main > .wrap::before{ height: 190px; margin: -56px -64px 0; background-image: url(img/deco/flores-portada.webp); background-size: max(100%, 900px) auto; }
+  .deco-flores main > .wrap::before, .deco-eucalipto main > .wrap::before{ height: 190px; margin: -56px -64px 0; background-image: url(img/deco/flores-portada.webp); background-size: max(100%, 900px) auto; }
+  .deco-eucalipto main > .wrap::before{ background-image: url(img/deco/eucalipto-portada.webp); }
+  .deco-eucalipto .deco-guirnalda img{ -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }   /* la columna de texto corta la rama en seco */
 }
+/* Eucalipto: guirnalda colgante dibujada con código (owner, 30-sep-2026, artifact «Guirnalda de eucalipto»: semilla 1195, plateado, densidad 1.1, largo 0.65),
+   rasterizada a WebP (móvil 3x, ordenador y pie 2x) con tests/eucalipto_gen.js; sustituye a la imagen de 512 px que salía cortada. Mismo esquema que Flores. */
 
 /* Sobre: los nombres dentro de un sobre con solapa y lacre con las iniciales */
 .deco-sobre .hero-text{ position: relative; overflow: hidden; margin-top: 8px; padding: 104px 28px 32px; background: var(--card); border-radius: 6px;
@@ -997,7 +998,6 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
    Ilustraciones: maqueta de Stitch del owner, recortadas sin textos ni iniciales ajenas.
    ============================================================ */
 .atelier{ --surface: var(--sage); --canvas: var(--sage); }
-.atelier .hero-sprig, .atelier .sprig-foot{ display: none; }
 .atelier-arte{ display: block; margin: 0 auto; pointer-events: none; }
 .atelier-pie{ height: 24px; }
 .atelier .mat-photo::after{ display: none; }
