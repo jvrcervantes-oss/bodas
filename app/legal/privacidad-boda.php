@@ -1,7 +1,8 @@
 <?php
-// Privacidad para invitados de una boda (segunda capa). Versión 2026-09-27d (Legal: enlace personal por grupo, fecha de
+// Privacidad para invitados de una boda (segunda capa). Versión 2026-09-30 (Legal: enlace personal por grupo, fecha de
 // primer acceso sin IP y resumen impreso para el catering — F1a/F1b; la «d», plano de mesas con la copia del nombre y la
-// hoja para el restaurante — F1d, revisión #133).
+// hoja para el restaurante — F1d, revisión #133). La del 30-sep declara el almacenamiento de sesión de la invitación
+// animada (boda.js, initEntrada), exento por ser de interfaz y de sesión.
 // Se incluye dentro de un <main> ya maquetado. $b (datos de la boda) y $E los define la app.
 $pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
 $M = h(marca());
@@ -39,7 +40,7 @@ $M = h(marca());
 
 <h2>Quién más los ve</h2>
 <p>Las respuestas de asistencia y las canciones solo las ven <?= h($pareja) ?>, desde su panel privado con contraseña, y quienes les ayuden a organizar la boda en lo que necesiten. Para el catering, <?= h($pareja) ?> pueden imprimir o guardar en PDF un resumen con cuántos menús hay de cada tipo y, de cada persona con alergias o intolerancias, su nombre, su menú, la alergia y, si hay plano de mesas, su mesa. Si hacen un plano de mesas, pueden imprimir también una hoja para el restaurante con cada mesa y, de cada persona sentada en ella, su nombre, su menú y sus alergias o intolerancias. Esas hojas las reciben solo <?= h($pareja) ?> y el catering, que las usa para servir la comida. Los mensajes y fotos del libro y la galería los ve cualquiera que tenga el enlace y el código de la boda; la web no aparece en buscadores. <?= $M ?> usa a Hostinger para alojar la web y a Cloudflare, Inc. (Estados Unidos) para entregarla: su red recibe tu conexión, con tu dirección IP y lo que envías, y la pasa cifrada al alojamiento, con las cláusulas contractuales tipo de la Comisión Europea como garantía. Tus datos no se venden ni se ceden a nadie más.</p>
-<p>Esta web no usa analítica. El enlace personal de tu grupo no guarda ninguna cookie. Solo usa una cookie técnica: si escribes el código de la boda para ver la galería o el libro, lo recuerda durante 60 días para no pedírtelo cada vez.</p>
+<p>Esta web no usa analítica. El enlace personal de tu grupo no guarda ninguna cookie. La web solo guarda dos cosas en tu navegador, las dos técnicas y sin necesidad de tu consentimiento: una cookie que, si escribes el código de la boda para ver la galería o el libro, lo recuerda durante 60 días para no pedírtelo cada vez; y, si la web abre con una invitación animada, una marca que recuerda mientras dura la visita que ya la has abierto o saltado, para no repetirla, y que se borra al cerrar la pestaña.</p>
 <p>El mapa de la ceremonia y el convite es una imagen que hace <?= $M ?> con datos de OpenStreetMap: al verlo, tu navegador no se conecta con nadie más. Para situar los sitios, la dirección del lugar (no la tuya) se consulta una vez en el buscador de OpenStreetMap (Fundación OpenStreetMap, Reino Unido). Los botones «Ver mapa» abren Google Maps y, desde ese momento, se aplica la política de privacidad de Google.</p>
 
 <h2>Tus derechos</h2>

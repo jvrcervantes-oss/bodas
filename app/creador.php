@@ -36,7 +36,7 @@ function rutas_creador(string $ruta, string $metodo): void {
             return;
         case 'condiciones': case 'privacidad': case 'aviso-legal':
             header('Content-Security-Policy: ' . CSP_CREADOR);
-            $t = ['condiciones' => 'Condiciones del servicio', 'privacidad' => 'Privacidad', 'aviso-legal' => 'Aviso legal'][$ruta];
+            $t = ['condiciones' => 'Condiciones del servicio', 'privacidad' => 'Privacidad y cookies', 'aviso-legal' => 'Aviso legal'][$ruta];
             // En pruebas (titular_oculto, owner 27-sep) el texto va entero pero sin nombre, NIF ni domicilio: los amigos
             // que canjean un código leen lo que aceptan (owner, 29-sep). Sin titular en secrets.php (BOD-1): se dice la verdad
             $E = empresa_publica();
@@ -96,7 +96,7 @@ function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''
     $paginas = [['inicio', 'Inicio']];
     // [ruta, título, id de la sección]: el creador sincroniza vista previa y configurador por el id
     foreach ($c['secciones'] as $s) if ($s['on']) $paginas[] = [$s['ruta'], $s['titulo'], $s['id']];
-    $paginas[] = ['privacidad', 'Privacidad'];
+    $paginas[] = ['privacidad', 'Privacidad y cookies'];
     json_response(['ok' => true, 'html' => $html, 'paginas' => $paginas, 'faltan' => faltan($c)]);
 }
 
@@ -325,5 +325,5 @@ function pagina_simple(string $titulo, string $cuerpo, bool $conTitulo = true): 
 }
 
 function pie_creador(): string {
-    return '<footer class="c-pie"><a href="' . BASE_PATH . '/condiciones">Condiciones</a><a href="' . BASE_PATH . '/privacidad">Privacidad</a><a href="' . BASE_PATH . '/aviso-legal">Aviso legal</a>' . email_enlace(empresa()['email']) . '</footer>';
+    return '<footer class="c-pie"><a href="' . BASE_PATH . '/condiciones">Condiciones</a><a href="' . BASE_PATH . '/privacidad">Privacidad y cookies</a><a href="' . BASE_PATH . '/aviso-legal">Aviso legal</a>' . email_enlace(empresa()['email']) . '</footer>';
 }

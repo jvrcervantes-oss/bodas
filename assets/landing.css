@@ -340,6 +340,7 @@
   .l-lede { order: 2; margin-bottom: 40px; }   /* la tarjeta «Confirmación recibida» asoma por encima del vídeo */
   .l-hero-vis { order: 3; margin-bottom: 86px; }   /* la tarjeta «La más votada» sobresale 22 px por debajo del vídeo: quedan 64 px libres hasta los botones */
   .l-hero .l-ctas { order: 4; }
+  .l-pie nav { gap: 8px 10px; font-size: 13px; }   /* «Privacidad y cookies» cabe con los otros dos en una línea a 390 px */
   .l-datos { order: 5; }
   .l-at-minis { gap: 6px; margin-top: 0; }
   .l-at-info h3 { font-size: 28px; }

@@ -450,7 +450,7 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
   <div class="l-wrap l-pie-in">
     <a class="l-pie-anillos" href="<?= BASE_PATH ?>/" aria-label="<?= h(MARCA_WEB) ?>"><?= il('anillos', 'i i-anillos') ?></a>
     <p class="l-pie-lema">Vuestra boda, <em>en un enlace</em></p>
-    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><span class="l-pie-sep" aria-hidden="true"></span><a href="<?= BASE_PATH ?>/privacidad">Privacidad</a><span class="l-pie-sep" aria-hidden="true"></span><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a></nav>
+    <nav aria-label="Legal"><a href="<?= BASE_PATH ?>/condiciones">Condiciones</a><span class="l-pie-sep" aria-hidden="true"></span><a href="<?= BASE_PATH ?>/privacidad">Privacidad y cookies</a><span class="l-pie-sep" aria-hidden="true"></span><a href="<?= BASE_PATH ?>/aviso-legal">Aviso legal</a></nav>
     <a class="l-pie-mail" href="mailto:<?= h($E['email']) ?>"><?= h($E['email']) ?></a>
     <p class="l-pie-baja"><span>© <?= date('Y') ?> <?= h(marca()) ?></span><span aria-hidden="true">·</span><a class="l-pie-by" href="https://axisworks.studio/" target="_blank" rel="noopener">by AxisWorks</a></p>
   </div>
