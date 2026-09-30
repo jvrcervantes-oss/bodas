@@ -165,13 +165,13 @@
   });
   const marc = document.querySelector('[data-b-fin]');
   if (marc) {
-    const d = marc.querySelector('[data-b-d]'), h = marc.querySelector('[data-b-h]'), mi = marc.querySelector('[data-b-m]');
+    const dias = marc.querySelector('[data-b-d]'), horas = marc.querySelector('[data-b-h]'), mins = marc.querySelector('[data-b-m]');
     const fin = +marc.dataset.bFin * 1000;
     const tic = () => {
       const t = Math.max(0, fin - Date.now());
-      d.textContent = Math.floor(t / 864e5);
-      h.textContent = Math.floor(t % 864e5 / 36e5);
-      mi.textContent = Math.floor(t % 36e5 / 6e4);
+      dias.textContent = Math.floor(t / 864e5);
+      horas.textContent = Math.floor(t % 864e5 / 36e5);
+      mins.textContent = Math.floor(t % 36e5 / 6e4);
     };
     tic();
     setInterval(() => { if (!document.hidden) tic(); }, 20000);

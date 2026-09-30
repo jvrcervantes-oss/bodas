@@ -301,7 +301,10 @@ $land = pagina_landing();
 $incl = substr($land, (int) strpos($land, 'id="incluye"'), 20000);
 $incl = substr($incl, 0, (int) strpos($incl, '</section>'));
 ok(strpos($incl, '<h3>Plano de mesas</h3>') !== false && strpos($incl, '<h3>Resumen para el catering</h3>') !== false && substr_count($incl, 'Incluido') >= 2, 'portada: tarjetas del plano y del catering, «Incluido»');
-ok(preg_match('~<img[^>]+src="[^"]*/assets/img/landing/plano-mesas\.webp"[^>]+width="\d+"[^>]+height="\d+"[^>]+loading="lazy"~', $incl) === 1 && is_file($raiz . '/assets/img/landing/plano-mesas.webp'), 'portada: la captura del plano existe, con width/height y lazy');
+// El plano de la portada es un dibujo (ya no la captura del panel): 5 mesas y 44 sillas (8+10+8+10+8), las alergias marcadas,
+// y el marcador de la cuenta atrás lleva su fecha para que landing.js lo refresque
+ok(substr_count($incl, 'data-b-mesa ') === 5 && substr_count($incl, 'class="l-b-silla') === 44 && substr_count($incl, 'l-b-silla al') === 4, 'portada: plano dibujado con 5 mesas, 44 sillas y 4 con alergia');
+ok(preg_match('~data-b-fin="\d{9,}"~', $incl) === 1 && strpos($incl, 'data-b-tip') !== false && strpos($incl, 'plano-mesas.webp') === false, 'portada: marcador con fecha, aviso del plano y sin la captura vieja');
 ok(strpos($incl, '€') === false, 'portada: la sección de lo incluido no pone precio al plano');
 
 foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($tmp, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::CHILD_FIRST) as $f) {
