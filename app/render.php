@@ -379,14 +379,12 @@ function pagina_inicio(array $c, array $ctx): string {
     $po = $c['portada'];
     $rsvp = seccion_tipo($c, 'rsvp');
     $hayFoto = $c['foto'] && ($ctx['foto'] !== '' || $ctx['modo'] === 'preview');
-    // Estilo de la foto (Pack Esencial; los Atelier traen su marco). Con flores, las rosas pasan a rodear la
-    // foto y la guirnalda de encima de los nombres se quita (una sola pieza), salvo en «Papel», que lleva solo una rama.
+    // Estilo de la foto (Pack Esencial; los Atelier traen su marco). Con flores, una sola guirnalda pegada a la foto
+    // (Medallón: arriba y abajo) y la de encima de los nombres se quita (owner, 30-sep-2026).
     $fe = ($c['atelier'] === '' && $hayFoto) ? $c['foto_estilo'] : '';
     $floresEnFoto = $fe !== '' && $c['decoracion'] === 'flores';
     $gTop = '<img class="mf-g mf-g-top" src="' . h($A) . 'img/deco/flores-portada-movil.svg" alt="" width="520" height="250">';
-    $gPie = '<img class="mf-g mf-g-pie" src="' . h($A) . 'img/deco/flores-pie.svg" alt="" width="900" height="170">';
-    $adornoFoto = !$floresEnFoto ? '' : ['arco' => $gTop . $gPie, 'papel' => str_replace('mf-g-pie', 'mf-rama', $gPie),
-        'medallon' => $gTop . str_replace('mf-g-top', 'mf-g-bot', $gTop), 'fundida' => $gTop][$fe];
+    $adornoFoto = !$floresEnFoto ? '' : ($fe === 'medallon' ? $gTop . str_replace('mf-g-top', 'mf-g-bot', $gTop) : $gTop);
     $objetivo = $c['fecha'] !== '' ? $c['fecha'] . 'T' . ($c['ceremonia']['hora'] ?: '12:00') . ':00' : '';
     ob_start(); ?>
 <main class="home">
@@ -396,7 +394,7 @@ function pagina_inicio(array $c, array $ctx): string {
       <?= arte_atelier($c, $A) ?>
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
       <img class="hero-sprig" src="<?= h($A) ?>img/eucalipto.webp" alt="" width="512" height="140">
-<?php elseif ($c['decoracion'] === 'flores' && (!$floresEnFoto || $fe === 'papel')): ?>
+<?php elseif ($c['decoracion'] === 'flores' && !$floresEnFoto): ?>
       <picture class="deco-guirnalda"><source media="(max-width: 900px)" srcset="<?= h($A) ?>img/deco/flores-portada-movil.svg" width="520" height="250"><img src="<?= h($A) ?>img/deco/flores-portada.svg" alt="" width="1200" height="330"></picture>
 <?php endif; ?>
       <div class="hero-text">
