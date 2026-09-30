@@ -197,7 +197,7 @@ function lemon_servicio(string $tipo, string $id, array $o, array $custom): arra
         if ($motivos) {
             $ped['motivos'] = $motivos;
             return $aviso('no-conforme', ($tipo === 'mejora' ? 'Pago de mejora' : 'Pago de extra') . ' que no cuadra',
-                "Pedido LS $id ($slug) cobrado pero no cuadra con {$s['que']}: " . implode(', ', $motivos) . ". $nada Revisar en Lemon Squeezy.");
+                "Pedido LS $id ($slug) cobrado pero no cuadra con {$s['que']}: " . implode(', ', $motivos) . ". " . lemon_diag_importes($o) . " $nada Revisar en Lemon Squeezy.");
         }
         // Reintento tras un corte: la boda ya quedó marcada por ESTE pedido → se remata el cierre (no es un duplicado)
         $bp = lee_json(dir_boda($slug) . '/pedido.json') ?? [];

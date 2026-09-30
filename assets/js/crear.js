@@ -8,6 +8,7 @@
   var D = JSON.parse(document.getElementById('datos').textContent);
   var MODO = D.modo;                         // 'crear' | 'editar'
   var CLAVE = 'boda_borrador_v1';
+  var CLAVE_VISTOS = 'boda_pasos_vistos_v1';   // pasos abiertos de verdad; viaja con el borrador
   var BASE = D.base || '';   // '/bodas' mientras el creador vive en axisworks.studio/bodas
   var URL_PREVIA = MODO === 'editar' ? '/panel/vista-previa' : BASE + '/api/vista-previa';
   var st = D.config;
@@ -16,10 +17,21 @@
 
   function guarda(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* modo privado o lleno */ } }
   function lee(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function quita(k) { try { localStorage.removeItem(k); } catch (e) { /* MUDO A PROPOSITO: sin almacenamiento no hay borrador que borrar */ } }
 
+  // /listo (tras comprar) enlaza a «Montar otra web» con ?nueva=1: esa pantalla no ejecuta JS, así que el borrador de la web
+  // ya publicada se borra aquí, ANTES de restaurarlo. El parámetro se quita de la URL para que recargar no vacíe lo nuevo.
+  if (MODO === 'crear' && /[?&]nueva=1(&|$)/.test(location.search)) {
+    quita(CLAVE); quita(CLAVE_VISTOS);
+    try {
+      var qp = new URLSearchParams(location.search); qp.delete('nueva');
+      history.replaceState(null, '', location.pathname + (qp.toString() ? '?' + qp.toString() : '') + location.hash);
+    } catch (e) { /* MUDO A PROPOSITO: solo se limpia la barra de direcciones; el borrador ya está borrado */ }
+  }
+  var slugDeBorrador = '';   // el nombre que vino del borrador guardado: si resulta ya publicado, se avisa una vez
   if (MODO === 'crear') {
     var b = lee(CLAVE);
-    if (b) { try { var o = JSON.parse(b); if (o && o.config) { st = o.config; slugTocado = !!o.slugTocado; if (o.slug) document.getElementById('slug').value = o.slug; if (o.foto) foto.src = o.foto; } } catch (e) {} }
+    if (b) { try { var o = JSON.parse(b); if (o && o.config) { st = o.config; slugTocado = !!o.slugTocado; if (o.slug) { document.getElementById('slug').value = o.slug; slugDeBorrador = o.slug; } if (o.foto) foto.src = o.foto; } } catch (e) {} }
   }
 
   // ------------------------------------------------------------ utilidades
@@ -354,7 +366,8 @@
 
   function campoTexto(s, clave, etiqueta, opts) {
     opts = opts || {};
-    var inp = el(opts.area ? 'textarea' : 'input', { maxlength: opts.max || 2000, rows: opts.area ? (opts.rows || 4) : null, type: opts.type || null, placeholder: opts.ph || null });
+    var inp = el(opts.area ? 'textarea' : 'input', { maxlength: opts.max || 2000, rows: opts.area ? (opts.rows || 4) : null, type: opts.type || null, placeholder: opts.ph || null,
+      'data-fk': 'sec.' + s.id + '.' + clave });   // clave de faltan() del servidor: marca el campo cuando esa falta llega
     inp.value = s.datos[clave] || '';
     inp.addEventListener('input', function () { s.datos[clave] = inp.value; cambio(); });
     return el('label', { class: 'c-campo' }, [el('span', { text: etiqueta }), inp, opts.ayuda ? el('small', { text: opts.ayuda }) : null]);
@@ -409,7 +422,7 @@
           lista.textContent = '';
           s.datos.hoteles.forEach(function (ho, i) {
             var f = function (k, et, max, ph) {
-              var inp = el('input', { maxlength: max, placeholder: ph || null });
+              var inp = el('input', { maxlength: max, placeholder: ph || null, 'data-fk': k === 'web' ? 'sec.' + s.id + '.hotelweb' + i : null });
               inp.value = ho[k] || '';
               inp.addEventListener('input', function () { ho[k] = inp.value; cambio(); });
               return el('label', { class: 'c-campo' }, [el('span', { text: et }), inp]);
@@ -794,7 +807,6 @@
   var pasoActual = ordenTabs.length ? ordenTabs[0].k : '';
   // Pasos abiertos de verdad: se guardan junto al borrador para que, al volver, no salga en verde
   // un paso que nunca se abrió solo porque no tiene datos obligatorios. Al editar, todos cuentan.
-  var CLAVE_VISTOS = 'boda_pasos_vistos_v1';
   var vistos = {};
   if (MODO === 'crear' && lee(CLAVE)) { try { vistos = JSON.parse(lee(CLAVE_VISTOS) || '{}') || {}; } catch (e) { vistos = {}; } }
   var tarjetaPaso = el('div', { class: 'c-pm' });
@@ -901,9 +913,11 @@
     var i = ordenTabs.map(function (o) { return o.k; }).indexOf(pasoActual);
     ordenTabs.forEach(function (o, j) {
       var h = pasoHecho(o.k, fp); if (h) hechos++;
-      var t = barraPasos.children[j]; if (t) t.className = h ? 'hecho' : j === i ? 'actual' : '';
+      // Un paso con una falta que el servidor ha devuelto (p. ej. un IBAN que no vale) se marca aunque no sea obligatorio
+      var falta = !h && fp[o.k] > 0 && !OBLIGATORIOS[o.k];
+      var t = barraPasos.children[j]; if (t) t.className = (h ? 'hecho' : j === i ? 'actual' : '') + (falta ? ' falta' : '');
       var r = document.querySelector('.c-paso[data-tab="' + o.k + '"]');
-      if (r) { r.classList.toggle('hecho', !!h); r.querySelector('.c-paso-num').textContent = h ? '✓' : String(j + 1); }
+      if (r) { r.classList.toggle('hecho', !!h); r.classList.toggle('falta', falta); r.querySelector('.c-paso-num').textContent = h ? '✓' : String(j + 1); }
     });
     arco.lastChild.style.strokeDashoffset = 100 - hechos / (ordenTabs.filter(function (o) { return OBLIGATORIOS[o.k] || o.k === 'publicar'; }).length || 1) * 100;
     tarjetaPaso.classList.toggle('es-hecho', pasoHecho(pasoActual, fp));
@@ -1092,7 +1106,7 @@
     if (typeof pintaEstados === 'function') pintaEstados();
     document.querySelectorAll('.c-mal').forEach(function (n) { n.classList.remove('c-mal'); });
     Object.keys(f).forEach(function (k) {
-      var inp = document.querySelector('[data-k="' + k + '"]');
+      var inp = document.querySelector('[data-k="' + k + '"]') || document.querySelector('[data-fk="' + k + '"]');
       if (inp && inp.value) inp.closest('.c-campo').classList.add('c-mal');
     });
   }
@@ -1101,10 +1115,33 @@
     Object.keys(f).forEach(function (k) { faltanEl.appendChild(el('li', { text: f[k] })); });
     (extra || []).forEach(function (m) { faltanEl.appendChild(el('li', { text: m })); });
     Object.keys(f).forEach(function (k) {
-      var inp = document.querySelector('[data-k="' + k + '"]');
+      var inp = document.querySelector('[data-k="' + k + '"]') || document.querySelector('[data-fk="' + k + '"]');
       if (inp) inp.closest('.c-campo').classList.add('c-mal');
     });
     // El aviso sale junto al botón (Publicar / Guardar); los campos quedan marcados en su pestaña
+  }
+
+  // ------------------------------------------------------------ borrador de una web que ya está publicada
+  // Nada borra el borrador al comprar (la pantalla /listo no ejecuta JS), así que al volver a /crear reaparece con el nombre de la web
+  // ya publicada. No se borra a escondidas: se avisa y se deja elegir. Por defecto NO se toca nada.
+  function avisoBorradorPublicado(nombre) {
+    var dlg = document.getElementById('dlgPublicada');
+    if (!dlg) { dlg = el('dialog', { id: 'dlgPublicada', class: 'c-dlg', 'aria-labelledby': 'dlgPublicadaTit' }); document.body.appendChild(dlg); }
+    if (typeof dlg.showModal !== 'function') { slugEstado.textContent = 'Ese nombre ya es una web publicada: si queréis otra, cambiad el nombre.'; return; }
+    dlg.textContent = '';
+    var seguir = el('button', { type: 'button', class: 'b-btn b-paper', text: 'Seguir con este borrador' });
+    var otra = el('button', { type: 'button', class: 'b-btn b-dark', text: 'Empezar otra web' });
+    seguir.addEventListener('click', function () { dlg.close(); });
+    otra.addEventListener('click', function () {
+      quita(CLAVE); quita(CLAVE_VISTOS);
+      location.href = location.pathname;   // constructor vacío (sin borrador ni parámetros)
+    });
+    dlg.appendChild(el('div', { class: 'c-dlg-cuerpo' }, [
+      el('h2', { id: 'dlgPublicadaTit', text: 'Este borrador ya está publicado' }),
+      el('p', { text: 'La web «' + nombre + '» ya existe: parece que la habéis publicado desde este mismo borrador. Si queréis montar otra web, empezad de cero; vuestra web publicada no se toca.' }),
+      el('div', { class: 'c-dlg-bot' }, [otra, seguir])
+    ]));
+    dlg.showModal();
   }
 
   // ------------------------------------------------------------ nombre de la web
@@ -1127,6 +1164,8 @@
         if (slugEl.value !== v) return;
         slugEstado.textContent = j.libre ? '✓ Disponible' : (j.motivo || 'No disponible');
         slugEstado.className = j.libre ? 'ok' : 'mal';
+        // El nombre del borrador restaurado ya es una web publicada: casi seguro es la que acaban de comprar
+        if (!j.libre && j.razon === 'publicada' && slugDeBorrador && v === slugDeBorrador) { slugDeBorrador = ''; avisoBorradorPublicado(v); }
       }).catch(function () { /* MUDO A PROPOSITO: es solo una ayuda mientras se escribe: la dirección la valida el servidor al dar de alta */ });
     }, 400);
   }
@@ -1136,6 +1175,7 @@
       var limpio = slugEl.value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9-]+/g, '-').replace(/-{2,}/g, '-').replace(/^-/, '').slice(0, 40);
       if (limpio !== slugEl.value) slugEl.value = limpio;
       slugTocado = slugEl.value !== '';
+      slugDeBorrador = '';   // ya lo está eligiendo esta persona: no es el del borrador
       pintaUrl();
       persiste();
       compruebaSlug();

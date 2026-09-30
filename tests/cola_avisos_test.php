@@ -38,7 +38,7 @@ if ($fase === 'falla') {
     $p = precio_esencial_cent();
     escribe_json(dir_datos('pendientes', $tok, 'config.json'), $c);
     escribe_json(dir_datos('pendientes', $tok, 'meta.json'), ['slug' => 'cola', 'creado' => time(), 'precio_cent' => $p, 'pasarela' => 'lemon', 'aceptacion' => null]);
-    $o = ['store_id' => 483461, 'currency' => 'EUR', 'total' => $p, 'tax' => 0, 'discount_total' => 0, 'status' => 'paid', 'test_mode' => true,
+    $o = ['store_id' => 483461, 'currency' => 'EUR', 'total' => $p, 'tax_inclusive' => true, 'tax' => 0, 'discount_total' => 0, 'status' => 'paid', 'test_mode' => true,
         'user_email' => 'pareja@example.com', 'order_number' => 1, 'first_order_item' => ['variant_id' => 2169949, 'product_id' => 1389266, 'quantity' => 1]];
     $ev = ['meta' => ['event_name' => 'order_created', 'custom_data' => ['token' => $tok, 'slug' => 'cola', 'producto' => 'bodas']], 'data' => ['type' => 'orders', 'id' => '1']];
     [$st, $r] = lemon_procesa_evento($ev, fn($id) => $o);

@@ -50,7 +50,7 @@ function pendiente(string $slug, int $precio): string {
     return $tok;
 }
 function pedido_ls(int $total, array $cambia = []): array {
-    return array_replace_recursive(['store_id' => 483461, 'currency' => 'EUR', 'total' => $total, 'tax' => (int) round($total * 21 / 121),
+    return array_replace_recursive(['store_id' => 483461, 'currency' => 'EUR', 'total' => $total, 'tax_inclusive' => true, 'tax' => (int) round($total * 21 / 121),
         'discount_total' => 0, 'status' => 'paid', 'test_mode' => true, 'user_email' => 'pareja@example.com', 'user_name' => 'Ana',
         'order_number' => 1001, 'identifier' => 'uuid', 'first_order_item' => ['variant_id' => 2169949, 'product_id' => 1389266, 'quantity' => 1]], $cambia);
 }
@@ -124,6 +124,37 @@ foreach ([['total' => $precio - 100], ['discount_total' => 500], ['first_order_i
 $t = pendiente('slug-bueno', $precio);
 [$st, $r] = lemon_procesa_evento(evento('order_created', '300', $t, 'otro-slug'), lector(['300' => pedido_ls($precio)]));
 ok($r === 'no-conforme', 'slug de custom distinto del pedido = no-conforme');
+
+// 5b. Desglose de IVA (arreglo #2, 30-sep): conforme si (inclusive y total = precio) o (no inclusive, subtotal = precio y total = subtotal + IVA)
+$mc = ['precio_cent' => $precio, 'slug' => 'iva-x', 'pasarela' => 'lemon'];
+$cu = ['slug' => 'iva-x'];
+$motivos = fn(array $cambio) => lemon_motivos_no_conforme(pedido_ls($precio, $cambio), $mc, $cu);
+ok($motivos([]) === [], 'IVA incluido: total = precio → conforme');
+ok($motivos(['tax_inclusive' => false, 'subtotal' => $precio, 'tax' => 2100, 'total' => $precio + 2100]) === [], 'IVA aparte: subtotal = precio y total = subtotal + tax → conforme');
+ok($motivos(['tax_inclusive' => false, 'subtotal' => $precio, 'tax' => 0, 'total' => $precio]) === [], 'IVA aparte con IVA 0 (país sin IVA) → conforme');
+ok($motivos(['total' => $precio - 100]) === ['total'], 'total menor que el precio (incluido) → rechazado');
+ok($motivos(['tax_inclusive' => false, 'subtotal' => $precio - 100, 'tax' => 100, 'total' => $precio]) === ['total'], 'IVA aparte con subtotal menor que el precio aunque el total llegue → rechazado');
+ok($motivos(['total' => $precio + 2100]) === ['total'], 'IVA incluido con total mayor → rechazado');
+ok($motivos(['tax_inclusive' => false, 'subtotal' => $precio, 'tax' => 2100, 'total' => $precio + 5000]) === ['total'], 'total mayor sin explicar por subtotal + tax → rechazado');
+ok($motivos(['tax_inclusive' => false, 'subtotal' => null]) === ['total'], 'IVA aparte sin subtotal → rechazado');
+ok($motivos(['tax_inclusive' => false, 'subtotal' => $precio, 'tax' => -500, 'total' => $precio - 500]) === ['total'], 'IVA negativo → rechazado');
+$sinCampo = pedido_ls($precio);
+unset($sinCampo['tax_inclusive']);
+ok(lemon_motivos_no_conforme($sinCampo, $mc, $cu) === [], 'sin el campo tax_inclusive pero total = precio → conforme (no todo pedido cae en no-conforme)');
+$sinCampo['total'] = $precio + 500;
+ok(lemon_motivos_no_conforme($sinCampo, $mc, $cu) === ['total'], 'sin tax_inclusive y total distinto del precio sin explicar → rechazado');
+$sinCampo['total'] = $precio - 500;
+ok(lemon_motivos_no_conforme($sinCampo, $mc, $cu) === ['total'], 'sin tax_inclusive y total menor → rechazado');
+$sinCampo = pedido_ls($precio, ['subtotal' => $precio, 'tax' => 2100, 'total' => $precio + 2100]);
+unset($sinCampo['tax_inclusive']);
+ok(lemon_motivos_no_conforme($sinCampo, $mc, $cu) === [], 'sin tax_inclusive, subtotal = precio y total = subtotal + tax → conforme');
+// El aviso de un no-conforme lleva el desglose para diagnosticar, sin datos personales
+$t = pendiente('iva-aviso', $precio);
+[$st, $r] = lemon_procesa_evento(evento('order_created', '260', $t, 'iva-aviso'), lector(['260' => pedido_ls($precio, ['total' => $precio + 5000, 'user_email' => 'secreto@example.com'])]));
+// El detalle va por correo al buzón del estudio; Telegram solo lleva el título
+$tgIva = implode("\n", array_filter(array_map('file_get_contents', glob(dir_datos('correos', '*')) ?: []), fn($c) => strpos($c, 'Pedido LS 260') !== false));
+ok($r === 'no-conforme' && strpos($tgIva, 'subtotal=') !== false && strpos($tgIva, 'tax_inclusive=true') !== false && strpos($tgIva, 'total=' . ($precio + 5000)) !== false, 'aviso no-conforme con subtotal, tax, total y tax_inclusive');
+ok(strpos($tgIva, 'secreto@example.com') === false, 'el aviso de importes no lleva el email del comprador');
 
 // 6. Sin relectura de la API → 503 (LS reintenta), sin tocar nada; evento ajeno → 200 ignorado
 $t = pendiente('sin-api', $precio);
@@ -335,6 +366,49 @@ $pr = array_values(array_filter(padrino_resumen()['pedidos'], fn($p) => $p['tipo
 ok(count($pr) >= 2 && !array_filter($pr, fn($p) => $p['pack'] !== 'atelier'), 'resumen del Padrino: tipo mejora, pack atelier');
 // Sin la casilla de Legal propia de la mejora, no se ofrece (la del alta dice «que cree y publique»)
 ok(texto_mejora() === (string) (textos_legales()['check_mejora'] ?? ''), 'la casilla de la mejora es solo la de Legal (check_mejora), nunca la del alta');
+
+// #4 Carrera: pagan el checkout 1, el aviso de LS tarda, la pareja vuelve atrás y reserva de nuevo → el aviso tardío encuentra sus datos
+$rid = reservante_id('1.2.3.4', 'pareja@example.com');
+$t1 = pendiente('carrera', $precio);
+escribe_json(dir_datos('reservas', 'carrera.json'), ['token' => $t1, 'hasta' => time() + 1800, 'reservante' => $rid]);
+$t2 = bin2hex(random_bytes(16));
+ok(reserva_toma('carrera', $t2, $rid), 'carrera: la misma pareja recupera la reserva');
+[$st, $r] = lemon_procesa_evento(evento('order_created', '8001', $t1, 'carrera'), lector(['8001' => pedido_ls($precio)]));
+ok($r === 'creada' && boda_existe('carrera'), 'carrera: el pago del checkout anterior, llegado tarde, publica la web (no queda cobrado sin web)');
+
+// #7 «Confirmando el pago» (30-sep): se recarga sola solo mientras se espera, y no para siempre
+function listo_html(string $t): string { ob_start(); listo_lemon($t); return (string) ob_get_clean(); }
+$REFRESH = '<meta http-equiv="refresh" content="4">';
+$tw = pendiente('espera-pago', $precio);
+$h1 = listo_html($tw);
+ok(strpos($h1, $REFRESH) !== false && strpos($h1, 'Confirmando el pago') !== false, 'espera: sin aviso de LS todavía → se recarga sola cada 4 s');
+ok(strpos(listo_html($tw), $REFRESH) !== false, 'espera: la segunda carga sigue refrescando (el plazo no se reinicia ni se pierde)');
+ok(strpos($h1, 'script') === false, 'espera: sin JS (la CSP no lo permite) — solo la meta');
+// Pasados 5 min desde la primera vez que se enseñó: deja de recargar y da el buzón
+escribe_json(dir_datos('pendientes', $tw, 'listo.json'), ['t' => time() - LEMON_ESPERA_RECARGA_S - 5]);
+$h2 = listo_html($tw);
+ok(strpos($h2, 'http-equiv="refresh"') === false && strpos($h2, 'hola@bodaenlace.com') !== false && strpos($h2, 'escribidnos') !== false, 'espera: pasado el plazo no recarga y muestra el buzón');
+// Recién dentro del plazo (4 min 50 s) todavía recarga
+escribe_json(dir_datos('pendientes', $tw, 'listo.json'), ['t' => time() - LEMON_ESPERA_RECARGA_S + 10]);
+ok(strpos(listo_html($tw), $REFRESH) !== false, 'espera: dentro del plazo todavía recarga');
+// Un pedido que abrió hace 10 min pero se ve por primera vez ahora sí recarga (el plazo no cuenta el tiempo en el checkout)
+$tv = pendiente('espera-vieja', $precio);
+$mv = lee_json(dir_datos('pendientes', $tv, 'meta.json')); $mv['creado'] = time() - 600;
+escribe_json(dir_datos('pendientes', $tv, 'meta.json'), $mv);
+ok(strpos(listo_html($tv), $REFRESH) !== false, 'espera: el plazo cuenta desde que se ve la pantalla, no desde que se abrió el pago');
+// Creada, no-conforme, reembolsada y desconocida: NUNCA recargan
+$tc = pendiente('espera-creada', $precio);
+lemon_procesa_evento(evento('order_created', '7001', $tc, 'espera-creada'), lector(['7001' => pedido_ls($precio)]));
+$hc = listo_html($tc);
+ok(strpos($hc, 'http-equiv="refresh"') === false && strpos($hc, 'Vuestra web ya está publicada') !== false, 'creada: sin recarga');
+ok(strpos($hc, '/crear?nueva=1') !== false, 'creada: el enlace a «otra web» lleva ?nueva=1 (borra el borrador local)');
+$tn = pendiente('espera-mal', $precio);
+lemon_procesa_evento(evento('order_created', '7002', $tn, 'espera-mal'), lector(['7002' => pedido_ls($precio, ['total' => $precio + 5000])]));
+$hn = listo_html($tn);
+ok(strpos($hn, 'http-equiv="refresh"') === false && strpos($hn, 'Pago recibido') !== false, 'no-conforme (error final): sin recarga');
+lemon_procesa_evento(evento('order_refunded', '7001', $tc, 'espera-creada'), lector(['7001' => pedido_ls($precio, ['status' => 'refunded'])]));
+ok(strpos(listo_html($tc), 'http-equiv="refresh"') === false, 'reembolsada: sin recarga');
+ok(strpos(listo_html(str_repeat('e', 32)), 'http-equiv="refresh"') === false, 'pago desconocido: sin recarga');
 
 // Limpieza
 borra_arbol_test($tmp);

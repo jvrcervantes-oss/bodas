@@ -27,6 +27,55 @@ function slug_libre(string $slug, string $token = ''): bool {
     return !$r || ($r['hasta'] ?? 0) < time() || ($token !== '' && ($r['token'] ?? '') === $token);
 }
 
+/**
+ * Identificador NO reversible de quien reserva un nombre: HMAC con la clave de la app de IP + email normalizado.
+ * Ni la IP ni el email se guardan en claro. Sirve solo para reconocer que quien vuelve del checkout con el
+ * botón «atrás» es la misma persona (mismo email desde la misma conexión); no es una credencial.
+ */
+function reservante_id(string $ip, string $email): string {
+    $email = strtolower(trim($email));
+    if ($email === '') return '';
+    return hash_hmac('sha256', 'reservante|' . $ip . '|' . $email, clave_app());
+}
+
+/**
+ * Dentro del cerrojo: ¿puede $reservante sustituir la reserva vigente de $slug? Solo si la hizo él, la web no
+ * existe, y su pedido anterior sigue sin cobrar (ni token atado a un pedido de LS ni web de regalo). En ese
+ * caso la reserva pasa al pedido nuevo (el pendiente anterior se deja caducar; ver abajo).
+ */
+function reserva_reemplazable(string $slug, string $reservante): bool {
+    if ($reservante === '' || !slug_valido($slug) || boda_existe($slug)) return false;
+    $r = lee_json(dir_datos('reservas', $slug . '.json'));
+    if (!$r || ($r['hasta'] ?? 0) < time()) return false;
+    $prev = (string) ($r['reservante'] ?? '');
+    $viejo = (string) ($r['token'] ?? '');
+    if ($prev === '' || !hash_equals($prev, $reservante) || !preg_match('/^[a-f0-9]{32}$/', $viejo)) return false;
+    // Ya cobrado o en proceso de cobro: nunca se pisa
+    if (is_file(dir_datos('ls_tokens', $viejo . '.json')) || is_file(dir_datos('pedidos', 'cortesia_' . $viejo . '.json'))) return false;
+    $meta = lee_json(dir_datos('pendientes', $viejo, 'meta.json'));
+    if ($meta && (($meta['estado'] ?? '') === 'pagada' || ($meta['slug'] ?? $slug) !== $slug)) return false;
+    // El pendiente anterior NO se borra: su checkout sigue pudiendo pagarse hasta 30 min y, si el aviso de LS llega tarde, tiene
+    // que encontrar su meta.json (sin él sería «sin-datos»: cobrado y sin web). Lo caduca el cron. Lo que cambia es la reserva:
+    // pasa al pedido nuevo. Si pagaran los dos, el segundo se publica como «-2» (dos cobros, dos webs, nada cobrado sin web).
+    return true;
+}
+
+/** Contexto de fecha para faltan() al editar una boda ya contratada desde el panel. */
+function faltan_panel(string $slug): array {
+    $c = lee_json(dir_boda($slug) . '/config.json') ?? [];
+    $p = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
+    return ['guardada' => (string) ($c['fecha'] ?? ''), 'pago' => (string) ($p['fecha_pago'] ?? '')];
+}
+
+/** Reserva un nombre 30 min para $token, bajo el cerrojo: libre, o reemplazando la reserva sin cobrar del mismo reservante. */
+function reserva_toma(string $slug, string $token, string $reservante): bool {
+    return con_cerrojo(function () use ($slug, $token, $reservante) {
+        if (!slug_libre($slug) && !reserva_reemplazable($slug, $reservante)) return false;
+        escribe_json(dir_datos('reservas', $slug . '.json'), ['token' => $token, 'hasta' => time() + 1860, 'reservante' => $reservante]);
+        return true;
+    });
+}
+
 /** Bloqueo global corto para las altas: dos entregas simultáneas del webhook no crean dos webs. */
 function con_cerrojo(callable $fn) {
     asegura_dir(dir_datos('locks'));
@@ -117,7 +166,9 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
     $cfg['_estado'] = 'activa';
     // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
     escribe_json($d . '/pedido.json', ['session_id' => $sid, 'pasarela' => (string) ($ped['pasarela'] ?? ''), 'test' => !empty($ped['ls']['test']),
-        'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '']);
+        'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '',
+        // Fecha con la que se contrató: tope para mover la fecha desde el panel (faltan(), MAX_MOVER_FECHA_DIAS)
+        'fecha_pago' => (string) ($cfg['fecha'] ?? '')]);
     escribe_json($d . '/config.json', $cfg);
     if (is_file($pend . '/foto.webp')) rename($pend . '/foto.webp', $d . '/foto.webp');
     mapa_actualiza($slug, normaliza_config($cfg)); // si falla, queda pendiente para el cron

@@ -85,6 +85,7 @@ function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''
     $in = json_decode((string) $raw, true);
     if (!is_array($in)) json_response(['ok' => false], 400);
     $c = normaliza_config($in['config'] ?? []);
+    $crudo = $in['config'] ?? [];
     $pagina = clean_str($in['pagina'] ?? '', 40);
     // Mapa: en el panel se ve el último guardado; en el creador anónimo, solo el hueco (no se generan mapas sin sesión)
     $mapa = $firmaSlug !== '' ? mapa_de($firmaSlug) : null;
@@ -97,17 +98,20 @@ function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''
     // [ruta, título, id de la sección]: el creador sincroniza vista previa y configurador por el id
     foreach ($c['secciones'] as $s) if ($s['on']) $paginas[] = [$s['ruta'], $s['titulo'], $s['id']];
     $paginas[] = ['privacidad', 'Privacidad'];
-    json_response(['ok' => true, 'html' => $html, 'paginas' => $paginas, 'faltan' => faltan($c)]);
+    json_response(['ok' => true, 'html' => $html, 'paginas' => $paginas, 'faltan' => faltan($c, $crudo, $firmaSlug !== '' ? faltan_panel($firmaSlug) : null)]);
 }
 
 function api_nombre(): void {
     if (!limite('nombre|' . ip_cliente(), 300, 3600)) json_response(['ok' => false, 'error' => 'Demasiadas peticiones.'], 429);
     $s = strtolower(clean_str($_GET['s'] ?? '', 60));
     if (!preg_match(SLUG_RE, $s) || strpos($s, '--') !== false) {
-        json_response(['ok' => true, 'libre' => false, 'motivo' => 'Entre 3 y 40 caracteres: letras sin tilde, números y guiones.']);
+        json_response(['ok' => true, 'libre' => false, 'razon' => 'formato', 'motivo' => 'Entre 3 y 40 caracteres: letras sin tilde, números y guiones.']);
     }
-    if (in_array($s, SLUGS_RESERVADOS, true)) json_response(['ok' => true, 'libre' => false, 'motivo' => 'Ese nombre está reservado.']);
-    json_response(['ok' => true, 'libre' => slug_libre($s), 'motivo' => slug_libre($s) ? '' : 'Ese nombre ya está cogido.']);
+    if (in_array($s, SLUGS_RESERVADOS, true)) json_response(['ok' => true, 'libre' => false, 'razon' => 'reservado', 'motivo' => 'Ese nombre está reservado.']);
+    // `razon` es lo que lee el JS (el `motivo` es solo el rótulo): 'publicada' = ya hay una web con ese nombre; 'reservada' = alguien
+    // tiene un pago abierto sobre él (caduca en ~30 min)
+    $libre = slug_libre($s);
+    json_response(['ok' => true, 'libre' => $libre, 'razon' => $libre ? '' : (boda_existe($s) ? 'publicada' : 'reservada'), 'motivo' => $libre ? '' : 'Ese nombre ya está cogido.']);
 }
 
 function api_pagar(string $metodo): void {
@@ -162,8 +166,9 @@ function api_pagar(string $metodo): void {
     if (($_POST['acepto_condiciones'] ?? '') !== 'si' || (!$cortesia && ($_POST['acepto_desistimiento'] ?? '') !== 'si')) {
         json_response(['ok' => false, 'error' => 'Marca las dos casillas para continuar.'], 422);
     }
-    $c = normaliza_config(json_decode((string) ($_POST['config'] ?? ''), true));
-    $f = faltan($c);
+    $crudo = json_decode((string) ($_POST['config'] ?? ''), true);
+    $c = normaliza_config($crudo);
+    $f = faltan($c, $crudo);
     if ($f) json_response(['ok' => false, 'error' => 'Faltan datos.', 'faltan' => $f], 422);
     if ($cortesia && $c['atelier'] !== '' && empty($cortesia[1]['atelier'])) {
         json_response(['ok' => false, 'error' => 'Este código es del Pack Esencial: elegid «Vuestro estilo» en el paso Estilo o pedid un código Atelier.'], 422);
@@ -181,11 +186,10 @@ function api_pagar(string $metodo): void {
     $pend = dir_datos('pendientes', $token);
 
     // Reserva del nombre dentro del cerrojo: dos parejas no pueden pagar el mismo a la vez
-    $reservado = con_cerrojo(function () use ($slug, $token) {
-        if (!slug_libre($slug)) return false;
-        escribe_json(dir_datos('reservas', $slug . '.json'), ['token' => $token, 'hasta' => time() + 1860]);
-        return true;
-    });
+    // Quien vuelve del checkout con «atrás» y pulsa otra vez reserva de nuevo el MISMO nombre: si la reserva vigente
+    // la hizo él (mismo email desde la misma conexión, guardado solo como hash) y no está cobrada, la sustituye
+    $reservante = reservante_id(ip_cliente(), (string) $c['pareja']['email']);
+    $reservado = reserva_toma($slug, $token, $reservante);
     if (!$reservado) json_response(['ok' => false, 'error' => 'Ese nombre de web ya está cogido. Elige otro.', 'faltan' => ['slug' => 'Ese nombre ya está cogido.']], 409);
 
     asegura_dir($pend);
@@ -264,6 +268,14 @@ function api_webhook(string $metodo): void {
 
 function pagina_listo(): void {
     cabeceras_privadas();
+    // Lemon Squeezy: solo el pedido local, nunca la API (rev. #109). Va ANTES del límite de abajo: la pantalla de espera
+    // se recarga sola cada 4 s durante 5 min (~75 cargas), que con 30/hora se cortaría sola; aquí solo se leen ficheros
+    $t = (string) ($_GET['t'] ?? '');
+    if (preg_match('/^[a-f0-9]{32}$/', $t)) {
+        if (!limite('listo_ls|' . ip_cliente(), 400, 3600)) { http_response_code(429); echo pagina_simple('Demasiadas visitas', '<p>Espera un rato y vuelve a cargar la página.</p>'); return; }
+        listo_lemon($t);
+        return;
+    }
     // Cada visita consulta la API de Stripe: sin límite sería un amplificador gratis
     if (!limite('listo|' . ip_cliente(), 30, 3600)) { http_response_code(429); echo pagina_simple('Demasiadas visitas', '<p>Espera un rato y vuelve a cargar la página.</p>'); return; }
     // Cortesía: el token del pedido (128 bits aleatorios) es la llave; el enlace del panel sale una vez
@@ -274,9 +286,6 @@ function pagina_listo(): void {
         listo_muestra($ped);
         return;
     }
-    // Lemon Squeezy: solo el pedido local, nunca la API (rev. #109)
-    $t = (string) ($_GET['t'] ?? '');
-    if (preg_match('/^[a-f0-9]{32}$/', $t)) { listo_lemon($t); return; }
     if (pasarela() !== 'stripe') { echo pagina_simple('Pago no encontrado', '<p>No encontramos este pago. Si te han cobrado, escríbenos a ' . h(empresa()['email']) . '.</p>'); return; }
     $sid = clean_str($_GET['sid'] ?? '', 250);
     $s = stripe_lee_sesion($sid);
@@ -311,14 +320,16 @@ function listo_muestra(array $ped): void {
         $o .= '<p>Ahora elegid la contraseña de vuestro panel, desde donde veréis las respuestas, editaréis la web y descargaréis el ZIP:</p><p><a class="btn btn-sec" href="' . h($enlace) . '">Elegir contraseña</a></p>';
     }
     $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel' . (($ped['factura'] ?? '') !== '' ? ', la factura (' . h($ped['factura']) . ')' : '') . ' y las condiciones.</p>';
+    // «Otra web» abre el constructor VACÍO: ?nueva=1 borra el borrador del navegador, que /listo no puede tocar (sin JS por la CSP)
+    $o .= '<p class="nota"><a href="' . BASE_PATH . '/crear?nueva=1">Montar otra web de boda</a></p>';
     echo pagina_simple('¡Enhorabuena!', $o);
 }
 
 /** Página sencilla del creador (legales, éxito). */
 /** $conTitulo = false cuando el cuerpo ya trae su <h1> (los textos legales), para no repetir el título (owner, 29-sep-2026). */
-function pagina_simple(string $titulo, string $cuerpo, bool $conTitulo = true): string {
+function pagina_simple(string $titulo, string $cuerpo, bool $conTitulo = true, string $cabeza = ''): string {
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="robots" content="noindex">' . favicon_links()
+        . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="robots" content="noindex">' . $cabeza . favicon_links()
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
         . '<header class="s-top">' . logo_marca('c-marca', BASE_PATH . '/') . '</header>'
         . '<main class="simple-main">' . ($conTitulo ? '<h1>' . h($titulo) . '</h1>' : '') . $cuerpo . '</main>' . pie_creador() . '</body></html>';

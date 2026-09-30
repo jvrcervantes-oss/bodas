@@ -87,7 +87,7 @@ function webhook(string $evento, string $id, array $custom): array {
 }
 function orden_ls(string $id, int $total, array $cambia = []): void {
     global $ls;
-    file_put_contents($ls . '/order_' . $id . '.json', json_encode(array_replace_recursive(['store_id' => 483461, 'currency' => 'EUR', 'total' => $total, 'tax' => (int) round($total * 21 / 121),
+    file_put_contents($ls . '/order_' . $id . '.json', json_encode(array_replace_recursive(['store_id' => 483461, 'currency' => 'EUR', 'total' => $total, 'tax_inclusive' => true, 'tax' => (int) round($total * 21 / 121),
         'discount_total' => 0, 'status' => 'paid', 'test_mode' => true, 'user_email' => 'pareja@example.com', 'user_name' => 'Ana', 'order_number' => 3001,
         'identifier' => 'u', 'urls' => ['receipt' => 'https://app.lemonsqueezy.com/my-orders/r1'], 'first_order_item' => ['variant_id' => 2169949, 'product_id' => 1389266, 'quantity' => 1]], $cambia)));
 }

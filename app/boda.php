@@ -595,8 +595,9 @@ function panel_guardar(string $slug, array $actual, string $metodo): void {
     if ($metodo !== 'POST') json_response(['ok' => false], 405);
     if (!panel_csrf_ok()) json_response(['ok' => false, 'error' => 'La sesión ha caducado. Recarga la página.'], 403);
     if (!limite('guardar|' . $slug, 120, 3600)) json_response(['ok' => false, 'error' => 'Demasiados cambios seguidos.'], 429);
-    $c = normaliza_config(json_decode((string) ($_POST['config'] ?? ''), true));
-    $f = faltan($c);
+    $crudo = json_decode((string) ($_POST['config'] ?? ''), true);
+    $c = normaliza_config($crudo);
+    $f = faltan($c, $crudo, faltan_panel($slug));
     if ($f) json_response(['ok' => false, 'error' => 'Faltan datos.', 'faltan' => $f], 422);
     if ($c['atelier'] !== '' && empty((lee_json(dir_boda($slug) . '/pedido.json') ?? [])['atelier'])) {
         json_response(['ok' => false, 'error' => 'Los diseños Atelier necesitan el Pack Atelier: podéis pasar a él desde el paso Estilo.'], 422);

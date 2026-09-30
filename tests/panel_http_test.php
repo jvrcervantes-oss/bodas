@@ -273,6 +273,27 @@ ok($st === 303 && strpos($cab, 'Location: /panel/respuestas') !== false && ($rg[
 [, $h] = pide('GET', '/panel/respuestas');
 ok(strpos($h, 'misma=rgen') === false && strpos($h, '611111111') === false, 'respuestas: la general juntada ya no sale');
 
+// ---------------------------------------------------------------- 3d. guardar DESPUÉS de la boda (arreglo #5, 30-sep-2026)
+// Sin red: los dos sitios del mapa ya constan como «no encontrados» en la caché de geocodificación.
+foreach (['ermita', 'finca el olivar'] as $q) escribe_json(dir_datos('geo', sha1($q) . '.json'), ['nada' => true, 't' => time()]);
+$pasada = date('Y-m-d', strtotime('-10 days'));
+muta_json(dir_boda($slug) . '/config.json', function (array &$d) use ($pasada) { $d['fecha'] = $pasada; });
+muta_json(dir_boda($slug) . '/pedido.json', function (array &$d) { $d['fecha_pago'] = date('Y-m-d', strtotime('-70 days')); });
+$guarda = function (string $fecha, string $texto) use ($csrf) {
+    $cfg = lee_json(dir_boda($GLOBALS['slug']) . '/config.json');
+    $cfg['fecha'] = $fecha;
+    $cfg['portada']['texto'] = $texto;
+    [$st, $r] = pide('POST', '/panel/guardar', ['csrf' => $csrf, 'config' => json_encode($cfg)]);
+    return [$st, json_decode($r, true) ?: []];
+};
+[$st, $j] = $guarda($pasada, 'Gracias por acompañarnos');
+ok($st === 200 && !empty($j['ok']) && (lee_json(dir_boda($slug) . '/config.json')['portada']['texto'] ?? '') === 'Gracias por acompañarnos', 'tras la boda: se puede guardar el resto sin tocar la fecha');
+[$st, $j] = $guarda(date('Y-m-d', strtotime('-20 days')), 'Otro');
+ok($st === 422 && isset($j['faltan']['fecha']) && strpos($j['faltan']['fecha'], 'ya ha pasado') !== false, 'tras la boda: cambiar la fecha a otra pasada = 422');
+[$st, $j] = $guarda(date('Y-m-d', strtotime('+5 days')), 'Otro');
+ok($st === 422 && isset($j['faltan']['fecha']) && strpos($j['faltan']['fecha'], '60') !== false, 'moverla más de 60 días respecto de la del pago = 422');
+ok((lee_json(dir_boda($slug) . '/config.json')['fecha'] ?? '') === $pasada && (lee_json(dir_boda($slug) . '/config.json')['portada']['texto'] ?? '') === 'Gracias por acompañarnos', 'los 422 no guardan nada');
+
 // ---------------------------------------------------------------- 4. otra boda: su cookie no abre este panel
 $otra = 'otra-prueba';
 escribe_json(dir_boda($otra) . '/config.json', normaliza_config(config_inicial()));

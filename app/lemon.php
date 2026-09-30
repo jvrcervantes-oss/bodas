@@ -148,6 +148,35 @@ function lemon_lee_pedido(string $id): ?array {
 }
 
 /**
+ * ¿Lo cobrado cuadra con el precio congelado? La tienda vende con IVA INCLUIDO y `custom_price` = ese precio,
+ * pero el desglose lo decide LS por país del comprador. Dos formas válidas, y en ambas el cliente nunca ha
+ * pagado menos del precio: (a) `tax_inclusive` y total == precio; (b) sin `tax_inclusive`, subtotal == precio y
+ * total == subtotal + IVA. Cualquier otra combinación (total mayor sin explicar, campos que faltan) NO cuadra.
+ */
+function lemon_importe_conforme(array $o, int $precioCent): bool {
+    foreach (['total', 'subtotal', 'tax'] as $k) {
+        if (isset($o[$k]) && !is_int($o[$k]) && !(is_string($o[$k]) && preg_match('/^-?\d{1,12}$/', $o[$k]))) return false;
+    }
+    if (!isset($o['total'])) return false;
+    $total = (int) $o['total'];
+    // `tax_inclusive` es un booleano documentado de la API (docs.lemonsqueezy.com, objeto Order, verificado 30-sep-2026). Si un día
+    // faltara, no se cae en «todo no-conforme»: total == precio también es un pago que nunca baja del precio congelado
+    if (!array_key_exists('tax_inclusive', $o) || filter_var($o['tax_inclusive'], FILTER_VALIDATE_BOOLEAN)) {
+        if ($total === $precioCent) return true;
+        if (array_key_exists('tax_inclusive', $o)) return false;
+    }
+    if (!isset($o['subtotal'], $o['tax'])) return false;
+    $sub = (int) $o['subtotal'];
+    return $sub === $precioCent && (int) $o['tax'] >= 0 && $total === $sub + (int) $o['tax'];
+}
+/** Importes del pedido para el aviso al estudio (sin datos personales): lo justo para diagnosticar un «total». */
+function lemon_diag_importes(array $o): string {
+    $v = fn(string $k): string => isset($o[$k]) && (is_int($o[$k]) || is_string($o[$k]) && preg_match('/^-?\d{1,12}$/', $o[$k])) ? (string) $o[$k] : '?';
+    $inc = array_key_exists('tax_inclusive', $o) ? (filter_var($o['tax_inclusive'], FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false') : '?';
+    return 'Importes (céntimos): subtotal=' . $v('subtotal') . ', tax=' . $v('tax') . ', total=' . $v('total') . ', tax_inclusive=' . $inc . '.';
+}
+
+/**
  * Motivos por los que un pedido NO cuadra con lo que vendimos (vacío = conforme). Pura: se prueba sin red.
  * $meta = pendientes/<token>/meta.json (precio congelado y slug); $custom = meta.custom_data del evento.
  */
@@ -159,7 +188,7 @@ function lemon_motivos_no_conforme(array $o, array $meta, array $custom): array 
     if ((string) ($item['product_id'] ?? '') !== (string) secreto('lemon_producto')) $m[] = 'producto';
     if ((int) ($item['quantity'] ?? 1) !== 1) $m[] = 'cantidad';
     if (strtoupper((string) ($o['currency'] ?? '')) !== 'EUR') $m[] = 'moneda';
-    if (!isset($meta['precio_cent']) || (int) ($o['total'] ?? -1) !== (int) $meta['precio_cent']) $m[] = 'total';
+    if (!isset($meta['precio_cent']) || !lemon_importe_conforme($o, (int) $meta['precio_cent'])) $m[] = 'total';
     if ((int) ($o['discount_total'] ?? -1) !== 0) $m[] = 'descuento';
     if (($o['status'] ?? '') !== 'paid') $m[] = 'estado';
     if ((bool) ($o['test_mode'] ?? !lemon_test()) !== lemon_test()) $m[] = 'modo';
@@ -254,7 +283,7 @@ function lemon_alta(string $id, array $o, array $custom): array {
             $ped['estado'] = 'no-conforme';
             $ped['motivos'] = $motivos;
             escribe_json($fPedido, $ped);
-            avisa_estudio('Pago de web de boda que no cuadra', "Pedido LS $id ($slug) cobrado pero no cuadra con lo vendido: " . implode(', ', $motivos) . ". No se ha creado la web. Revisar en Lemon Squeezy y devolver o publicar a mano.", 'Pedido LS ' . $id);
+            avisa_estudio('Pago de web de boda que no cuadra', "Pedido LS $id ($slug) cobrado pero no cuadra con lo vendido: " . implode(', ', $motivos) . ". " . lemon_diag_importes($o) . " No se ha creado la web. Revisar en Lemon Squeezy y devolver o publicar a mano.", 'Pedido LS ' . $id);
             return $ped;
         }
         $contar = ($ped['estado'] ?? '') === 'cobrada' && empty($ped['_analitica']);
@@ -437,6 +466,30 @@ function api_lemon(string $metodo): void {
     json_response(['ok' => $st < 300, 'resultado' => $det], $st);
 }
 
+/** Segundos que /listo se recarga sola esperando el aviso de LS; pasado ese plazo deja de insistir y da el buzón. */
+const LEMON_ESPERA_RECARGA_S = 300;
+const LEMON_RECARGA_CADA_S = 4;
+
+/**
+ * Pantalla de «confirmando el pago» (el pedido pendiente existe y el webhook aún no ha llegado). Se recarga sola cada
+ * pocos segundos con <meta http-equiv="refresh"> (la CSP del creador no bloquea eso, y la página no ejecuta JS). No
+ * para siempre: a los LEMON_ESPERA_RECARGA_S de la primera vez que se enseña, deja de recargar y da el buzón. El
+ * instante lo guarda el servidor (pendientes/<token>/listo.json); nada de eso viene del navegador.
+ */
+function listo_espera_html(string $token): string {
+    // El plazo cuenta desde la PRIMERA vez que se enseña esta pantalla (marca del servidor en el pendiente), no desde que se
+    // abrió el pedido: quien tarda 4 min en rellenar la tarjeta no puede llegar aquí con el plazo ya gastado
+    $marca = dir_datos('pendientes', $token, 'listo.json');
+    $desde = (int) ((lee_json($marca) ?? [])['t'] ?? 0);
+    if ($desde <= 0) { $desde = time(); escribe_json($marca, ['t' => $desde]); }
+    if (time() - $desde < LEMON_ESPERA_RECARGA_S) {
+        return pagina_simple('Confirmando el pago', '<p>Estamos confirmando el pago. Esta página se actualiza sola: en cuanto llegue, veréis vuestra web. También os llegará un email.</p>',
+            true, '<meta http-equiv="refresh" content="' . LEMON_RECARGA_CADA_S . '">');
+    }
+    return pagina_simple('Confirmando el pago', '<p>Todavía no hemos recibido la confirmación del pago. Si se ha completado, suele tardar unos minutos: recargad esta página o esperad el email. '
+        . 'Si tarda más, escribidnos a ' . h(empresa()['email']) . ' y lo resolvemos.</p>');
+}
+
 /** /listo?t=<token>: SOLO el pedido local (los ids de LS son secuenciales y no vienen del navegador). */
 function listo_lemon(string $token): void {
     $idx = lee_json(dir_datos('ls_tokens', $token . '.json'));
@@ -445,7 +498,7 @@ function listo_lemon(string $token): void {
     if (!$ped) {
         // Aún sin aviso de LS: si el pedido pendiente existe, se está confirmando; si no, no es nuestro
         if (is_dir(dir_datos('pendientes', $token))) {
-            echo pagina_simple('Confirmando el pago', '<p>Estamos esperando la confirmación del pago. Recarga esta página en un minuto; te llegará también un email.</p>');
+            echo listo_espera_html($token);
         } else {
             echo pagina_simple('Pago no encontrado', '<p>No encontramos este pago. Si te han cobrado, escríbenos a ' . h(empresa()['email']) . '.</p>');
         }

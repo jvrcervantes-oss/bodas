@@ -47,7 +47,7 @@ function web_pagada(string $slug, string $id): void {
         fn($i) => pedido_ls(precio_esencial_cent()));
 }
 function pedido_ls(int $total, array $cambia = []): array {
-    return array_replace_recursive(['store_id' => 483461, 'currency' => 'EUR', 'total' => $total, 'tax' => (int) round($total * 21 / 121),
+    return array_replace_recursive(['store_id' => 483461, 'currency' => 'EUR', 'total' => $total, 'tax_inclusive' => true, 'tax' => (int) round($total * 21 / 121),
         'discount_total' => 0, 'status' => 'paid', 'test_mode' => true, 'user_email' => 'pareja@example.com', 'user_name' => 'Ana',
         'order_number' => 2001, 'identifier' => 'uuid', 'urls' => ['receipt' => 'https://app.lemonsqueezy.com/my-orders/abc'],
         'first_order_item' => ['variant_id' => 2169949, 'product_id' => 1389266, 'quantity' => 1]], $cambia);

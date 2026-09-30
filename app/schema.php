@@ -417,8 +417,54 @@ function normaliza_config($in): array {
     return $c;
 }
 
-/** Lo que falta para poder pagar o guardar. [clave de campo => mensaje]. */
-function faltan(array $c): array {
+/** Días que la fecha de una boda ya contratada puede desplazarse hacia delante desde el panel: el alojamiento
+ *  se calcula sobre la fecha (fecha_borrado) y no se alarga gratis. */
+const MAX_MOVER_FECHA_DIAS = 60;
+
+/**
+ * Datos que el navegador mandó y normaliza_config() vació en silencio: un IBAN con el dígito de control mal o
+ * una web de hotel que no es una URL. Sin esto la pareja paga y publica SIN su caja de regalos o SIN el enlace
+ * del hotel, sin enterarse. $crudo = el config tal como llegó (json_decode), antes de normalizar.
+ * Solo se mira lo de secciones ACTIVAS. [clave => mensaje] con el nombre de la sección.
+ */
+function datos_descartados($crudo): array {
+    $f = [];
+    $secs = is_array($crudo) && is_array($crudo['secciones'] ?? null) ? array_slice(array_values($crudo['secciones']), 0, 20) : [];
+    foreach ($secs as $s) {
+        if (!is_array($s) || !norm_bool($s['on'] ?? true)) continue;
+        $tipo = (string) ($s['tipo'] ?? '');
+        if (!in_array($tipo, ['regalos', 'hoteles'], true)) continue;
+        $id = preg_match('/^[a-z0-9]{1,12}$/', (string) ($s['id'] ?? '')) ? (string) $s['id'] : $tipo;
+        $titulo = clean_str($s['titulo'] ?? '', 40) ?: SECCIONES[$tipo][0];
+        $d = is_array($s['datos'] ?? null) ? $s['datos'] : [];
+        if ($tipo === 'regalos') {
+            $iban = $d['iban'] ?? '';
+            if (is_string($iban) && trim($iban) !== '' && norm_iban($iban) === '') {
+                $f['sec.' . $id . '.iban'] = 'El IBAN de «' . $titulo . '» no es válido (revisad los dígitos): así no se publica la caja de regalos. Corregidlo o dejadlo vacío.';
+            }
+        } else {
+            foreach (array_slice(is_array($d['hoteles'] ?? null) ? array_values($d['hoteles']) : [], 0, 8) as $i => $ho) {
+                if (!is_array($ho)) continue;
+                $web = $ho['web'] ?? '';
+                if (is_string($web) && trim($web) !== '' && norm_url($web) === '') {
+                    $n = clean_str($ho['nombre'] ?? '', 100);
+                    $f['sec.' . $id . '.hotelweb' . $i] = 'La web del hotel ' . ($n !== '' ? '«' . $n . '»' : ($i + 1)) . ' en «' . $titulo . '» no es una dirección válida: así no saldría el enlace. Corregidla o dejadla vacía.';
+                }
+            }
+        }
+    }
+    return $f;
+}
+
+/**
+ * Lo que falta para poder pagar o guardar. [clave de campo => mensaje].
+ * $crudo: el config como llegó del navegador; con él, lo que normalizar vació en silencio (IBAN, webs) también bloquea.
+ * $panel: solo al editar una boda YA contratada (panel): ['guardada' => fecha guardada, 'pago' => fecha al contratar].
+ *   La regla «fecha pasada» solo aplica si la fecha CAMBIA (después de la boda se sigue pudiendo guardar todo lo demás),
+ *   y no se puede mover hacia delante más de MAX_MOVER_FECHA_DIAS respecto de la de contratación. Al crear ($panel null)
+ *   la fecha tiene que ser futura.
+ */
+function faltan(array $c, $crudo = null, ?array $panel = null): array {
     $f = [];
     if ($c['pareja']['nombre1'] === '') $f['pareja.nombre1'] = 'Falta el primer nombre.';
     if ($c['pareja']['nombre2'] === '') $f['pareja.nombre2'] = 'Falta el segundo nombre.';
@@ -427,8 +473,20 @@ function faltan(array $c): array {
         $f['fecha'] = 'Falta la fecha de la boda.';
     } else {
         $hoy = date('Y-m-d');
-        if ($c['fecha'] < $hoy) $f['fecha'] = 'La fecha de la boda ya ha pasado.';
-        elseif ($c['fecha'] > date('Y-m-d', strtotime('+3 years'))) $f['fecha'] = 'La fecha está a más de 3 años vista.';
+        $guardada = $panel !== null ? (string) ($panel['guardada'] ?? '') : null;
+        if ($guardada !== null && $c['fecha'] === $guardada) {
+            // Sin tocar la fecha: se puede guardar lo demás aunque la boda ya haya pasado
+        } elseif ($c['fecha'] < $hoy) {
+            $f['fecha'] = 'La fecha de la boda ya ha pasado.';
+        } elseif ($c['fecha'] > date('Y-m-d', strtotime('+3 years'))) {
+            $f['fecha'] = 'La fecha está a más de 3 años vista.';
+        } elseif ($panel !== null) {
+            $ancla = (string) ($panel['pago'] ?? '') !== '' ? (string) $panel['pago'] : (string) ($panel['guardada'] ?? '');
+            if ($ancla !== '' && (strtotime($c['fecha']) - strtotime($ancla)) > MAX_MOVER_FECHA_DIAS * 86400) {
+                $f['fecha'] = 'La fecha no puede moverse más de ' . MAX_MOVER_FECHA_DIAS . ' días hacia delante respecto de la que teníais al contratar ('
+                    . date('d/m/Y', strtotime($ancla)) . '), porque el alojamiento de la web se cuenta desde ella. Si necesitáis un cambio mayor, escribidnos a ' . empresa()['email'] . '.';
+            }
+        }
     }
     if ($c['ceremonia']['lugar'] === '') $f['ceremonia.lugar'] = 'Falta el lugar de la ceremonia.';
     if ($c['ceremonia']['hora'] === '') $f['ceremonia.hora'] = 'Falta la hora de la ceremonia.';
@@ -456,6 +514,7 @@ function faltan(array $c): array {
             $f['sec.' . $s['id']] = 'La sección «' . $s['titulo'] . '» está vacía: escribid su texto o quitadla.';
         }
     }
+    if ($crudo !== null) $f += datos_descartados($crudo);
     return $f;
 }
 

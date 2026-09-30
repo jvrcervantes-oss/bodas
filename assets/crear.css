@@ -508,6 +508,7 @@
   .c-pm-barra i::after { content: ''; position: absolute; inset: 0; background: var(--gold); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--out); }
   .c-pm-barra i.hecho::after { transform: scaleX(1); background: var(--ok); }
   .c-pm-barra i.actual::after { transform: scaleX(.4); background: var(--rose); }
+  .c-pm-barra i.falta::after { transform: scaleX(1); background: var(--mal); }
 
   /* Hoja con todos los pasos (<dialog> modal) */
   .c-sin-scroll { overflow: hidden; }
@@ -593,6 +594,7 @@
 
 /* Pasos completados en el carril de escritorio (27-sep-2026): mismo verde que en el móvil */
 .c-paso.hecho .c-paso-num { background: var(--ok); border-color: var(--ok); color: #fff; }
+.c-paso.falta .c-paso-num { border-color: var(--mal); color: var(--mal); }
 
 /* Interruptor «Vuestro estilo | Diseño premium» (27-sep-2026, opción A del owner): solo en el móvil */
 .c-seg { display: none; }
