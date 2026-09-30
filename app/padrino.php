@@ -17,7 +17,8 @@
 //  · El precio se congela en cada pedido (meta.json), así que un cambio con una sesión de pago
 //    abierta no dispara una alerta falsa en el alta.
 //  · `GET pedidos` (30-sep-2026, subtarea 2 de encargos/20260927_trabajador_autonomo.md, Seguridad #174):
-//    el Tesorero del Padrino lee aquí los pedidos de Lemon Squeezy. Las claves de LS no tienen alcance
+//    el Tesorero del Padrino lee aquí los pedidos de Lemon Squeezy, con un token PROPIO (`tesoreria`): el de
+//    lectura lo tiene también quien lee correo de desconocidos, y los ingresos no le hacen falta. Las claves de LS no tienen alcance
 //    (la misma clave hace POST /v1/orders/{id}/refund), así que la clave NO sale de este servidor
 //    (#109): este guarda relee LS con ella y devuelve una lista CERRADA de cifras y enums, sin email,
 //    nombre, cliente ni recibo. Se lee LS y no pedidos/*.json porque así cuenta también un pedido
@@ -186,8 +187,9 @@ function rutas_padrino(string $sub, string $metodo): void {
     if (!limite('padrino|' . ip_cliente(), 120, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
     $contenido = $sub === 'contenido' || strpos($sub, 'contenido/') === 0;
     $escritura = in_array($sub, ['precios', 'marca', 'campanas'], true);
+    $tesoreria = $sub === 'pedidos';   // solo el Tesorero: token propio, nunca el de lectura
     if ($contenido && !limite('padrino-contenido|' . ip_cliente(), 30, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
-    if (!padrino_autorizado($contenido ? 'contenido' : ($escritura ? 'decision' : 'lectura'))) {
+    if (!padrino_autorizado($contenido ? 'contenido' : ($escritura ? 'decision' : ($tesoreria ? 'tesoreria' : 'lectura')))) {
         padrino_log('rechazo', ['ruta' => $sub, 'ip' => hash('sha256', ip_cliente())]);
         json_response(['ok' => false], 401);
     }
@@ -201,7 +203,7 @@ function rutas_padrino(string $sub, string $metodo): void {
             if ($metodo !== 'GET') json_response(['ok' => false], 405);
             // Cada llamada son varias peticiones a LS: su propio límite, mucho más corto (el Tesorero lee 1 vez al día)
             if (!limite('padrino-pedidos|' . ip_cliente(), 12, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
-            @set_time_limit(180);   // hasta 50 páginas de LS; el cliente del Padrino espera 180 s
+            @set_time_limit(180);   // el tope de verdad es PADRINO_PEDIDOS_SEGUNDOS: set_time_limit no cuenta la red
             try {
                 json_response(padrino_pedidos());
             } catch (RuntimeException $e) {
@@ -287,6 +289,8 @@ function padrino_resumen(): array {
 }
 
 const PADRINO_PEDIDOS_POR_PAGINA = 100;   // el máximo que admite LS (docs.lemonsqueezy.com/api/getting-started/requests)
+const PADRINO_PEDIDOS_SEGUNDOS = 150;     // se corta aquí (el cliente del Padrino espera 180 s): no seguir llamando
+                                          // a LS cuando ya nadie espera la respuesta
 const PADRINO_PEDIDOS_MAX_PAGINAS = 50;   // 5.000 pedidos: pasado esto, error y no una lista cortada. Antes de llegar,
                                           // la integración Bodas -> ERP sustituye esta relectura entera (fuente interina)
 
@@ -297,7 +301,8 @@ const PADRINO_PEDIDOS_MAX_PAGINAS = 50;   // 5.000 pedidos: pasado esto, error y
  * RuntimeException y la ruta responde 502. No filtra test_mode: lo devuelve y el Tesorero lo descarta (lo prueba él).
  * `$api` es inyectable para las pruebas; por defecto, lemon_api() con la clave de secrets.php.
  */
-function padrino_pedidos(?callable $api = null): array {
+function padrino_pedidos(?callable $api = null, int $segundos = PADRINO_PEDIDOS_SEGUNDOS): array {
+    $inicio = microtime(true);
     $api = $api ?? 'lemon_api';
     $tienda = (string) secreto('lemon_tienda');
     if (!preg_match('/^\d{1,12}$/', $tienda)) throw new RuntimeException('tienda sin configurar');
@@ -305,6 +310,7 @@ function padrino_pedidos(?callable $api = null): array {
     $total_ls = null;
     for ($pagina = 1; ; $pagina++) {
         if ($pagina > PADRINO_PEDIDOS_MAX_PAGINAS) throw new RuntimeException('más de ' . PADRINO_PEDIDOS_MAX_PAGINAS . ' páginas');
+        if (microtime(true) - $inicio > $segundos) throw new RuntimeException('LS tarda más de ' . $segundos . ' s');
         $q = http_build_query(['filter' => ['store_id' => $tienda], 'page' => ['size' => PADRINO_PEDIDOS_POR_PAGINA, 'number' => $pagina]]);
         [$st, $d] = $api('GET', '/v1/orders?' . $q);
         if ($st !== 200 || !is_array($d['data'] ?? null)) throw new RuntimeException('LS respondió ' . $st . ' en la página ' . $pagina);
