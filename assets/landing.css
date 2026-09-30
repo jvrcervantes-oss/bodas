@@ -166,15 +166,15 @@
 .l-b-voto[aria-pressed="true"] { background: var(--bronze); border-color: var(--bronze); color: #fff; }
 
 /* 4 · galería y libro de invitados: dos imágenes de la propia web como fotos con marco blanco */
-.l-b-mural { position: relative; width: 100%; max-width: 300px; height: 230px; }
+.l-b-mural { position: relative; width: 100%; max-width: 300px; height: 268px; }
 .l-b-foto { position: absolute; width: 44%; padding: 6px 6px 22px; border-radius: 3px; background: #fff; box-shadow: var(--e2); transform: rotate(var(--g)); }
 .l-b-foto img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 2px; }
 .l-b-foto-1 { --g: -6deg; left: 2%; top: 4%; }
 .l-b-foto-2 { --g: 5deg; right: 2%; top: 0; }
-.l-b-codigo { position: absolute; z-index: 2; right: 0; bottom: 62px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--pill);
-  background: var(--espresso); color: #f3ece4; font-size: 11px; letter-spacing: .12em; box-shadow: var(--e2); }
-.l-b-codigo .i { width: 12px; height: 12px; color: var(--gold); }
-.l-b-nota { position: absolute; left: 12%; right: 6%; bottom: 0; padding: 10px 12px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line-soft);
+.l-b-codigo { position: absolute; z-index: 2; left: 50%; bottom: 0; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: var(--pill);
+  background: var(--ok); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; box-shadow: var(--e2); }   /* debajo de la nota: encima tapaba el mensaje (owner, 30-sep) */
+.l-b-codigo .i { width: 13px; height: 13px; }
+.l-b-nota { position: absolute; left: 12%; right: 6%; bottom: 38px; padding: 10px 12px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line-soft);
   box-shadow: var(--e2); font-family: var(--serif); font-size: 15px; line-height: 1.25; transform: rotate(-1.5deg); }
 .l-b-nota small { display: block; margin-top: 3px; font-family: var(--sans); font-size: 10.5px; color: var(--ink-3); }
 

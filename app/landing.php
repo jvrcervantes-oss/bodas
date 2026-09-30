@@ -11,6 +11,7 @@ declare(strict_types=1);
 const ICONOS_L = [
     'flor' => 'M12 7.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zM12 7.5V21M12 13c-3 0-5-2-5-5 3 0 5 2 5 5zm0 3c3 0 5-2 5-5-3 0-5 2-5 5z',
     'flecha' => 'M5 12h14M13 6l6 6-6 6',
+    'candado' => 'M7 11h10a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2zM8 11V8a4 4 0 0 1 8 0v3',
     'corazon' => 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
     'sobre' => 'M3 6h18v12H3zM3 7l9 6 9-6',
     'reloj' => 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
@@ -226,7 +227,7 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
             foreach ($planoMesas as $i => $m): [$nom, $sillas, , , $al] = $m; [$vx, $vy] = $planoV[$i]; ?>
             <button class="l-b-mesa<?= $i === 0 ? ' l-b-cabecera' : '' ?><?= $i === 1 ? ' on' : '' ?>" type="button" data-b-mesa data-b-i="<?= $i ?>" data-b-texto="<?= h($planoTxt($m)) ?>" style="left:<?= $vx ?>%;top:<?= $vy ?>%"><?= h($nom) ?><small><?= $sillas ?> sillas</small></button>
             <?php for ($k = 0; $k < $sillas; $k++):
-                if ($i === 0) { $sx = 23 + $k * (54 / ($sillas - 1)); $sy = $vy + 8.2; }
+                if ($i === 0) { $sx = 23 + $k * (54 / max(1, $sillas - 1)); $sy = $vy + 8.2; }
                 else { $ang = $k / $sillas * 2 * M_PI - M_PI / 2; $sx = $vx + cos($ang) * 18.1; $sy = $vy + sin($ang) * 18.1 * 0.7317; } ?>
             <span class="l-b-silla<?= in_array($k, $al, true) ? ' al' : '' ?>" style="left:<?= round($sx, 2) ?>%;top:<?= round($sy, 2) ?>%"></span>
             <?php endfor; endforeach; ?>
@@ -263,7 +264,7 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
           <div class="l-b-esc"><div class="l-b-mural" aria-hidden="true">
             <div class="l-b-foto l-b-foto-1"><img src="<?= BASE_PATH ?>/assets/img/atelier/mesa.webp" alt="" width="896" height="560" loading="lazy" decoding="async"></div>
             <div class="l-b-foto l-b-foto-2"><img src="<?= BASE_PATH ?>/assets/img/atelier/herbario.webp" alt="" width="525" height="542" loading="lazy" decoding="async"></div>
-            <span class="l-b-codigo"><?= il('escudo', 'i i-sm') ?>CÓDIGO</span>
+            <span class="l-b-codigo"><?= il('candado', 'i i-sm') ?>Código</span>
             <div class="l-b-nota">«Que sean muy felices. Nos vemos en el baile.»<small>Carmen · con una foto</small></div>
           </div></div>
           <div class="l-b-txt">
