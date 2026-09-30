@@ -121,6 +121,7 @@
     var chk = el('input', { type: 'checkbox' });
     var msg = el('p', { class: 'c-ayuda', 'aria-live': 'polite' });
     var btn = el('button', { type: 'button', class: 'b-btn b-dark', text: 'Pasar al Pack Atelier por ' + D.mejora.precio });
+    window.addEventListener('pageshow', function (e) { if (e.persisted && btn.disabled) { btn.disabled = false; msg.textContent = ''; } });
     btn.addEventListener('click', function () {
       if (!chk.checked) { msg.textContent = 'Marca la casilla para continuar.'; return; }
       var fd = new FormData();
@@ -883,10 +884,16 @@
     });
     return fp;
   }
+  // Solo se completan (verde) los pasos con algo obligatorio (owner, 30-sep-2026): los datos de
+  // Vosotros y Ceremonia salen de faltan() del servidor, así que verde = rellenados de verdad, no
+  // «abierto»; la confirmación es la base del producto y pide haber pasado a revisar sus menús.
+  // Portada y Más secciones son opcionales: abrirlas no las completa.
+  var OBLIGATORIOS = { estilo: 1, pareja: 1, lugares: 1, rsvp: 1 };
   function pasoHecho(k, fp) {
-    if (k === 'publicar') return false;
+    if (!OBLIGATORIOS[k]) return false;
     if (k === 'estilo') return !!estiloListo;
-    return !!(faltasRecibidas && (vistos[k] || MODO === 'editar') && !fp[k]);
+    if (k === 'rsvp') return !!(faltasRecibidas && (vistos[k] || MODO === 'editar') && !fp[k]);
+    return !!(faltasRecibidas && !fp[k]);
   }
   function pintaEstados() {
     if (!numPaso) return;
@@ -898,7 +905,7 @@
       var r = document.querySelector('.c-paso[data-tab="' + o.k + '"]');
       if (r) { r.classList.toggle('hecho', !!h); r.querySelector('.c-paso-num').textContent = h ? '✓' : String(j + 1); }
     });
-    arco.lastChild.style.strokeDashoffset = 100 - hechos / ordenTabs.length * 100;
+    arco.lastChild.style.strokeDashoffset = 100 - hechos / (ordenTabs.filter(function (o) { return OBLIGATORIOS[o.k] || o.k === 'publicar'; }).length || 1) * 100;
     tarjetaPaso.classList.toggle('es-hecho', pasoHecho(pasoActual, fp));
     if (hoja.open) pintaHoja();
   }
@@ -1142,6 +1149,13 @@
   // Código de regalo: sin pago, así que no hay desistimiento que aceptar y el botón publica directamente
   var codigoEl = document.getElementById('codigo');
   var txtPagar = pagar ? pagar.textContent : '';
+  var textoAntesDePagar = '';
+  // Volver atrás desde el checkout: el navegador restaura la página tal cual (bfcache), con el botón aún en
+  // «Abriendo el pago…» y deshabilitado. Al reaparecer se devuelve a su estado. El servidor reconoce a quien
+  // reintenta y le vuelve a dar el mismo nombre (creador.php, reserva_reemplazable).
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted && pagar && pagar.disabled) { pagar.disabled = false; pagar.textContent = textoAntesDePagar || txtPagar; }
+  });
   function pintaCodigo() {
     if (!pagar || !codigoEl) return;
     var hay = codigoEl.value.trim() !== '';
@@ -1170,6 +1184,7 @@
     if (foto.src) fd.append('foto', foto.blob || dataUrlABlob(foto.src), 'foto.webp');
     pagar.disabled = true;
     var txt = pagar.textContent;
+    textoAntesDePagar = txt;
     pagar.textContent = conCodigo ? 'Publicando…' : 'Abriendo el pago…';
     fetch(BASE + '/api/pagar', { method: 'POST', body: fd })
       .then(function (r) { return r.json(); })
