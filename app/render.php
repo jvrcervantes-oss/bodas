@@ -395,7 +395,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
-        <h1 class="hero-names"><?= h($nom ?: 'Vuestros nombres') ?></h1>
+        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= h($nom ?: 'Vuestros nombres') ?></h1>
         <div class="hero-date">
           <span class="rule" aria-hidden="true"></span><span class="star" aria-hidden="true">✦</span>
           <span class="kicker"><?= h(linea_fecha($c) ?: 'La fecha') ?></span>
