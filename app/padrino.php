@@ -201,6 +201,7 @@ function rutas_padrino(string $sub, string $metodo): void {
             if ($metodo !== 'GET') json_response(['ok' => false], 405);
             // Cada llamada son varias peticiones a LS: su propio límite, mucho más corto (el Tesorero lee 1 vez al día)
             if (!limite('padrino-pedidos|' . ip_cliente(), 12, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
+            @set_time_limit(180);   // hasta 50 páginas de LS; el cliente del Padrino espera 180 s
             try {
                 json_response(padrino_pedidos());
             } catch (RuntimeException $e) {
@@ -286,7 +287,8 @@ function padrino_resumen(): array {
 }
 
 const PADRINO_PEDIDOS_POR_PAGINA = 100;   // el máximo que admite LS (docs.lemonsqueezy.com/api/getting-started/requests)
-const PADRINO_PEDIDOS_MAX_PAGINAS = 20;   // 2.000 pedidos: pasado esto, error y no una lista cortada
+const PADRINO_PEDIDOS_MAX_PAGINAS = 50;   // 5.000 pedidos: pasado esto, error y no una lista cortada. Antes de llegar,
+                                          // la integración Bodas -> ERP sustituye esta relectura entera (fuente interina)
 
 /**
  * Pedidos de la tienda de LS para el Tesorero del Padrino. Lista CERRADA de campos: cifras, enums y fechas.
