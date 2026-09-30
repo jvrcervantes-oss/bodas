@@ -346,8 +346,8 @@
   .l-at-info h3 { font-size: 28px; }
   .l-wrap, .l-top-in { padding: 0 16px; }
   .l-top-in { height: 64px; }
-  .l-logo { font-size: 18px; }
-  .l-logo .i-anillos { width: 24px; height: 22px; }
+  .l-logo { font-size: 21px; }   /* el mismo tamaño que en el ordenador: a 18 px se veía pequeño (owner, 30-sep) */
+  .l-logo .i-anillos { width: 29px; height: 26px; }
   .l-top-cta { min-height: 40px; padding: 0 16px; font-size: 13px; }
   .l-hoja { padding: 6px 16px 16px; }
   .l-cards { grid-template-columns: 1fr; }
@@ -371,8 +371,14 @@
 }
 @media (max-width: 400px) {
   .l-top-cta { font-size: 12px; min-height: 36px; }
-  .l-logo span { font-size: 16px; }
-  .l-top-cta { padding: 0 12px; }
+  .l-logo span { font-size: 20px; }
+  .l-logo .i-anillos { width: 27px; height: 24px; }
+  .l-top-cta { padding: 0 12px; white-space: nowrap; }   /* «Crear nuestra web» se partía en dos líneas a 360 px */
+}
+@media (max-width: 375px) {
+  .l-top-in { gap: 12px; }
+  .l-logo span { font-size: 18px; }
+  .l-logo .i-anillos { width: 25px; height: 22px; }
 }
 
 /* =====================================================================================
