@@ -956,10 +956,14 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 @media (min-width: 901px){
   .fuente-formal .hero-names, .fuente-jardin .hero-names, .fuente-botanica .hero-names{ font-size: 76px; line-height: 88px; }
   .fuente-ciudad .hero-names{ font-size: 88px; line-height: 96px; }
-  /* en escritorio el texto vive en su columna (junto a la foto), no en toda la ventana: se mide contra ella */
-  .fuente-sobria .hero-left{ container-type: inline-size; }
-  .fuente-sobria .hero--solo .hero-left{ width: 100%; }   /* sin foto la columna es shrink-to-fit y la contención la dejaría a 0 */
-  .fuente-sobria .hero-names{ --fs: 62px; line-height: 76px; font-size: min(var(--fs), calc((100cqw - 8px) / (var(--nl, 14) * .66))); }
+  /* Escritorio: el texto vive en su columna junto a la foto, no en toda la ventana. Se calcula con la
+     geometria de .hero (1140 max, 24 de relleno, 64 de hueco, foto de 448) y NO con container queries:
+     la contencion dejaba la columna a 0 en cuanto su ancho no era fijo y los nombres desaparecian (30-sep).
+     El suelo de 20px garantiza que se lean siempre. */
+  .fuente-sobria .hero-names{ --fs: 62px; line-height: 76px; --col: calc(min(100vw, 1140px) - 570px);
+    font-size: max(20px, min(var(--fs), calc(var(--col) / (var(--nl, 14) * .66)))); }
+  .fuente-sobria .hero--solo .hero-names{ --col: calc(min(100vw, 1140px) - 60px); }
+  .fuente-sobria .hero--mf-fundida .hero-names{ --col: calc(46vw - 24px - max(24px, 50vw - 570px)); }
 }
 .fuente-moderna .hero-names{ font-weight: 300; letter-spacing: .01em; }
 
