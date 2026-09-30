@@ -124,6 +124,12 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <span class="overline overline-bronze">Decoración</span>
         <p class="c-ayuda">La estructura de adornos de vuestra web. Combina con cualquier paleta.</p>
         <div class="c-decos" id="decos" role="radiogroup" aria-label="Decoración"></div>
+        <hr class="c-hr">
+        <div id="fotoEstiloBloque">
+          <span class="overline overline-bronze">Estilo de la foto de portada</span>
+          <p class="c-ayuda">Cómo se enmarca vuestra foto. Vale con cualquier decoración; la foto se sube en el paso «Portada».</p>
+          <div class="c-decos c-fotoestilos" id="fotoEstilos" role="radiogroup" aria-label="Estilo de la foto"></div>
+        </div>
         </div>
       </div>
 
@@ -182,10 +188,6 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
               <button type="button" class="c-link c-link-mal" id="fotoQuitar" hidden>Quitar</button>
             </span>
           </div>
-        </div>
-        <div id="fotoEstiloBloque">
-          <span class="overline overline-bronze">Estilo de la foto</span>
-          <div class="c-decos c-fotoestilos" id="fotoEstilos" role="radiogroup" aria-label="Estilo de la foto"></div>
         </div>
         <hr class="c-hr">
         <span class="overline overline-bronze">Textos de la portada</span>
