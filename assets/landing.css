@@ -156,7 +156,7 @@
 .l-b-voto .i { width: 12px; height: 12px; }
 .l-b-voto[aria-pressed="true"] { background: var(--bronze); border-color: var(--bronze); color: #fff; }
 
-/* 4 · galería y libro de invitados: dos imágenes de la propia web como polaroids */
+/* 4 · galería y libro de invitados: dos imágenes de la propia web como fotos con marco blanco */
 .l-b-mural { position: relative; width: 100%; max-width: 300px; height: 230px; }
 .l-b-foto { position: absolute; width: 44%; padding: 6px 6px 22px; border-radius: 3px; background: #fff; box-shadow: var(--e2); transform: rotate(var(--g)); }
 .l-b-foto img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 2px; }
