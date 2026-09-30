@@ -115,6 +115,24 @@ const FOTO_ESTILOS = [
     'instantanea' => ['Instantánea', 'Marco de papel con cinta, como una foto revelada'],
 ];
 
+/** Ramos de esquina junto a la foto de portada en ordenador (owner, 30-sep-2026, artifact «Ramos junto a la foto»).
+ *  Cada ramo son dos imagenes: «atras» (tallos, detras del marco) y «delante» (flores y hojas). x,y = donde nace (% del marco);
+ *  dx,dy,w = posicion y ancho de la imagen respecto a ese punto, en cqw (1 % del ancho del marco). Generados con tests/ramos_gen.js. */
+const RAMOS_FOTO = [
+    'flores' => [
+        'arco' => [['f' => 'ramo-flores-arco-0', 'x' => 6, 'y' => 20, 'dx' => -50.33, 'dy' => -64.33, 'w' => 63.67], ['f' => 'ramo-flores-arco-1', 'x' => 96, 'y' => 93, 'dx' => -10.0, 'dy' => -10.67, 'w' => 61.0]],
+        'papel' => [['f' => 'ramo-flores-papel-0', 'x' => 2, 'y' => 2, 'dx' => -47.19, 'dy' => -50.16, 'w' => 56.09], ['f' => 'ramo-flores-papel-1', 'x' => 98, 'y' => 97, 'dx' => -6.41, 'dy' => -9.84, 'w' => 51.25]],
+        'medallon' => [['f' => 'ramo-flores-medallon-0', 'x' => 86, 'y' => 15, 'dx' => -6.03, 'dy' => -35.52, 'w' => 41.55], ['f' => 'ramo-flores-medallon-1', 'x' => 14, 'y' => 85, 'dx' => -29.31, 'dy' => -5.0, 'w' => 36.55]],
+        'fundida' => [['f' => 'ramo-flores-fundida-0', 'x' => 97, 'y' => 97, 'dx' => -29.03, 'dy' => -23.39, 'w' => 31.77]],
+    ],
+    'eucalipto' => [
+        'arco' => [['f' => 'ramo-eucalipto-arco-0', 'x' => 6, 'y' => 20, 'dx' => -37.67, 'dy' => -41.83, 'w' => 44.83], ['f' => 'ramo-eucalipto-arco-1', 'x' => 96, 'y' => 93, 'dx' => -7.67, 'dy' => -6.67, 'w' => 42.33]],
+        'papel' => [['f' => 'ramo-eucalipto-papel-0', 'x' => 2, 'y' => 2, 'dx' => -43.75, 'dy' => -42.03, 'w' => 49.84], ['f' => 'ramo-eucalipto-papel-1', 'x' => 98, 'y' => 97, 'dx' => -7.19, 'dy' => -7.66, 'w' => 47.34]],
+        'medallon' => [['f' => 'ramo-eucalipto-medallon-0', 'x' => 86, 'y' => 15, 'dx' => -7.93, 'dy' => -39.48, 'w' => 43.45], ['f' => 'ramo-eucalipto-medallon-1', 'x' => 14, 'y' => 85, 'dx' => -32.76, 'dy' => -6.72, 'w' => 40.34]],
+        'fundida' => [['f' => 'ramo-eucalipto-fundida-0', 'x' => 97, 'y' => 97, 'dx' => -37.02, 'dy' => -24.6, 'w' => 39.44]],
+    ],
+];
+
 const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
 const MAX_MENUS = 8;
 const MAX_BANQUETE = 1500;      // menú del banquete: caracteres (unas 20 líneas)

@@ -1563,6 +1563,19 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   -webkit-mask-image: linear-gradient(#000 58%, transparent 96%); mask-image: linear-gradient(#000 58%, transparent 96%); }
 .mf-fundida .mf-g-top{ left: 0; width: 100%; top: -4%; }
 
+/* Ramos de esquina (owner, 30-sep-2026, artifact «Ramos junto a la foto»): solo en ordenador. Cada ramo son dos imágenes: los tallos
+   (.mf-r-atras) van detrás de la foto y las flores/hojas (.mf-r-delante) por delante. Medidas en cqw (1 % del ancho del marco). */
+.mf-r{ display: none; position: absolute; height: auto; max-width: none; pointer-events: none; }
+.mf-marco, .mf-papel{ isolation: isolate; }
+.mf-papel{ position: relative; }
+@media (min-width: 901px){
+  .mf-marco, .mf-papel{ container-type: inline-size; }
+  .mf-r{ display: block; left: calc(var(--x) * 1% + var(--dx) * 1cqw); top: calc(var(--y) * 1% + var(--dy) * 1cqw); width: calc(var(--w) * 1cqw); }
+  .mf-r-atras{ z-index: -1; } .mf-r-delante{ z-index: 3; }
+  .home{ overflow-x: clip; }   /* un ramo puede asomar por el borde de la pantalla: se recorta, sin barra de desplazamiento */
+  .mf-ramos .mf-g, .deco-g-fuera{ display: none; }   /* donde hay ramos, las guirnaldas de la foto y la del eucalipto sobre los nombres se quedan para el móvil */
+}
+
 @media (min-width: 901px){
   .mf-arco, .mf-papel, .mf-medallon{ width: 100%; justify-self: center; }
   .mf-arco{ max-width: 380px; margin-top: 70px; }

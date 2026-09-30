@@ -248,5 +248,23 @@ ok(f(conSeccion(crudo(), 'historia', ['texto' => ''], true)) === [], 'historia a
 ok(faltan(normaliza_config(crudo(['portada' => ['hashtag' => 'a b']]))) === [], 'sin config crudo no hay comparación (compatibilidad)');
 ok(count(f(crudo(['portada' => ['hashtag' => 'a b'], 'programa' => [['hora' => '', 'titulo' => 'x']]]))) === 2, 'los avisos nuevos viajan como faltantes (bloquean el pago igual que los demás)');
 
+// ============================================================ 8. Ramos de esquina (portada en ordenador)
+// Cada entrada de RAMOS_FOTO necesita sus dos imágenes: si falta una, la web enseña una imagen rota sin que nada avise.
+foreach (RAMOS_FOTO as $deco => $estilos) {
+    ok(isset(DECORACIONES[$deco]), "ramos: «{$deco}» es una decoración que existe");
+    foreach ($estilos as $fe => $lista) {
+        ok(isset(FOTO_ESTILOS[$fe]), "ramos: «{$fe}» es un estilo de foto que existe");
+        foreach ($lista as $r) foreach (['atras', 'delante'] as $capa) {
+            ok(is_file($raiz . '/assets/img/deco/ramos/' . $r['f'] . '-' . $capa . '.webp'), "ramos: existe {$r['f']}-{$capa}.webp");
+        }
+    }
+}
+$cR = normaliza_config(crudo(['foto' => true, 'decoracion' => 'flores', 'foto_estilo' => 'arco']));
+$hR = pagina_inicio($cR, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+ok(hay($hR, 'mf-ramos') && substr_count($hR, 'mf-r-atras') === 2 && substr_count($hR, 'mf-r-delante') === 2, 'ramos: flores + arco pinta sus dos ramos, tallos y flores');
+$cI = normaliza_config(crudo(['foto' => true, 'decoracion' => 'eucalipto', 'foto_estilo' => 'instantanea']));
+$hI = pagina_inicio($cI, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+ok(!hay($hI, 'mf-r ') && !hay($hI, 'deco-g-fuera') && hay($hI, 'deco-guirnalda'), 'ramos: la Instantánea no tiene ramos y conserva su guirnalda en ordenador');
+
 echo $fallos ? "ROJO: " . ($n - $fallos) . "/$n\n" : "VERDE: $n/$n\n";
 exit($fallos ? 1 : 0);
