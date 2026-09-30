@@ -170,52 +170,115 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
     </div>
   </section>
 
+  <?php // «Todo en una web» (owner, 30-sep-2026, artifact https://claude.ai/artifact/CDJw7hkcxxkTzvVAYG1NBe): cada función es una escena de boda
+        // dibujada en HTML/CSS con datos de ejemplo (la familia Ortega, Lucía y Marcos, 12-jun-2027), en vez de icono + texto. Las escenas
+        // se pueden tocar (landing.js, enganche por data-b-*), pero sin JS se ven enteras y quietas. Mapa, lista de bodas y «menús y transporte»
+        // siguen fuera (owner, 27-sep: «lo menos interesante»); el autobús va en la tarjeta de confirmación. Plano de mesas y catering:
+        // incluidos en todos los packs (owner, 27-sep-2026). El plano ya no es la captura del panel sino este dibujo.
+        $finBoda = strtotime('2027-06-12 18:00 Europe/Madrid');
+        $faltan = max(0, $finBoda - time());
+        // Plano: mesas en % del recuadro 16:9 (nombre, sillas, x, y, sillas con alergia)
+        $planoMesas = [
+            ['Presidencia', 8, 22, 28, [2]], ['Familia de Lucía', 10, 50, 28, []], ['Mesa 3', 8, 78, 28, [5]],
+            ['Amigos', 10, 36, 72, [0, 7]], ['Mesa 5', 8, 64, 72, []],
+        ];
+        $planoTxt = fn(array $m) => $m[0] . ' · ' . $m[1] . ' sillas' . ($m[4] ? ' · ' . count($m[4]) . ' con alergia' : '');
+  ?>
   <section class="l-sec" id="incluye">
     <div class="l-wrap">
-      <div class="l-sec-cab">
-        <div>
-          <span class="overline">Todo en una web</span>
-          <h2>Cada detalle resuelto, antes de decir el <em>«sí, quiero»</em></h2>
-        </div>
+      <div class="l-sec-cab l-centro">
+        <span class="overline">Todo en una web</span>
+        <h2>Cada detalle resuelto, antes de decir el <em>«sí, quiero»</em></h2>
+        <p>Lo que vuestros invitados tocan y lo que vosotros y el restaurante necesitáis, ya hecho. Probad las escenas: se pueden tocar.</p>
       </div>
-      <div class="l-cards">
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('sobre') ?></span>
-          <h3>Confirmación por grupo</h3>
-          <p>Uno confirma por toda su familia, con el menú y las alergias de cada persona, y si necesitan autobús. Vosotros lo descargáis en Excel.</p>
-          <span class="l-card-pie">Excel para el catering <?= il('excel', 'i i-sm') ?></span>
+      <div class="l-bento">
+
+        <article class="l-bc l-bc-conf l-bc-rosa">
+          <div class="l-b-esc"><div class="l-b-hoja" role="group" aria-label="Ejemplo de confirmación de una familia">
+            <div class="l-b-cab"><b>Familia Ortega</b><span class="l-b-mini">3 personas</span></div>
+            <div class="l-b-pers"><span>Ana<small>Adulto</small></span>
+              <div class="l-b-chips" role="group" aria-label="Menú de Ana"><button class="l-b-chip" type="button" data-b-chip aria-pressed="true">Carne</button><button class="l-b-chip" type="button" data-b-chip aria-pressed="false">Pescado</button></div></div>
+            <div class="l-b-pers"><span>Pablo<small>Adulto · sin gluten</small></span>
+              <div class="l-b-chips" role="group" aria-label="Menú de Pablo"><button class="l-b-chip" type="button" data-b-chip aria-pressed="false">Carne</button><button class="l-b-chip" type="button" data-b-chip aria-pressed="true">Pescado</button></div></div>
+            <div class="l-b-pers"><span>Leo<small>Niño</small></span>
+              <div class="l-b-chips" role="group" aria-label="Menú de Leo"><button class="l-b-chip" type="button" data-b-chip aria-pressed="true">Infantil</button></div></div>
+            <div class="l-b-bus"><span>Necesitamos autobús</span><span class="l-b-tog" aria-hidden="true"></span></div>
+          </div></div>
+          <div class="l-b-txt">
+            <h3>Confirmación por grupo</h3>
+            <p>Uno confirma por toda su familia, con el menú y las alergias de cada persona, y si necesitan autobús. Vosotros lo descargáis en Excel.</p>
+            <span class="l-b-pie">Excel para el catering <?= il('excel', 'i i-sm') ?></span>
+          </div>
         </article>
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('reloj') ?></span>
-          <h3>Cuenta atrás y música</h3>
-          <p>La cuenta atrás hasta el gran día y una lista de canciones que proponen y votan vuestros invitados.</p>
-          <span class="l-card-pie">Votos de los invitados <?= il('musica', 'i i-sm') ?></span>
-        </article>
-        <?php // Mapa, lista de bodas y «menús y transporte» fuera (owner, 27-sep: «lo menos interesante»); el autobús pasa a la tarjeta de confirmación ?>
-        <article class="l-card">
-          <span class="l-card-ico"><?= il('marco') ?></span>
-          <h3>Galería y libro de invitados</h3>
-          <p>Vuestras fotos, y un libro donde los invitados os dejan mensajes y fotos. Todo protegido con un código que solo tienen ellos.</p>
-          <span class="l-card-pie">Protegido con código <?= il('escudo', 'i i-sm') ?></span>
-        </article>
-        <article class="l-card l-card-salvia">
-          <span class="l-card-ico"><?= il('campana') ?></span>
-          <h3>Resumen para el catering</h3>
-          <p>Cuántos hay de cada menú y cada alergia con su nombre y su mesa, listo para imprimir o guardar en PDF y dárselo al restaurante.</p>
-          <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
-        </article>
-        <?php // Plano de mesas y catering: incluidos en todos los packs (owner, 27-sep-2026). La captura es del panel real con una boda de ejemplo (nombres inventados) ?>
-        <article class="l-card l-card-foto">
-          <div class="l-card-txt">
-            <span class="l-card-ico"><?= il('mesa') ?></span>
+
+        <article class="l-bc l-bc-mesas l-bc-salvia">
+          <div class="l-b-esc"><div class="l-b-plano-caja"><div class="l-b-plano" role="group" aria-label="Ejemplo de plano de mesas: tocad una mesa">
+            <?php foreach ($planoMesas as $i => $m): [$nom, $sillas, $mx, $my, $al] = $m; ?>
+            <button class="l-b-mesa<?= $i === 1 ? ' on' : '' ?>" type="button" data-b-mesa data-b-texto="<?= h($planoTxt($m)) ?>" style="left:<?= $mx ?>%;top:<?= $my ?>%"><?= h($nom) ?><small><?= $sillas ?> sillas</small></button>
+            <?php for ($k = 0; $k < $sillas; $k++): $ang = $k / $sillas * 2 * M_PI - M_PI / 2; ?>
+            <span class="l-b-silla<?= in_array($k, $al, true) ? ' al' : '' ?>" style="left:<?= round($mx + cos($ang) * 10.6, 2) ?>%;top:<?= round($my + sin($ang) * 10.6 * 16 / 9, 2) ?>%"></span>
+            <?php endfor; endforeach; ?>
+          </div>
+          <p class="l-b-tip" data-b-tip aria-live="polite"><b><?= h($planoMesas[1][0]) ?></b> · <?= $planoMesas[1][1] ?> sillas</p></div></div>
+          <div class="l-b-txt">
             <h3>Plano de mesas</h3>
             <p>Sentad a vuestros invitados tocando su nombre y luego la mesa. Para el restaurante, una hoja con cada mesa, su menú y sus alergias.</p>
-            <span class="l-card-pie">Incluido <?= il('check', 'i i-sm') ?></span>
+            <span class="l-b-pie">Incluido <?= il('check', 'i i-sm') ?></span>
           </div>
-          <img class="l-card-img" src="<?= BASE_PATH ?>/assets/img/landing/plano-mesas.webp" width="1234" height="1156" loading="lazy" decoding="async"
-            alt="Plano de mesas en el panel de BodaEnlace: mesas redondas con sus sillas (Presidencia y Familia de Lucía), quién se sienta en cada una y quién tiene alergia">
         </article>
+
+        <article class="l-bc l-bc-cuenta l-bc-bronce">
+          <div class="l-b-esc"><div class="l-b-hoja" role="group" aria-label="Ejemplo de cuenta atrás y canciones votadas">
+            <div class="l-b-mini l-b-cen">Faltan para el gran día</div>
+            <div class="l-b-marcador" data-b-fin="<?= (int) $finBoda ?>">
+              <div><b data-b-d><?= intdiv($faltan, 86400) ?></b><span>días</span></div>
+              <div><b data-b-h><?= intdiv($faltan % 86400, 3600) ?></b><span>horas</span></div>
+              <div><b data-b-m><?= intdiv($faltan % 3600, 60) ?></b><span>min</span></div>
+            </div>
+            <div class="l-b-cancion"><span>La vie en rose</span><small>Propuesta por Carmen</small>
+              <button class="l-b-voto" type="button" data-b-voto data-n="14" aria-pressed="false" aria-label="Votar La vie en rose"><?= il('corazon', 'i i-sm') ?><span>14</span></button></div>
+            <div class="l-b-cancion"><span>Can't Help Falling in Love</span><small>Propuesta por Tío Javi</small>
+              <button class="l-b-voto" type="button" data-b-voto data-n="9" aria-pressed="false" aria-label="Votar Can't Help Falling in Love"><?= il('corazon', 'i i-sm') ?><span>9</span></button></div>
+          </div></div>
+          <div class="l-b-txt">
+            <h3>Cuenta atrás y música</h3>
+            <p>La cuenta atrás hasta el gran día y una lista de canciones que proponen y votan vuestros invitados.</p>
+            <span class="l-b-pie">Votos de los invitados <?= il('musica', 'i i-sm') ?></span>
+          </div>
+        </article>
+
+        <article class="l-bc l-bc-galeria">
+          <div class="l-b-esc"><div class="l-b-mural" aria-hidden="true">
+            <div class="l-b-foto l-b-foto-1"><img src="<?= BASE_PATH ?>/assets/img/atelier/mesa.webp" alt="" width="896" height="560" loading="lazy" decoding="async"></div>
+            <div class="l-b-foto l-b-foto-2"><img src="<?= BASE_PATH ?>/assets/img/atelier/herbario.webp" alt="" width="525" height="542" loading="lazy" decoding="async"></div>
+            <span class="l-b-codigo"><?= il('escudo', 'i i-sm') ?>CÓDIGO</span>
+            <div class="l-b-nota">«Que sean muy felices. Nos vemos en el baile.»<small>Carmen · con una foto</small></div>
+          </div></div>
+          <div class="l-b-txt">
+            <h3>Galería y libro de invitados</h3>
+            <p>Vuestras fotos, y un libro donde los invitados os dejan mensajes y fotos. Todo protegido con un código que solo tienen ellos.</p>
+            <span class="l-b-pie">Protegido con código <?= il('escudo', 'i i-sm') ?></span>
+          </div>
+        </article>
+
+        <article class="l-bc l-bc-catering l-bc-salvia">
+          <div class="l-b-esc"><div class="l-b-hoja l-b-hoja-cat" aria-hidden="true">
+            <div class="l-b-cab l-b-cab-cat"><b>Resumen catering</b><span class="l-b-mini">120 invitados</span></div>
+            <div class="l-b-fila"><span>Carne<small>Menú adulto</small></span><b>58</b></div>
+            <div class="l-b-fila"><span>Pescado<small>Menú adulto</small></span><b>47</b></div>
+            <div class="l-b-fila"><span>Infantil<small>Menú de los niños</small></span><b>15</b></div>
+            <div class="l-b-fila al"><span>Alergias<small>con nombre y mesa</small></span><b>9</b></div>
+            <div class="l-b-alerg"><b>Sin gluten</b> · Pablo Ortega · Mesa 3</div>
+          </div></div>
+          <div class="l-b-txt">
+            <h3>Resumen para el catering</h3>
+            <p>Cuántos hay de cada menú y cada alergia con su nombre y su mesa, listo para imprimir o guardar en PDF y dárselo al restaurante.</p>
+            <span class="l-b-pie">Incluido <?= il('check', 'i i-sm') ?></span>
+          </div>
+        </article>
+
       </div>
+      <p class="l-b-nota-ej">Los nombres y las cifras de las escenas son un ejemplo.</p>
     </div>
   </section>
 

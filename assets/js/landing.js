@@ -108,7 +108,7 @@
   if (!menos && hayIO) {
     const grupos = [
       ['.l-sec-cab', null],
-      ['.l-cards', '.l-card'],
+      ['.l-bento', '.l-bc'],
       ['.l-pasos-lista', 'li'],
       ['.l-demo', null],
       ['.l-at-caja', null],
@@ -137,6 +137,44 @@
       if (!hijo) { marca(c, 0); return; }
       c.querySelectorAll(':scope > ' + hijo).forEach((h, n) => marca(h, n));
     }));
+  }
+
+  // «Todo en una web»: las escenas de ejemplo se pueden tocar. Todo va enganchado por data-b-*, nunca por texto ni por clase de estilo.
+  // Sin JS las escenas se ven enteras y quietas (el marcador ya viene calculado desde el servidor).
+  document.querySelectorAll('.l-b-chips').forEach(g => g.addEventListener('click', e => {
+    const b = e.target.closest('[data-b-chip]');
+    if (!b) return;
+    g.querySelectorAll('[data-b-chip]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  document.querySelectorAll('[data-b-voto]').forEach(b => b.addEventListener('click', () => {
+    const on = b.getAttribute('aria-pressed') === 'true';
+    b.setAttribute('aria-pressed', String(!on));
+    b.querySelector('span').textContent = (+b.dataset.n) + (on ? 0 : 1);
+  }));
+  const plano = document.querySelector('.l-b-plano');
+  const tip = document.querySelector('[data-b-tip]');
+  if (plano && tip) plano.addEventListener('click', e => {
+    const m = e.target.closest('[data-b-mesa]');
+    if (!m) return;
+    plano.querySelectorAll('[data-b-mesa]').forEach(x => x.classList.toggle('on', x === m));
+    const [nom, ...resto] = m.dataset.bTexto.split(' · ');
+    tip.textContent = '';
+    const b = document.createElement('b');
+    b.textContent = nom;
+    tip.append(b, resto.length ? ' · ' + resto.join(' · ') : '');
+  });
+  const marc = document.querySelector('[data-b-fin]');
+  if (marc) {
+    const d = marc.querySelector('[data-b-d]'), h = marc.querySelector('[data-b-h]'), mi = marc.querySelector('[data-b-m]');
+    const fin = +marc.dataset.bFin * 1000;
+    const tic = () => {
+      const t = Math.max(0, fin - Date.now());
+      d.textContent = Math.floor(t / 864e5);
+      h.textContent = Math.floor(t % 864e5 / 36e5);
+      mi.textContent = Math.floor(t % 36e5 / 6e4);
+    };
+    tic();
+    setInterval(() => { if (!document.hidden) tic(); }, 20000);
   }
 
   // Colección Atelier: cada miniatura enseña su diseño en grande. Los seis paneles ya están en el HTML; aquí solo se cambia cuál se ve
