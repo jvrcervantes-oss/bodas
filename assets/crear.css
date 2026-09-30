@@ -166,6 +166,10 @@
 .c-fuente-muestra { max-width: 100%; font-size: 22px; line-height: 1.2; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Petit Formal Script (Sobria) ocupa ~190 px a 22 px frente a 120-165 de las demás: se iguala el ancho */
 .c-fuente-sobria .c-fuente-muestra { font-size: 17px; }
+/* Mientras baja la letra de la muestra: brillo en lugar de la letra de reserva */
+.c-fuente-muestra.c-carga { color: transparent; border-radius: 6px; background: linear-gradient(90deg, var(--line-soft) 0%, var(--line) 50%, var(--line-soft) 100%) 0 0 / 200% 100%; animation: c-brillo 1.2s linear infinite; }
+@keyframes c-brillo { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .c-fuente-muestra.c-carga { animation: none; } }
 .c-fuente small { font-size: 12px; font-weight: 500; color: var(--ink-2); }
 .c-fuente:hover { border-color: var(--line); }
 .c-fuente:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--e1); background: #fffdf8; }

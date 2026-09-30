@@ -170,6 +170,13 @@
   });
 
   // ------------------------------------------------------------ tipografía
+  function cargaLetra(nodo, spec) {
+    if (!(document.fonts && document.fonts.load)) return;
+    nodo.classList.add('c-carga');
+    var fin = function () { nodo.classList.remove('c-carga'); };
+    var t = setTimeout(fin, 3000);
+    document.fonts.load(spec, nodo.textContent).then(function () { clearTimeout(t); fin(); }, function () { clearTimeout(t); fin(); });
+  }
   var fuentesEl = document.getElementById('fuentes');
   Object.keys(D.fuentes).forEach(function (k) {
     var f = D.fuentes[k];
@@ -179,6 +186,9 @@
     var muestra = el('span', { class: 'c-fuente-muestra', text: 'Lucía & Marcos' });
     muestra.style.fontFamily = f.nombres;
     muestra.style.fontStyle = f.estilo;
+    // El navegador solo baja una letra al usarla: hasta entonces se vería la de reserva y luego el salto.
+    // Se oculta con un brillo de carga hasta que la letra esté lista (o pasen 3 s y se enseña la que haya).
+    cargaLetra(muestra, f.estilo + ' 22px ' + f.nombres);
     fuentesEl.appendChild(el('label', { class: 'c-fuente c-fuente-' + k }, [r, muestra, el('small', { text: f.nombre })]));
   });
 
