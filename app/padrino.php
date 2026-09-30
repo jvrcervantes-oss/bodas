@@ -301,9 +301,13 @@ const PADRINO_PEDIDOS_MAX_PAGINAS = 50;   // 5.000 pedidos: pasado esto, error y
  * RuntimeException y la ruta responde 502. No filtra test_mode: lo devuelve y el Tesorero lo descarta (lo prueba él).
  * `$api` es inyectable para las pruebas; por defecto, lemon_api() con la clave de secrets.php.
  */
-function padrino_pedidos(?callable $api = null, int $segundos = PADRINO_PEDIDOS_SEGUNDOS): array {
+function padrino_pedidos(?callable $api = null, int $segundos = PADRINO_PEDIDOS_SEGUNDOS, ?bool $modo_test = null): array {
     $inicio = microtime(true);
     $api = $api ?? 'lemon_api';
+    // Con la clave de test LS solo enseña pedidos de prueba: el Tesorero los descartaría y contaría 0 ventas sin avisar.
+    // Esta lectura solo tiene sentido en live (Datos, 30-sep-2026): en test, o si aparece un pedido de prueba con la
+    // clave live, falla cerrada.
+    if ($modo_test ?? lemon_test()) throw new RuntimeException('Lemon Squeezy en modo test');
     $tienda = (string) secreto('lemon_tienda');
     if (!preg_match('/^\d{1,12}$/', $tienda)) throw new RuntimeException('tienda sin configurar');
     $vistos = [];
@@ -311,7 +315,9 @@ function padrino_pedidos(?callable $api = null, int $segundos = PADRINO_PEDIDOS_
     for ($pagina = 1; ; $pagina++) {
         if ($pagina > PADRINO_PEDIDOS_MAX_PAGINAS) throw new RuntimeException('más de ' . PADRINO_PEDIDOS_MAX_PAGINAS . ' páginas');
         if (microtime(true) - $inicio > $segundos) throw new RuntimeException('LS tarda más de ' . $segundos . ' s');
-        $q = http_build_query(['filter' => ['store_id' => $tienda], 'page' => ['size' => PADRINO_PEDIDOS_POR_PAGINA, 'number' => $pagina]]);
+        // sort explícito (el de los `links` de LS): no depender del orden por defecto entre páginas
+        $q = http_build_query(['filter' => ['store_id' => $tienda], 'sort' => '-createdAt',
+            'page' => ['size' => PADRINO_PEDIDOS_POR_PAGINA, 'number' => $pagina]]);
         [$st, $d] = $api('GET', '/v1/orders?' . $q);
         if ($st !== 200 || !is_array($d['data'] ?? null)) throw new RuntimeException('LS respondió ' . $st . ' en la página ' . $pagina);
         $meta = (array) (($d['meta'] ?? [])['page'] ?? []);
@@ -321,6 +327,7 @@ function padrino_pedidos(?callable $api = null, int $segundos = PADRINO_PEDIDOS_
             $a = (array) ($o['attributes'] ?? []);
             if (!preg_match('/^\d{1,15}$/', $id)) throw new RuntimeException('pedido sin id');
             if ((string) ($a['store_id'] ?? '') !== $tienda) throw new RuntimeException('pedido de otra tienda');
+            if (($a['test_mode'] ?? null) === true) throw new RuntimeException('pedido de prueba con la clave live');
             $vistos[$id] = padrino_pedido_cerrado($id, $a);   // por id: si un pedido nuevo desplaza la paginación, no se cuenta dos veces
         }
         $ultima = (int) ($meta['lastPage'] ?? 0);

@@ -71,6 +71,7 @@ ok(count($rutas) === 2 && $rutas[0][0] === 'GET', 'dos peticiones GET, nada más
 parse_str((string) parse_url($rutas[0][1], PHP_URL_QUERY), $q);
 ok(parse_url($rutas[0][1], PHP_URL_PATH) === '/v1/orders', 'lee /v1/orders');
 ok(($q['filter']['store_id'] ?? '') === '483461' && ($q['page']['size'] ?? '') === '100', 'filtra por la tienda de secrets.php y pide 100 por página');
+ok(($q['sort'] ?? '') === '-createdAt', 'orden explícito, del más nuevo al más viejo');
 $claves = ['id', 'created_at', 'currency', 'subtotal', 'discount_total', 'setup_fee', 'tax', 'total', 'refunded_amount', 'status',
     'refunded', 'refunded_at', 'test_mode', 'tax_rate', 'tax_inclusive', 'affiliate', 'referral_amount'];
 ok(array_keys($r['pedidos'][0]) === $claves, 'lista cerrada de campos, en este orden');
@@ -104,6 +105,10 @@ $raro = padrino_pedidos(api_de([[orden(5, ['test_mode' => 'no', 'status' => 'Pai
 ok($raro['test_mode'] === null && $raro['status'] === null && $raro['currency'] === null && $raro['total'] === null
     && $raro['created_at'] === null && $raro['tax_rate'] === null, 'valores raros -> null');
 ok($raro['affiliate'] === true && $raro['referral_amount'] === 300, 'afiliado y su comisión');
+
+// ── 5a. Solo en live: en modo test, o con un pedido de prueba en la lectura, error (0 ventas sin avisar si no)
+lanza(fn() => padrino_pedidos(api_de([[orden(1)]], 1), 150, true), 'modo test', 'secrets en modo test: error');
+lanza(fn() => padrino_pedidos(api_de([[orden(1), orden(2, ['test_mode' => true])]], 2)), 'prueba', 'pedido de prueba con clave live: error');
 
 // ── 5b. Corte por tiempo: no seguir llamando a LS cuando el Padrino ya se ha rendido
 lanza(fn() => padrino_pedidos(api_de([$lote(1, 100), $lote(101, 100)], 200), -1), 'tarda', 'pasado el tiempo: error');
