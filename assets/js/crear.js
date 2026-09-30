@@ -79,6 +79,7 @@
     var ve = document.getElementById('verEntrada'); if (ve) ve.hidden = !st.atelier;
     // Pack Esencial = estilo propio (paleta, letra, adornos); Pack Atelier = solo los diseños de autor
     propioEl.hidden = !!st.atelier;
+    var feb = document.getElementById('fotoEstiloBloque'); if (feb) feb.hidden = !!st.atelier;
     pintaAutor();
     var t = document.getElementById('precioTotal');
     if (t) {
@@ -221,6 +222,17 @@
     r.addEventListener('change', function () { st.decoracion = k; cambio(); });
     decosEl.appendChild(el('label', { class: 'c-deco' }, [r, el('span', { class: 'c-deco-muestra c-deco-' + k }),
       el('span', { class: 'c-deco-txt' }, [el('b', { text: dc.nombre }), el('small', { text: dc.desc })])]));
+  });
+
+  // ------------------------------------------------------------ estilo de la foto (con cualquier decoración; los Atelier traen su marco)
+  var fotoEstilosEl = document.getElementById('fotoEstilos');
+  Object.keys(D.fotoEstilos || {}).forEach(function (k) {
+    var fe = D.fotoEstilos[k];
+    var r = el('input', { type: 'radio', name: 'foto_estilo', value: k });
+    r.checked = (st.foto_estilo || 'arco') === k;
+    r.addEventListener('change', function () { st.foto_estilo = k; cambio(); });
+    fotoEstilosEl.appendChild(el('label', { class: 'c-deco' }, [r, el('span', { class: 'c-deco-muestra c-fe c-fe-' + k }, [el('i')]),
+      el('span', { class: 'c-deco-txt' }, [el('b', { text: fe.nombre }), el('small', { text: fe.desc })])]));
   });
 
   // ------------------------------------------------------------ foto

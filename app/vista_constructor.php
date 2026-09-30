@@ -17,6 +17,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'base' => BASE_PATH,
         'fuentesAutor' => array_map(fn($f) => ['nombre' => $f['nombre'], 'nota' => $f['nota']], fuentes_autor()),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
+        'fotoEstilos' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], FOTO_ESTILOS),
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxBanquete' => MAX_BANQUETE, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
@@ -181,6 +182,10 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
               <button type="button" class="c-link c-link-mal" id="fotoQuitar" hidden>Quitar</button>
             </span>
           </div>
+        </div>
+        <div id="fotoEstiloBloque">
+          <span class="overline overline-bronze">Estilo de la foto</span>
+          <div class="c-decos c-fotoestilos" id="fotoEstilos" role="radiogroup" aria-label="Estilo de la foto"></div>
         </div>
         <hr class="c-hr">
         <span class="overline overline-bronze">Textos de la portada</span>

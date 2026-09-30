@@ -103,6 +103,16 @@ const DECORACIONES = [
     'ninguna'   => ['Sin adornos', 'Solo tipografía y color'],
 ];
 
+// Estilo de la foto de portada (owner, 30-sep-2026, artifact «Foto con flores de acuarela»,
+// https://claude.ai/artifact/6MoGPJnzKpBP19HQvRvaQC): vale con cualquier decoración; con «Flores de acuarela»
+// las rosas rodean la foto. Los diseños Atelier traen su propio marco y no lo usan.
+const FOTO_ESTILOS = [
+    'arco'     => ['Arco', 'Recortada como un ventanal'],
+    'papel'    => ['Papel', 'Pegada en papel de acuarela'],
+    'medallon' => ['Medallón', 'En óvalo, como un retrato'],
+    'fundida'  => ['Fundida', 'A todo lo ancho, deshecha en el papel'],
+];
+
 const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
 const MAX_MENUS = 8;
 const MAX_BANQUETE = 1500;      // menú del banquete: caracteres (unas 20 líneas)
@@ -163,6 +173,7 @@ function config_inicial(): array {
         'ciudad' => '',
         'tema' => 'rosa',
         'decoracion' => 'flores',
+        'foto_estilo' => 'arco',
         'fuente' => 'clasica',
         'atelier' => '',
         'fuente_autor' => '',
@@ -322,6 +333,7 @@ function normaliza_config($in): array {
     $c['tema'] = isset(TEMAS[$in['tema'] ?? '']) ? $in['tema'] : 'eucalipto';
     // Las bodas de antes de existir la decoración conservan su rama de eucalipto
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
+    $c['foto_estilo'] = isset(FOTO_ESTILOS[$in['foto_estilo'] ?? '']) ? $in['foto_estilo'] : 'arco';
     $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
     $c['atelier'] = isset(ATELIER[$in['atelier'] ?? '']) ? $in['atelier'] : '';
     // Solo con un diseño Atelier: sin él se descarta (el panel ya rechaza Atelier no comprado)
