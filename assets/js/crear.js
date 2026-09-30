@@ -236,6 +236,28 @@
   convMismo.addEventListener('change', function () { st.convite.mismo = convMismo.checked; pintaMismo(); cambio(); });
   pintaMismo();
 
+  // ------------------------------------------------------------ programa del día (momentos extra, además de ceremonia y convite)
+  // El orden lo pone el servidor por hora; las claves de aviso llevan el índice de esta lista (programa<i>.hora…)
+  if (!Array.isArray(st.programa)) st.programa = [];
+  function montaPrograma() {
+    var caja = document.getElementById('programaEditor');
+    if (!caja) return;
+    caja.appendChild(listaEditable(st.programa, {
+      max: D.maxPrograma || 6, sinMover: true, anadir: '+ Añadir momento',
+      titulo: function (m, i) { return (m.hora ? m.hora + ' · ' : '') + (m.titulo || 'Momento ' + (i + 1)); },
+      nuevo: function () { return { hora: '', titulo: '', lugar: '', nota: '' }; },
+      campos: function (m, refresca) {
+        var i = st.programa.indexOf(m);
+        return [
+          el('div', { class: 'c-fila' }, [campoDe(m, 'hora', 'Hora', { type: 'time', clase: 'c-hora', fk: 'programa' + i + '.hora', alCambiar: refresca }),
+            campoDe(m, 'titulo', 'Qué pasa', { max: 60, ph: 'Aperitivo', clase: 'c-crece', fk: 'programa' + i + '.titulo', alCambiar: refresca })]),
+          campoDe(m, 'lugar', 'Dónde (opcional)', { max: 80, ph: 'Jardín de la finca', fk: 'programa' + i + '.lugar' }),
+          campoDe(m, 'nota', 'Nota (opcional)', { max: 160, ph: 'Traed calzado cómodo', fk: 'programa' + i + '.nota' })
+        ];
+      }
+    }));
+  }
+
   // ------------------------------------------------------------ decoración
   var decosEl = document.getElementById('decos');
   Object.keys(D.decoraciones).forEach(function (k) {
@@ -335,7 +357,16 @@
         if (typeof x.datos.preguntar !== 'boolean') x.datos.preguntar = busAntiguo === null ? true : busAntiguo;
       }
     });
+    // Paquete de mejoras (30-sep): un borrador de antes no trae programa, hashtag, vestimenta ni la sección «Nuestra historia»
+    if (!Array.isArray(st.programa)) st.programa = [];
+    st.portada = st.portada || {};
+    if (typeof st.portada.hashtag !== 'string') st.portada.hashtag = '';
+    if (typeof st.portada.vestimenta !== 'string') st.portada.vestimenta = '';
+    if (D.secciones.historia && !st.secciones.some(function (x) { return x.tipo === 'historia'; })) {
+      st.secciones.push({ id: idNuevo('s'), tipo: 'historia', on: false, titulo: D.secciones.historia.titulo, datos: { texto: '' } });
+    }
   })();
+  montaPrograma();
 
   // Lista editable genérica (menús, trayectos): cada fila con subir/bajar/quitar
   function listaEditable(arr, opts) {
@@ -350,8 +381,8 @@
           el('div', { class: 'c-item-cab' }, [
             cab,
             el('span', { class: 'c-item-acc' }, [
-              el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Subir', disabled: i === 0, text: '↑', onclick: mover(-1) }),
-              el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Bajar', disabled: i === arr.length - 1, text: '↓', onclick: mover(1) }),
+              opts.sinMover ? null : el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Subir', disabled: i === 0, text: '↑', onclick: mover(-1) }),
+              opts.sinMover ? null : el('button', { type: 'button', class: 'c-mini', 'aria-label': 'Bajar', disabled: i === arr.length - 1, text: '↓', onclick: mover(1) }),
               (arr.length > (opts.min || 0)) ? el('button', { type: 'button', class: 'c-link c-link-mal', text: 'Quitar', onclick: function () { arr.splice(i, 1); pinta(); cambio(); } }) : null
             ])
           ])
@@ -368,7 +399,8 @@
   }
   function campoDe(obj, k, etiqueta, opts) {
     opts = opts || {};
-    var inp = el(opts.area ? 'textarea' : 'input', { maxlength: opts.max || 200, rows: opts.area ? (opts.rows || 2) : null, type: opts.type || null, placeholder: opts.ph || null });
+    var inp = el(opts.area ? 'textarea' : 'input', { maxlength: opts.max || 200, rows: opts.area ? (opts.rows || 2) : null, type: opts.type || null, placeholder: opts.ph || null,
+      'data-fk': opts.fk || null });   // clave de faltan() del servidor: marca el campo cuando esa falta llega
     inp.value = obj[k] || '';
     inp.addEventListener('input', function () { obj[k] = inp.value; if (opts.alCambiar) opts.alCambiar(); cambio(); });
     return el('label', { class: 'c-campo' + (opts.clase ? ' ' + opts.clase : '') }, [el('span', { text: etiqueta }), inp]);
@@ -490,6 +522,11 @@
         w.appendChild(casilla(s.datos.fotos, 'Los invitados pueden subir una foto con su mensaje', function (v) { s.datos.fotos = v; }));
         w.appendChild(el('p', { class: 'c-ayuda', text: 'Los mensajes se publican al momento. Desde vuestro panel podéis ocultar o borrar cualquiera.' }));
         break;
+      case 'historia':
+        w.appendChild(campoTexto(s, 'texto', 'Vuestra historia', { area: true, max: D.maxHistoria || 2000, rows: 8,
+          ayuda: 'Encended el interruptor de la sección para publicarla; sin texto, la página no se publica. Separad los párrafos con una línea en blanco.' }));
+        w.appendChild(el('p', { class: 'c-aviso', 'data-aviso-historia': '', text: D.avisoHistoria || '' }));
+        break;
       case 'informacion':
         w.appendChild(el('p', { class: 'c-ayuda', text: 'Muestra la ceremonia y el convite con su mapa (los datos del paso 2).' }));
         w.appendChild(campoTexto(s, 'texto', 'Texto adicional (aparcamiento, accesos…)', { area: true, max: 2000 }));
@@ -511,6 +548,7 @@
     hoteles: 'M3 18V7M3 14h18v4M21 14v-2a3 3 0 0 0-3-3h-7v5', transporte: 'M4 3h16v14H4zM4 11h16M7 17v3M17 17v3',
     regalos: 'M3 8h18v4H3zM5 12v8h14v-8M12 8v12', musica: 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
     dresscode: 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z', libre: 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',
+    historia: 'M4 5c3-1.5 5-1.5 8 0v14c-3-1.5-5-1.5-8 0zM12 5c3-1.5 5-1.5 8 0v14c-3-1.5-5-1.5-8 0z',
     galeria: 'M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6', libro: 'M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3zM8 9h6M8 13h4'
   };
   function icono(tipo) {
@@ -897,7 +935,7 @@
   function faltasPorPaso() {
     var fp = {};
     Object.keys(ultimasFaltas || {}).forEach(function (k) {
-      var n = document.querySelector('[data-panel] [data-k="' + k + '"]'), panel = n && n.closest('[data-panel]');
+      var n = document.querySelector('[data-panel] [data-k="' + k + '"]') || document.querySelector('[data-panel] [data-fk="' + k + '"]'), panel = n && n.closest('[data-panel]');
       var paso = panel ? panel.getAttribute('data-panel') : null;
       var m = !paso && /^sec\.([^.]+)/.exec(k);
       if (m) { var sx = st.secciones.filter(function (x) { return x.id === m[1]; })[0]; paso = sx && sx.tipo === 'rsvp' ? 'rsvp' : 'secciones'; }

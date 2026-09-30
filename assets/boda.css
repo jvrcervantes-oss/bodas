@@ -1578,3 +1578,58 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .mf-fundida .mat-photo img{ width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
   .mf-fundida .mf-g-top{ left: 36%; width: 60%; top: 0; }
 }
+
+/* ============================================================
+   Paquete de mejoras (30-sep-2026): programa del día, hashtag, píldora de vestimenta, historia y foto Instantánea.
+   Todo nace vacío: sin datos, ninguna de estas clases llega a pintarse. Sin sombras, degradados ni negrita; el
+   color es el de la tinta (--primary) y solo la ceremonia lleva el acento.
+   ============================================================ */
+
+/* Programa del día: hora en serif grande, título pequeño, filete de 1 px con un punto por momento */
+.prog{ width: 100%; max-width: 480px; margin: var(--s-lg) auto 0; }
+.prog-kicker{ display: block; text-align: center; margin-bottom: var(--s-sm); }
+.prog-lista{ list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: auto 1px minmax(0, 1fr); column-gap: 18px; }
+/* Una sola columna de horas para toda la lista, para que el filete quede recto (subgrid; sin él, cada fila mide la suya) */
+.prog-item{ display: grid; grid-template-columns: minmax(4.4rem, auto) 1px minmax(0, 1fr); grid-column: 1 / -1; column-gap: 18px; align-items: stretch; min-width: 0; }
+@supports (grid-template-columns: subgrid){ .prog-item{ grid-template-columns: subgrid; } }
+.prog-hora{ padding: 12px 0; text-align: right; font-family: var(--serif); font-size: 32px; line-height: 40px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--primary); }
+.prog-marca{ position: relative; background: rgb(var(--primary-rgb) / .28); }
+.prog-marca::before{ content: ''; position: absolute; left: -3px; top: 25px; width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+.prog-cuerpo{ min-width: 0; padding: 14px 0 20px; }
+.prog-titulo{ margin: 0; font-family: var(--sans); font-size: 15px; line-height: 22px; font-weight: 400; letter-spacing: .02em; color: var(--primary); overflow-wrap: anywhere; }
+.prog-lugar, .prog-nota{ margin: 2px 0 0; font-size: 13px; line-height: 20px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.prog-nota{ color: var(--ink-muted); }
+.prog-ceremonia .prog-hora{ color: var(--accent); }
+.prog-ceremonia .prog-marca::before{ background: var(--accent); width: 9px; height: 9px; left: -4px; top: 24px; }
+
+/* Hashtag: solo texto, bajo la fecha y en el pie */
+.hero-hashtag{ margin: 10px 0 0; text-align: center; font-family: var(--serif); font-size: 18px; line-height: 26px; letter-spacing: .04em; color: var(--secondary); overflow-wrap: anywhere; }
+.footer-hashtag{ margin: 0 0 var(--s-sm); max-width: 20rem; font-size: 15px; line-height: 22px; letter-spacing: .06em; color: var(--ink-soft); overflow-wrap: anywhere; }
+
+/* Vestimenta: píldora tras el texto de bienvenida (sin margen inferior: el botón de debajo pone el suyo) */
+.letter .pildora-vest{ display: inline-flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 2px 10px; max-width: 100%; margin: var(--s-sm) 0 0; padding: 8px 20px; border: 1px solid rgb(var(--primary-rgb) / .3); border-radius: var(--pill); font-size: 14px; line-height: 20px; color: var(--primary); overflow-wrap: anywhere; }
+.pildora-vest-rot{ font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-muted); }
+
+/* Nuestra historia */
+.historia-kicker{ display: block; text-align: center; margin-bottom: 6px; }
+.historia-kicker ~ h1, .historia-texto{ overflow-wrap: anywhere; }
+
+/* INSTANTANEA-INICIO
+   Foto «Instantánea»: marco de papel (token --card) con el margen inferior mayor y un filete de 1 px, y una cinta dibujada
+   en el HTML (SVG monocromo con el color de tinta). Reglas propias, sin heredar de .mat: la sombra de .mat-inner y el
+   degradado de .mat-photo::after se anulan aquí. El giro va en .mat-inner (en .mat lo pisaría la animación de .rv) y
+   solo desde 768 px: en un móvil de 390 px la esquina girada se saldría de la pantalla. */
+.mf-instantanea{ width: 84%; max-width: 340px; margin-top: 44px; }
+.mf-instantanea .mat-inner{ position: relative; background: var(--card); padding: 14px 14px 22px; border: 1px solid rgb(var(--primary-rgb) / .22); border-radius: 2px; box-shadow: none; }
+.mf-instantanea .mat-photo{ aspect-ratio: 4 / 5; border-radius: 0; }
+.mf-instantanea .mat-photo::after{ content: none; display: none; background: none; }
+.mf-instantanea .mat-caption{ margin: 18px 0 0; padding: 0 6px; font-family: var(--serif); font-style: italic; overflow-wrap: anywhere; }
+.inst-cinta{ position: absolute; z-index: 2; top: -19px; left: 50%; width: 96px; height: auto; margin-left: -48px; color: var(--primary); fill: currentColor; fill-opacity: .1; stroke: currentColor; stroke-width: 1; stroke-linejoin: round; pointer-events: none; }
+.inst-cinta-fibra{ fill: none; stroke-opacity: .35; stroke-width: .8; }
+@media (min-width: 768px){
+  .mf-instantanea .mat-inner{ transform: rotate(-1.5deg); }
+}
+@media (min-width: 901px){
+  .mf-instantanea{ width: 100%; max-width: 360px; justify-self: center; margin-top: 70px; }
+}
+/* INSTANTANEA-FIN */

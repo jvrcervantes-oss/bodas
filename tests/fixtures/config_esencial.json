@@ -1,0 +1,205 @@
+{
+    "v": 1,
+    "pareja": {
+        "nombre1": "Ana",
+        "nombre2": "Luis",
+        "union": "&",
+        "email": "pareja@example.com"
+    },
+    "fecha": "2031-06-14",
+    "ciudad": "Valencia",
+    "tema": "rosa",
+    "decoracion": "flores",
+    "foto_estilo": "arco",
+    "fuente": "clasica",
+    "atelier": "",
+    "fuente_autor": "",
+    "ceremonia": {
+        "lugar": "Ermita de Prueba",
+        "direccion": "Calle Falsa 1",
+        "hora": "12:30",
+        "coords": ""
+    },
+    "convite": {
+        "lugar": "Finca de Prueba",
+        "direccion": "Camino Viejo 2",
+        "hora": "15:00",
+        "coords": "",
+        "mismo": false
+    },
+    "portada": {
+        "invitacion": "Tenemos el placer de invitaros a nuestra boda",
+        "titulo": "Os damos la bienvenida",
+        "frase": "",
+        "texto": "Queremos compartir este día con las personas que más queremos. Gracias por acompañarnos.",
+        "pie": "Gracias por formar parte de nuestra historia."
+    },
+    "foto": false,
+    "codigo": "PRUEBA1",
+    "secciones": [
+        {
+            "id": "s1",
+            "tipo": "rsvp",
+            "on": true,
+            "titulo": "Confirmar asistencia",
+            "ruta": "confirmar-asistencia",
+            "datos": {
+                "texto": "Si venís en familia o en grupo, basta con que uno lo rellene por todos.",
+                "menus": [
+                    {
+                        "id": "carne",
+                        "nombre": "Carne",
+                        "descripcion": "",
+                        "infantil": false
+                    },
+                    {
+                        "id": "pescado",
+                        "nombre": "Pescado",
+                        "descripcion": "",
+                        "infantil": false
+                    },
+                    {
+                        "id": "vegetariano",
+                        "nombre": "Vegetariano",
+                        "descripcion": "",
+                        "infantil": false
+                    },
+                    {
+                        "id": "infantil",
+                        "nombre": "Infantil",
+                        "descripcion": "",
+                        "infantil": true
+                    }
+                ],
+                "asistencia": true,
+                "fecha_limite": "",
+                "banquete": "Aperitivo: croquetas\nPrincipal: lubina"
+            }
+        },
+        {
+            "id": "s2",
+            "tipo": "informacion",
+            "on": true,
+            "titulo": "Información",
+            "ruta": "informacion",
+            "datos": {
+                "texto": "Hay aparcamiento en la finca."
+            }
+        },
+        {
+            "id": "s3",
+            "tipo": "hoteles",
+            "on": true,
+            "titulo": "Hoteles",
+            "ruta": "hoteles",
+            "datos": {
+                "texto": "Opciones de alojamiento cerca de la celebración.",
+                "hoteles": [
+                    {
+                        "nombre": "Hotel Sol",
+                        "zona": "A 5 min",
+                        "web": "https://hotelsol.example.com",
+                        "telefono": "+34 600 000 000",
+                        "nota": "Código PRUEBA"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "s4",
+            "tipo": "transporte",
+            "on": true,
+            "titulo": "Transporte",
+            "ruta": "transporte",
+            "datos": {
+                "texto": "",
+                "trayectos": [
+                    {
+                        "titulo": "Ida",
+                        "salida": "Plaza Mayor",
+                        "hora": "11:45",
+                        "llegada": "Ermita",
+                        "nota": "Vuelta a las 2"
+                    }
+                ],
+                "preguntar": true
+            }
+        },
+        {
+            "id": "s5",
+            "tipo": "regalos",
+            "on": true,
+            "titulo": "Lista de bodas",
+            "ruta": "lista-de-bodas",
+            "datos": {
+                "texto": "Vuestra compañía es el mejor regalo. Si además queréis tener un detalle con nosotros, podéis hacerlo aquí.",
+                "titular": "Ana y Luis",
+                "iban": "ES91 2100 0418 4502 0005 1332",
+                "otro": ""
+            }
+        },
+        {
+            "id": "s6",
+            "tipo": "musica",
+            "on": true,
+            "titulo": "Música",
+            "ruta": "musica",
+            "datos": {
+                "texto": "Proponed la canción que os hace saltar a la pista y votad las de los demás."
+            }
+        },
+        {
+            "id": "s7",
+            "tipo": "dresscode",
+            "on": true,
+            "titulo": "Dress code",
+            "ruta": "dress-code",
+            "datos": {
+                "texto": "Traje oscuro o vestido largo. Evitad el blanco."
+            }
+        },
+        {
+            "id": "s8",
+            "tipo": "galeria",
+            "on": true,
+            "titulo": "Galería",
+            "ruta": "galeria",
+            "datos": {
+                "texto": "",
+                "fotos": [],
+                "consentido": false
+            }
+        },
+        {
+            "id": "s9",
+            "tipo": "libro",
+            "on": true,
+            "titulo": "Libro de invitados",
+            "ruta": "libro-de-invitados",
+            "datos": {
+                "texto": "Dejadnos un mensaje, un recuerdo o una foto de la boda.",
+                "fotos": true
+            }
+        },
+        {
+            "id": "lb1",
+            "tipo": "libre",
+            "on": true,
+            "titulo": "Historia",
+            "ruta": "historia",
+            "datos": {
+                "texto": "Nos conocimos en un tren de prueba."
+            }
+        },
+        {
+            "id": "lb2",
+            "tipo": "libre",
+            "on": true,
+            "titulo": "Nuestra historia",
+            "ruta": "nuestra-historia",
+            "datos": {
+                "texto": "Y desde entonces, viajes de prueba."
+            }
+        }
+    ]
+}

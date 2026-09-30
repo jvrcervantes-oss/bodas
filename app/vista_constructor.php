@@ -21,6 +21,9 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxBanquete' => MAX_BANQUETE, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
+        'maxPrograma' => MAX_PROGRAMA, 'maxHistoria' => MAX_HISTORIA,
+        // Aviso bajo el campo de la historia: lo redacta Legal en app/legal/textos.php (clave aviso_historia); este es el texto de salida
+        'avisoHistoria' => (string) ($L['aviso_historia'] ?? 'No publiquéis datos de salud ni de menores identificables, ni datos de terceros sin su permiso.'),
         'precio' => ['total' => euros(precio_esencial_cent()), 'totalAtelier' => euros(precio_atelier_cent())],
         'atelier' => array_map(fn($a) => ['nombre' => $a['nombre'], 'categoria' => $a['categoria'], 'desc' => $a['desc']], ATELIER),
         // En el panel, los diseños Atelier solo si la boda tiene el Pack Atelier (comprado al crearla o con la mejora)
@@ -170,6 +173,11 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <label class="c-campo" data-si-otro-sitio><span>Dirección</span><input data-k="convite.direccion" maxlength="160"></label>
           <label class="c-campo" data-si-otro-sitio><span>Punto exacto en el mapa</span><input data-k="convite.coords" maxlength="400" inputmode="url" autocomplete="off"></label>
         </div>
+        <div class="c-tarjeta" id="programaCaja">
+          <p class="c-sub">Programa del día <small>(opcional)</small></p>
+          <p class="c-ayuda">Otros momentos de la jornada, además de la ceremonia y el convite (hasta <?= (int) MAX_PROGRAMA ?>). Se ordenan solos por hora. Sin nombres de personas.</p>
+          <div id="programaEditor"></div>
+        </div>
       </div>
 
       <div class="c-panel" role="tabpanel" id="panel-portada" data-panel="portada" aria-labelledby="tab-portada" hidden>
@@ -194,6 +202,10 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         <label class="c-campo"><span>Frase destacada <small>(opcional)</small></span><input data-k="portada.frase" maxlength="240"></label>
         <label class="c-campo"><span>Texto de bienvenida</span><textarea data-k="portada.texto" maxlength="1200" rows="4"></textarea></label>
         <label class="c-campo"><span>Despedida al pie</span><input data-k="portada.pie" maxlength="200"></label>
+        <label class="c-campo"><span>Hashtag de la boda <small>(opcional)</small></span><input data-k="portada.hashtag" maxlength="40" autocomplete="off" spellcheck="false" placeholder="AnaYLuis2031">
+          <small>Sin la almohadilla y sin espacios: solo letras, números y guion bajo. Sale como texto bajo la fecha y en el pie, sin enlace.</small></label>
+        <label class="c-campo"><span>Vestimenta <small>(opcional)</small></span><input data-k="portada.vestimenta" maxlength="60" autocomplete="off" placeholder="Etiqueta, sin corbata">
+          <small>Una línea: sale como una píldora en la portada y sustituye a la tarjeta de dress code de la portada (la página de dress code sigue si la tenéis activa).</small></label>
       </div>
 
       <div class="c-panel" role="tabpanel" id="panel-rsvp" data-panel="rsvp" aria-labelledby="tab-rsvp" hidden>

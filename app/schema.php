@@ -111,18 +111,26 @@ const FOTO_ESTILOS = [
     'papel'    => ['Papel', 'Pegada en papel de acuarela'],
     'medallon' => ['Medallón', 'En óvalo, como un retrato'],
     'fundida'  => ['Fundida', 'A todo lo ancho, deshecha en el papel'],
+    // Paquete de mejoras (30-sep-2026): marco de papel con margen inferior mayor, filete y cinta dibujada. Sin sombras ni degradados.
+    'instantanea' => ['Instantánea', 'Marco de papel con cinta, como una foto revelada'],
 ];
 
 const MENUS_ANTIGUOS = ['carne' => 'Carne', 'pescado' => 'Pescado', 'vegetariano' => 'Vegetariano', 'vegano' => 'Vegano', 'infantil' => 'Infantil'];
 const MAX_MENUS = 8;
 const MAX_BANQUETE = 1500;      // menú del banquete: caracteres (unas 20 líneas)
 const MAX_TRAYECTOS = 6;
+const MAX_PROGRAMA = 6;         // momentos EXTRA del programa del día (además de ceremonia y convite)
+const MAX_HASHTAG = 30;
+const MAX_VESTIMENTA = 60;
+const MAX_HISTORIA = 2000;
 const MAX_GALERIA = 24;
 
 // tipo => [título por defecto, ruta fija (null = libre, sale del título), única]
 const SECCIONES = [
     'rsvp'        => ['Confirmar asistencia', 'confirmar-asistencia', true],
     'informacion' => ['Información', 'informacion', true],
+    // Paquete de mejoras (30-sep-2026): apagada por defecto y sin página mientras no tenga texto (normaliza_config)
+    'historia'    => ['Nuestra historia', 'nuestra-historia', true],
     'hoteles'     => ['Hoteles', 'hoteles', true],
     'transporte'  => ['Transporte', 'transporte', true],
     'regalos'     => ['Lista de bodas', 'lista-de-bodas', true],
@@ -134,6 +142,7 @@ const SECCIONES = [
 ];
 const MAX_LIBRES = 3;
 // Rutas que una sección libre nunca puede ocupar
+// 'nuestra-historia' (la ruta de la sección Historia) se reserva en normaliza_config SOLO mientras esa sección está activa
 const RUTAS_RESERVADAS = ['api', 'panel', 'privacidad', 'foto', 'boda', 'assets', 'inicio', 'index', 'crear', 'listo', 'legal', 'acceso', 'g', 'l'];
 
 // Nombres de web que no se venden: técnicos del estudio o que se prestan a suplantación
@@ -162,9 +171,9 @@ function slugify(string $s, int $max = 40): string {
 function config_inicial(): array {
     $sec = [];
     $n = 0;
-    foreach (['rsvp', 'informacion', 'hoteles', 'transporte', 'regalos', 'musica', 'dresscode', 'galeria', 'libro'] as $t) {
-        // Galería y libro, apagadas de inicio: piden código de acceso y la galería se llena desde el panel
-        $sec[] = ['id' => 's' . (++$n), 'tipo' => $t, 'on' => !in_array($t, ['galeria', 'libro'], true), 'titulo' => SECCIONES[$t][0], 'datos' => datos_iniciales($t)];
+    foreach (['rsvp', 'informacion', 'historia', 'hoteles', 'transporte', 'regalos', 'musica', 'dresscode', 'galeria', 'libro'] as $t) {
+        // Galería y libro, apagadas de inicio: piden código de acceso y la galería se llena desde el panel. Historia, apagada hasta que se escriba
+        $sec[] = ['id' => 's' . (++$n), 'tipo' => $t, 'on' => !in_array($t, ['galeria', 'libro', 'historia'], true), 'titulo' => SECCIONES[$t][0], 'datos' => datos_iniciales($t)];
     }
     return [
         'v' => 1,
@@ -179,12 +188,15 @@ function config_inicial(): array {
         'fuente_autor' => '',
         'ceremonia' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'coords' => ''],
         'convite' => ['lugar' => '', 'direccion' => '', 'hora' => '', 'coords' => '', 'mismo' => false],
+        'programa' => [],
         'portada' => [
             'invitacion' => 'Tenemos el placer de invitaros a nuestra boda',
             'titulo' => 'Os damos la bienvenida',
             'frase' => '',
             'texto' => 'Queremos compartir este día con las personas que más queremos. Gracias por acompañarnos.',
             'pie' => 'Gracias por formar parte de nuestra historia.',
+            'hashtag' => '',
+            'vestimenta' => '',
         ],
         'foto' => false,
         'codigo' => '',
@@ -211,6 +223,29 @@ function datos_iniciales(string $tipo): array {
 function norm_hora($v): string {
     $v = clean_str($v, 5);
     return preg_match('/^([01]\d|2[0-3]):[0-5]\d$/', $v) ? $v : '';
+}
+/** Texto de UNA línea: los saltos y los espacios repetidos pasan a un espacio. Tope en caracteres. */
+function linea($v, int $max): string {
+    $t = (string) preg_replace('/\s+/u', ' ', clean_str($v, 100000));
+    return mb_substr(trim($t), 0, $max, 'UTF-8');
+}
+/** Hashtag SIN «#»: solo letras, números y guion bajo; el tope cuenta sobre el valor ya limpio. */
+function norm_hashtag($v): string {
+    $t = (string) preg_replace('/[^\p{L}\p{N}_]/u', '', clean_str($v, 500));
+    return mb_substr($t, 0, MAX_HASHTAG, 'UTF-8');
+}
+/** Momentos extra del programa: hora válida y título obligatorios (si no, se descartan; datos_descartados() lo avisa), ordenados por hora. */
+function norm_programa($lista): array {
+    $out = [];
+    foreach (array_slice(is_array($lista) ? array_values($lista) : [], 0, MAX_PROGRAMA) as $i => $m) {
+        if (!is_array($m)) continue;
+        $hora = norm_hora($m['hora'] ?? '');
+        $titulo = linea($m['titulo'] ?? '', 60);
+        if ($hora === '' || $titulo === '') continue;
+        $out[] = ['hora' => $hora, 'titulo' => $titulo, 'lugar' => linea($m['lugar'] ?? '', 80), 'nota' => linea($m['nota'] ?? '', 160), '_i' => $i];
+    }
+    usort($out, fn($a, $b) => [$a['hora'], $a['_i']] <=> [$b['hora'], $b['_i']]);   // estable: misma hora, el orden en que se escribieron
+    return array_map(function ($m) { unset($m['_i']); return $m; }, $out);
 }
 function norm_fecha($v): string {
     $v = clean_str($v, 10);
@@ -295,6 +330,8 @@ function norm_datos(string $tipo, $d): array {
             return ['texto' => clean_str($d['texto'] ?? '', 600), 'fotos' => $fs, 'consentido' => norm_bool($d['consentido'] ?? false)];
         case 'libro':
             return ['texto' => clean_str($d['texto'] ?? '', 600), 'fotos' => norm_bool($d['fotos'] ?? true)];
+        case 'historia':
+            return ['texto' => clean_str($d['texto'] ?? '', MAX_HISTORIA)];
         case 'transporte':
             return ['texto' => $texto, 'trayectos' => norm_trayectos($d['trayectos'] ?? null),
                 'preguntar' => array_key_exists('preguntar', $d) ? norm_bool($d['preguntar']) : null];
@@ -354,7 +391,9 @@ function normaliza_config($in): array {
     }
     $po = is_array($in['portada'] ?? null) ? $in['portada'] : [];
     $c['portada'] = ['invitacion' => clean_str($po['invitacion'] ?? '', 120), 'titulo' => clean_str($po['titulo'] ?? '', 80),
-        'frase' => clean_str($po['frase'] ?? '', 240), 'texto' => clean_str($po['texto'] ?? '', 1200), 'pie' => clean_str($po['pie'] ?? '', 200)];
+        'frase' => clean_str($po['frase'] ?? '', 240), 'texto' => clean_str($po['texto'] ?? '', 1200), 'pie' => clean_str($po['pie'] ?? '', 200),
+        'hashtag' => norm_hashtag($po['hashtag'] ?? ''), 'vestimenta' => linea($po['vestimenta'] ?? '', MAX_VESTIMENTA)];
+    $c['programa'] = norm_programa($in['programa'] ?? null);
     $c['foto'] = norm_bool($in['foto'] ?? false);
     // Código de acceso a la galería y al libro (owner, 25-sep): lo reparte la pareja en la invitación
     $c['codigo'] = (string) preg_replace('/[^A-Za-z0-9-]/', '', clean_str($in['codigo'] ?? '', 20));
@@ -363,6 +402,14 @@ function normaliza_config($in): array {
     $vistos = [];
     $libres = 0;
     $rutas = [];
+    // La ruta de «Nuestra historia» solo se reserva a las secciones libres mientras la historia está ACTIVA: si no, una
+    // web ya publicada con una sección propia con ese título (/nuestra-historia) cambiaría de dirección sin querer.
+    $historiaActiva = false;
+    foreach (array_slice(is_array($in['secciones'] ?? null) ? array_values($in['secciones']) : [], 0, 20) as $s) {
+        if (is_array($s) && ($s['tipo'] ?? '') === 'historia' && norm_bool($s['on'] ?? true)
+            && clean_str(is_array($s['datos'] ?? null) ? ($s['datos']['texto'] ?? '') : '', MAX_HISTORIA) !== '') { $historiaActiva = true; break; }
+    }
+    $rutaHistoria = SECCIONES['historia'][1];
     foreach (array_slice(is_array($in['secciones'] ?? null) ? array_values($in['secciones']) : [], 0, 20) as $s) {
         if (!is_array($s)) continue;
         $tipo = (string) ($s['tipo'] ?? '');
@@ -377,13 +424,15 @@ function normaliza_config($in): array {
             $base = slugify($titulo, 30) ?: 'seccion';
             $ruta = $base;
             $i = 2;
-            while (in_array($ruta, RUTAS_RESERVADAS, true) || in_array($ruta, array_column(SECCIONES, 1), true) || isset($rutas[$ruta])) {
+            while (in_array($ruta, RUTAS_RESERVADAS, true) || (in_array($ruta, array_column(SECCIONES, 1), true) && ($ruta !== $rutaHistoria || $historiaActiva)) || isset($rutas[$ruta])) {
                 $ruta = $base . '-' . $i++;
             }
         }
-        $rutas[$ruta] = true;
-        $sec[] = ['id' => $id, 'tipo' => $tipo, 'on' => norm_bool($s['on'] ?? true), 'titulo' => $titulo, 'ruta' => $ruta,
-            'datos' => norm_datos($tipo, $s['datos'] ?? [])];
+        $datos = norm_datos($tipo, $s['datos'] ?? []);
+        $on = norm_bool($s['on'] ?? true);
+        if ($tipo === 'historia' && $datos['texto'] === '') $on = false;   // sin texto no hay página: ni menú, ni barra, ni ZIP
+        if ($tipo !== 'historia' || $on) $rutas[$ruta] = true;   // una historia apagada no ocupa su dirección
+        $sec[] = ['id' => $id, 'tipo' => $tipo, 'on' => $on, 'titulo' => $titulo, 'ruta' => $ruta, 'datos' => $datos];
     }
     // Secciones que la boda aún no tiene (creadas antes de existir): se añaden apagadas para
     // que aparezcan en «Más secciones»
@@ -433,7 +482,7 @@ function datos_descartados($crudo): array {
     foreach ($secs as $s) {
         if (!is_array($s) || !norm_bool($s['on'] ?? true)) continue;
         $tipo = (string) ($s['tipo'] ?? '');
-        if (!in_array($tipo, ['regalos', 'hoteles'], true)) continue;
+        if (!in_array($tipo, ['regalos', 'hoteles', 'historia'], true)) continue;
         $id = preg_match('/^[a-z0-9]{1,12}$/', (string) ($s['id'] ?? '')) ? (string) $s['id'] : $tipo;
         $titulo = clean_str($s['titulo'] ?? '', 40) ?: SECCIONES[$tipo][0];
         $d = is_array($s['datos'] ?? null) ? $s['datos'] : [];
@@ -441,6 +490,10 @@ function datos_descartados($crudo): array {
             $iban = $d['iban'] ?? '';
             if (is_string($iban) && trim($iban) !== '' && norm_iban($iban) === '') {
                 $f['sec.' . $id . '.iban'] = 'El IBAN de «' . $titulo . '» no es válido (revisad los dígitos): así no se publica la caja de regalos. Corregidlo o dejadlo vacío.';
+            }
+        } elseif ($tipo === 'historia') {
+            if (se_pasa($d['texto'] ?? '', MAX_HISTORIA)) {
+                $f['sec.' . $id . '.texto'] = 'El texto de «' . $titulo . '» pasa de ' . MAX_HISTORIA . ' caracteres: se cortaría al publicar. Acortadlo.';
             }
         } else {
             foreach (array_slice(is_array($d['hoteles'] ?? null) ? array_values($d['hoteles']) : [], 0, 8) as $i => $ho) {
@@ -453,7 +506,53 @@ function datos_descartados($crudo): array {
             }
         }
     }
+    // Portada: hashtag y vestimenta
+    $po = is_array($crudo) && is_array($crudo['portada'] ?? null) ? $crudo['portada'] : [];
+    $h = $po['hashtag'] ?? '';
+    if (is_string($h) && trim($h) !== '') {
+        // Un «#» delante es lo normal y no se avisa; lo demás que se pierda (espacios, tildes sueltas, emojis, signos) o un exceso sí
+        $pedido = ltrim(clean_str($h, 500), "# \t\n");
+        $limpio = (string) preg_replace('/[^\p{L}\p{N}_]/u', '', $pedido);
+        if ($limpio !== $pedido) {
+            $f['portada.hashtag'] = 'Portada: el hashtag solo admite letras, números y guion bajo, sin espacios ni signos: quedaría «#' . mb_substr($limpio, 0, MAX_HASHTAG, 'UTF-8') . '». Corregidlo o dejadlo vacío.';
+        } elseif (mb_strlen($limpio, 'UTF-8') > MAX_HASHTAG) {
+            $f['portada.hashtag'] = 'Portada: el hashtag admite ' . MAX_HASHTAG . ' caracteres como máximo: se cortaría al publicar. Acortadlo.';
+        }
+    }
+    if (se_pasa($po['vestimenta'] ?? '', MAX_VESTIMENTA, true)) {
+        $f['portada.vestimenta'] = 'Portada: la vestimenta admite ' . MAX_VESTIMENTA . ' caracteres como máximo, en una línea: se cortaría al publicar. Acortadla.';
+    }
+    // Programa del día: el índice es el de la lista TAL COMO LA MANDÓ el navegador (antes de ordenar por hora)
+    if (is_array($crudo) && is_array($crudo['programa'] ?? null)) {
+        $filas = array_values($crudo['programa']);
+        if (count($filas) > MAX_PROGRAMA) {
+            $f['programa.max'] = 'Programa del día: caben ' . MAX_PROGRAMA . ' momentos como máximo; los demás no se publicarían. Quitad los que sobren.';
+        }
+        foreach (array_slice($filas, 0, MAX_PROGRAMA) as $i => $m) {
+            if (!is_array($m)) continue;
+            $n = $i + 1;
+            $hora = $m['hora'] ?? '';
+            if (norm_hora($hora) === '') {
+                $f['programa' . $i . '.hora'] = 'Programa del día, momento ' . $n . ': ' . (trim(is_string($hora) ? $hora : '') === '' ? 'falta la hora' : 'la hora no es válida') . '. Sin hora no se publica.';
+            }
+            if (linea($m['titulo'] ?? '', 60) === '') {
+                $f['programa' . $i . '.titulo'] = 'Programa del día, momento ' . $n . ': falta el título. Sin título no se publica.';
+            }
+            foreach (['titulo' => 60, 'lugar' => 80, 'nota' => 160] as $k => $max) {
+                if (se_pasa($m[$k] ?? '', $max, true)) {
+                    $f['programa' . $i . '.' . $k] = 'Programa del día, momento ' . $n . ': el ' . $k . ' admite ' . $max . ' caracteres como máximo: se cortaría al publicar. Acortadlo.';
+                }
+            }
+        }
+    }
     return $f;
+}
+
+/** ¿El texto crudo es más largo que su tope? (lo que normalizar recortaría en silencio). $unaLinea: cuenta tras juntar los saltos. */
+function se_pasa($v, int $max, bool $unaLinea = false): bool {
+    if (!is_string($v)) return false;
+    $t = $unaLinea ? linea($v, 100000) : clean_str($v, 100000);
+    return mb_strlen($t, 'UTF-8') > $max;
 }
 
 /**

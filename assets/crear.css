@@ -195,6 +195,8 @@
 .c-fe-papel i { width: 34px; height: 42px; outline: 4px solid #fff; transform: rotate(-5deg); box-shadow: 0 3px 8px rgba(42, 38, 36, .16); }
 .c-fe-medallon i { border-radius: 50%; box-shadow: 0 0 0 3px #fff, 0 0 0 4px var(--line); }
 .c-fe-fundida i { width: 100%; height: 100%; -webkit-mask-image: linear-gradient(#000 35%, transparent); mask-image: linear-gradient(#000 35%, transparent); }
+/* Instantánea: papel con el margen inferior mayor; color liso y filete, sin sombra */
+.c-fe-instantanea i { width: 34px; height: 44px; box-sizing: border-box; border: 4px solid #fff; border-bottom-width: 11px; outline: 1px solid var(--line); background: #cf947f; transform: rotate(-1.5deg); }
 .c-deco-sobre::before { content: ''; position: absolute; inset: 12px 22px; background: #fff; border-radius: 3px; box-shadow: var(--e1); }
 .c-deco-sobre::after { content: ''; position: absolute; left: 50%; top: 12px; width: calc(100% - 44px); height: 26px; transform: translateX(-50%); background: var(--rose-c); clip-path: polygon(0 0, 100% 0, 50% 100%); }
 .c-deco-ninguna { background: linear-gradient(#fff, #fff) padding-box; }

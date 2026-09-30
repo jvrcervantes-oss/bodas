@@ -67,6 +67,7 @@ const ICONOS = [
     'musica' => 'M9 18V5l11-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM20 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z',
     'dresscode' => 'M12 7a2 2 0 1 1 2-2c0 1-2 1.5-2 3M12 8 3 16h18z',
     'libre' => 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5',
+    'historia' => 'M4 5c3-1.5 5-1.5 8 0v14c-3-1.5-5-1.5-8 0zM12 5c3-1.5 5-1.5 8 0v14c-3-1.5-5-1.5-8 0z',
     'galeria' => 'M3 5h18v14H3zM3 15l5-5 4 4 3-3 6 6M15 9.5a1.5 1.5 0 1 0 0-.01',
     'libro' => 'M4 4h11a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3zM18 20a2 2 0 0 0 2-2V6M8 9h6M8 13h4',
     'corazon' => 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z',
@@ -311,6 +312,9 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <?php if ($c['portada']['pie'] !== ''): ?>
   <p class="footer-thanks"><?= h($c['portada']['pie']) ?></p>
 <?php endif; ?>
+<?php if (($c['portada']['hashtag'] ?? '') !== ''): ?>
+  <p class="footer-hashtag">#<?= h($c['portada']['hashtag']) ?></p>
+<?php endif; ?>
 <?php if ($rsvp && $ruta !== $rsvp['ruta']): ?>
   <?= a_interno($rsvp['ruta'], $ctx, 'class="btn"') ?><?= h($rsvp['titulo']) ?></a>
 <?php endif; ?>
@@ -334,7 +338,7 @@ function tab_bar(array $c, string $ruta, array $ctx): string {
     if ($rsvp) $items[] = [$rsvp['ruta'], 'Menú', ICONOS['rsvp']];   // antes «RSVP» (owner, 25-sep)
     foreach ($c['secciones'] as $s) {
         if (!$s['on'] || $s['tipo'] === 'rsvp' || count($items) >= 5) continue;
-        $corto = ['regalos' => 'Regalos', 'informacion' => 'Info', 'dresscode' => 'Dress code'][$s['tipo']] ?? $s['titulo'];
+        $corto = ['regalos' => 'Regalos', 'informacion' => 'Info', 'dresscode' => 'Dress code', 'historia' => 'Historia'][$s['tipo']] ?? $s['titulo'];
         $items[] = [$s['ruta'], mb_strimwidth($corto, 0, 11, '…', 'UTF-8'), ICONOS[$s['tipo']]];
     }
     $o = '<nav class="tab-bar" aria-label="Accesos rápidos"><ul>';
@@ -376,7 +380,7 @@ function pagina_inicio(array $c, array $ctx): string {
     // Estilo de la foto (Pack Esencial; los Atelier traen su marco). Con flores, una sola guirnalda pegada a la foto
     // (Medallón: arriba y abajo) y la de encima de los nombres se quita (owner, 30-sep-2026).
     $fe = ($c['atelier'] === '' && $hayFoto) ? $c['foto_estilo'] : '';
-    $floresEnFoto = $fe !== '' && $c['decoracion'] === 'flores';
+    $floresEnFoto = $fe !== '' && $fe !== 'instantanea' && $c['decoracion'] === 'flores';   // la Instantánea trae su propia cinta: la guirnalda de siempre se queda sobre los nombres
     $gTop = '<img class="mf-g mf-g-top" src="' . h($A) . 'img/deco/flores-portada-movil.webp" alt="" width="520" height="250">';
     $adornoFoto = !$floresEnFoto ? '' : ($fe === 'medallon' ? $gTop . str_replace('mf-g-top', 'mf-g-bot', $gTop) : $gTop);
     $objetivo = $c['fecha'] !== '' ? $c['fecha'] . 'T' . ($c['ceremonia']['hora'] ?: '12:00') . ':00' : '';
@@ -401,6 +405,8 @@ function pagina_inicio(array $c, array $ctx): string {
           <span class="kicker"><?= h(linea_fecha($c) ?: 'La fecha') ?></span>
           <span class="star" aria-hidden="true">✦</span><span class="rule" aria-hidden="true"></span>
         </div>
+<?php if ($po['hashtag'] !== ''): ?>        <p class="hero-hashtag">#<?= h($po['hashtag']) ?></p>
+<?php endif; ?>
       </div>
 <?php if ($c['atelier'] !== ''): ?>      <?= atelier_tras_texto($c, $ctx) ?>
 <?php endif; ?>
@@ -408,7 +414,8 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php if ($hayFoto): ?>
     <div class="mat<?= $fe !== '' ? ' mf mf-' . h($fe) : '' ?> rv">
       <div class="mat-inner">
-<?php if ($fe !== ''): ?>        <div class="mf-marco">
+<?php if ($fe === 'instantanea'): ?>        <svg class="inst-cinta" viewBox="0 0 132 36" aria-hidden="true" focusable="false"><path d="M6 8l120-2 2 6-3 5 3 6-2 5-120 1 3-6-3-5 3-5z"/><path d="M22 12v15M110 11v16" class="inst-cinta-fibra"/></svg>
+<?php endif; ?><?php if ($fe !== ''): ?>        <div class="mf-marco">
 <?php endif; ?>        <div class="mat-photo"><img data-foto src="<?= h($ctx['foto']) ?>" alt="<?= h($nom) ?>" width="960" height="1280" loading="eager"></div>
 <?php if ($fe !== ''): ?>        <?= $adornoFoto ?>
         </div>
@@ -419,12 +426,14 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endif; ?>
   </section>
 
-<?php if ($po['titulo'] !== '' || $po['frase'] !== '' || $po['texto'] !== ''): ?>
+<?php if ($po['titulo'] !== '' || $po['frase'] !== '' || $po['texto'] !== '' || $po['vestimenta'] !== ''): ?>
   <section class="letter rv">
 <?php if ($po['titulo'] !== ''): ?>    <h2 class="section-title"><?= h($po['titulo']) ?></h2>
     <div class="mini-rule" aria-hidden="true"></div><?php endif; ?>
 <?php if ($po['frase'] !== ''): ?>    <p class="big"><?= h($po['frase']) ?></p><?php endif; ?>
     <?= parrafos($po['texto']) ?>
+<?php if ($po['vestimenta'] !== ''): ?>    <p class="pildora-vest"><span class="pildora-vest-rot">Vestimenta</span><span class="pildora-vest-txt"><?= h($po['vestimenta']) ?></span></p>
+<?php endif; ?>
 <?php if ($rsvp): ?>    <?= a_interno($rsvp['ruta'], $ctx, 'class="btn"') ?><?= ico(ICONOS['corazon'], 'ico ico-sm') ?><?= h($rsvp['titulo']) ?></a><?php endif; ?>
   </section>
 <?php endif; ?>
@@ -476,12 +485,14 @@ function pagina_inicio(array $c, array $ctx): string {
       </article>
 <?php endforeach; ?>
     </div>
+<?php if ($c['programa']): ?><?= bloque_programa($c) ?><?php endif; ?>
   </section>
 
   <section class="quick">
     <div class="quick-grid">
 <?php foreach ($c['secciones'] as $s):
         if (!$s['on'] || $s['tipo'] === 'informacion') continue;
+        if ($s['tipo'] === 'dresscode' && $po['vestimenta'] !== '') continue;   // la píldora de la portada ya lo dice: no se duplica
         $resumen = resumen($s['datos']['texto'] ?? '');
         if ($resumen === '' && $s['tipo'] === 'transporte' && $s['datos']['trayectos']) {
             $t0 = $s['datos']['trayectos'][0];
@@ -534,6 +545,28 @@ function resumen(string $t, int $max = 140): string {
     return mb_strimwidth($t, 0, $max, '…', 'UTF-8');
 }
 
+/**
+ * Programa del día: la línea de tiempo de la jornada. Junta la ceremonia y el convite (los que tienen hora) con los momentos
+ * extra de la pareja, por hora; las tarjetas de arriba no cambian. Solo la ceremonia lleva el acento.
+ */
+function bloque_programa(array $c): string {
+    $ev = [];
+    foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot) {
+        $e = $c[$k];
+        if ($e['hora'] === '' || ($k === 'convite' && $e['lugar'] === '')) continue;
+        $ev[] = ['hora' => $e['hora'], 'titulo' => $rot, 'lugar' => $e['lugar'], 'nota' => '', 'clase' => $k === 'ceremonia' ? ' prog-ceremonia' : ''];
+    }
+    foreach ($c['programa'] as $m) $ev[] = $m + ['clase' => ''];
+    usort($ev, fn($a, $b) => $a['hora'] <=> $b['hora']);   // PHP 8: estable, a igual hora manda el orden de inserción
+    $o = '<div class="prog rv"><span class="kicker prog-kicker">El programa del día</span><ol class="prog-lista">';
+    foreach ($ev as $m) {
+        $o .= '<li class="prog-item' . $m['clase'] . '"><span class="prog-hora">' . h($m['hora']) . '</span><span class="prog-marca" aria-hidden="true"></span><div class="prog-cuerpo"><h3 class="prog-titulo">' . h($m['titulo']) . '</h3>'
+            . ($m['lugar'] !== '' ? '<p class="prog-lugar">' . h($m['lugar']) . '</p>' : '')
+            . ($m['nota'] !== '' ? '<p class="prog-nota">' . h($m['nota']) . '</p>' : '') . '</div></li>';
+    }
+    return $o . '</ol></div>';
+}
+
 function url_google_calendar(array $c): string {
     if ($c['fecha'] === '') return '#';
     $d = str_replace('-', '', $c['fecha']);
@@ -566,8 +599,8 @@ function ics(array $c): string {
         . 'DESCRIPTION:' . $esc(implode(' ', $det)) . "\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n";
 }
 
-function envoltorio(string $titulo, string $dentro, string $estilo = ''): string {
-    return '<main><div class="wrap"><section class="section rv"' . ($estilo !== '' ? ' style="' . $estilo . '"' : '') . '><h1>' . h($titulo) . '</h1><hr class="divider">' . $dentro . '</section></div></main>';
+function envoltorio(string $titulo, string $dentro, string $estilo = '', string $antes = ''): string {
+    return '<main><div class="wrap"><section class="section rv"' . ($estilo !== '' ? ' style="' . $estilo . '"' : '') . '>' . $antes . '<h1>' . h($titulo) . '</h1><hr class="divider">' . $dentro . '</section></div></main>';
 }
 
 function pagina_seccion(array $c, array $s, array $ctx): string {
@@ -585,6 +618,8 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
         case 'musica': return envoltorio($s['titulo'], $intro . bloque_musica($ctx));
         case 'galeria': return envoltorio($s['titulo'], $intro . bloque_galeria($s, $ctx), 'max-width:1000px;margin:0 auto;');
         case 'libro': return envoltorio($s['titulo'], $intro . bloque_libro($c, $s, $ctx));
+        // Kicker (los nombres) sobre el título y párrafos: cada párrafo pasa por h() en parrafos()
+        case 'historia': return envoltorio($s['titulo'], '<div class="historia-texto">' . $intro . '</div>', 'max-width:640px;margin:0 auto;', '<span class="kicker historia-kicker">' . h(nombres($c) ?: 'Nuestra boda') . '</span>');
         case 'dresscode': return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>', 'max-width:560px;margin:0 auto;');
         default: return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>');
     }
