@@ -185,7 +185,7 @@
 .c-deco:has(input:checked) { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold), var(--e1); background: #fffdf8; }
 .c-deco:has(input:focus-visible) { outline: 2px solid var(--gold); outline-offset: 2px; }
 .c-deco-muestra { position: relative; display: block; height: 76px; border-radius: 10px; background: #fff center / cover no-repeat; overflow: hidden; }
-.c-deco-flores { background: #fffaf6 url(img/deco/flores-portada-movil.svg) top center / 125% auto no-repeat; }
+.c-deco-flores { background: #fffaf6 url(img/deco/flores-portada-movil.webp) top center / 125% auto no-repeat; }
 .c-deco-eucalipto { background: #fff url(img/eucalipto.webp) center / 70% auto no-repeat; }
 .c-deco-sobre { background: var(--surface-c); }
 /* Estilo de la foto: miniatura de la forma, con un degradado cálido que hace de foto */
