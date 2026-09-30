@@ -3,6 +3,7 @@
 // primer acceso sin IP y resumen impreso para el catering — F1a/F1b; la «d», plano de mesas con la copia del nombre y la
 // hoja para el restaurante — F1d, revisión #133). La del 30-sep declara el almacenamiento de sesión de la invitación
 // animada (boda.js, initEntrada), exento por ser de interfaz y de sesión.
+// 2026-09-30 (Legal): la web puede nombrar a personas en textos escritos por la pareja (programa, historia); retirada: primero a la pareja.
 // Se incluye dentro de un <main> ya maquetado. $b (datos de la boda) y $E los define la app.
 $pareja = $b['nombre1'] . ' y ' . $b['nombre2'];
 $M = h(marca());
@@ -27,6 +28,7 @@ $M = h(marca());
   <li>Mesa: si <?= h($pareja) ?> hacen un plano de mesas, la mesa que te asignen. Sirve para colocaros y para que el catering sepa dónde servir cada menú. Al sentarte se guarda también una copia de tu nombre, solo para avisar a <?= h($pareja) ?> si dejas de venir o cambias tu respuesta; se quita cuando te quitan del plano y, si no, se borra con el resto.</li>
 </ul>
 <p>Base legal: el consentimiento que das al enviar el formulario, que en el caso de las alergias es explícito. Puedes retirarlo cuando quieras escribiendo a <?= email_enlace($b['email']) ?>; lo que ya se hizo antes sigue siendo válido. Si quieres que se retire un mensaje o una foto tuya del libro o de la galería, escribe a <?= email_enlace($b['email']) ?> y se quitará.</p>
+<p>Los textos de la web (el programa del día, la historia de la pareja) los escriben <?= h($pareja) ?> y pueden nombrar a personas, por ejemplo familiares o amigos. Si aparece tu nombre o algo tuyo y quieres que se quite o se cambie, pídeselo primero a <?= h($pareja) ?> (<?= email_enlace($b['email']) ?>), con copia a <?= $M ?> (<?= email_enlace($E['email']) ?>), que les ayudará a atender tu petición.</p>
 
 <h2>Si respondes por otras personas</h2>
 <p>Si das datos de otras personas de tu grupo, confirmas que se lo has contado y que están de acuerdo, o que eres su padre, madre o tutor si son menores. Enséñales este aviso.</p>

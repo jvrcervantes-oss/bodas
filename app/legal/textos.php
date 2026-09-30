@@ -13,7 +13,8 @@ return [
     // 2026-09-27e: cambia el texto de las condiciones que acepta check_condiciones (§2 y §5 ter: el plano de mesas va
     // incluido en los packs). La versión que se guarda con cada aceptación es esta, así que sube con las condiciones.
     // 2026-09-29: §1 (servicio por invitación con códigos de regalo en pruebas), licencia del ZIP (§11) y anexo II también al canjear (Legal).
-    'version' => '2026-09-29',
+    // 2026-09-30: §2 (programa con varios momentos, historia opcional) y §10 (garantías de textos y fotos, sin datos de salud ni de menores identificables ni de terceros sin permiso) (Legal).
+    'version' => '2026-09-30',
 
     'vendedor' => 'Lemon Squeezy',
     'vendedor_entidad' => 'Sold through Link, LLC (antes Lemon Squeezy LLC), Estados Unidos',
@@ -26,6 +27,11 @@ return [
     // la excepción doméstica no cubre al prestador, considerando 18) y cubre también pasarlas al catering con nombre y mesa.
     // Solo se guarda 'version' en la respuesta (boda.php): cambiar esta frase exige subir 'version'.
     'check_alergias' => 'Doy mi consentimiento explícito para que la pareja use las alergias o intolerancias que indico solo para preparar el menú, y para que se las pase al catering con mi nombre y, si hay plano de mesas, mi mesa. Si indico las de otras personas de mi grupo, ellas lo saben y están de acuerdo en lo mismo.',
+
+    // Aviso bajo el campo opcional «Nuestra historia» del creador (texto libre, apagado por defecto). Sin casilla: es un aviso,
+    // no un consentimiento; la garantía contractual es el apartado 10 de las condiciones. Lo lee vista_constructor.php (D.avisoHistoria).
+    // No es una casilla ni se guarda en el pedido, así que cambiarlo no exige subir 'version'.
+    'aviso_historia' => 'No publiquéis datos de salud ni de menores identificables, ni datos de terceros sin su permiso.',
 
     'check_acompanantes' => 'Si doy datos de otras personas de mi grupo, les he avisado y están de acuerdo, o soy su padre, madre o tutor. Les enseñaré este aviso.',
 

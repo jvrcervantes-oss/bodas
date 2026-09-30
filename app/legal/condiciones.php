@@ -4,6 +4,8 @@
 // añadió los extras de pago y el plano de mesas, F1c/F1d, revisión #133: §2, §5 ter, §7, §8, §13, anexo II.2 y II.6;
 // la «e», decisión del owner del 27-sep: el plano de mesas va incluido en los dos packs, también regalados (§2), y
 // §5 ter queda sin ningún extra a la venta, con las reglas generales para cuando se venda uno).
+// Versión 2026-09-30 (Legal): §2 lista «programa con varios momentos» e «historia» (opcional, texto libre) y §10 extiende la garantía
+// de las fotos a los textos, con la prohibición de datos de salud, de menores identificables y de terceros sin permiso.
 // Versión 2026-09-29 (Legal, consulta del 29-sep): en pruebas el servicio se presta solo por invitación con códigos de
 // regalo; §1 lo explica (qué no se aplica a una web de regalo, códigos personales) y la licencia del ZIP (§11) y el anexo II valen también al canjear.
 // Por qué §5 ter conserva sus reglas sin extras a la venta: el circuito de compra sigue en el código (álbum, idiomas y
@@ -24,7 +26,7 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión 2026-09-29, del 29 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-09-30, del 30 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
 <p><?= $M ?> es un producto de AxisWorks. <?php if ($E['nif'] !== ''): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?>, con NIF <?= h($E['nif']) ?> y domicilio en <?= h($E['domicilio']) ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta. Mientras tanto, el servicio solo se presta por invitación: quien presta el servicio entrega personalmente un código de regalo a cada pareja, y esa pareja sabe quién es. Con un código de regalo no compráis nada, no pagáis nada y no interviene <?= $V ?>; lo que estas condiciones dicen de la compra, el pago, el recibo o el desistimiento no se aplica a una web de regalo. Los códigos son personales y no se pueden ceder ni revender. Si os dan un código que no os entregó quien presta el servicio, no lo uséis y escribidnos a <?= email_enlace($E['email']) ?>: os diremos quién presta el servicio antes de que publiquéis nada.<?php endif; ?> En estas condiciones, «nosotros» es <?= $E['nif'] !== '' ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= email_enlace($E['email']) ?>.</p>
@@ -34,7 +36,7 @@ $V = h($L['vendedor'] ?? '');
 <h2>2. Qué compráis</h2>
 <p>Una web para vuestra boda, creada con nuestro creador y publicada en https://vuestro-nombre.<?= h(BASE_DOMAIN) ?>. Incluye:</p>
 <ul>
-  <li>La web con las secciones, textos, fechas, lugares y foto que elijáis en el creador.</li>
+  <li>La web con las secciones, textos, fechas, lugares y foto que elijáis en el creador, incluido un programa del día con varios momentos y, si lo activáis, una historia de la pareja (opcional, de texto libre).</li>
   <li>Un formulario de confirmación de asistencia por grupo. Por cada invitado: nombre, si es adulto o niño, menú y alergias. Por cada grupo: si asiste, si usa el autobús, un dato de contacto y una canción.</li>
   <li>Peticiones y votos de canciones.</li>
   <li>Un panel privado con contraseña para ver las respuestas, exportarlas a Excel, editar la web y descargar un ZIP.</li>
@@ -111,7 +113,7 @@ $V = h($L['vendedor'] ?? '');
 
 <h2>10. Vuestros textos y vuestras fotos</h2>
 <p>Los textos y la foto que ponéis en la web son vuestros y seguís siendo sus titulares. Al subirlos nos dais permiso para alojarlos y mostrarlos en vuestra web mientras dure el servicio, y para nada más.</p>
-<p>Al subir las fotos (la de portada y las de la galería) garantizáis que tenéis derecho a usarlas: que la hicisteis vosotros o que el fotógrafo os permite publicarla, y que las personas que aparecen están de acuerdo. Si un tercero nos reclama por la foto o por vuestros textos, responderéis vosotros de esa reclamación.</p>
+<p>Al escribir los textos y subir las fotos (la de portada y las de la galería) garantizáis que tenéis derecho a usarlos: que los textos y las fotos son vuestros o que su autor os permite publicarlos, y que las personas que aparecen o se mencionan están de acuerdo. No publiquéis datos de salud ni de menores identificables, ni datos de terceros sin su permiso. Si un tercero nos reclama por un texto o una foto, responderéis vosotros de esa reclamación.</p>
 <p>No se puede publicar contenido ilegal, ofensivo o que vulnere derechos de otras personas. Si recibimos un aviso fundado sobre ello, podremos retirar ese contenido y os avisaremos.</p>
 
 <h2>10 bis. Libro de invitados</h2>

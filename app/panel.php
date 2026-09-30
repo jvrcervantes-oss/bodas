@@ -650,7 +650,7 @@ function panel_descargas(string $slug, array $c): string {
     $o .= '<p>' . h(panel_pack($slug)) . ($borra !== '' ? '. La web y las respuestas se guardan hasta el ' . h(fecha_larga($borra, false)) . ': ese día se borran y la web pasa a una página de agradecimiento.' : '.') . '</p>'
         . '<p class="sub">El Excel que descarguéis queda bajo vuestra responsabilidad.</p>';
     if (function_exists('mejora_disponible') && mejora_disponible($slug)) {
-        $o .= '<p><a class="btn b-rosa" href="/panel/editar">Pasar al Pack Atelier</a></p><p class="sub">La mejora se hace en Editar la web → Estilo, con los diseños de autor.</p>';
+        $o .= '<p><a class="btn b-rosa" href="/panel/editar">Pasar al Pack Atelier</a></p><p class="sub">La mejora se hace en Editar la web → Estilo, con los diseños ilustrados.</p>';
     }
     $o .= '<div class="fila-bot"><a class="btn b-papel" href="/panel/recuperar">' . p_ico('llave') . 'Cambiar contraseña</a><a class="btn b-papel" href="/panel/salir">' . p_ico('salir') . 'Salir</a></div>'
         . '<p class="nota">Para cambiar la contraseña os mandamos un enlace al email de la boda o al de la compra.</p></section></div>';
