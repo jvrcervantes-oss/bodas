@@ -87,7 +87,7 @@ lanza(fn() => padrino_pedidos(api_de([$lote(1, 100), 'error'], 150)), 'página 2
 lanza(fn() => padrino_pedidos(api_de([[orden(1, ['store_id' => 999])]], 1)), 'otra tienda', 'pedido de otra tienda: error');
 lanza(fn() => padrino_pedidos(api_de([[orden(1), orden(2)], [orden(2)]], 3)), 'faltan', 'menos pedidos únicos que el total de LS: error');
 lanza(fn() => padrino_pedidos(api_de([[['type' => 'orders', 'id' => 'x', 'attributes' => []]]], 1)), 'sin id', 'id que no es un número: error');
-lanza(fn() => padrino_pedidos(api_de(array_fill(0, 21, [orden(1)]), 21)), 'páginas', 'más de 20 páginas: error, no lista cortada');
+lanza(fn() => padrino_pedidos(api_de(array_fill(0, 51, [orden(1)]), 51)), 'páginas', 'más de 50 páginas: error, no lista cortada');
 lanza(fn() => padrino_pedidos(fn() => [200, ['data' => [orden(1)]]]), 'paginación', 'sin meta de paginación: error');
 
 // ── 3. Un pedido nuevo que desplaza la paginación no se cuenta dos veces
