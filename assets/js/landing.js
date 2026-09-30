@@ -164,6 +164,15 @@
     b.textContent = nom;
     tip.append(b, resto.length ? ' · ' + resto.join(' · ') : '');
   });
+  // La puerta de la galería: «Entrar» enseña las fotos nítidas 4 s y vuelve a cerrarse. Mientras está abierta la tarjeta no es enfocable (inert)
+  const pu = document.querySelector('[data-b-puerta]');
+  const en = pu && pu.querySelector('[data-b-entrar]');
+  const pase = pu && pu.querySelector('[data-b-pase]');
+  if (pu && en && pase) {
+    let cierra = null;
+    const abre = si => { pu.classList.toggle('abierta', si); pase.inert = si; };
+    en.addEventListener('click', () => { abre(true); clearTimeout(cierra); cierra = setTimeout(() => { abre(false); en.focus({ preventScroll: true }); }, 4000); });
+  }
   const marc = document.querySelector('[data-b-fin]');
   if (marc) {
     const dias = marc.querySelector('[data-b-d]'), horas = marc.querySelector('[data-b-h]'), mins = marc.querySelector('[data-b-m]');

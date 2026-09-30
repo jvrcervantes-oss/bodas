@@ -261,11 +261,22 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
         </article>
 
         <article class="l-bc l-bc-galeria">
-          <div class="l-b-esc"><div class="l-b-mural" aria-hidden="true">
-            <div class="l-b-foto l-b-foto-1"><img src="<?= BASE_PATH ?>/assets/img/atelier/mesa.webp" alt="" width="896" height="560" loading="lazy" decoding="async"></div>
-            <div class="l-b-foto l-b-foto-2"><img src="<?= BASE_PATH ?>/assets/img/atelier/herbario.webp" alt="" width="525" height="542" loading="lazy" decoding="async"></div>
-            <span class="l-b-codigo"><?= il('candado', 'i i-sm') ?>Código</span>
-            <div class="l-b-nota">«Que sean muy felices. Nos vemos en el baile.»<small>Carmen · con una foto</small></div>
+          <?php // Galería (owner, 30-sep-2026, opción C del artifact «Galería y libro, opciones»): la puerta con código. Las fotos se ven borrosas detrás de una
+                // tarjeta con el código y el botón «Entrar» las abre unos segundos (landing.js, data-b-puerta / data-b-entrar). Las imágenes son las de
+                // los diseños ya publicados; sin JS se ve la puerta cerrada, que es lo que enseña. Ejemplo: el código es inventado ?>
+          <div class="l-b-esc"><div class="l-b-puerta" data-b-puerta role="group" aria-label="Ejemplo de álbum protegido con código">
+            <div class="l-b-fondo" aria-hidden="true">
+              <?php foreach (['herbario', 'mesa', 'acuarela', 'mesa', 'acuarela', 'herbario'] as $im): ?>
+              <img src="<?= BASE_PATH ?>/assets/img/atelier/<?= $im ?>.webp" alt="" width="200" height="200" loading="lazy" decoding="async">
+              <?php endforeach; ?>
+            </div>
+            <div class="l-b-pase" data-b-pase>
+              <span class="l-b-cand"><?= il('candado', 'i i-sm') ?>Álbum privado</span>
+              <b>Fotos y mensajes de la boda</b>
+              <input class="l-b-cod" type="text" value="LM2706" readonly aria-label="Código de ejemplo">
+              <button class="l-b-entrar" type="button" data-b-entrar>Entrar</button>
+              <small>Probadlo: pulsad «Entrar»</small>
+            </div>
           </div></div>
           <div class="l-b-txt">
             <h3>Galería y libro de invitados</h3>

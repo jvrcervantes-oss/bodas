@@ -165,18 +165,23 @@
 .l-b-voto .i { width: 12px; height: 12px; }
 .l-b-voto[aria-pressed="true"] { background: var(--bronze); border-color: var(--bronze); color: #fff; }
 
-/* 4 · galería y libro de invitados: dos imágenes de la propia web como fotos con marco blanco */
-.l-b-mural { position: relative; width: 100%; max-width: 300px; height: 268px; }
-.l-b-foto { position: absolute; width: 44%; padding: 6px 6px 22px; border-radius: 3px; background: #fff; box-shadow: var(--e2); transform: rotate(var(--g)); }
-.l-b-foto img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 2px; }
-.l-b-foto-1 { --g: -6deg; left: 2%; top: 4%; }
-.l-b-foto-2 { --g: 5deg; right: 2%; top: 0; }
-.l-b-codigo { position: absolute; z-index: 2; left: 50%; bottom: 0; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: var(--pill);
-  background: var(--ok); color: #fff; font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; box-shadow: var(--e2); }   /* debajo de la nota: encima tapaba el mensaje (owner, 30-sep) */
-.l-b-codigo .i { width: 13px; height: 13px; }
-.l-b-nota { position: absolute; left: 12%; right: 6%; bottom: 38px; padding: 10px 12px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line-soft);
-  box-shadow: var(--e2); font-family: var(--serif); font-size: 15px; line-height: 1.25; transform: rotate(-1.5deg); }
-.l-b-nota small { display: block; margin-top: 3px; font-family: var(--sans); font-size: 10.5px; color: var(--ink-3); }
+/* 4 · galería y libro de invitados: la puerta con código. Las fotos, borrosas detrás de una tarjeta; «Entrar» las abre unos segundos */
+.l-b-esc { overflow: hidden; }   /* las fotos de la puerta sangran 8 px por fuera para que el desenfoque no deje bordes claros */
+.l-b-puerta { position: relative; width: 100%; min-height: 250px; display: grid; place-items: center; }
+.l-b-fondo { position: absolute; inset: -8px; display: grid; grid-template: repeat(2, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr)); gap: 6px; filter: blur(7px); opacity: .85; transition: filter .5s, opacity .5s; }
+.l-b-fondo img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 6px; }
+.l-b-puerta.abierta .l-b-fondo { filter: blur(0); opacity: 1; }
+.l-b-pase { position: relative; z-index: 1; width: 100%; max-width: 240px; display: grid; gap: 10px; justify-items: center; padding: 16px; text-align: center;
+  border-radius: 16px; background: var(--paper); box-shadow: var(--e2); transition: opacity .4s, transform .4s; }
+.l-b-puerta.abierta .l-b-pase { opacity: 0; transform: translateY(8px); pointer-events: none; }
+.l-b-pase b { font-family: var(--serif); font-weight: 400; font-size: 21px; line-height: 1.1; text-wrap: balance; }
+.l-b-pase small { font-size: 11.5px; color: var(--ink-3); }
+.l-b-cand { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--pill); background: rgba(79, 122, 96, .14); color: var(--ok);
+  font-size: 11px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+.l-b-cand .i { width: 13px; height: 13px; }
+.l-b-cod { width: 100%; padding: 9px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-low); color: var(--ink); font: 600 15px var(--sans); letter-spacing: .3em; text-align: center; }
+.l-b-entrar { width: 100%; padding: 9px 12px; border: 0; border-radius: var(--pill); background: var(--ok); color: #fff; font: 600 12.5px var(--sans); cursor: pointer; }
+.l-b-entrar:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* 5 · resumen para el catering */
 .l-b-hoja-cat { max-width: 290px; }
