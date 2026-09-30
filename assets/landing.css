@@ -166,7 +166,7 @@
 .l-b-voto[aria-pressed="true"] { background: var(--bronze); border-color: var(--bronze); color: #fff; }
 
 /* 4 · galería y libro de invitados: la puerta con código. Las fotos, borrosas detrás de una tarjeta; «Entrar» las abre unos segundos */
-.l-b-esc { overflow: hidden; }   /* las fotos de la puerta sangran 8 px por fuera para que el desenfoque no deje bordes claros */
+.l-bc-galeria .l-b-esc { overflow: hidden; }   /* solo la galería: sus fotos sangran 8 px por fuera para que el desenfoque no deje bordes claros */
 .l-b-puerta { position: relative; width: 100%; min-height: 250px; display: grid; place-items: center; }
 .l-b-fondo { position: absolute; inset: -8px; display: grid; grid-template: repeat(2, minmax(0, 1fr)) / repeat(3, minmax(0, 1fr)); gap: 6px; filter: blur(7px); opacity: .85; transition: filter .5s, opacity .5s; }
 .l-b-fondo img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 6px; }

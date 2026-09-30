@@ -171,7 +171,12 @@
   if (pu && en && pase) {
     let cierra = null;
     const abre = si => { pu.classList.toggle('abierta', si); pase.inert = si; };
-    en.addEventListener('click', () => { abre(true); clearTimeout(cierra); cierra = setTimeout(() => { abre(false); en.focus({ preventScroll: true }); }, 4000); });
+    en.addEventListener('click', () => { abre(true); clearTimeout(cierra); cierra = setTimeout(() => {
+      // el foco vuelve al botón solo si nadie lo ha movido (con la tarjeta inert el foco cae en body): no se le quita a quien ya está en otro control
+      const libre = !document.activeElement || document.activeElement === document.body || pu.contains(document.activeElement);
+      abre(false);
+      if (libre) en.focus({ preventScroll: true });
+    }, 4000); });
   }
   const marc = document.querySelector('[data-b-fin]');
   if (marc) {
