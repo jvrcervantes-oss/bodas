@@ -298,7 +298,9 @@ const PADRINO_PEDIDOS_MAX_PAGINAS = 50;   // 5.000 pedidos: pasado esto, error y
  * Pedidos de la tienda de LS para el Tesorero del Padrino. Lista CERRADA de campos: cifras, enums y fechas.
  * Fuera user_email, user_name, customer_id, identifier y urls (el recibo es una URL firmada). Todo o nada:
  * si una página falla, el total no cuadra, la tienda no es la nuestra o se pasa del tope de páginas, lanza
- * RuntimeException y la ruta responde 502. No filtra test_mode: lo devuelve y el Tesorero lo descarta (lo prueba él).
+ * RuntimeException y la ruta responde 502. Solo en live: en modo test, o si aparece un pedido con test_mode:true con la
+ * clave live, también 502 (si no, el Tesorero descartaría todos y contaría 0 ventas sin avisar). test_mode viaja igual
+ * y el Tesorero lo vuelve a filtrar (lo prueba él).
  * `$api` es inyectable para las pruebas; por defecto, lemon_api() con la clave de secrets.php.
  */
 function padrino_pedidos(?callable $api = null, int $segundos = PADRINO_PEDIDOS_SEGUNDOS, ?bool $modo_test = null): array {
