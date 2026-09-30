@@ -142,6 +142,15 @@
 .l-b-tip { align-self: center; margin: 12px 0 0; padding: 7px 14px; border-radius: var(--pill); background: var(--espresso); color: #f3ece4; font-size: 12px; text-align: center; }
 .l-b-tip b { font-weight: 500; color: var(--gold); }
 @container (max-width: 420px) { .l-b-mesa { width: 18.5%; font-size: 10.5px; } .l-b-mesa small { display: none; } }
+/* Plano de pie para el móvil: mesas grandes con su nombre y sus sillas escritos, presidencia como mesa larga. Solo se ve a ≤640 px */
+.l-b-plano-v { display: none; aspect-ratio: 3 / 4.1; max-width: 340px; margin-inline: auto; }
+.l-b-plano-v .l-b-mesa { width: 31%; padding: 0 6px; font-size: 15px; text-wrap: balance; }
+.l-b-plano-v .l-b-mesa small { display: block; font-size: 10px; }
+.l-b-plano-v .l-b-cabecera { width: 64%; height: 11%; aspect-ratio: auto; border-radius: 10px; }
+@media (max-width: 640px) {
+  .l-b-plano:not(.l-b-plano-v) { display: none; }
+  .l-b-plano-v { display: block; }
+}
 
 /* 3 · cuenta atrás y música */
 .l-b-marcador { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 4px 0 14px; text-align: center; }

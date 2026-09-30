@@ -214,9 +214,21 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
         <article class="l-bc l-bc-mesas l-bc-salvia">
           <div class="l-b-esc"><div class="l-b-plano-caja"><div class="l-b-plano" role="group" aria-label="Ejemplo de plano de mesas: tocad una mesa">
             <?php foreach ($planoMesas as $i => $m): [$nom, $sillas, $mx, $my, $al] = $m; ?>
-            <button class="l-b-mesa<?= $i === 1 ? ' on' : '' ?>" type="button" data-b-mesa data-b-texto="<?= h($planoTxt($m)) ?>" style="left:<?= $mx ?>%;top:<?= $my ?>%"><?= h($nom) ?><small><?= $sillas ?> sillas</small></button>
+            <button class="l-b-mesa<?= $i === 1 ? ' on' : '' ?>" type="button" data-b-mesa data-b-i="<?= $i ?>" data-b-texto="<?= h($planoTxt($m)) ?>" style="left:<?= $mx ?>%;top:<?= $my ?>%"><?= h($nom) ?><small><?= $sillas ?> sillas</small></button>
             <?php for ($k = 0; $k < $sillas; $k++): $ang = $k / $sillas * 2 * M_PI - M_PI / 2; ?>
             <span class="l-b-silla<?= in_array($k, $al, true) ? ' al' : '' ?>" style="left:<?= round($mx + cos($ang) * 10.6, 2) ?>%;top:<?= round($my + sin($ang) * 10.6 * 16 / 9, 2) ?>%"></span>
+            <?php endfor; endforeach; ?>
+          </div>
+          <?php // Móvil (owner, 30-sep-2026, artifact «Todo en una web, mejoras», opción C): el mismo salón dibujado de pie, con la presidencia arriba y las
+                // mesas en dos columnas, el doble de grandes. Se ve solo a ≤640 px (landing.css); el apaisado se oculta. Alto = 1,367 × ancho ?>
+          <div class="l-b-plano l-b-plano-v" role="group" aria-label="Ejemplo de plano de mesas: tocad una mesa">
+            <?php $planoV = [[50, 15], [28, 50], [72, 50], [28, 82], [72, 82]];
+            foreach ($planoMesas as $i => $m): [$nom, $sillas, , , $al] = $m; [$vx, $vy] = $planoV[$i]; ?>
+            <button class="l-b-mesa<?= $i === 0 ? ' l-b-cabecera' : '' ?><?= $i === 1 ? ' on' : '' ?>" type="button" data-b-mesa data-b-i="<?= $i ?>" data-b-texto="<?= h($planoTxt($m)) ?>" style="left:<?= $vx ?>%;top:<?= $vy ?>%"><?= h($nom) ?><small><?= $sillas ?> sillas</small></button>
+            <?php for ($k = 0; $k < $sillas; $k++):
+                if ($i === 0) { $sx = 23 + $k * (54 / ($sillas - 1)); $sy = $vy + 8.2; }
+                else { $ang = $k / $sillas * 2 * M_PI - M_PI / 2; $sx = $vx + cos($ang) * 18.1; $sy = $vy + sin($ang) * 18.1 * 0.7317; } ?>
+            <span class="l-b-silla<?= in_array($k, $al, true) ? ' al' : '' ?>" style="left:<?= round($sx, 2) ?>%;top:<?= round($sy, 2) ?>%"></span>
             <?php endfor; endforeach; ?>
           </div>
           <p class="l-b-tip" data-b-tip aria-live="polite"><b><?= h($planoMesas[1][0]) ?></b> · <?= $planoMesas[1][1] ?> sillas</p></div></div>

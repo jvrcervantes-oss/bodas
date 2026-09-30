@@ -151,12 +151,13 @@
     b.setAttribute('aria-pressed', String(!on));
     b.querySelector('span').textContent = (+b.dataset.n) + (on ? 0 : 1);
   }));
-  const plano = document.querySelector('.l-b-plano');
+  // Hay dos dibujos del mismo plano (apaisado y de pie para el móvil): al tocar una mesa se marca la misma en los dos
+  const caja = document.querySelector('.l-b-plano-caja');
   const tip = document.querySelector('[data-b-tip]');
-  if (plano && tip) plano.addEventListener('click', e => {
+  if (caja && tip) caja.addEventListener('click', e => {
     const m = e.target.closest('[data-b-mesa]');
     if (!m) return;
-    plano.querySelectorAll('[data-b-mesa]').forEach(x => x.classList.toggle('on', x === m));
+    caja.querySelectorAll('[data-b-mesa]').forEach(x => x.classList.toggle('on', x.dataset.bI === m.dataset.bI));
     const [nom, ...resto] = m.dataset.bTexto.split(' · ');
     tip.textContent = '';
     const b = document.createElement('b');
