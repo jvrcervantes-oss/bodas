@@ -1,8 +1,8 @@
 {
     "v": 1,
     "pareja": {
-        "nombre1": "Ana",
-        "nombre2": "Luis",
+        "nombre1": "Alfa",
+        "nombre2": "Beta",
         "union": "&",
         "email": "pareja@example.com"
     },
@@ -133,7 +133,7 @@
             "ruta": "lista-de-bodas",
             "datos": {
                 "texto": "Vuestra compañía es el mejor regalo. Si además queréis tener un detalle con nosotros, podéis hacerlo aquí.",
-                "titular": "Ana y Luis",
+                "titular": "Alfa y Beta",
                 "iban": "ES91 2100 0418 4502 0005 1332",
                 "otro": ""
             }
