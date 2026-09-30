@@ -380,6 +380,11 @@
   .l-logo span { font-size: 18px; }
   .l-logo .i-anillos { width: 25px; height: 22px; }
 }
+@media (max-width: 350px) {   /* Galaxy Fold cerrado (344), iPhone SE 1ª (320): el botón vuelve a poder partirse antes que desbordar */
+  .l-logo span { font-size: 16px; }
+  .l-logo .i-anillos { width: 22px; height: 20px; }
+  .l-top-cta { white-space: normal; }
+}
 
 /* =====================================================================================
    Motion (28-sep-2026, elegido por el owner sobre el artifact «Motion BodaEnlace»).
