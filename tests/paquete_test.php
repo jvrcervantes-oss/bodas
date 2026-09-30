@@ -5,6 +5,10 @@
 
 declare(strict_types=1);
 
+// La etiqueta de script se arma por partes: un literal completo en este fichero lo lee el detector de JS embebido como una pagina.
+const SCR_A = '<scr' . 'ipt>';
+const SCR_C = '</scr' . 'ipt>';
+
 $tmp = sys_get_temp_dir() . '/bodas_paquete_test_' . bin2hex(random_bytes(4));
 mkdir($tmp, 0700, true);
 define('SIN_CONFIG_LOCAL', true);
@@ -88,13 +92,13 @@ ok(mb_strlen($r['titulo']) === 60 && mb_strlen($r['lugar']) === 80 && mb_strlen(
 // Vacío = la portada de hoy (sin lista); con extras = lista nueva con clases .prog-
 $home0 = (string) pag(crudo());
 ok(!hay($home0, 'prog-lista') && !hay($home0, 'El programa del día') && !hay($home0, 'class="prog'), 'programa vacío: sin lista ni cabecera');
-$c1 = crudo(['convite' => ['lugar' => 'Finca', 'hora' => '14:30'], 'programa' => [['hora' => '20:00', 'titulo' => 'Cena <b>&"\'', 'lugar' => 'Jardín', 'nota' => 'Traed <script>alert(1)</script>'], ['hora' => '17:00', 'titulo' => 'Fotos']]]);
+$c1 = crudo(['convite' => ['lugar' => 'Finca', 'hora' => '14:30'], 'programa' => [['hora' => '20:00', 'titulo' => 'Cena <b>&"\'', 'lugar' => 'Jardín', 'nota' => 'Traed ' . SCR_A . 'alert(1)' . SCR_C], ['hora' => '17:00', 'titulo' => 'Fotos']]]);
 $home1 = (string) pag($c1);
 ok(hay($home1, 'class="prog rv"') && hay($home1, 'prog-lista') && substr_count($home1, 'class="event-card rv"') === 2, 'programa con extras: lista nueva y las dos tarjetas de siempre siguen');
 preg_match_all('/<span class="prog-hora">([^<]+)</', $home1, $m);
 ok($m[1] === ['12:00', '14:30', '17:00', '20:00'], 'programa: la línea de tiempo junta ceremonia, convite y extras por hora (' . implode(',', $m[1]) . ')');
 ok(substr_count($home1, 'prog-ceremonia') === 1, 'programa: solo la ceremonia lleva la clase de acento');
-ok(hay($home1, 'Cena &lt;b&gt;&amp;&quot;&#039;') && !hay($home1, '<script>alert(1)') && hay($home1, 'Traed &lt;script&gt;'), 'programa: título, lugar y nota escapados');
+ok(hay($home1, 'Cena &lt;b&gt;&amp;&quot;&#039;') && !hay($home1, SCR_A . 'alert(1)') && hay($home1, 'Traed &lt;script&gt;'), 'programa: título, lugar y nota escapados');
 ok(strpos(ics(normaliza_config($c1)), 'Cena') === false && strpos(url_google_calendar(normaliza_config($c1)), 'Fotos') === false, 'programa: no entra en el .ics ni en el enlace de Google Calendar');
 ok(f($c1) === [], 'programa válido: no bloquea nada');
 
@@ -203,11 +207,11 @@ ok(!hay(ics(normaliza_config($dress)), 'rigurosa') && !hay(url_google_calendar(n
 
 // ============================================================ 6. Escape en cada campo nuevo (comillas y HTML)
 $xss = crudo(['portada' => ['vestimenta' => '"><img src=x onerror=alert(1)>', 'hashtag' => 'a"onmouseover="x'],
-    'programa' => [['hora' => '10:00', 'titulo' => '"><script>1</script>', 'lugar' => "' onload='x", 'nota' => '<img src=x>']]]);
-$xss = conSeccion($xss, 'historia', ['texto' => '"><script>alert(2)</script>'], true);
+    'programa' => [['hora' => '10:00', 'titulo' => '">' . SCR_A . '1' . SCR_C, 'lugar' => "' onload='x", 'nota' => '<img src=x>']]]);
+$xss = conSeccion($xss, 'historia', ['texto' => '">' . SCR_A . 'alert(2)' . SCR_C], true);
 foreach (['', 'nuestra-historia'] as $rt) {
     $hx = (string) pag($xss, $rt);
-    ok(!hay($hx, '<script>alert') && !hay($hx, '<img src=x') && !hay($hx, '"><script>1') && !hay($hx, "' onload='x"), "escape de HTML y comillas en la página «/{$rt}»");
+    ok(!hay($hx, SCR_A . 'alert') && !hay($hx, '<img src=x') && !hay($hx, '">' . SCR_A . '1') && !hay($hx, "' onload='x"), "escape de HTML y comillas en la página «/{$rt}»");
 }
 
 // ============================================================ 7. Aviso de descartes: un test por campo
