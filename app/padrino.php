@@ -16,6 +16,12 @@
 //    correo de desconocidos, y lo que él sepa puede acabar en una respuesta inyectada.
 //  · El precio se congela en cada pedido (meta.json), así que un cambio con una sesión de pago
 //    abierta no dispara una alerta falsa en el alta.
+//  · `GET pedidos` (30-sep-2026, subtarea 2 de encargos/20260927_trabajador_autonomo.md, Seguridad #174):
+//    el Tesorero del Padrino lee aquí los pedidos de Lemon Squeezy. Las claves de LS no tienen alcance
+//    (la misma clave hace POST /v1/orders/{id}/refund), así que la clave NO sale de este servidor
+//    (#109): este guarda relee LS con ella y devuelve una lista CERRADA de cifras y enums, sin email,
+//    nombre, cliente ni recibo. Se lee LS y no pedidos/*.json porque así cuenta también un pedido
+//    cobrado cuyo webhook falló.
 
 declare(strict_types=1);
 
@@ -191,6 +197,17 @@ function rutas_padrino(string $sub, string $metodo): void {
         case 'resumen':
             if ($metodo !== 'GET') json_response(['ok' => false], 405);
             json_response(padrino_resumen());
+        case 'pedidos':
+            if ($metodo !== 'GET') json_response(['ok' => false], 405);
+            // Cada llamada son varias peticiones a LS: su propio límite, mucho más corto (el Tesorero lee 1 vez al día)
+            if (!limite('padrino-pedidos|' . ip_cliente(), 12, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
+            try {
+                json_response(padrino_pedidos());
+            } catch (RuntimeException $e) {
+                // Nunca una lista a medias: el Tesorero falla cerrado y avisa, en vez de contar menos ventas
+                registra('padrino: pedidos de LS no leídos', ['motivo' => $e->getMessage()]);
+                json_response(['ok' => false, 'error' => 'lemon'], 502);
+            }
         case 'remitente':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
             json_response(padrino_remitente((string) ($cuerpo['email'] ?? '')));
@@ -266,6 +283,75 @@ function padrino_resumen(): array {
         'techo' => EXTRAS[$k]['techo'], 'venta' => EXTRAS[$k]['venta']], array_values(array_filter(array_keys(EXTRAS), fn($k) => !extra_incluido($k))))];
     return ['ok' => true, 'generado' => date('c'), 'marca' => marca(), 'precios' => $precios, 'bodas' => $bodas, 'pedidos' => $pedidos,
         'analitica' => analitica_resumen(), 'campanas' => (array) ((lee_json(padrino_dir('campanas.json')) ?? [])['ids'] ?? []), 'guias' => $guias];
+}
+
+const PADRINO_PEDIDOS_POR_PAGINA = 100;   // el máximo que admite LS (docs.lemonsqueezy.com/api/getting-started/requests)
+const PADRINO_PEDIDOS_MAX_PAGINAS = 20;   // 2.000 pedidos: pasado esto, error y no una lista cortada
+
+/**
+ * Pedidos de la tienda de LS para el Tesorero del Padrino. Lista CERRADA de campos: cifras, enums y fechas.
+ * Fuera user_email, user_name, customer_id, identifier y urls (el recibo es una URL firmada). Todo o nada:
+ * si una página falla, el total no cuadra, la tienda no es la nuestra o se pasa del tope de páginas, lanza
+ * RuntimeException y la ruta responde 502. No filtra test_mode: lo devuelve y el Tesorero lo descarta (lo prueba él).
+ * `$api` es inyectable para las pruebas; por defecto, lemon_api() con la clave de secrets.php.
+ */
+function padrino_pedidos(?callable $api = null): array {
+    $api = $api ?? 'lemon_api';
+    $tienda = (string) secreto('lemon_tienda');
+    if (!preg_match('/^\d{1,12}$/', $tienda)) throw new RuntimeException('tienda sin configurar');
+    $vistos = [];
+    $total_ls = null;
+    for ($pagina = 1; ; $pagina++) {
+        if ($pagina > PADRINO_PEDIDOS_MAX_PAGINAS) throw new RuntimeException('más de ' . PADRINO_PEDIDOS_MAX_PAGINAS . ' páginas');
+        $q = http_build_query(['filter' => ['store_id' => $tienda], 'page' => ['size' => PADRINO_PEDIDOS_POR_PAGINA, 'number' => $pagina]]);
+        [$st, $d] = $api('GET', '/v1/orders?' . $q);
+        if ($st !== 200 || !is_array($d['data'] ?? null)) throw new RuntimeException('LS respondió ' . $st . ' en la página ' . $pagina);
+        $meta = (array) (($d['meta'] ?? [])['page'] ?? []);
+        if ($total_ls === null) $total_ls = (int) ($meta['total'] ?? -1);
+        foreach ($d['data'] as $o) {
+            $id = (string) ($o['id'] ?? '');
+            $a = (array) ($o['attributes'] ?? []);
+            if (!preg_match('/^\d{1,15}$/', $id)) throw new RuntimeException('pedido sin id');
+            if ((string) ($a['store_id'] ?? '') !== $tienda) throw new RuntimeException('pedido de otra tienda');
+            $vistos[$id] = padrino_pedido_cerrado($id, $a);   // por id: si un pedido nuevo desplaza la paginación, no se cuenta dos veces
+        }
+        $ultima = (int) ($meta['lastPage'] ?? 0);
+        if ($ultima < 1) {
+            if ($total_ls === 0 && !$d['data']) break;   // tienda sin pedidos
+            throw new RuntimeException('LS sin paginación');
+        }
+        if ($pagina >= $ultima) break;
+    }
+    if ($total_ls < 0 || count($vistos) < $total_ls) throw new RuntimeException('faltan pedidos: ' . count($vistos) . ' de ' . $total_ls);
+    return ['ok' => true, 'generado' => date('c'), 'fuente' => 'lemonsqueezy', 'pedidos' => array_values($vistos)];
+}
+
+/** Un pedido de LS reducido a la lista cerrada. Lo que no tiene la forma esperada sale como null, nunca como texto libre. */
+function padrino_pedido_cerrado(string $id, array $a): array {
+    $ent = fn($v) => is_int($v) ? $v : (is_string($v) && preg_match('/^-?\d{1,12}$/', $v) ? (int) $v : null);
+    $fecha = fn($v) => is_string($v) && preg_match('/^\d{4}-\d{2}-\d{2}T[0-9:.]+(Z|[+-]\d{2}:?\d{2})$/', $v) ? $v : null;
+    $estado = (string) ($a['status'] ?? '');
+    $moneda = (string) ($a['currency'] ?? '');
+    $tasa = $a['tax_rate'] ?? null;
+    return [
+        'id' => $id,
+        'created_at' => $fecha($a['created_at'] ?? null),
+        'currency' => preg_match('/^[A-Z]{3}$/', $moneda) ? $moneda : null,
+        'subtotal' => $ent($a['subtotal'] ?? null),
+        'discount_total' => $ent($a['discount_total'] ?? null),
+        'setup_fee' => $ent($a['setup_fee'] ?? null),
+        'tax' => $ent($a['tax'] ?? null),
+        'total' => $ent($a['total'] ?? null),
+        'refunded_amount' => $ent($a['refunded_amount'] ?? null),
+        'status' => preg_match('/^[a-z_]{1,20}$/', $estado) ? $estado : null,
+        'refunded' => is_bool($a['refunded'] ?? null) ? $a['refunded'] : null,
+        'refunded_at' => $fecha($a['refunded_at'] ?? null),
+        'test_mode' => is_bool($a['test_mode'] ?? null) ? $a['test_mode'] : null,   // null = el Tesorero lo descarta
+        'tax_rate' => (is_int($tasa) || is_float($tasa) || (is_string($tasa) && preg_match('/^\d{1,3}(\.\d{1,4})?$/', $tasa))) ? (string) $tasa : null,
+        'tax_inclusive' => is_bool($a['tax_inclusive'] ?? null) ? $a['tax_inclusive'] : null,
+        'affiliate' => ($a['affiliate_id'] ?? null) !== null,
+        'referral_amount' => $ent($a['referral_amount'] ?? null),
+    ];
 }
 
 /** ¿Este remitente tiene boda? Sí/no y el slug. Nunca devuelve el email de nadie. */
