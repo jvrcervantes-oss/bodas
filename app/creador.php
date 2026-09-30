@@ -96,7 +96,7 @@ function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''
     $paginas = [['inicio', 'Inicio']];
     // [ruta, título, id de la sección]: el creador sincroniza vista previa y configurador por el id
     foreach ($c['secciones'] as $s) if ($s['on']) $paginas[] = [$s['ruta'], $s['titulo'], $s['id']];
-    $paginas[] = ['privacidad', 'Privacidad y cookies'];
+    $paginas[] = ['privacidad', 'Privacidad'];
     json_response(['ok' => true, 'html' => $html, 'paginas' => $paginas, 'faltan' => faltan($c)]);
 }
 

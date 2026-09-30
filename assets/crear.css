@@ -78,14 +78,15 @@
 .c-fila { display: flex; gap: 12px; }
 .c-fila > * { flex: 1; min-width: 0; }
 .c-hora { flex: 0 0 116px; }
+.c-fila > .c-union { flex: 0 0 92px; }
 .c-campo { display: flex; flex-direction: column; gap: 6px; }
 .c-campo > span { font-size: 13px; font-weight: 500; color: var(--ink-2); }
 .c-campo small { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
-.c-campo input, .c-campo textarea, .c-previa select, .c-slug {
+.c-campo input, .c-campo textarea, .c-campo select, .c-previa select, .c-slug {
   width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); color: var(--ink);
   font: inherit; font-size: 14px; transition: border-color .15s, box-shadow .15s; }
 .c-campo textarea { resize: vertical; line-height: 1.55; }
-.c-campo input:focus, .c-campo textarea:focus { outline: none; border-color: var(--gold); box-shadow: var(--focus); }
+.c-campo input:focus, .c-campo textarea:focus, .c-campo select:focus { outline: none; border-color: var(--gold); box-shadow: var(--focus); }
 .c-campo.c-mal input, .c-campo.c-mal textarea, .c-campo.c-mal .c-slug { border-color: var(--mal); }
 
 .c-check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; cursor: pointer; }
@@ -344,6 +345,8 @@
 }
 @media (max-width: 460px) {
   .c-fila { flex-direction: column; }
+  .c-fila.c-nombres { flex-direction: row; gap: 8px; }   /* «Ana [&] Luis» se lee en una línea, como en la web */
+  .c-fila.c-nombres > .c-union { flex-basis: 66px; }
   .c-hora { flex-basis: auto; }
   .c-temas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .c-editor { padding: 20px 16px; }

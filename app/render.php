@@ -186,7 +186,7 @@ function atelier_tras_texto(array $c, array $ctx): string {
 
 /** Sello de papel con limones y los datos de ESTA pareja escritos en círculo (el original traía texto ajeno). */
 function sello_circular(array $c, string $A): string {
-    $txt = mb_strtoupper(implode(' · ', array_filter([nombres($c, ' & '), fecha_puntos($c['fecha']), $c['ciudad']])) . ' · ', 'UTF-8');
+    $txt = mb_strtoupper(implode(' · ', array_filter([nombres($c), fecha_puntos($c['fecha']), $c['ciudad']])) . ' · ', 'UTF-8');
     if (trim($txt, ' ·') === '') $txt = 'NUESTRA BODA · NUESTRA BODA · ';
     return '<svg class="sello-circular" viewBox="0 0 160 160" aria-hidden="true">'
         . '<defs><path id="anillo" d="M80,80 m-61,0 a61,61 0 1,1 122,0 a61,61 0 1,1 -122,0"/><clipPath id="disco"><circle cx="80" cy="80" r="44"/></clipPath></defs>'

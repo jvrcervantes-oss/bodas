@@ -60,6 +60,7 @@
   document.querySelectorAll('[data-k]').forEach(function (inp) {
     var k = inp.getAttribute('data-k');
     inp.value = get(st, k) || '';
+    if (inp.tagName === 'SELECT' && inp.selectedIndex < 0) inp.selectedIndex = 0;  // borrador de antes del campo
     inp.addEventListener('input', function () {
       set(st, k, inp.value);
       if (/^pareja\.nombre/.test(k)) sugiereSlug();
@@ -1051,7 +1052,7 @@
   var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
   function pintaCabecera() {
     var a = (st.pareja.nombre1 || '').trim(), b = (st.pareja.nombre2 || '').trim();
-    var nom = a && b ? a + ' & ' + b : (a || b);
+    var nom = a && b ? a + (st.pareja.union === 'y' ? ' y ' : ' & ') + b : (a || b);
     document.getElementById('proyNom').textContent = nom ? 'Boda de ' + nom : (MODO === 'editar' ? 'Vuestra web' : 'Estudio de edición');
     document.getElementById('railNom').textContent = nom || 'Vuestra boda';
     document.getElementById('railIni').textContent = ((a[0] || '') + (b[0] || '')).toUpperCase() || '·';

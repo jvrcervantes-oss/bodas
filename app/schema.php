@@ -158,7 +158,7 @@ function config_inicial(): array {
     }
     return [
         'v' => 1,
-        'pareja' => ['nombre1' => '', 'nombre2' => '', 'email' => ''],
+        'pareja' => ['nombre1' => '', 'nombre2' => '', 'union' => '&', 'email' => ''],
         'fecha' => '',
         'ciudad' => '',
         'tema' => 'rosa',
@@ -313,7 +313,9 @@ function normaliza_config($in): array {
     $c = config_inicial();
     $p = is_array($in['pareja'] ?? null) ? $in['pareja'] : [];
     $email = clean_str($p['email'] ?? '', 160);
+    // Qué va entre los nombres: «&» (el de siempre) o «y». Lista cerrada; lo demás vuelve a «&».
     $c['pareja'] = ['nombre1' => clean_str($p['nombre1'] ?? '', 40), 'nombre2' => clean_str($p['nombre2'] ?? '', 40),
+        'union' => ($p['union'] ?? '') === 'y' ? 'y' : '&',
         'email' => filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : ''];
     $c['fecha'] = norm_fecha($in['fecha'] ?? '');
     $c['ciudad'] = clean_str($in['ciudad'] ?? '', 60);
@@ -445,7 +447,10 @@ function faltan(array $c): array {
     return $f;
 }
 
-function nombres(array $c, string $sep = ' & '): string {
+/** Los dos nombres con lo que la pareja eligió entre ellos (& o y). Un $sep explícito manda:
+ *  las frases («Boda de Ana y Luis») piden siempre «y». */
+function nombres(array $c, ?string $sep = null): string {
+    $sep = $sep ?? ((($c['pareja']['union'] ?? '&') === 'y') ? ' y ' : ' & ');
     $a = $c['pareja']['nombre1'];
     $b = $c['pareja']['nombre2'];
     return ($a !== '' && $b !== '') ? $a . $sep . $b : ($a . $b);

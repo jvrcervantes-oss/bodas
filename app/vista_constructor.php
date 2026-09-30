@@ -129,8 +129,9 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
       <div class="c-panel" role="tabpanel" id="panel-pareja" data-panel="pareja" aria-labelledby="tab-pareja" hidden>
         <span class="overline overline-bronze">Los protagonistas</span>
         <h2>Vosotros y la fecha</h2>
-        <div class="c-fila">
+        <div class="c-fila c-nombres">
           <label class="c-campo"><span>Nombre</span><input data-k="pareja.nombre1" maxlength="40" autocomplete="off"></label>
+          <label class="c-campo c-union"><span>Unión</span><select data-k="pareja.union" aria-label="Qué va entre los dos nombres"><option value="&amp;">&amp;</option><option value="y">y</option></select></label>
           <label class="c-campo"><span>Nombre</span><input data-k="pareja.nombre2" maxlength="40" autocomplete="off"></label>
         </div>
         <label class="c-campo"><span>Email de contacto</span><input type="email" data-k="pareja.email" maxlength="160" autocomplete="email">
