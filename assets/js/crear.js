@@ -51,9 +51,12 @@
       } catch (e) { /* MUDO A PROPOSITO: copia ilegible; se edita lo que está publicado, que es lo que se ve */ }
     }
   }
+  /** true solo si la copia quedó guardada de verdad: guarda() se calla si el almacenamiento está lleno o bloqueado. */
   function apartaPendiente() {
-    guarda(CLAVE_PENDIENTE, JSON.stringify({ t: Date.now(), config: st, quitar: foto.quitar,
-      foto: foto.blob && foto.src.length < 1500000 ? foto.src : '' }));
+    var txt = JSON.stringify({ t: Date.now(), config: st, quitar: foto.quitar,
+      foto: foto.blob && foto.src.length < 1500000 ? foto.src : '' });
+    guarda(CLAVE_PENDIENTE, txt);
+    return lee(CLAVE_PENDIENTE) === txt;
   }
 
   // ------------------------------------------------------------ utilidades
@@ -723,6 +726,10 @@
     fetch(URL_PREVIA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: st, pagina: pagina, intro: intro }) })
       .then(function (r) { return r.json(); })
       .then(function (j) {
+        // Sesión cerrada mientras editan: se avisa ya, no al guardar (Guardar aparta lo editado y pide entrar)
+        if (j.sesion === false && MODO === 'editar') {
+          muestraFaltan({}, ['Vuestra sesión se ha cerrado: pulsad «Guardar cambios» para volver a entrar sin perder lo editado.']);
+        }
         if (n !== pideN || !j.ok) return;
         iframe.srcdoc = j.html;
         paginaSel.textContent = '';
@@ -1308,6 +1315,7 @@
   });
 
   var guardar = document.getElementById('guardar');
+  var csrfRenovado = false;
   if (guardar) guardar.addEventListener('click', function () {
     var est = document.getElementById('guardarEstado');
     if (Object.keys(ultimasFaltas).length) { muestraFaltan(ultimasFaltas); return; }
@@ -1325,12 +1333,25 @@
       .then(function (j) {
         guardar.disabled = false;
         if (j.sesion === false) {
-          // Sesión cerrada: se aparta lo editado y se vuelve a entrar; el login los devuelve aquí (?v=editar)
-          apartaPendiente();
-          est.textContent = j.error || '';
-          location.href = '/panel/entrar?v=editar';
+          // Sesión cerrada: se aparta lo editado y se vuelve a entrar; el login los devuelve aquí (?v=editar).
+          // Si el navegador no deja apartarlo, NO se sale de la página: lo editado solo está en pantalla.
+          if (apartaPendiente()) { est.textContent = j.error || ''; location.href = '/panel/entrar?v=editar'; return; }
+          est.textContent = '';
+          est.appendChild(document.createTextNode('Vuestra sesión se ha cerrado y este navegador no nos deja guardar vuestros cambios. No cerréis esta página: '));
+          est.appendChild(el('a', { href: '/panel/entrar', target: '_blank', rel: 'noopener', text: 'entrad en otra pestaña' }));
+          est.appendChild(document.createTextNode(' y volved aquí a pulsar «Guardar cambios».'));
           return;
         }
+        // CSRF viejo: han vuelto a entrar en otra pestaña. Se pide el vigente y se reintenta UNA vez
+        if (codigo === 403 && !csrfRenovado) {
+          csrfRenovado = true;
+          fetch('/panel/csrf').then(function (r) { return r.json(); }).then(function (k) {
+            if (k.ok && k.csrf && k.csrf !== D.csrf) { D.csrf = k.csrf; guardar.click(); return; }
+            est.textContent = ''; muestraFaltan({}, [j.error || 'No se ha podido guardar.']);
+          }).catch(function () { est.textContent = ''; muestraFaltan({}, [j.error || 'No se ha podido guardar.']); });
+          return;
+        }
+        csrfRenovado = false;
         if (j.ok) {
           // El mapa se rehace al guardar: si no encuentra la dirección, que lo sepan ellos y no los invitados
           var avisoMapa = { 'sin-sitio': ' No encontramos la dirección en el mapa: revisadla o pegad el punto exacto en «Ceremonia y convite».',

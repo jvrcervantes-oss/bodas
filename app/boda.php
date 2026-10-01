@@ -235,10 +235,11 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
         // Lo que el editor pide por fetch recibe JSON: una redirección al login llega como HTML, r.json() falla
         // y la pareja solo ve «Sin conexión» (1-oct-2026). Los formularios normales siguen yendo al login.
         if ($metodo === 'POST' && in_array($sub, PANEL_RUTAS_FETCH, true)) {
-            // La vista previa se pide a cada tecla: no se apunta, el guardar que viene detrás ya lo dice
-            if ($sub !== 'vista-previa') registra('panel: sesión rechazada', ['slug' => $slug, 'ruta' => $sub, 'motivo' => $sesion]);
+            // La vista previa se pide a cada tecla: no se apunta, el guardar que viene detrás ya lo dice. Sin cookie
+            // tampoco: cualquiera podría llenar el log con POST anónimos (Seguridad, 1-oct-2026)
+            if ($sub !== 'vista-previa' && $sesion !== 'sin-cookie') registra('panel: sesión rechazada', ['slug' => $slug, 'ruta' => $sub, 'motivo' => $sesion]);
             json_response(['ok' => false, 'sesion' => false,
-                'error' => 'Vuestra sesión del panel se ha cerrado. Volved a entrar con vuestra contraseña: lo que no habéis guardado se queda en este navegador.'], 401);
+                'error' => 'Vuestra sesión del panel se ha cerrado. Volved a entrar con vuestra contraseña.'], 401);
         }
         header('Location: /panel/entrar' . ($sub === 'editar' ? '?v=editar' : ''));
         exit;
@@ -279,6 +280,11 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
             echo vista_constructor('editar', $c, $slug, panel_csrf());
             return;
         case 'guardar': panel_guardar($slug, $c, $metodo); return;
+        // CSRF vigente para el editor abierto cuando la pareja vuelve a entrar en otra pestaña (crear.js, guardar).
+        // Solo GET del mismo origen: otra web no puede leer la respuesta (sin CORS) y sin sesión va al login.
+        case 'csrf':
+            if ($metodo !== 'GET') { header('Allow: GET'); http_response_code(405); exit; }
+            json_response(['ok' => true, 'csrf' => panel_csrf()]);
         case 'mejora': panel_mejora($slug, $metodo); return;   // Esencial → Atelier (app/lemon.php)
         case 'extra': panel_extra($slug, $metodo); return;     // compra de un extra de pago (app/extras.php)
         case 'mesas': panel_mesas($slug, $c, $metodo); return;   // plano de mesas (app/mesas.php), incluido en todos los packs
