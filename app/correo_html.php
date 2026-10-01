@@ -198,8 +198,8 @@ function correo_resumen_texto(array $filas): string {
 
 /** «Servicio: …» del resumen, igual en los tres correos de compra. */
 function correo_linea_servicio(array $E): string {
-    return marca() . ', un producto de AxisWorks' . ($E['nif'] !== ''
-        ? ', que presta ' . $E['titular'] . ' (NIF ' . $E['nif'] . ')' . ($E['domicilio'] !== '' ? ', ' . $E['domicilio'] : '') . '.'
+    return marca() . ', un producto de AxisWorks' . (titular_identificado($E)
+        ? ', que presta ' . $E['titular'] . (($E['nif'] ?? '') !== '' ? ' (NIF ' . $E['nif'] . ')' : '') . (($E['domicilio'] ?? '') !== '' ? ', ' . $E['domicilio'] : '') . '.'
         : '. Está en pruebas: los datos de quien lo presta se publicarán antes de abrir la venta.');
 }
 

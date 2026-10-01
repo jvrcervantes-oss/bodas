@@ -13,12 +13,12 @@ $V = h($L['vendedor'] ?? '');
 <p>Los datos de los invitados que responden en cada web de boda no los tratamos por nuestra cuenta: los tratamos por encargo de cada pareja. Cada web tiene su propio aviso de privacidad para invitados.</p>
 
 <h2>Responsable</h2>
-<?php if ($E['nif'] !== ''): ?>
+<?php if (titular_identificado($E)): ?>
 <ul>
   <li><?= h($E['titular']) ?>, que presta el servicio con la marca <?= $M ?>, un producto de AxisWorks, su nombre comercial</li>
-  <li>NIF: <?= h($E['nif']) ?></li>
-  <li>Domicilio: <?= h($E['domicilio']) ?></li>
-  <li>Email: <?= email_enlace($E['email']) ?></li>
+<?php if ($E['nif'] !== ''): ?>  <li>NIF: <?= h($E['nif']) ?></li>
+<?php endif; if ($E['domicilio'] !== ''): ?>  <li>Domicilio: <?= h($E['domicilio']) ?></li>
+<?php endif; ?>  <li>Email: <?= email_enlace($E['email']) ?></li>
 </ul>
 <?php else: ?>
 <p>Quien presta el servicio con la marca <?= $M ?>, un producto de AxisWorks. El servicio está en pruebas y todavía no se vende: su nombre, NIF y domicilio se publicarán aquí antes de abrir la venta.</p>

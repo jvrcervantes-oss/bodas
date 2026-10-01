@@ -87,7 +87,8 @@ function secreto(string $k, $def = '') {
 function empresa(): array {
     $e = (array) secreto('empresa', []);
     return [
-        'titular' => (string) ($e['titular'] ?? ''),
+        // Razón social: clave `razon_social` (o `titular` heredada). Sin ella, «PT Mahkota» (owner, 1-oct-2026)
+        'titular' => (string) ($e['razon_social'] ?? $e['titular'] ?? ''),
         'nif' => (string) ($e['nif'] ?? ''),
         'domicilio' => (string) ($e['domicilio'] ?? ''),
         'email' => (string) ($e['email'] ?? 'hola@bodaenlace.com'),   // buzón de la marca (owner, 26-sep-2026)
@@ -102,6 +103,7 @@ function empresa(): array {
  * feedback) y publican webs reales con los textos legales enteros pero sin su identidad; se le avisó de que la
  * LSSI pide la identidad a la vista y eligió esta salida frente a publicar sus datos.
  */
+define('RAZON_SOCIAL_PUBLICA', 'PT Mahkota');
 function titular_oculto(): bool {
     if (pasarela() === 'stripe') return !stripe_modo_live();
     return lemon_test();
@@ -117,12 +119,19 @@ function email_enlace(string $e): string {
 }
 function empresa_publica(): array {
     $e = empresa();
-    if (!titular_oculto()) return $e;
-    return ['titular' => function_exists('marca') ? marca() : MARCA, 'nif' => '', 'domicilio' => '', 'email' => $e['email']];
+    if (titular_oculto()) return ['titular' => function_exists('marca') ? marca() : MARCA, 'nif' => '', 'domicilio' => '', 'email' => $e['email']];
+    // ACEPTADO: owner, 1-oct-2026 («Pon PT Mahkota + email y no pongas más datos… Sé que no está bien pero hazlo»): lo público
+    // lleva SOLO la razón social y el email; el NIF y el domicilio de empresa() no salen nunca en una página ni un correo.
+    return ['titular' => RAZON_SOCIAL_PUBLICA, 'nif' => '', 'domicilio' => '', 'email' => $e['email']];
 }
+/** ¿Hay una razón social distinta de la marca que mostrar? (los textos legales eligen rama con esto, no con el NIF). */
+function titular_identificado(array $E): bool {
+    return $E['titular'] !== '' && $E['titular'] !== (function_exists('marca') ? marca() : MARCA);
+}
+/** Candado de venta real: hay razón social y email. ACEPTADO: owner, 1-oct-2026 — ya no exige NIF ni domicilio (no se publican). */
 function empresa_completa(): bool {
     $e = empresa();
-    return $e['titular'] !== '' && $e['nif'] !== '' && $e['domicilio'] !== '';
+    return $e['titular'] !== '' && $e['email'] !== '';
 }
 function stripe_modo_live(): bool {
     return strpos((string) secreto('stripe_secret'), '_live_') !== false;

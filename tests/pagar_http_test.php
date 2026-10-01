@@ -79,7 +79,8 @@ foreach (['/aviso-legal', '/condiciones', '/privacidad'] as $r) {
 $secretos(['pasarela' => 'lemon', 'lemon_test' => false]);
 foreach (['/aviso-legal', '/condiciones', '/privacidad'] as $r) {
     $h = pagina($puerto, $r);
-    ok(strpos($h, '00000000T') !== false && strpos($h, 'Calle de Prueba 1') !== false, "cobro real: $r con NIF y domicilio");
+    // Owner, 1-oct-2026: en cobro real sale SOLO la razón social + el email; el NIF, el domicilio y la persona de secrets.php no salen
+    ok(strpos($h, '00000000T') === false && strpos($h, 'Calle de Prueba 1') === false && strpos($h, 'Titular de Prueba') === false && strpos($h, 'PT Mahkota') !== false, "cobro real: $r solo con la razón social, sin NIF ni domicilio");
 }
 
 // 1. Regalo: se publica y guarda la casilla de regalo, sin vendedor ni desistimiento
