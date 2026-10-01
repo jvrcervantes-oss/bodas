@@ -11,8 +11,10 @@ const PANEL_MAX_INTENTOS = 5;
 const PANEL_BLOQUEO = 900;           // 15 min
 const PANEL_ENLACE_VIDA = 14 * 86400;
 const PANEL_MIN_CLAVE = 10;
+const PANEL_SESION_MAX = 8 * 3600;   // la sesión dura 8 h aunque el navegador siga abierto
 
 function panel_fichero(string $slug): string { return dir_datos('bodas', $slug, 'panel.json'); }
+function panel_dir_sesiones(): string { return dir_datos('sesiones_panel'); }
 
 /** Nombre de la cookie de sesión del panel de esta boda (fuente única: la usa también el enlace por grupo). */
 function panel_cookie(string $slug): string { return 'bw_' . substr(hash('sha256', $slug), 0, 12); }
@@ -23,25 +25,46 @@ function panel_cookie(string $slug): string { return 'bw_' . substr(hash('sha256
  */
 function panel_sesion_presente(string $slug): bool { return isset($_COOKIE[panel_cookie($slug)]) && panel_autenticado($slug); }
 
+/**
+ * Las sesiones van a DATA_DIR/sesiones_panel con su propia caducidad, como las del estudio. La carpeta común
+ * del hosting tiene gc_maxlifetime=1440 (24 min) y la limpia el servidor, no esta app: la promesa de 8 h no
+ * dependía de nosotros. El 1-oct-2026 las parejas perdían la sesión al guardar en el editor («Sin conexión»
+ * y fuera del panel); con la sesión aquí, su vida la decide PANEL_SESION_MAX.
+ */
 function panel_sesion(string $slug): void {
     if (session_status() === PHP_SESSION_ACTIVE) return;
+    asegura_dir(panel_dir_sesiones());
+    session_save_path(panel_dir_sesiones());
     ini_set('session.use_strict_mode', '1');
     ini_set('session.use_only_cookies', '1');
+    ini_set('session.gc_maxlifetime', (string) PANEL_SESION_MAX);
+    // El hosting trae la limpieza automática apagada (la hace su cron sobre la carpeta común): aquí la hace PHP
+    ini_set('session.gc_probability', '1');
+    ini_set('session.gc_divisor', '100');
     session_name(panel_cookie($slug));
     session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'secure' => SCHEME === 'https', 'httponly' => true, 'samesite' => 'Strict']);
     session_start();
 }
 
-function panel_autenticado(string $slug): bool {
+/**
+ * '' si la pareja tiene la sesión abierta; si no, el motivo (sin-cookie, sin-sesion, otra-boda, caducada,
+ * clave-cambiada). El motivo solo va al log: a la pareja se le dice lo mismo en todos los casos.
+ */
+function panel_estado_sesion(string $slug): string {
+    // Sin la cookie ni se arranca la sesión: session_start() le mandaría una cookie nueva a un invitado,
+    // y la web de invitados no pone cookies nuevas (Legal #133)
+    if (!isset($_COOKIE[panel_cookie($slug)])) return 'sin-cookie';
     panel_sesion($slug);
-    if (($_SESSION['slug'] ?? '') !== $slug || empty($_SESSION['ok'])) return false;
-    // La sesión caduca a las 8 h aunque el navegador siga abierto
-    if (($_SESSION['desde'] ?? 0) + 8 * 3600 < time()) { $_SESSION = []; return false; }
+    if (empty($_SESSION['ok'])) return 'sin-sesion';
+    if (($_SESSION['slug'] ?? '') !== $slug) return 'otra-boda';
+    if (($_SESSION['desde'] ?? 0) + PANEL_SESION_MAX < time()) { $_SESSION = []; return 'caducada'; }
     // Cambio de contraseña = se cierran las sesiones abiertas antes
     $p = lee_json(panel_fichero($slug)) ?? [];
-    if (($_SESSION['gen'] ?? -1) !== ($p['gen'] ?? 0)) { $_SESSION = []; return false; }
-    return true;
+    if (($_SESSION['gen'] ?? -1) !== ($p['gen'] ?? 0)) { $_SESSION = []; return 'clave-cambiada'; }
+    return '';
 }
+
+function panel_autenticado(string $slug): bool { return panel_estado_sesion($slug) === ''; }
 
 function panel_entra(string $slug): void {
     panel_sesion($slug);

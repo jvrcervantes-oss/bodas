@@ -230,7 +230,19 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
     if ($sub === 'clave') { panel_clave($slug, $c, $metodo); return; }
     if ($sub === 'recuperar') { panel_recuperar($slug, $c, $metodo); return; }
     if ($sub === 'salir') { panel_sal($slug); header('Location: /panel/entrar'); exit; }
-    if (!panel_autenticado($slug)) { header('Location: /panel/entrar'); exit; }
+    $sesion = panel_estado_sesion($slug);
+    if ($sesion !== '') {
+        // Lo que el editor pide por fetch recibe JSON: una redirección al login llega como HTML, r.json() falla
+        // y la pareja solo ve «Sin conexión» (1-oct-2026). Los formularios normales siguen yendo al login.
+        if ($metodo === 'POST' && in_array($sub, PANEL_RUTAS_FETCH, true)) {
+            // La vista previa se pide a cada tecla: no se apunta, el guardar que viene detrás ya lo dice
+            if ($sub !== 'vista-previa') registra('panel: sesión rechazada', ['slug' => $slug, 'ruta' => $sub, 'motivo' => $sesion]);
+            json_response(['ok' => false, 'sesion' => false,
+                'error' => 'Vuestra sesión del panel se ha cerrado. Volved a entrar con vuestra contraseña: lo que no habéis guardado se queda en este navegador.'], 401);
+        }
+        header('Location: /panel/entrar' . ($sub === 'editar' ? '?v=editar' : ''));
+        exit;
+    }
 
     // Secciones del panel: páginas GET con la carcasa (app/panel.php). Las que además reciben una acción
     // (invitados, galería) la mandan por POST a su función de siempre, con su CSRF.
@@ -277,6 +289,9 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
     no_existe();
 }
 
+// Rutas del panel que se llaman por fetch y esperan JSON (assets/js/crear.js y panel.js)
+const PANEL_RUTAS_FETCH = ['guardar', 'vista-previa', 'galeria', 'mejora', 'extra'];
+
 // En el panel la vista previa pide sus assets al propio subdominio
 const CSP_CREADOR_PANEL = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; "
     . "script-src 'self'; connect-src 'self'; frame-src 'self'; "
@@ -286,11 +301,13 @@ function panel_entrar(string $slug, array $c, string $metodo): void {
     $error = '';
     if ($metodo === 'POST') {
         $error = panel_login($slug, (string) ($_POST['clave'] ?? ''));
-        if ($error === '') { header('Location: /panel'); exit; }
+        // ?v=editar: venían del editor con la sesión cerrada; vuelven a él y recuperan lo que no se guardó
+        if ($error === '') { header('Location: /panel' . (($_GET['v'] ?? '') === 'editar' ? '/editar' : '')); exit; }
     }
     $sinClave = !panel_tiene_clave($slug);
     echo panel_acceso_marco($c, 'Panel privado', '<h1>Entrar al panel</h1>'
-        . ($sinClave ? '<p class="sub">Todavía no habéis elegido contraseña. Usad el enlace del email de bienvenida o pedid uno nuevo.</p>' : '')
+        . ($sinClave ? '<p class="sub">Todavía no habéis elegido contraseña. Usad el enlace del email de bienvenida o pedid uno nuevo.</p>'
+            : (($_GET['v'] ?? '') === 'editar' ? '<p class="sub">Vuestra sesión se había cerrado. Al entrar volvéis al editor con los cambios que no se guardaron.</p>' : ''))
         . '<form method="post" class="form"><div class="campo"><label for="clave">Contraseña</label><input type="password" id="clave" name="clave" autocomplete="current-password" required autofocus></div>'
         . ($error !== '' ? '<p class="error" role="alert">' . h($error) . '</p>' : '')
         . '<button type="submit" class="btn b-rosa btn-ancho">Entrar</button></form>'

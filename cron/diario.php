@@ -59,6 +59,10 @@ foreach (glob(dir_datos('estudio', 'log-*.jsonl')) ?: [] as $f) {
 foreach (glob(dir_datos('estudio', 'sesiones', 'sess_*')) ?: [] as $f) {
     if (filemtime($f) < time() - 12 * 3600) @unlink($f);
 }
+// Sesiones del panel de las parejas (app/panel_auth.php): duran 8 h; PHP también las limpia al vuelo
+foreach (glob(dir_datos('sesiones_panel', 'sess_*')) ?: [] as $f) {
+    if (filemtime($f) < time() - PANEL_SESION_MAX) @unlink($f);
+}
 
 foreach (glob(dir_datos('pendientes', '*'), GLOB_ONLYDIR) ?: [] as $d) {
     $m = lee_json($d . '/meta.json');

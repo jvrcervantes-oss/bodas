@@ -110,6 +110,25 @@ foreach (array_keys($RUTAS) + ['x' => '/panel/mesas/imprimir'] as $r) {
     [$st, , $cab] = pide('GET', $r);
     ok($st === 302 && strpos($cab, 'Location: /panel/entrar') !== false, "sin sesión: $r manda al login ($st)");
 }
+// Lo que el editor pide por fetch recibe JSON 401, no una redirección al login que el navegador convierte en
+// «Sin conexión» (1-oct-2026). Con una cookie que ya no tiene sesión detrás, igual, y el motivo va al log.
+foreach (PANEL_RUTAS_FETCH as $r) {
+    [$st, $h, $cab] = pide('POST', '/panel/' . $r, ['csrf' => 'x']);
+    $j = json_decode($h, true);
+    ok($st === 401 && ($j['sesion'] ?? null) === false && ($j['error'] ?? '') !== '' && stripos($cab, 'application/json') !== false, "sin sesión: POST /panel/$r da JSON 401 ($st)");
+}
+$cookie = panel_cookie($slug) . '=' . str_repeat('a', 32);
+[$st, $h] = pide('POST', '/panel/guardar', ['csrf' => 'x', 'config' => '{}']);
+$cookie = '';
+$log = (string) @file_get_contents(dir_datos('log', 'app-' . date('Y-m') . '.log'));
+ok($st === 401 && strpos($log, '"ruta":"guardar","motivo":"sin-sesion"') !== false, 'cookie sin sesión detrás: 401 y el motivo en el log');
+[$st, , $cab] = pide('GET', '/panel/editar');
+ok($st === 302 && strpos($cab, 'Location: /panel/entrar?v=editar') !== false, 'sin sesión: el editor manda al login con vuelta al editor');
+[$st, $h] = pide('GET', '/panel/entrar?v=editar');
+ok($st === 200 && strpos($h, 'Vuestra sesión se había cerrado') !== false, 'login desde el editor: lo avisa');
+// Un invitado que abre la galería (o el libro) no recibe una cookie de sesión del panel (Legal #133)
+[$st, , $cab] = pide('GET', '/galeria');
+ok($st === 200 && !preg_match('/^Set-Cookie: bw_/mi', $cab), "galería sin sesión: no se pone la cookie del panel ($st)");
 foreach (['/panel/entrar' => 'Entrar al panel', '/panel/recuperar' => 'Recuperar acceso', '/panel/clave?t=x' => 'Elegid vuestra contraseña'] as $r => $tit) {
     [$st, $h, $cab] = pide('GET', $r);
     ok($st === 200 && stripos($cab, 'Cache-Control: private, no-store') !== false && marca_ok_con_enlaces($h) && strpos($h, $tit) !== false && strpos($h, 'class="rail') === false,
@@ -117,8 +136,11 @@ foreach (['/panel/entrar' => 'Entrar al panel', '/panel/recuperar' => 'Recuperar
 }
 [$st, $h] = pide('POST', '/panel/entrar', ['clave' => 'mala-mala-mala']);
 ok($st === 200 && strpos($h, 'class="error" role="alert"') !== false, 'contraseña mala: error visible');
+[$st, , $cab] = pide('POST', '/panel/entrar?v=editar', ['clave' => 'clave-de-prueba-1']);
+ok($st === 302 && strpos($cab, 'Location: /panel/editar') !== false, 'login desde el editor: vuelve al editor');
 [$st] = pide('POST', '/panel/entrar', ['clave' => 'clave-de-prueba-1']);
 ok($st === 302 && $cookie !== '', 'login del panel');
+ok(count(glob(dir_datos('sesiones_panel', 'sess_*')) ?: []) > 0, 'la sesión del panel vive en DATA_DIR/sesiones_panel, no en la carpeta común del hosting');
 
 // ---------------------------------------------------------------- 2. con sesión: cada sección
 $H = [];

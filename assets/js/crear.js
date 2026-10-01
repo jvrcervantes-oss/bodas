@@ -33,6 +33,28 @@
     var b = lee(CLAVE);
     if (b) { try { var o = JSON.parse(b); if (o && o.config) { st = o.config; slugTocado = !!o.slugTocado; if (o.slug) { document.getElementById('slug').value = o.slug; slugDeBorrador = o.slug; } if (o.foto) foto.src = o.foto; } } catch (e) {} }
   }
+  // Panel: si al guardar la sesión estaba cerrada, lo que no se guardó se deja aquí antes de mandarlos al login
+  // y se recupera UNA vez al volver al editor. localStorage es de cada subdominio, así que es de esta boda.
+  var CLAVE_PENDIENTE = 'boda_panel_pendiente_v1';
+  var recuperado = false;
+  if (MODO === 'editar') {
+    var pend = lee(CLAVE_PENDIENTE);
+    quita(CLAVE_PENDIENTE);
+    if (pend) {
+      try {
+        var po = JSON.parse(pend);
+        if (po && po.config && po.t > Date.now() - 3 * 86400000) {
+          st = po.config; recuperado = true;
+          if (po.foto) { foto.src = po.foto; foto.blob = dataUrlABlob(po.foto); }
+          if (po.quitar) foto.quitar = true;
+        }
+      } catch (e) { /* MUDO A PROPOSITO: copia ilegible; se edita lo que está publicado, que es lo que se ve */ }
+    }
+  }
+  function apartaPendiente() {
+    guarda(CLAVE_PENDIENTE, JSON.stringify({ t: Date.now(), config: st, quitar: foto.quitar,
+      foto: foto.blob && foto.src.length < 1500000 ? foto.src : '' }));
+  }
 
   // ------------------------------------------------------------ utilidades
   function el(tag, attrs, hijos) {
@@ -323,7 +345,7 @@
   });
   fotoQuitar.addEventListener('click', function () { foto = { blob: null, src: '', quitar: true }; pintaFoto(); cambio(); });
 
-  if (MODO === 'editar' && D.fotoUrl) {
+  if (MODO === 'editar' && D.fotoUrl && !(recuperado && (foto.src || foto.quitar))) {
     fetch(D.fotoUrl).then(function (r) { return r.ok ? r.blob() : null; }).then(function (b) {
       if (!b) return;
       var fr = new FileReader();
@@ -1297,10 +1319,18 @@
     if (foto.quitar) fd.append('quitar_foto', 'si');
     guardar.disabled = true;
     est.textContent = 'Guardando…';
+    var codigo = 0;
     fetch('/panel/guardar', { method: 'POST', body: fd })
-      .then(function (r) { return r.json(); })
+      .then(function (r) { codigo = r.status; return r.json(); })
       .then(function (j) {
         guardar.disabled = false;
+        if (j.sesion === false) {
+          // Sesión cerrada: se aparta lo editado y se vuelve a entrar; el login los devuelve aquí (?v=editar)
+          apartaPendiente();
+          est.textContent = j.error || '';
+          location.href = '/panel/entrar?v=editar';
+          return;
+        }
         if (j.ok) {
           // El mapa se rehace al guardar: si no encuentra la dirección, que lo sepan ellos y no los invitados
           var avisoMapa = { 'sin-sitio': ' No encontramos la dirección en el mapa: revisadla o pegad el punto exacto en «Ceremonia y convite».',
@@ -1310,7 +1340,12 @@
         est.textContent = '';
         muestraFaltan(j.faltan || {}, [j.error || 'No se ha podido guardar.']);
       })
-      .catch(function () { guardar.disabled = false; est.textContent = 'Sin conexión. Inténtalo de nuevo.'; });
+      .catch(function () {
+        guardar.disabled = false;
+        // Con código, el servidor respondió pero no con JSON: no es la conexión, y decir «sin conexión» despista
+        est.textContent = codigo ? 'No se ha podido guardar (error ' + codigo + ' del servidor). Vuestros cambios siguen aquí: probad otra vez en un momento.'
+          : 'Sin conexión. Vuestros cambios siguen aquí: probad otra vez.';
+      });
   });
 
   function dataUrlABlob(u) {
@@ -1322,6 +1357,10 @@
   if (/[?&]cancelado=1/.test(location.search)) muestraFaltan({}, ['Pago cancelado. Vuestro borrador sigue aquí.']);
 
   pintaFoto();
+  if (recuperado) {
+    muestraTab('publicar', true);
+    document.getElementById('guardarEstado').textContent = 'Hemos recuperado los cambios que no se llegaron a guardar. Revisadlos y pulsad «Guardar cambios» para publicarlos.';
+  }
 
   // ------------------------------------------------------------ seguir en otro dispositivo
   // Enlace con una COPIA del borrador (30 días). El token va en #b=…: el fragmento no llega a los
