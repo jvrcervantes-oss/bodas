@@ -372,12 +372,14 @@ function mapa_q(array $lugar): string {
 }
 
 /** Ramos de esquina de «Flores de acuarela» y «Eucalipto» junto a la foto (solo ordenador; en el móvil siguen las guirnaldas).
- *  $capa: 'atras' (tallos, van detrás del marco) o 'delante'. Las posiciones salen de RAMOS_FOTO (schema.php). */
-function ramos_foto(array $c, string $fe, string $A, string $capa): string {
+ *  $capa: 'atras' (tallos, van detrás del marco) o 'delante'. Las posiciones salen de RAMOS_FOTO (schema.php).
+ *  $nombres: true pinta los que van sobre los nombres (Fundida) en vez de los de la foto. */
+function ramos_foto(array $c, string $fe, string $A, string $capa, bool $nombres = false): string {
     $o = '';
     foreach (RAMOS_FOTO[$c['decoracion']][$fe] ?? [] as $r) {
+        if (!empty($r['nombres']) !== $nombres) continue;
         $o .= '<img class="mf-r mf-r-' . $capa . '" src="' . h($A) . 'img/deco/ramos/' . h($r['f']) . '-' . $capa . '.webp" alt="" style="--x:' . $r['x'] . ';--y:' . $r['y']
-            . ';--dx:' . $r['dx'] . ';--dy:' . $r['dy'] . ';--w:' . $r['w'] . '">';
+            . ';--dx:' . $r['dx'] . ';--dy:' . $r['dy'] . ';--w:' . $r['w'] . (isset($r['g']) ? ';--g:' . $r['g'] : '') . '">';
     }
     return $o;
 }
@@ -408,7 +410,9 @@ function pagina_inicio(array $c, array $ctx): string {
       <picture class="deco-guirnalda"><source media="(max-width: 900px)" srcset="<?= h($A) ?>img/deco/flores-portada-movil.webp" width="520" height="250"><img src="<?= h($A) ?>img/deco/flores-portada.webp" alt="" width="1200" height="330"></picture>
 <?php endif; ?>
       <div class="hero-text">
-<?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
+<?php $ramosNombres = $hayRamos ? ramos_foto($c, $fe, $A, 'atras', true) . ramos_foto($c, $fe, $A, 'delante', true) : ''; ?>
+<?php if ($ramosNombres !== ''): ?>        <?= $ramosNombres ?>
+<?php endif; ?><?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
         <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= h($nom ?: 'Vuestros nombres') ?></h1>

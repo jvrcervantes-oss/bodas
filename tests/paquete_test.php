@@ -261,7 +261,13 @@ foreach (RAMOS_FOTO as $deco => $estilos) {
 }
 $cR = normaliza_config(crudo(['foto' => true, 'decoracion' => 'flores', 'foto_estilo' => 'arco']));
 $hR = pagina_inicio($cR, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
-ok(hay($hR, 'mf-ramos') && substr_count($hR, 'mf-r-atras') === 2 && substr_count($hR, 'mf-r-delante') === 2, 'ramos: flores + arco pinta sus dos ramos, tallos y flores');
+ok(hay($hR, 'mf-ramos') && substr_count($hR, 'mf-r-atras') === 3 && substr_count($hR, 'mf-r-delante') === 3, 'ramos: flores + arco pinta sus tres ramos, tallos y flores');
+ok(hay($hR, ';--g:6"'), 'ramos: el giro del ramo llega a la página como --g');
+// Fundida (owner, 1-oct-2026): el ramo va sobre los nombres, dentro del bloque de texto, y ninguno en la foto
+$cN = normaliza_config(crudo(['foto' => true, 'decoracion' => 'eucalipto', 'foto_estilo' => 'fundida']));
+$hN = pagina_inicio($cN, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+$pT = strpos($hN, 'class="hero-text"'); $pM = strpos($hN, 'class="mat ');
+ok($pT !== false && $pM !== false && substr_count($hN, 'mf-r-atras') === 1 && strpos($hN, 'ramo-eucalipto-nombres-') > $pT && strpos($hN, 'ramo-eucalipto-nombres-') < $pM, 'ramos: en Fundida el eucalipto va sobre los nombres, no en la foto');
 $cI = normaliza_config(crudo(['foto' => true, 'decoracion' => 'eucalipto', 'foto_estilo' => 'instantanea']));
 $hI = pagina_inicio($cI, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
 ok(!hay($hI, 'mf-r ') && !hay($hI, 'deco-g-fuera') && hay($hI, 'deco-guirnalda'), 'ramos: la Instantánea no tiene ramos y conserva su guirnalda en ordenador');
