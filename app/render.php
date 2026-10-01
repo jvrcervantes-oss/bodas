@@ -409,8 +409,8 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php elseif ($c['decoracion'] === 'flores' && !$floresEnFoto): ?>
       <picture class="deco-guirnalda"><source media="(max-width: 900px)" srcset="<?= h($A) ?>img/deco/flores-portada-movil.webp" width="520" height="250"><img src="<?= h($A) ?>img/deco/flores-portada.webp" alt="" width="1200" height="330"></picture>
 <?php endif; ?>
-      <div class="hero-text">
 <?php $ramosNombres = $hayRamos ? ramos_foto($c, $fe, $A, 'atras', true) . ramos_foto($c, $fe, $A, 'delante', true) : ''; ?>
+      <div class="hero-text<?= $ramosNombres !== '' ? ' hero-text--ramo' : '' ?>">
 <?php if ($ramosNombres !== ''): ?>        <?= $ramosNombres ?>
 <?php endif; ?><?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>

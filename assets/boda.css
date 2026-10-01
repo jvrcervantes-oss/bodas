@@ -1580,7 +1580,7 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .mf-marco, .mf-papel{ container-type: inline-size; }
   .mf-r{ display: block; left: calc(var(--x) * 1% + var(--dx) * 1cqw); top: calc(var(--y) * 1% + var(--dy) * 1cqw); width: calc(var(--w) * 1cqw);
     transform-origin: calc(var(--dx) * -1cqw) calc(var(--dy) * -1cqw); transform: rotate(calc(var(--g, 0) * 1deg)); }   /* gira alrededor de donde nace */
-  .hero--mf-fundida .hero-text{ position: relative; isolation: isolate; container-type: inline-size; width: 100%; }   /* Fundida: el ramo va sobre los nombres y se mide con ellos */
+  .hero-text--ramo{ position: relative; isolation: isolate; container-type: inline-size; width: 100%; }   /* solo con ramo sobre los nombres (Fundida): se mide con ellos; sin ramo, .hero-text queda como estaba */
   .mf-r-atras{ z-index: -1; } .mf-r-delante{ z-index: 3; }
   .home{ overflow-x: clip; }   /* un ramo puede asomar por el borde de la pantalla: se recorta, sin barra de desplazamiento */
   .mf-ramos .mf-g, .deco-g-fuera{ display: none; }   /* donde hay ramos, las guirnaldas de la foto y la del eucalipto sobre los nombres se quedan para el móvil */
