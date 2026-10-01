@@ -125,7 +125,8 @@ const FOTO_ESTILOS = [
  *  de donde nace. 'nombres' => true: el ramo no va en la foto sino sobre los nombres (Fundida), y x,y,dx,dy,w se miden sobre el
  *  bloque de los nombres. Generados con tests/ramos_gen.js (los «-s<semilla>», con los ajustes del editor).
  *  Sello hereda los ramos que el owner colocó en Papel y Álbum los de Arco (1-oct-2026); se afinan en el Editor de ramos.
- *  Flores + Acuarela: colocación del owner en el Editor de ramos (1-oct-2026), con un ramo rediseñado (-s445). */
+ *  Flores + Acuarela: colocación del owner en el Editor de ramos (1-oct-2026), con un ramo rediseñado (-s445).
+ *  Eucalipto + Acuarela: igual, con un ramo rediseñado (-s454) y el otro girado 67° (1-oct-2026). */
 const RAMOS_FOTO = [
     'flores' => [
         'arco' => [['f' => 'ramo-flores-arco-0', 'x' => 6, 'y' => 20, 'dx' => -33.58, 'dy' => -42.92, 'w' => 42.49, 'g' => 6], ['f' => 'ramo-flores-arco-1', 'x' => 99.7, 'y' => 100, 'dx' => -5.09, 'dy' => -5.43, 'w' => 31.03, 'g' => 1], ['f' => 'ramo-flores-arco-s7862', 'x' => 8, 'y' => 12, 'dx' => -10, 'dy' => -30.26, 'w' => 31.05]],
@@ -140,7 +141,7 @@ const RAMOS_FOTO = [
         'sello' => [['f' => 'ramo-eucalipto-sello-0', 'x' => 2, 'y' => 2, 'dx' => -28.68, 'dy' => -27.56, 'w' => 32.7, 'g' => -117], ['f' => 'ramo-eucalipto-sello-1', 'x' => 98, 'y' => 97, 'dx' => -5.64, 'dy' => -6.01, 'w' => 37.12, 'g' => -119]],
         'medallon' => [['f' => 'ramo-eucalipto-medallon-s7994', 'x' => 90.2, 'y' => 17.4, 'dx' => -15.56, 'dy' => -6.67, 'w' => 41.11], ['f' => 'ramo-eucalipto-medallon-1', 'x' => 14, 'y' => 85, 'dx' => -23.75, 'dy' => -4.87, 'w' => 29.25, 'g' => -89]],
         'fundida' => [['f' => 'ramo-eucalipto-nombres-s6307', 'nombres' => true, 'x' => 49.34, 'y' => 0, 'dx' => -10.85, 'dy' => -35.17, 'w' => 22.52]],
-        'acuarela' => [['f' => 'ramo-eucalipto-arco-0', 'x' => 6, 'y' => 20, 'dx' => -31.3, 'dy' => -34.75, 'w' => 37.25, 'g' => 1], ['f' => 'ramo-eucalipto-arco-s8996', 'x' => 100.8, 'y' => 100.4, 'dx' => -8.68, 'dy' => -8.16, 'w' => 38.16]],
+        'acuarela' => [['f' => 'ramo-eucalipto-acuarela-s454', 'x' => 5.9, 'y' => 30.1, 'dx' => -18.38, 'dy' => -7.57, 'w' => 43.78], ['f' => 'ramo-eucalipto-arco-s8996', 'x' => 96.7, 'y' => 74.4, 'dx' => -10.46, 'dy' => -9.83, 'w' => 45.98, 'g' => 67]],
         'album' => [['f' => 'ramo-eucalipto-arco-0', 'x' => 6, 'y' => 20, 'dx' => -31.3, 'dy' => -34.75, 'w' => 37.25, 'g' => 1], ['f' => 'ramo-eucalipto-arco-s8996', 'x' => 100.8, 'y' => 100.4, 'dx' => -8.68, 'dy' => -8.16, 'w' => 38.16]],
     ],
 ];
