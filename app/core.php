@@ -103,7 +103,8 @@ function empresa(): array {
  * feedback) y publican webs reales con los textos legales enteros pero sin su identidad; se le avisó de que la
  * LSSI pide la identidad a la vista y eligió esta salida frente a publicar sus datos.
  */
-define('RAZON_SOCIAL_PUBLICA', 'PT Mahkota');
+// Razón social registrada (memoria del estudio, owner 27-sep-2026: PT Mahkota Property Global). Es el único dato de identidad público.
+define('RAZON_SOCIAL_PUBLICA', 'PT Mahkota Property Global');
 function titular_oculto(): bool {
     if (pasarela() === 'stripe') return !stripe_modo_live();
     return lemon_test();
