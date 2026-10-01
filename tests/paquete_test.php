@@ -49,6 +49,12 @@ function pag(array $crudo, string $ruta = '', ?array $ctx = null): ?string { ret
 function sec(array $c, string $tipo): array { foreach ($c['secciones'] as $s) if ($s['tipo'] === $tipo) return $s; return []; }
 function hay(?string $h, string $t): bool { return $h !== null && strpos($h, $t) !== false; }
 
+// ============================================================ Marca de agua de la vista previa (owner, 1-oct-2026)
+// En el creador (sin pagar) sale; en el panel (firma_slug: web pagada y publicada) no.
+$ctxP = ['modo' => 'preview', 'assets' => '/assets/', 'foto' => '', 'mapa' => null];
+ok(hay(pag(crudo(), '', $ctxP), 'class="marca-previa"'), 'la vista previa del creador lleva marca de agua');
+ok(!hay(pag(crudo(), '', $ctxP + ['firma_slug' => 'prueba']), 'class="marca-previa"'), 'la vista previa del panel no lleva marca de agua');
+
 // ============================================================ 0. Webs antiguas: HTML idéntico, byte a byte
 foreach (SNAP_CONFIGS as $nom) {
     $c = normaliza_config(json_decode((string) file_get_contents(__DIR__ . "/fixtures/config_$nom.json"), true));
