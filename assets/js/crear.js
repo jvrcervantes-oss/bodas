@@ -1315,7 +1315,6 @@
   });
 
   var guardar = document.getElementById('guardar');
-  var csrfRenovado = false;
   if (guardar) guardar.addEventListener('click', function () {
     var est = document.getElementById('guardarEstado');
     if (Object.keys(ultimasFaltas).length) { muestraFaltan(ultimasFaltas); return; }
@@ -1342,16 +1341,9 @@
           est.appendChild(document.createTextNode(' y volved aquí a pulsar «Guardar cambios».'));
           return;
         }
-        // CSRF viejo: han vuelto a entrar en otra pestaña. Se pide el vigente y se reintenta UNA vez
-        if (codigo === 403 && !csrfRenovado) {
-          csrfRenovado = true;
-          fetch('/panel/csrf').then(function (r) { return r.json(); }).then(function (k) {
-            if (k.ok && k.csrf && k.csrf !== D.csrf) { D.csrf = k.csrf; guardar.click(); return; }
-            est.textContent = ''; muestraFaltan({}, [j.error || 'No se ha podido guardar.']);
-          }).catch(function () { est.textContent = ''; muestraFaltan({}, [j.error || 'No se ha podido guardar.']); });
-          return;
-        }
-        csrfRenovado = false;
+        // CSRF viejo (han vuelto a entrar en otra pestaña): se aparta lo editado y se recarga el editor, que
+        // lo recupera con el token de la sesión nueva. Sin endpoint nuevo que exponga el token (revisor, 1-oct-2026)
+        if (codigo === 403 && apartaPendiente()) { location.reload(); return; }
         if (j.ok) {
           // El mapa se rehace al guardar: si no encuentra la dirección, que lo sepan ellos y no los invitados
           var avisoMapa = { 'sin-sitio': ' No encontramos la dirección en el mapa: revisadla o pegad el punto exacto en «Ceremonia y convite».',

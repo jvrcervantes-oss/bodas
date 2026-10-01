@@ -122,10 +122,9 @@ $cookie = panel_cookie($slug) . '=' . str_repeat('a', 32);
 $cookie = '';
 $log = (string) @file_get_contents(dir_datos('log', 'app-' . date('Y-m') . '.log'));
 ok($st === 401 && strpos($log, '"ruta":"guardar","motivo":"sin-sesion"') !== false, 'cookie sin sesión detrás: 401 y el motivo en el log');
+ok(strpos($log, '"ruta":"guardar","motivo":"sin-cookie"') !== false && strpos($log, '"ruta":"vista-previa"') === false, 'sin cookie: también al log (con tope por boda); la vista previa no');
 [$st, , $cab] = pide('GET', '/panel/editar');
 ok($st === 302 && strpos($cab, 'Location: /panel/entrar?v=editar') !== false, 'sin sesión: el editor manda al login con vuelta al editor');
-[$st, $h] = pide('GET', '/panel/csrf');
-ok($st === 302 && strpos($h, 'csrf') === false, 'sin sesión: /panel/csrf no da el token');
 [$st, $h] = pide('GET', '/panel/entrar?v=editar');
 ok($st === 200 && strpos($h, 'Vuestra sesión se había cerrado') !== false, 'login desde el editor: lo avisa');
 // Un invitado que abre la galería (o el libro) no recibe una cookie de sesión del panel (Legal #133)
@@ -143,9 +142,6 @@ ok($st === 302 && strpos($cab, 'Location: /panel/editar') !== false, 'login desd
 [$st] = pide('POST', '/panel/entrar', ['clave' => 'clave-de-prueba-1']);
 ok($st === 302 && $cookie !== '', 'login del panel');
 ok(count(glob(dir_datos('sesiones_panel', 'sess_*')) ?: []) > 0, 'la sesión del panel vive en DATA_DIR/sesiones_panel, no en la carpeta común del hosting');
-[$st, $h] = pide('GET', '/panel/csrf');
-[$st2] = pide('POST', '/panel/csrf', ['csrf' => 'x']);
-ok($st === 200 && preg_match('/^[a-f0-9]{32}$/', (string) (json_decode($h, true)['csrf'] ?? '')) === 1 && $st2 === 405, 'con sesión: /panel/csrf da el token vigente, solo por GET');
 
 // ---------------------------------------------------------------- 2. con sesión: cada sección
 $H = [];
