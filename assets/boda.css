@@ -1510,7 +1510,7 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 
 /* ============================================================
    Estilo de la foto de portada (owner, 30-sep-2026, artifact «Foto con flores de acuarela»,
-   https://claude.ai/artifact/6MoGPJnzKpBP19HQvRvaQC): arco, papel, medallón o fundida, con cualquier
+   https://claude.ai/artifact/6MoGPJnzKpBP19HQvRvaQC): arco, sello, medallón, fundida, álbum o acuarela, con cualquier
    decoración (body.deco-*). Con «Flores de acuarela» render.php mete las rosas en .mf-marco. Solo el
    Pack Esencial: los Atelier traen su marco y no reciben .mf.
    Guirnalda de la foto: un 30 % más arriba que en el artifact y solo las rosas (owner): lo que cuelga
@@ -1521,8 +1521,6 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 .mf .mat-photo::after{ display: none; }
 .mf .mat-caption{ background: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; }
 .mf-marco{ position: relative; }
-/* Borde rasgado del papel en línea: la vista previa del creador es de origen opaco y una máscara por URL necesita CORS */
-.mf-papel{ --mf-papel: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22500%22 viewBox=%220 0 400 500%22 preserveAspectRatio=%22none%22%3E%3Cfilter id=%22r%22 x=%22-5%25%22 y=%22-5%25%22 width=%22110%25%22 height=%22110%25%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.045%22 numOctaves=%223%22 seed=%227%22 result=%22n%22/%3E%3CfeDisplacementMap in=%22SourceGraphic%22 in2=%22n%22 scale=%2216%22 xChannelSelector=%22R%22 yChannelSelector=%22G%22/%3E%3C/filter%3E%3Crect x=%226%22 y=%226%22 width=%22388%22 height=%22488%22 fill=%22%23000%22 filter=%22url%28%23r%29%22/%3E%3C/svg%3E"); }
 /* Una sola guirnalda por foto (owner, 30-sep-2026, hoja «Flores y foto de portada»: Arco A, Medallón A, Papel A, Fundida A),
    pegada a la foto, con los extremos difuminados y lo que cuelga deshecho por una máscara para no tapar las caras */
 .mf-g{ position: absolute; z-index: 2; display: block; height: auto; max-width: none; pointer-events: none; mix-blend-mode: multiply;
@@ -1537,15 +1535,37 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 .mf-arco .mf-g-top{ left: -10%; width: 120%; top: -14%; }
 .mf-arco .mat-caption{ margin-top: 30px; }
 
-/* Papel: pegada en un papel de bordes rasgados, un poco girado (el giro va en .mat-inner: .rv usa transform en .mat).
-   La guirnalda cruza el borde de arriba como sujetándolo y gira con el papel */
-.mf-papel{ width: 84%; max-width: 380px; margin-top: 40px; }
-.mf-papel .mat-inner{ padding: 14px 14px 12px; transform: rotate(-1.6deg); filter: drop-shadow(0 0 1px rgb(0 0 0 / .16)) drop-shadow(0 10px 22px rgb(var(--primary-rgb) / .2)); }
-.mf-papel .mat-inner::before{ content: ''; position: absolute; inset: 0; background: var(--card); pointer-events: none;
-  -webkit-mask: var(--mf-papel) center / 100% 100% no-repeat; mask: var(--mf-papel) center / 100% 100% no-repeat; }
-.mf-papel .mat-photo{ aspect-ratio: 4 / 5; border-radius: 0; }
-.mf-papel .mf-g-top{ left: -2%; width: 104%; top: -9%; }
-.mf-papel .mat-caption{ position: relative; margin-top: 10px; }
+/* Sello (owner, 1-oct-2026, sustituye a Papel; artifact «Sexto estilo de foto»): papel con borde troquelado de sello y un matasellos de
+   tinta en la esquina. El troquelado va en dos capas propias (::before papel, ::after filete) para no recortar los ramos. */
+.mf-sello{ width: 84%; max-width: 340px; margin-top: 44px; }
+.mf-sello .mat-inner{ transform: rotate(1.4deg); }
+.mf-sello .mf-marco{ padding: 17px; }
+.mf-sello .mf-marco::before, .mf-sello .mf-marco::after{ content: ''; position: absolute; pointer-events: none; box-sizing: border-box; padding: 9px;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle at 50% 50%, transparent 4.6px, #000 5.2px) -8px -8px / 16px 16px round;
+          mask: linear-gradient(#000 0 0) content-box, radial-gradient(circle at 50% 50%, transparent 4.6px, #000 5.2px) -8px -8px / 16px 16px round; }
+.mf-sello .mf-marco::before{ inset: 0; z-index: 1; background: var(--card); }   /* el papel tapa los tallos (-1) y queda bajo la foto (2) */
+.mf-sello .mf-marco::after{ inset: -1px; z-index: 0; background: rgb(var(--primary-rgb) / .3); }
+.mf-sello .mat-photo{ position: relative; z-index: 2; aspect-ratio: 4 / 5; border-radius: 0; }
+.mf-sello .mat-inner::after{ content: ''; position: absolute; z-index: 4; right: -40px; top: -26px; width: 132px; height: 76px; pointer-events: none;
+  background: rgb(var(--primary-rgb) / .55);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 76'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Ccircle cx='38' cy='38' r='30'/%3E%3Ccircle cx='38' cy='38' r='24' stroke-width='.9'/%3E%3Cpath d='M72 22c8-5 16 5 24 0s16 5 24 0M72 34c8-5 16 5 24 0s16 5 24 0M72 46c8-5 16 5 24 0s16 5 24 0M72 58c8-5 16 5 24 0s16 5 24 0'/%3E%3Cpath d='M26 38h24M38 26v24' stroke-width='.9'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 132 76'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.6'%3E%3Ccircle cx='38' cy='38' r='30'/%3E%3Ccircle cx='38' cy='38' r='24' stroke-width='.9'/%3E%3Cpath d='M72 22c8-5 16 5 24 0s16 5 24 0M72 34c8-5 16 5 24 0s16 5 24 0M72 46c8-5 16 5 24 0s16 5 24 0M72 58c8-5 16 5 24 0s16 5 24 0'/%3E%3Cpath d='M26 38h24M38 26v24' stroke-width='.9'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat; }
+.mf-sello .mf-g-top{ left: -4%; width: 108%; top: -10%; }
+.mf-sello .mat-caption{ margin-top: 22px; }
+@media (max-width: 900px){ .mf-sello .mat-inner::after{ right: -10px; top: -30px; width: 108px; height: 62px; } }
+
+/* Acuarela (owner, 1-oct-2026, sexto estilo): la foto recortada como una mancha de acuarela, con una aguada del color de la
+   paleta detrás. Máscaras en línea por el mismo motivo que el troquelado: la vista previa es de origen opaco. */
+.mf-acuarela{ width: 84%; max-width: 340px; margin-top: 44px; }
+.mf-acuarela .mf-marco{ isolation: isolate; }
+.mf-acuarela .mat-photo{ aspect-ratio: 4 / 5; border-radius: 0;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500' preserveAspectRatio='none'%3E%3Cfilter id='a' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' seed='11' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='46'/%3E%3CfeGaussianBlur stdDeviation='2.2'/%3E%3C/filter%3E%3Crect x='26' y='26' width='348' height='448' rx='120' filter='url(%23a)'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500' preserveAspectRatio='none'%3E%3Cfilter id='a' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012' numOctaves='3' seed='11' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='46'/%3E%3CfeGaussianBlur stdDeviation='2.2'/%3E%3C/filter%3E%3Crect x='26' y='26' width='348' height='448' rx='120' filter='url(%23a)'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.mf-acuarela .mf-marco::before{ content: ''; position: absolute; z-index: -1; inset: 5% -7% -5% 6%; pointer-events: none; background: rgb(var(--primary-rgb) / .13);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500' preserveAspectRatio='none'%3E%3Cfilter id='a' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.016' numOctaves='3' seed='4' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='60'/%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3C/filter%3E%3Crect x='30' y='30' width='340' height='440' rx='150' filter='url(%23a)'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='500' viewBox='0 0 400 500' preserveAspectRatio='none'%3E%3Cfilter id='a' x='-10%25' y='-10%25' width='120%25' height='120%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.016' numOctaves='3' seed='4' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='60'/%3E%3CfeGaussianBlur stdDeviation='4'/%3E%3C/filter%3E%3Crect x='30' y='30' width='340' height='440' rx='150' filter='url(%23a)'/%3E%3C/svg%3E") center / 100% 100% no-repeat; }
+.mf-acuarela .mf-g-top{ left: -8%; width: 116%; top: -11%; }
+.mf-acuarela .mat-caption{ margin-top: 26px; }
 
 /* Medallón: óvalo con paspartú fino; corona arriba y abajo pegada al óvalo */
 .mf-medallon{ width: 80%; max-width: 340px; margin: 64px 0 40px; }
@@ -1574,10 +1594,9 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .deco-flores .deco-entre{ margin-bottom: -46px; }   /* las flores llevan más hueco por debajo de lo que cuelga */
   .deco-entre img{ display: block; width: 100%; max-width: 460px; height: auto; margin: 0 auto; mix-blend-mode: multiply; }
 }
-.mf-marco, .mf-papel{ isolation: isolate; }
-.mf-papel{ position: relative; }
+.mf-marco{ isolation: isolate; }
 @media (min-width: 901px){
-  .mf-marco, .mf-papel{ container-type: inline-size; }
+  .mf-marco{ container-type: inline-size; }
   .mf-r{ display: block; left: calc(var(--x) * 1% + var(--dx) * 1cqw); top: calc(var(--y) * 1% + var(--dy) * 1cqw); width: calc(var(--w) * 1cqw);
     transform-origin: calc(var(--dx) * -1cqw) calc(var(--dy) * -1cqw); transform: rotate(calc(var(--g, 0) * 1deg)); }   /* gira alrededor de donde nace */
   .hero-text--ramo{ position: relative; isolation: isolate; container-type: inline-size; width: 100%; }   /* solo con ramo sobre los nombres (Fundida): se mide con ellos; sin ramo, .hero-text queda como estaba */
@@ -1587,7 +1606,8 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 }
 
 @media (min-width: 901px){
-  .mf-arco, .mf-papel, .mf-medallon{ width: 100%; justify-self: center; }
+  .mf-arco, .mf-sello, .mf-medallon, .mf-acuarela{ width: 100%; justify-self: center; }
+  .mf-sello, .mf-acuarela{ max-width: 370px; margin-top: 70px; }
   .mf-arco{ max-width: 380px; margin-top: 70px; }
   .mf-medallon{ max-width: 360px; margin-top: 70px; }
   /* Fundida en el ordenador (owner, 30-sep-2026): la foto ocupa la pantalla desde el borde derecho, de arriba abajo, hasta su
@@ -1637,22 +1657,23 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 .historia-kicker{ display: block; text-align: center; margin-bottom: 6px; }
 .historia-kicker ~ h1, .historia-texto{ overflow-wrap: anywhere; }
 
-/* INSTANTANEA-INICIO
-   Foto «Instantánea»: marco de papel (token --card) con el margen inferior mayor y un filete de 1 px, y una cinta dibujada
-   en el HTML (SVG monocromo con el color de tinta). Reglas propias, sin heredar de .mat: la sombra de .mat-inner y el
-   degradado de .mat-photo::after se anulan aquí. El giro va en .mat-inner (en .mat lo pisaría la animación de .rv) y
-   solo desde 768 px: en un móvil de 390 px la esquina girada se saldría de la pantalla. */
-.mf-instantanea{ width: 84%; max-width: 340px; margin-top: 44px; }
-.mf-instantanea .mat-inner{ position: relative; background: var(--card); padding: 14px 14px 22px; border: 1px solid rgb(var(--primary-rgb) / .22); border-radius: 2px; box-shadow: none; }
-.mf-instantanea .mat-photo{ aspect-ratio: 4 / 5; border-radius: 0; }
-.mf-instantanea .mat-photo::after{ content: none; display: none; background: none; }
-.mf-instantanea .mat-caption{ margin: 18px 0 0; padding: 0 6px; font-family: var(--serif); font-style: italic; overflow-wrap: anywhere; }
-.inst-cinta{ position: absolute; z-index: 2; top: -19px; left: 50%; width: 96px; height: auto; margin-left: -48px; color: var(--primary); fill: currentColor; fill-opacity: .1; stroke: currentColor; stroke-width: 1; stroke-linejoin: round; pointer-events: none; }
-.inst-cinta-fibra{ fill: none; stroke-opacity: .35; stroke-width: .8; }
-@media (min-width: 768px){
-  .mf-instantanea .mat-inner{ transform: rotate(-1.5deg); }
-}
+/* ALBUM-INICIO
+   Foto «Álbum» (owner, 1-oct-2026, sustituye a Instantánea; artifact «Sexto estilo de foto»): la foto sobre una hoja (token --card)
+   con un filete de 1 px y cuatro esquineras de papel del color de la paleta. Sin sombras ni degradados: las esquineras son
+   triángulos lisos (clip-path). Reglas propias, sin heredar de .mat. El giro va en .mat-inner (en .mat lo pisaría .rv). */
+.mf-album{ width: 84%; max-width: 340px; margin-top: 44px; }
+.mf-album .mat-inner{ background: var(--card); padding: 16px; border: 1px solid rgb(var(--primary-rgb) / .18); border-radius: 0; box-shadow: none; transform: rotate(-1deg); }
+.mf-album .mat-photo{ aspect-ratio: 4 / 5; border-radius: 0; }
+.mf-album .mat-photo::after{ content: none; display: none; background: none; }
+.mf-album .mat-inner::before, .mf-album .mat-inner::after, .mf-album .mf-marco::before, .mf-album .mf-marco::after{
+  content: ''; position: absolute; z-index: 4; width: 30px; height: 30px; pointer-events: none; background: rgb(var(--primary-rgb) / .78); }
+.mf-album .mat-inner::before{ left: 10px; top: 10px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.mf-album .mat-inner::after{ right: 10px; top: 10px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.mf-album .mf-marco::before{ left: -6px; bottom: -6px; clip-path: polygon(0 0, 0 100%, 100% 100%); }
+.mf-album .mf-marco::after{ right: -6px; bottom: -6px; clip-path: polygon(100% 0, 0 100%, 100% 100%); }
+.mf-album .mf-g-top{ left: -4%; width: 108%; top: -10%; }
+.mf-album .mat-caption{ margin: 14px 0 0; padding: 0 6px; font-family: var(--serif); font-style: italic; overflow-wrap: anywhere; }
 @media (min-width: 901px){
-  .mf-instantanea{ width: 100%; max-width: 360px; justify-self: center; margin-top: 70px; }
+  .mf-album{ width: 100%; max-width: 370px; justify-self: center; margin-top: 70px; }
 }
-/* INSTANTANEA-FIN */
+/* ALBUM-FIN */

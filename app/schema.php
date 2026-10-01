@@ -108,11 +108,14 @@ const DECORACIONES = [
 // las rosas rodean la foto. Los diseños Atelier traen su propio marco y no lo usan.
 const FOTO_ESTILOS = [
     'arco'     => ['Arco', 'Recortada como un ventanal'],
-    'papel'    => ['Papel', 'Pegada en papel de acuarela'],
+    // Sello sustituye a Papel (owner, 1-oct-2026, artifact «Sexto estilo de foto»): las bodas con 'papel' pasan a 'sello' al normalizar.
+    'sello'    => ['Sello', 'Troquelada como un sello, con matasellos'],
     'medallon' => ['Medallón', 'En óvalo, como un retrato'],
     'fundida'  => ['Fundida', 'A todo lo ancho, deshecha en el papel'],
-    // Paquete de mejoras (30-sep-2026): marco de papel con margen inferior mayor, filete y cinta dibujada. Sin sombras ni degradados.
-    'instantanea' => ['Instantánea', 'Marco de papel con cinta, como una foto revelada'],
+    // Álbum sustituye a Instantánea (owner, 1-oct-2026, artifact «Sexto estilo de foto»): las bodas con 'instantanea' pasan a 'album'.
+    'album'    => ['Álbum', 'Sujeta con esquineras, como en un álbum de fotos'],
+    // Sexto estilo (owner, 1-oct-2026, artifact «Sexto estilo de foto»): máscara de acuarela y aguada del color de la paleta.
+    'acuarela' => ['Acuarela', 'Recortada como una mancha de acuarela'],
 ];
 
 /** Ramos de esquina junto a la foto de portada en ordenador (owner, 30-sep-2026, artifact «Ramos junto a la foto»; recolocados y
@@ -120,19 +123,24 @@ const FOTO_ESTILOS = [
  *  Cada ramo son dos imagenes: «atras» (tallos, detras del marco) y «delante» (flores y hojas). x,y = donde nace (% del marco);
  *  dx,dy,w = posicion y ancho de la imagen respecto a ese punto, en cqw (1 % del ancho del marco); g = giro en grados alrededor
  *  de donde nace. 'nombres' => true: el ramo no va en la foto sino sobre los nombres (Fundida), y x,y,dx,dy,w se miden sobre el
- *  bloque de los nombres. Generados con tests/ramos_gen.js (los «-s<semilla>», con los ajustes del editor). */
+ *  bloque de los nombres. Generados con tests/ramos_gen.js (los «-s<semilla>», con los ajustes del editor).
+ *  Sello hereda los ramos que el owner colocó en Papel, y Acuarela y Álbum los de Arco (1-oct-2026); se afinan en el Editor de ramos. */
 const RAMOS_FOTO = [
     'flores' => [
         'arco' => [['f' => 'ramo-flores-arco-0', 'x' => 6, 'y' => 20, 'dx' => -33.58, 'dy' => -42.92, 'w' => 42.49, 'g' => 6], ['f' => 'ramo-flores-arco-1', 'x' => 99.7, 'y' => 100, 'dx' => -5.09, 'dy' => -5.43, 'w' => 31.03, 'g' => 1], ['f' => 'ramo-flores-arco-s7862', 'x' => 8, 'y' => 12, 'dx' => -10, 'dy' => -30.26, 'w' => 31.05]],
-        'papel' => [['f' => 'ramo-flores-papel-0', 'x' => 2, 'y' => 2, 'dx' => -30.82, 'dy' => -32.75, 'w' => 36.63, 'g' => -134], ['f' => 'ramo-flores-papel-1', 'x' => 98.2, 'y' => 97.9, 'dx' => -4.16, 'dy' => -6.38, 'w' => 33.25, 'g' => -120], ['f' => 'ramo-flores-papel-s4437', 'x' => 9.3, 'y' => 4.2, 'dx' => -7.37, 'dy' => -24.74, 'w' => 35.26]],
+        'sello' => [['f' => 'ramo-flores-sello-0', 'x' => 2, 'y' => 2, 'dx' => -31.65, 'dy' => -33.63, 'w' => 37.62, 'g' => -134], ['f' => 'ramo-flores-sello-1', 'x' => 98.2, 'y' => 97.9, 'dx' => -4.27, 'dy' => -6.55, 'w' => 34.15, 'g' => -120], ['f' => 'ramo-flores-sello-s4437', 'x' => 9.3, 'y' => 4.2, 'dx' => -7.57, 'dy' => -25.41, 'w' => 36.21]],
         'medallon' => [['f' => 'ramo-flores-medallon-0', 'x' => 96.5, 'y' => 30.9, 'dx' => -5, 'dy' => -29.46, 'w' => 34.46, 'g' => 124], ['f' => 'ramo-flores-medallon-1', 'x' => 25, 'y' => 94.9, 'dx' => -29.21, 'dy' => -4.98, 'w' => 36.43, 'g' => 101]],
         'fundida' => [['f' => 'ramo-flores-nombres-s2787', 'nombres' => true, 'x' => 49.34, 'y' => 0, 'dx' => -8.39, 'dy' => -28.36, 'w' => 17.0]],
+        'acuarela' => [['f' => 'ramo-flores-arco-0', 'x' => 6, 'y' => 20, 'dx' => -33.58, 'dy' => -42.92, 'w' => 42.49, 'g' => 6], ['f' => 'ramo-flores-arco-1', 'x' => 99.7, 'y' => 100, 'dx' => -5.09, 'dy' => -5.43, 'w' => 31.03, 'g' => 1], ['f' => 'ramo-flores-arco-s7862', 'x' => 8, 'y' => 12, 'dx' => -10, 'dy' => -30.26, 'w' => 31.05]],
+        'album' => [['f' => 'ramo-flores-arco-0', 'x' => 6, 'y' => 20, 'dx' => -33.58, 'dy' => -42.92, 'w' => 42.49, 'g' => 6], ['f' => 'ramo-flores-arco-1', 'x' => 99.7, 'y' => 100, 'dx' => -5.09, 'dy' => -5.43, 'w' => 31.03, 'g' => 1], ['f' => 'ramo-flores-arco-s7862', 'x' => 8, 'y' => 12, 'dx' => -10, 'dy' => -30.26, 'w' => 31.05]],
     ],
     'eucalipto' => [
         'arco' => [['f' => 'ramo-eucalipto-arco-0', 'x' => 6, 'y' => 20, 'dx' => -31.3, 'dy' => -34.75, 'w' => 37.25, 'g' => 1], ['f' => 'ramo-eucalipto-arco-s8996', 'x' => 100.8, 'y' => 100.4, 'dx' => -8.68, 'dy' => -8.16, 'w' => 38.16]],
-        'papel' => [['f' => 'ramo-eucalipto-papel-0', 'x' => 2, 'y' => 2, 'dx' => -27.93, 'dy' => -26.84, 'w' => 31.84, 'g' => -117], ['f' => 'ramo-eucalipto-papel-1', 'x' => 98, 'y' => 97, 'dx' => -5.49, 'dy' => -5.85, 'w' => 36.14, 'g' => -119]],
+        'sello' => [['f' => 'ramo-eucalipto-sello-0', 'x' => 2, 'y' => 2, 'dx' => -28.68, 'dy' => -27.56, 'w' => 32.7, 'g' => -117], ['f' => 'ramo-eucalipto-sello-1', 'x' => 98, 'y' => 97, 'dx' => -5.64, 'dy' => -6.01, 'w' => 37.12, 'g' => -119]],
         'medallon' => [['f' => 'ramo-eucalipto-medallon-s7994', 'x' => 90.2, 'y' => 17.4, 'dx' => -15.56, 'dy' => -6.67, 'w' => 41.11], ['f' => 'ramo-eucalipto-medallon-1', 'x' => 14, 'y' => 85, 'dx' => -23.75, 'dy' => -4.87, 'w' => 29.25, 'g' => -89]],
         'fundida' => [['f' => 'ramo-eucalipto-nombres-s6307', 'nombres' => true, 'x' => 49.34, 'y' => 0, 'dx' => -10.85, 'dy' => -35.17, 'w' => 22.52]],
+        'acuarela' => [['f' => 'ramo-eucalipto-arco-0', 'x' => 6, 'y' => 20, 'dx' => -31.3, 'dy' => -34.75, 'w' => 37.25, 'g' => 1], ['f' => 'ramo-eucalipto-arco-s8996', 'x' => 100.8, 'y' => 100.4, 'dx' => -8.68, 'dy' => -8.16, 'w' => 38.16]],
+        'album' => [['f' => 'ramo-eucalipto-arco-0', 'x' => 6, 'y' => 20, 'dx' => -31.3, 'dy' => -34.75, 'w' => 37.25, 'g' => 1], ['f' => 'ramo-eucalipto-arco-s8996', 'x' => 100.8, 'y' => 100.4, 'dx' => -8.68, 'dy' => -8.16, 'w' => 38.16]],
     ],
 ];
 
@@ -391,7 +399,8 @@ function normaliza_config($in): array {
     $c['tema'] = isset(TEMAS[$in['tema'] ?? '']) ? $in['tema'] : 'eucalipto';
     // Las bodas de antes de existir la decoración conservan su rama de eucalipto
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
-    $c['foto_estilo'] = isset(FOTO_ESTILOS[$in['foto_estilo'] ?? '']) ? $in['foto_estilo'] : 'arco';
+    $fe = ['papel' => 'sello', 'instantanea' => 'album'][$in['foto_estilo'] ?? ''] ?? ($in['foto_estilo'] ?? '');   // retirados el 1-oct-2026: Papel pasa a Sello e Instantánea a Álbum
+    $c['foto_estilo'] = isset(FOTO_ESTILOS[$fe]) ? $fe : 'arco';
     $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
     $c['atelier'] = isset(ATELIER[$in['atelier'] ?? '']) ? $in['atelier'] : '';
     // Solo con un diseño Atelier: sin él se descarta (el panel ya rechaza Atelier no comprado)

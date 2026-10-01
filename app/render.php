@@ -394,7 +394,7 @@ function pagina_inicio(array $c, array $ctx): string {
     // (Medallón: arriba y abajo) y la de encima de los nombres se quita (owner, 30-sep-2026).
     $fe = ($c['atelier'] === '' && $hayFoto) ? $c['foto_estilo'] : '';
     $hayRamos = $fe !== '' && isset(RAMOS_FOTO[$c['decoracion']][$fe]);   // en ordenador, ramos de esquina en vez de guirnalda
-    $floresEnFoto = $fe !== '' && $fe !== 'instantanea' && $c['decoracion'] === 'flores';   // la Instantánea trae su propia cinta: la guirnalda de siempre se queda sobre los nombres
+    $floresEnFoto = $fe !== '' && $c['decoracion'] === 'flores';
     $gTop = '<img class="mf-g mf-g-top" src="' . h($A) . 'img/deco/flores-portada-movil.webp" alt="" width="520" height="250">';
     $adornoFoto = !$floresEnFoto ? '' : ($fe === 'medallon' ? $gTop . str_replace('mf-g-top', 'mf-g-bot', $gTop) : $gTop);
     $objetivo = $c['fecha'] !== '' ? $c['fecha'] . 'T' . ($c['ceremonia']['hora'] ?: '12:00') . ':00' : '';
@@ -429,21 +429,17 @@ function pagina_inicio(array $c, array $ctx): string {
     </div>
 <?php if ($hayFoto): ?>
     <div class="mat<?= $fe !== '' ? ' mf mf-' . h($fe) : '' ?><?= $hayRamos ? ' mf-ramos' : '' ?> rv">
-<?php if ($fe === 'papel'): ?>      <?= ramos_foto($c, $fe, $A, 'atras') ?>
-<?php endif; ?>      <div class="mat-inner">
-<?php if ($fe === 'instantanea'): ?>        <svg class="inst-cinta" viewBox="0 0 132 36" aria-hidden="true" focusable="false"><path d="M6 8l120-2 2 6-3 5 3 6-2 5-120 1 3-6-3-5 3-5z"/><path d="M22 12v15M110 11v16" class="inst-cinta-fibra"/></svg>
-<?php endif; ?><?php if ($fe !== ''): ?>        <div class="mf-marco">
-<?php if ($fe !== 'papel'): ?>        <?= ramos_foto($c, $fe, $A, 'atras') ?>
-<?php endif; ?>
+      <div class="mat-inner">
+<?php if ($fe !== ''): ?>        <div class="mf-marco">
+        <?= ramos_foto($c, $fe, $A, 'atras') ?>
 <?php endif; ?>        <div class="mat-photo"><img data-foto src="<?= h($ctx['foto']) ?>" alt="<?= h($nom) ?>" width="960" height="1280" loading="eager"></div>
 <?php if ($fe !== ''): ?>        <?= $adornoFoto ?>
-<?php if ($fe !== 'papel'): ?>        <?= ramos_foto($c, $fe, $A, 'delante') ?>
-<?php endif; ?>        </div>
+        <?= ramos_foto($c, $fe, $A, 'delante') ?>
+        </div>
 <?php endif; ?><?php if ($fe !== 'fundida'): ?>        <p class="mat-caption"><?= h(trim($nom . ' · ' . linea_fecha($c), ' ·')) ?></p>
 <?php endif; ?>
       </div>
-<?php if ($fe === 'papel'): ?>      <?= ramos_foto($c, $fe, $A, 'delante') ?>
-<?php endif; ?>    </div>
+    </div>
 <?php endif; ?>
   </section>
 <?php if ($fe === 'fundida' && in_array($c['decoracion'], ['flores', 'eucalipto'], true)): ?>

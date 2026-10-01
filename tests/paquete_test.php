@@ -142,22 +142,22 @@ ok(!hay(ics($hn), 'conocimos'), 'historia: fuera del .ics');
 preg_match('/<title>(.*?)<\/title>/s', $pg, $titulo);
 ok(($titulo[1] ?? '') === 'Nuestra historia — Ana &amp; Luis', 'historia: <title> con el título de la sección y los nombres, sin el texto');
 
-// ============================================================ 3. Foto «Instantánea»
-ok(isset(FOTO_ESTILOS['instantanea']) && FOTO_ESTILOS['instantanea'][0] === 'Instantánea', 'FOTO_ESTILOS: «Instantánea»');
-ok(normaliza_config(crudo(['foto_estilo' => 'instantanea']))['foto_estilo'] === 'instantanea', 'foto_estilo instantanea se acepta');
-$ci = crudo(['foto' => true, 'foto_estilo' => 'instantanea', 'decoracion' => 'flores']);
+// ============================================================ 3. Foto «Álbum» (sustituye a «Instantánea» el 1-oct-2026)
+ok(isset(FOTO_ESTILOS['album']) && FOTO_ESTILOS['album'][0] === 'Álbum' && !isset(FOTO_ESTILOS['instantanea']), 'FOTO_ESTILOS: «Álbum» y ya no «Instantánea»');
+ok(normaliza_config(crudo(['foto_estilo' => 'instantanea']))['foto_estilo'] === 'album', 'una boda guardada con Instantánea pasa a Álbum');
+$ci = crudo(['foto' => true, 'foto_estilo' => 'album', 'decoracion' => 'flores']);
 $hi2 = (string) render_pagina(normaliza_config($ci), '', ['foto' => '/foto?v=1'] + ctxL());
-ok(hay($hi2, 'mf mf-instantanea') && hay($hi2, 'class="inst-cinta"') && hay($hi2, 'deco-guirnalda') && !hay($hi2, 'mf-g-top'), 'Instantánea con flores: cinta propia y la guirnalda sigue sobre los nombres (no se pega a la foto)');
-$at = normaliza_config(crudo(['foto' => true, 'foto_estilo' => 'instantanea', 'atelier' => 'lacre']));
-ok(!hay((string) render_pagina($at, '', ['foto' => '/foto?v=1'] + ctxL()), 'inst-cinta'), 'Atelier: no aplica la Instantánea');
+ok(hay($hi2, 'mf mf-album') && !hay($hi2, 'inst-cinta') && hay($hi2, 'mf-g-top'), 'Álbum con flores: sin cinta y la guirnalda va pegada a la foto (en el móvil), como en los demás estilos');
+$at = normaliza_config(crudo(['foto' => true, 'foto_estilo' => 'album', 'atelier' => 'lacre']));
+ok(!hay((string) render_pagina($at, '', ['foto' => '/foto?v=1'] + ctxL()), 'mf-album'), 'Atelier: no aplica el Álbum');
 $css = (string) file_get_contents($raiz . '/assets/boda.css');
-$ini = strpos($css, 'INSTANTANEA-INICIO'); $fin = strpos($css, 'INSTANTANEA-FIN');
+$ini = strpos($css, 'ALBUM-INICIO'); $fin = strpos($css, 'ALBUM-FIN');
 $bloque = ($ini !== false && $fin > $ini) ? substr($css, $ini, $fin - $ini) : '';
 $sinComentarios = (string) preg_replace('~/\*.*?\*/~s', '', $bloque);
-ok($bloque !== '' && stripos($sinComentarios, 'gradient') === false, 'CSS de la Instantánea: sin ningún gradient');
+ok($bloque !== '' && stripos($sinComentarios, 'gradient') === false, 'CSS del Álbum: sin ningún gradient');
 preg_match_all('/box-shadow\s*:\s*([^;}]*)/i', $sinComentarios, $bs);
-ok($bloque !== '' && array_unique(array_map('trim', $bs[1])) === ['none'], 'CSS de la Instantánea: el único box-shadow es «none»');
-ok($bloque !== '' && stripos($sinComentarios, 'drop-shadow') === false && stripos($sinComentarios, 'text-shadow') === false, 'CSS de la Instantánea: sin drop-shadow ni text-shadow');
+ok($bloque !== '' && array_unique(array_map('trim', $bs[1])) === ['none'], 'CSS del Álbum: el único box-shadow es «none»');
+ok($bloque !== '' && stripos($sinComentarios, 'drop-shadow') === false && stripos($sinComentarios, 'text-shadow') === false, 'CSS del Álbum: sin drop-shadow ni text-shadow');
 // La palabra que no puede aparecer en ningún sitio (marca registrada)
 $hallado = [];
 foreach (['app', 'assets', 'tests', 'cron', 'worker', 'index.php'] as $ruta) {
@@ -263,6 +263,16 @@ $cR = normaliza_config(crudo(['foto' => true, 'decoracion' => 'flores', 'foto_es
 $hR = pagina_inicio($cR, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
 ok(hay($hR, 'mf-ramos') && substr_count($hR, 'mf-r-atras') === 3 && substr_count($hR, 'mf-r-delante') === 3, 'ramos: flores + arco pinta sus tres ramos, tallos y flores');
 ok(hay($hR, ';--g:6"'), 'ramos: el giro del ramo llega a la página como --g');
+// Sello sustituye a Papel y Acuarela es el sexto estilo (owner, 1-oct-2026)
+ok(array_keys(FOTO_ESTILOS) === ['arco', 'sello', 'medallon', 'fundida', 'album', 'acuarela'], 'estilos de foto: Arco, Sello, Medallón, Fundida, Álbum y Acuarela');
+ok(normaliza_config(crudo(['foto_estilo' => 'papel']))['foto_estilo'] === 'sello', 'una boda guardada con Papel pasa a Sello');
+foreach (['sello', 'album', 'acuarela'] as $fe) foreach (['flores', 'eucalipto'] as $deco) {
+    $hE = pagina_inicio(normaliza_config(crudo(['foto' => true, 'decoracion' => $deco, 'foto_estilo' => $fe])), ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+    $pMarco = strpos($hE, 'class="mf-marco"'); $pRamo = strpos($hE, 'mf-r-atras');
+    ok(hay($hE, 'mf mf-' . $fe . ' mf-ramos') && $pMarco !== false && $pRamo > $pMarco, "{$fe} con {$deco}: lleva sus ramos dentro del marco");
+}
+$hS = pagina_inicio(normaliza_config(crudo(['foto' => true, 'decoracion' => 'sobre', 'foto_estilo' => 'acuarela'])), ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
+ok(hay($hS, 'mf mf-acuarela rv') && !hay($hS, 'mf-r '), 'acuarela con Sobre: sin ramos, la foto sola');
 // Fundida (owner, 1-oct-2026): el ramo va sobre los nombres, dentro del bloque de texto, y ninguno en la foto
 foreach (['flores', 'eucalipto'] as $deco) {
     $cN = normaliza_config(crudo(['foto' => true, 'decoracion' => $deco, 'foto_estilo' => 'fundida']));
@@ -276,9 +286,9 @@ foreach (['sobre', 'ninguna'] as $deco) {
     $hN = pagina_inicio($cN, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
     ok(hay($hN, 'class="hero-text">') && !hay($hN, 'hero-text--ramo') && !hay($hN, 'mf-r '), "ramos: Fundida con «{$deco}» deja el bloque de los nombres como estaba");
 }
-$cI = normaliza_config(crudo(['foto' => true, 'decoracion' => 'eucalipto', 'foto_estilo' => 'instantanea']));
+$cI = normaliza_config(crudo(['foto' => true, 'decoracion' => 'eucalipto', 'foto_estilo' => 'album']));
 $hI = pagina_inicio($cI, ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
-ok(!hay($hI, 'mf-r ') && !hay($hI, 'deco-g-fuera') && hay($hI, 'deco-guirnalda'), 'ramos: la Instantánea no tiene ramos y conserva su guirnalda en ordenador');
+ok(hay($hI, 'mf mf-album mf-ramos') && hay($hI, 'deco-g-fuera'), 'ramos: el Álbum lleva ramos en ordenador y la rama de eucalipto queda para el móvil');
 
 // Fundida en el móvil: la guirnalda va entre la fecha y la bienvenida (deco-entre), solo con foto Fundida y flores o eucalipto
 foreach (['flores' => 'flores-portada-movil', 'eucalipto' => 'eucalipto-portada-movil'] as $deco => $img) {

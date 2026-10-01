@@ -274,6 +274,7 @@
   Object.keys(D.fotoEstilos || {}).forEach(function (k) {
     var fe = D.fotoEstilos[k];
     var r = el('input', { type: 'radio', name: 'foto_estilo', value: k });
+    st.foto_estilo = { papel: 'sello', instantanea: 'album' }[st.foto_estilo] || st.foto_estilo;   // retirados el 1-oct-2026: los borradores pasan a Sello y Álbum
     r.checked = (st.foto_estilo || 'arco') === k;
     r.addEventListener('change', function () { st.foto_estilo = k; cambio(); });
     fotoEstilosEl.appendChild(el('label', { class: 'c-deco' }, [r, el('span', { class: 'c-deco-muestra c-fe c-fe-' + k }, [el('i')]),
