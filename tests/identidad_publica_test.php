@@ -40,6 +40,8 @@ ok(!titular_oculto(), 'live: titular_oculto es falso');
 $ep = empresa_publica();
 ok($ep['titular'] === 'PT Mahkota Property Global' && $ep['nif'] === '' && $ep['domicilio'] === '' && $ep['email'] === 'hola@bodaenlace.com', "[$caso] empresa_publica = solo razón social y email");
 ok(empresa_completa(), "[$caso] el candado de venta sigue abierto sin NIF ni domicilio");
+require_once $raiz . '/app/analitica.php';
+ok(analitica_activa() === ($caso === 'viejo' && ANALITICA), "[$caso] analítica: solo con NIF y domicilio en secrets.php (Legal, 1-oct)");
 require_once $raiz . '/app/correo.php';
 require_once $raiz . '/app/correo_html.php';
 $malo = static fn(string $s): bool => stripos($s, PERSONA) !== false || strpos($s, NIF_F) !== false || strpos($s, DOM_F) !== false;

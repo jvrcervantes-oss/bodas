@@ -31,7 +31,12 @@ const ANALITICA_REFERERS = ['google' => 'google', 'bing' => 'bing', 'duckduckgo'
 
 /** Solo cuenta si la privacidad que lo explica está publicada: sin titular (BOD-1) la página de
  *  privacidad es un aviso de «aún no a la venta» y no diría quién mide ni cómo (art. 13 RGPD). */
-function analitica_activa(): bool { return ANALITICA && empresa_completa(); }
+function analitica_activa(): bool {
+    // Legal, 1-oct-2026: con solo razón social + email la privacidad no dice dónde está quien mide (art. 13 RGPD), así que
+    // la analítica espera a que haya NIF y domicilio en secrets.php; ya no cuelga de empresa_completa() (que no los pide).
+    $e = empresa();
+    return ANALITICA && empresa_completa() && $e['nif'] !== '' && $e['domicilio'] !== '';
+}
 
 function analitica_dir(string ...$p): string { return dir_datos('analitica', ...$p); }
 
