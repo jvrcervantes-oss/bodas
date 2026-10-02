@@ -15,6 +15,16 @@ const IMPORTAR_MAX_FILAS = 3000;
 
 class ImportarError extends RuntimeException {}
 
+// Un archivo hostil de 2 MB no puede ocupar un worker más que unos segundos: plazo duro que miran los bucles del PDF
+const IMPORTAR_SEGUNDOS = 8;
+const IMPORTAR_MAX_CMAP = 20000;
+const IMPORTAR_MAX_PILA = 3000;
+const IMPORTAR_MAX_TROZOS = 60000;
+const IMPORTAR_MAX_CELDAS = 50;
+function imp_plazo(): void {
+    if (microtime(true) > (float) ($GLOBALS['IMP_FIN'] ?? PHP_INT_MAX)) throw new ImportarError('Ese archivo es demasiado complejo de leer. Subid el Excel o pegad la lista.');
+}
+
 // ---------------------------------------------------------------- zip (xlsx y docx)
 /** Entradas de un zip por nombre. Soporta «sin comprimir» y «deflate»; solo lee las que `$quiero` acepta. */
 function imp_zip(string $z, callable $quiero): array {
@@ -45,13 +55,14 @@ function imp_zip(string $z, callable $quiero): array {
 
 /** XML sin DOCTYPE ni entidades (nada de XXE ni de «billion laughs») y sin red. */
 function imp_dom(string $xml): DOMDocument {
-    if (preg_match('/<!(DOCTYPE|ENTITY)/i', substr($xml, 0, 4096)) || stripos($xml, '<!ENTITY') !== false) throw new ImportarError('El archivo no es un documento válido.');
+    if (preg_match('/<!(DOCTYPE|ENTITY)/i', substr($xml, 0, 4096)) || stripos($xml, '<!ENTITY') !== false) throw new ImportarError('El archivo no es un documento válido.');   // 1.ª barrera por bytes; la 2.ª, tras cargar (UTF-16)
     $d = new DOMDocument();
     $prev = libxml_use_internal_errors(true);
     $ok = $d->loadXML($xml, LIBXML_NONET | LIBXML_COMPACT);
     libxml_clear_errors();
     libxml_use_internal_errors($prev);
     if (!$ok) throw new ImportarError('No se ha podido leer el contenido del archivo.');
+    if ($d->doctype !== null) throw new ImportarError('El archivo no es un documento válido.');
     return $d;
 }
 
@@ -145,13 +156,15 @@ function imp_pdf_cmap(string $s): array {
     $u = fn(string $hex) => (string) mb_convert_encoding(hex2bin(strlen($hex) % 2 ? '0' . $hex : $hex) ?: '', 'UTF-8', 'UTF-16BE');
     $largo = 1;
     if (preg_match_all('/beginbfchar(.*?)endbfchar/s', $s, $bl)) foreach ($bl[1] as $b) {
-        if (preg_match_all('/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/', $b, $q, PREG_SET_ORDER)) foreach ($q as $r) { $m[hex2bin(strlen($r[1]) % 2 ? '0' . $r[1] : $r[1])] = $u($r[2]); $largo = max($largo, intdiv(strlen($r[1]) + 1, 2)); }
+        if (preg_match_all('/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/', $b, $q, PREG_SET_ORDER)) foreach ($q as $r) { if (count($m) > IMPORTAR_MAX_CMAP) throw new ImportarError('Ese PDF es demasiado complejo de leer. Subid el Excel o pegad la lista.'); $m[hex2bin(strlen($r[1]) % 2 ? '0' . $r[1] : $r[1])] = $u($r[2]); $largo = max($largo, intdiv(strlen($r[1]) + 1, 2)); }
     }
     if (preg_match_all('/beginbfrange(.*?)endbfrange/s', $s, $bl)) foreach ($bl[1] as $b) {
         if (preg_match_all('/<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(<([0-9A-Fa-f]+)>|\[([^\]]*)\])/', $b, $q, PREG_SET_ORDER)) foreach ($q as $r) {
             $a = hexdec($r[1]); $z = min(hexdec($r[2]), $a + 65535); $l = intdiv(strlen($r[1]) + 1, 2); $largo = max($largo, $l);
             $lista = isset($r[5]) && $r[5] !== '' ? (preg_match_all('/<([0-9A-Fa-f]+)>/', $r[5], $ll) ? $ll[1] : []) : null;
+            imp_plazo();
             for ($c = $a; $c <= $z; $c++) {
+                if (count($m) > IMPORTAR_MAX_CMAP) throw new ImportarError('Ese PDF es demasiado complejo de leer. Subid el Excel o pegad la lista.');
                 $k = substr(pack('N', $c), 4 - $l);
                 if ($lista !== null) { if (isset($lista[$c - $a])) $m[$k] = $u($lista[$c - $a]); }
                 else { $ini = hexdec($r[4]) + ($c - $a); $m[$k] = (string) mb_convert_encoding(pack('n', $ini), 'UTF-8', 'UTF-16BE'); }
@@ -205,7 +218,7 @@ function imp_pdf_trozos(string $pdf): array {
     $trozos = [];
     foreach ($objs as $n => [$dic, $flujo]) {
         if ($flujo === null || strpos($flujo, 'BT') === false || preg_match('~/(Subtype\s*/(Image|Form|Type1C|CIDFontType0C)|Type\s*/(XObject|Font|FontFile))~', $dic) || strpos($flujo, 'beginbfchar') !== false) continue;
-        foreach (imp_pdf_contenido($flujo, $mapas) as $t) { $t[0] = $pagina[$n] ?? 1000 + $n; $trozos[] = $t; if (count($trozos) > 60000) break 2; }
+        foreach (imp_pdf_contenido($flujo, $mapas) as $t) { $t[0] = $pagina[$n] ?? 1000 + $n; $trozos[] = $t; if (count($trozos) > IMPORTAR_MAX_TROZOS) throw new ImportarError('Ese PDF es demasiado complejo de leer. Subid el Excel o pegad la lista.'); }
     }
     return $trozos;
 }
@@ -229,7 +242,11 @@ function imp_pdf_contenido(string $s, array $mapas): array {
         return (string) mb_convert_encoding($bytes, 'UTF-8', 'Windows-1252');
     };
     $emite = function (string $t) use (&$o, &$x, &$y, &$tam) { if (trim($t) !== '') $o[] = [0, $x, $y, $tam, $t]; };
+    $abre = [];
+    $vuelta = 0;
     while ($i < $len) {
+        if ((++$vuelta & 255) === 0) imp_plazo();
+        if (count($pila) > IMPORTAR_MAX_PILA || count($o) > IMPORTAR_MAX_TROZOS) throw new ImportarError('Ese PDF es demasiado complejo de leer. Subid el Excel o pegad la lista.');
         $ch = $s[$i];
         if (ctype_space($ch)) { $i++; continue; }
         if ($ch === '%') { $i = (int) strpos($s . "\n", "\n", $i) + 1; continue; }
@@ -254,11 +271,12 @@ function imp_pdf_contenido(string $s, array $mapas): array {
             $h = preg_replace('/\s+/', '', substr($s, $i + 1, $e - $i - 1));
             $pila[] = ['s', (string) hex2bin(strlen($h) % 2 ? $h . '0' : $h)]; $i = $e + 1; continue;
         }
-        if ($ch === '[') { $pila[] = ['[', null]; $i++; continue; }
+        if ($ch === '[') { $abre[] = count($pila); $pila[] = ['[', null]; $i++; continue; }
         if ($ch === ']') {
-            $a = [];
-            while ($pila && end($pila)[0] !== '[') array_unshift($a, array_pop($pila));
-            array_pop($pila); $pila[] = ['a', $a]; $i++; continue;
+            $k = array_pop($abre);
+            if ($k === null) { $i++; continue; }
+            $a = array_slice(array_splice($pila, $k), 1);   // lo de dentro, sin la marca «[»; O(n), no O(n²)
+            $pila[] = ['a', $a]; $i++; continue;
         }
         if ($ch === '/') { preg_match('~^/[^\s/\[\]()<>%]*~', substr($s, $i, 80), $nm); $pila[] = ['n', substr($nm[0], 1)]; $i += strlen($nm[0]); continue; }
         if ($ch === '<' || $ch === '>' || $ch === '{' || $ch === '}') { $i += ($s[$i + 1] ?? '') === $ch ? 2 : 1; continue; }
@@ -287,6 +305,7 @@ function imp_pdf_contenido(string $s, array $mapas): array {
                 break;
         }
         $pila = [];
+        $abre = [];
     }
     return $o;
 }
@@ -311,6 +330,8 @@ function imp_pdf(string $pdf): array {
             if ($k >= 0 && $x - $fila[$k][2] < $tam * 0.8) { $fila[$k][1] .= ' ' . $t; $fila[$k][2] = $x + $ancho($t); }
             else $fila[] = [$x, $t, $x + $ancho($t)];
         }
+        imp_plazo();
+        $fila = array_slice($fila, 0, IMPORTAR_MAX_CELDAS);
         if ($fila) { $filas[] = array_map(fn($c) => [$c[0], $c[1]], $fila); $meta[] = [$items[0][3], $items[0][4], $items[0][1]]; }
         if (count($filas) >= IMPORTAR_MAX_FILAS) break;
     }
@@ -376,6 +397,7 @@ function imp_filas_a_texto(array $filas): array {
 
 /** Contenido subido → líneas «nombre; grupo». El tipo se decide por los primeros bytes. */
 function imp_lee(string $bin): array {
+    $GLOBALS['IMP_FIN'] = microtime(true) + IMPORTAR_SEGUNDOS;
     if (strncmp($bin, "PK\x03\x04", 4) === 0) {
         $nombres = [];
         $fin = strrpos($bin, "PK\x05\x06");
@@ -399,10 +421,13 @@ function imp_lee(string $bin): array {
 $GLOBALS['INV_IMPORTADO'] = null;
 
 function panel_invitados_importar(string $slug, array $c, string $metodo): void {
-    if ($metodo !== 'POST' || !panel_csrf_ok()) { http_response_code(403); exit; }
+    // Un archivo mayor que post_max_size llega con $_POST y $_FILES vacíos (y sin CSRF): se contesta con el motivo, no con un 403 mudo
+    $demasiado = $metodo === 'POST' && !$_POST && !$_FILES && (int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 0;
+    if ($metodo !== 'POST' || (!$demasiado && !panel_csrf_ok())) { http_response_code(403); exit; }
     $res = ['texto' => null, 'aviso' => '', 'error' => ''];
     $f = $_FILES['archivo'] ?? null;
     try {
+        if ($demasiado) throw new ImportarError('El archivo pesa demasiado (máximo 2 MB). Para una lista de invitados sobra: quizá lleva imágenes.');
         if (!limite('importar|' . $slug, 20, 3600, true)) throw new ImportarError('Demasiados intentos seguidos. Esperad un rato y probad de nuevo.');
         if (!is_array($f) || ($f['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) throw new ImportarError('Elegid primero un archivo.');
         if (($f['error'] ?? 0) === UPLOAD_ERR_INI_SIZE || ($f['error'] ?? 0) === UPLOAD_ERR_FORM_SIZE || (int) ($f['size'] ?? 0) > IMPORTAR_MAX_BYTES) throw new ImportarError('El archivo pesa demasiado (máximo 2 MB). Para una lista de invitados sobra: quizá lleva imágenes.');

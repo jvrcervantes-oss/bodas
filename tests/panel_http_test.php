@@ -269,6 +269,27 @@ $zb = $loc . $cen . "PK\x05\x06" . pack('vvvvVVv', 0, 0, 1, 1, strlen($cen), str
 [$st, $r] = pide_archivo('/panel/invitados/importar', 'b.docx', $zb, ['csrf' => $csrf]);
 ok($st === 200 && (strpos($r, 'No se ha podido leer') !== false || strpos($r, 'No he podido leer') !== false || strpos($r, 'demasiado grande') !== false), 'subir una bomba de descompresión: rechazada');
 
+// PDF hostil: nunca más de unos segundos de CPU, y siempre un mensaje (no un error ni un cuelgue)
+function pdf_con_flujo(string $contenido, string $extra = ''): string {
+    $z = gzcompress($contenido, 9);
+    return "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n"
+        . "4 0 obj\n<< /Filter /FlateDecode /Length " . strlen($z) . " >>\nstream\n" . $z . "\nendstream\nendobj\n" . $extra . "%%EOF\n";
+}
+$cmapBomba = '/CIDInit begin begincmap ' . str_repeat("1 beginbfrange <0000> <FFFF> <0041> endbfrange\n", 300);
+$fuenteBomba = "5 0 obj\n<< /Type /Font /Subtype /Type0 /BaseFont /X /ToUnicode 6 0 R >>\nendobj\n6 0 obj\n<< /Filter /FlateDecode /Length 0 >>\nstream\n" . gzcompress($cmapBomba, 9) . "\nendstream\nendobj\n";
+$hostiles = ['cmap con rangos enormes' => pdf_con_flujo("BT /F1 12 Tf 10 700 Td (hola) Tj ET", $fuenteBomba),
+    'array de 200k números' => pdf_con_flujo("BT /F1 12 Tf 10 700 Td [" . str_repeat('1 ', 200000) . "] TJ ET"),
+    'cabecera con 30k trozos' => pdf_con_flujo("BT /F1 12 Tf 10 700 Td (Nombre) Tj ET\n" . str_repeat("BT /F1 12 Tf 10 700 Td (x) Tj ET\n", 30000)),
+    'corchetes sin cerrar' => pdf_con_flujo("BT " . str_repeat('[ ', 100000) . " ET")];
+foreach ($hostiles as $que => $pdfH) {
+    $t0 = microtime(true);
+    [$st, $r] = pide_archivo('/panel/invitados/importar', 'h.pdf', $pdfH, ['csrf' => $csrf]);
+    $seg = microtime(true) - $t0;
+    ok($st === 200 && $seg < 20 && strpos($r, 'class="aviso"') !== false, "PDF hostil ($que): acaba en " . round($seg, 1) . ' s con un mensaje');
+}
+$tras = file_get_contents(inv_fichero($slug));
+ok($tras === $antes, 'PDF hostil: la lista no cambia');
+
 // Respuestas
 $h = $H['respuestas'];
 ok(strpos($h, '/panel/excel') !== false && strpos($h, 'frutos secos') !== false && strpos($h, 'No vienen') !== false, 'respuestas: tabla con alergias, «No vienen» y Excel');
