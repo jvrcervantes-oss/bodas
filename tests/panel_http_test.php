@@ -17,7 +17,7 @@ define('CREATOR_HOST', 'bodaenlace.com');
 define('CREATOR_BASE', '');
 define('CORREO_A_FICHERO', true);
 $raiz = dirname(__DIR__);
-foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia', 'estudio', 'borrador', 'invitados', 'creador', 'landing', 'vista_constructor', 'boda', 'galeria', 'proxy'] as $m) {
+foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia', 'estudio', 'borrador', 'invitados', 'exportar', 'creador', 'landing', 'vista_constructor', 'boda', 'galeria', 'proxy'] as $m) {
     require_once $raiz . '/app/' . $m . '.php';
 }
 $fallos = 0;
@@ -189,6 +189,45 @@ ok(strpos($hq, '"><script>') === false && strpos($hq, '&quot;&gt;&lt;script&gt;'
 ok(strpos($h, 'id="lista"') !== false && strpos($h, 'name="accion" value="lista"') !== false && strpos($h, 'data-copiar-pendientes') !== false, 'invitados: editar la lista y copiar los que faltan');
 $csrf = csrf_de($h);
 ok($csrf !== '', 'invitados: lleva el CSRF');
+
+// Exportar la lista (app/exportar.php): Excel, PDF y Word reales, con los tres estados y sin contacto, alergias ni enlaces
+ok(substr_count($h, '/panel/invitados/exportar?f=') === 3 && strpos($h, '?f=xlsx') !== false && strpos($h, '?f=pdf') !== false && strpos($h, '?f=docx') !== false, 'invitados: botones de Excel, PDF y Word');
+/** Lee un zip sin ZipArchive: nombre => contenido, comprobando el CRC de cada entrada (el fallo típico de un zip escrito a mano). */
+function zip_lee(string $z): array {
+    $o = [];
+    if (!preg_match('/PK/', $z, $m, PREG_OFFSET_CAPTURE, max(0, strlen($z) - 22))) return $o;
+    $fin = unpack('vdisco/vdc/vn/vnt/Vtam/Voff', substr($z, $m[0][1] + 4, 18));
+    $p = $fin['off'];
+    for ($i = 0; $i < $fin['nt']; $i++) {
+        $e = unpack('Vsig/vv1/vv2/vflag/vmet/vhora/vdia/Vcrc/Vcomp/Vtam/vln/vle/vlc/vdi/vai/Vea/Voff', substr($z, $p, 46));
+        $nombre = substr($z, $p + 46, $e['ln']);
+        $dato = substr($z, $e['off'] + 30 + $e['ln'], $e['tam']);   // sin campo extra local: lo escribimos con longitud 0
+        if ($e['sig'] !== 0x02014b50 || $e['met'] !== 0 || crc32($dato) !== $e['crc']) return [];
+        $o[$nombre] = $dato;
+        $p += 46 + $e['ln'] + $e['le'] + $e['lc'];
+    }
+    return $o;
+}
+$cookieBak = $cookie; $cookie = '';
+[$st, , $cab] = pide('GET', '/panel/invitados/exportar?f=xlsx');
+ok($st === 302 && strpos($cab, 'Location: /panel/entrar') !== false, 'exportar sin sesión: al login');
+$cookie = $cookieBak;
+[$st, , $cab] = pide('GET', '/panel/invitados/exportar?f=exe');
+ok($st === 404, "exportar: un formato que no existe da 404 ($st)");
+[$st, $bin, $cab] = pide('GET', '/panel/invitados/exportar?f=xlsx');
+$z = zip_lee($bin);
+ok($st === 200 && stripos($cab, 'spreadsheetml.sheet') !== false && stripos($cab, 'Cache-Control: private, no-store') !== false && stripos($cab, 'attachment; filename="invitados-' . $slug) !== false
+    && isset($z['xl/worksheets/sheet1.xml'], $z['[Content_Types].xml'], $z['xl/workbook.xml']), 'exportar xlsx: zip válido (CRC), tipo y descarga');
+$hoja = $z['xl/worksheets/sheet1.xml'] ?? '';
+ok(strpos($hoja, 'Ana Pérez') !== false && strpos($hoja, 'Familia Pérez') !== false && strpos($hoja, 'Viene') !== false && strpos($hoja, 'Sin contestar') !== false
+    && strpos($hoja, 'Tíos &lt;b&gt;Ruiz&lt;/b&gt;') !== false && strpos($hoja, '<b>') === false, 'exportar xlsx: nombre, grupo y estado; lo escrito, escapado');
+ok(strpos($hoja, '600000000') === false && strpos($hoja, 'frutos secos') === false && strpos($hoja, $inv['grupos']['g:vecinos']['token']) === false, 'exportar: sin contacto, sin alergias y sin el token del enlace');
+[$st, $bin, $cab] = pide('GET', '/panel/invitados/exportar?f=docx');
+$z = zip_lee($bin);
+ok($st === 200 && stripos($cab, 'wordprocessingml.document') !== false && strpos($z['word/document.xml'] ?? '', 'Ana Pérez') !== false && strpos($z['word/document.xml'] ?? '', '<w:tblHeader/>') !== false, 'exportar docx: zip válido y la tabla con la lista');
+[$st, $bin, $cab] = pide('GET', '/panel/invitados/exportar?f=pdf');
+ok($st === 200 && stripos($cab, 'application/pdf') !== false && strpos($bin, '%PDF-1.4') === 0 && substr(rtrim($bin), -5) === '%%EOF' && strpos($bin, 'startxref') !== false, 'exportar pdf: cabecera y cierre de un PDF');
+file_put_contents(sys_get_temp_dir() . '/bodas_export_prueba.pdf', $bin);
 
 // Respuestas
 $h = $H['respuestas'];

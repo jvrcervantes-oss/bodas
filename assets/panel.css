@@ -167,6 +167,7 @@ details.detalle-card > summary .sub { display: block; margin: 2px 0 0; }
 .feed small { display: block; color: var(--p-muted); font-size: 11.5px; }
 
 /* ---------- tablas y filtros ---------- */
+.exportar { margin-bottom: 12px; }
 .filtros { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips a { border: 1px solid var(--line); background: var(--paper); border-radius: var(--pill); padding: 5px 12px; font-size: 12.5px; text-decoration: none; color: var(--ink-2); }

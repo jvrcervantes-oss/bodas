@@ -341,6 +341,13 @@ function panel_grupos(string $slug, array $c): array {
 
 const PANEL_EST_GRUPO = ['sin' => ['Sin abrir', ''], 'abierto' => ['Abierto, sin responder', 'warn'], 'conf' => ['Confirmado', 'ok'], 'no' => ['No vienen', 'mal']];
 
+/** Descargar la lista de invitados (app/exportar.php): Excel, PDF o Word, sin contactos ni alergias ni enlaces. */
+function panel_export_botones(): string {
+    $o = '<div class="fila-bot exportar" role="group" aria-label="Descargar la lista de invitados"><span class="muted">Descargar la lista:</span>';
+    foreach (EXPORT_FORMATOS as $f => [$nombre]) $o .= '<a class="btn b-sm b-papel" href="/panel/invitados/exportar?f=' . $f . '">' . p_ico('descargas') . h($nombre) . '</a>';
+    return $o . '</div>';
+}
+
 function panel_invitados(string $slug, array $c): string {
     $inv = inv_lee($slug);
     $csrf = '<input type="hidden" name="csrf" value="' . h(panel_csrf()) . '">';
@@ -384,6 +391,7 @@ function panel_invitados(string $slug, array $c): string {
         }
         $o .= '<section class="card" id="enlaces">' . panel_card_cab('Vuestra lista', 'Cada grupo tiene su enlace personal: al abrirlo, la web le saluda por su nombre y ya trae sus nombres escritos. Si confirman dos veces, vale la última.',
                 '<a class="btn b-rosa" href="/panel/invitados?editar=1#lista">Añadir invitados</a>')
+            . panel_export_botones()
             . '<div class="filtros"><nav class="chips" aria-label="Filtrar por estado">' . panel_filtros('/panel/invitados', $ops, $f, ['q' => $q]) . '</nav>'
             . '<form class="buscar" method="get" action="/panel/invitados" role="search">' . p_ico('buscar') . ($f !== 'todos' ? '<input type="hidden" name="f" value="' . h($f) . '">' : '')
             . '<label for="q" class="vh">Buscar grupo o persona</label><input id="q" name="q" type="search" value="' . h($q) . '" placeholder="Buscar grupo o persona"></form></div>'
@@ -411,6 +419,7 @@ function panel_invitados(string $slug, array $c): string {
     $abierta = $q !== '' || !$G;
     $o .= '<details class="card detalle-card" id="personas"' . ($abierta ? ' open' : '') . '><summary><span><span class="h2">Persona a persona</span>'
         . '<span class="sub">' . count($filasP) . ' invitados · ' . $res['pend'] . ' sin contestar. Se cruza por nombre con las confirmaciones: si alguien contestó con otro nombre o por teléfono, corregidlo a mano.</span></span></summary>'
+        . ($G ? '' : panel_export_botones())
         . ($pend ? '<p class="fila-bot"><button type="button" class="btn b-papel" data-copiar-pendientes="' . h(implode("\n", array_column($pend, 'nombre'))) . '">Copiar los que faltan</button><span class="copiado inv-copiado" role="status" hidden>Copiado</span></p>' : '')
         . '<div class="kpis kpis-4 tab"><div class="kpi"><b>' . count($filasP) . '</b><span>invitados</span></div><div class="kpi ok"><b>' . $res['viene'] . '</b><span>vienen</span></div>'
         . '<div class="kpi mal"><b>' . $res['no'] . '</b><span>no vienen</span></div><div class="kpi warn"><b>' . $res['pend'] . '</b><span>sin contestar</span></div></div>'

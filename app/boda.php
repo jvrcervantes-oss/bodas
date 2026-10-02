@@ -261,6 +261,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
 
     switch ($sub) {
         case 'invitados': panel_invitados_accion($slug, $metodo); return;
+        case 'invitados/exportar': panel_invitados_exportar($slug, $c, $metodo); return;   // Excel, PDF o Word (app/exportar.php)
         case 'respuestas/misma': panel_respuestas_misma($slug, $c, $metodo); return;   // BOD-22 (app/panel.php)
         case 'musica/quitar': panel_musica_quitar($slug, $c, $metodo); return;
         case 'galeria':   // POST = subir una foto (la usa el editor); GET/HEAD = la página, arriba
