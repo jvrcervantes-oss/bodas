@@ -227,15 +227,16 @@ table.t-corta { min-width: 0; }
 .mesa-persona:hover { background: var(--surface-high); }
 .mesa-persona[aria-pressed="true"] { background: var(--espresso); border-color: var(--espresso); color: #fff; }
 .mesa-persona[aria-pressed="true"] .muted, .mesa-persona[aria-pressed="true"] .alergia, .mesa-persona[aria-pressed="true"] .rep { color: #fff; }
-/* Arrastrar solo en escritorio: en el móvil quita el desplazamiento de la página y se usa tocar + las flechas de la lista */
-@media (min-width: 901px) {
+/* Arrastrar solo con ratón (puntero fino), a cualquier ancho: con el dedo quita el desplazamiento de la página y se usa tocar + las flechas de la lista */
+@media (pointer: fine) {
   .mesa-persona[data-persona], .todo-grupo[data-grupo-sel] { cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
   .silla[data-sp] { cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
 }
 .solo-movil, .mesa-mover { display: none; }
 .mesa-flecha { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: var(--paper); font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
 .mesa-flecha:disabled { opacity: .35; cursor: default; }
-@media (max-width: 900px) {
+/* Las flechas salen con pantalla estrecha o con el dedo (aunque en una ventana estrecha con ratón también se puede arrastrar) */
+@media (max-width: 900px), (pointer: coarse) {
   .solo-pc { display: none; }
   .solo-movil { display: inline; }
   .mesa-mover { display: block; margin: 0; }

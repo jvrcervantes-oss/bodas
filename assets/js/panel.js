@@ -197,11 +197,11 @@
       if (v) { window.scrollBy({ top: v, behavior: 'instant' }); pintaArrastre(); }   // «instant»: la hoja de estilos pone scroll-behavior: smooth
       arr.raf = requestAnimationFrame(autoscroll);
     }
-    // En el móvil no se arrastra (se pelea con el desplazamiento de la página): se toca y se usan las flechas de la lista
-    var movil = window.matchMedia('(max-width: 900px)');
+    // Con el dedo no se arrastra (se pelea con el desplazamiento de la página): se toca y se usan las flechas de la lista.
+    // Con ratón sí, a cualquier ancho de ventana.
     document.querySelectorAll('.mesa-persona[data-persona], .todo-grupo[data-grupo-sel], .silla[data-sp]').forEach(function (o) {
       o.addEventListener('pointerdown', function (ev) {
-        if (movil.matches || (ev.pointerType === 'mouse' && ev.button !== 0) || arr) return;
+        if (ev.pointerType === 'touch' || (ev.pointerType === 'mouse' && ev.button !== 0) || arr) return;
         arr = { origen: o, x: ev.clientX, y: ev.clientY, activo: false };
         document.addEventListener('pointermove', mueve);
         document.addEventListener('pointerup', termina);

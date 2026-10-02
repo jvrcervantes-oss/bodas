@@ -235,7 +235,7 @@ function panel_mesas(string $slug, array $c, string $metodo): void {
         $r = muta_json(mesas_fichero($slug), fn(array &$d) => mesas_aplica($d, $accion, $in, $ban), MAX_BYTES_MESAS);
         $e = $r === null ? 'lleno' : (string) $r;
         // Vuelve a la mesa tocada (si el id tiene la forma de una mesa): en el móvil cada flecha recarga y no debe mandar arriba del todo
-        $ancla = preg_match('/^m[a-f0-9]{8}$/', (string) ($_POST['mesa'] ?? '')) ? '#mesa-' . $_POST['mesa'] : '';
+        $ancla = preg_match('/^m[a-f0-9]{8}$/D', (string) ($_POST['mesa'] ?? '')) ? '#mesa-' . $_POST['mesa'] : '';
         header('Location: /panel/mesas' . ($e !== '' ? '?e=' . rawurlencode($e) : '') . $ancla, true, 303);
         exit;
     }
