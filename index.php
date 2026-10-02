@@ -17,6 +17,7 @@ require __DIR__ . '/app/estudio.php';
 require __DIR__ . '/app/borrador.php';
 require __DIR__ . '/app/invitados.php';
 require __DIR__ . '/app/exportar.php';
+require __DIR__ . '/app/importar.php';
 require __DIR__ . '/app/creador.php';
 require __DIR__ . '/app/landing.php';
 require __DIR__ . '/app/vista_constructor.php';

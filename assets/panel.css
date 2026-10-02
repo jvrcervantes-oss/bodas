@@ -100,6 +100,7 @@ details.detalle-card[open] > summary { margin-bottom: 8px; }
 details.detalle-card > summary .sub { display: block; margin: 2px 0 0; }
 .form-lista label { display: block; font-size: 12.5px; color: var(--ink-2); }
 .form-lista .fila-bot { margin-top: 10px; }
+.form-subir { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
 .check { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 12px; padding: 10px 12px; border-radius: var(--r); background: var(--surface-c); font-size: 12.5px; color: var(--ink-2); }
 .check input { margin-top: 3px; accent-color: var(--rose-2); }
 

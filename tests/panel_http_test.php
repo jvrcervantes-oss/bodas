@@ -17,7 +17,7 @@ define('CREATOR_HOST', 'bodaenlace.com');
 define('CREATOR_BASE', '');
 define('CORREO_A_FICHERO', true);
 $raiz = dirname(__DIR__);
-foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia', 'estudio', 'borrador', 'invitados', 'exportar', 'creador', 'landing', 'vista_constructor', 'boda', 'galeria', 'proxy'] as $m) {
+foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia', 'estudio', 'borrador', 'invitados', 'exportar', 'importar', 'creador', 'landing', 'vista_constructor', 'boda', 'galeria', 'proxy'] as $m) {
     require_once $raiz . '/app/' . $m . '.php';
 }
 $fallos = 0;
@@ -228,6 +228,46 @@ ok($st === 200 && stripos($cab, 'wordprocessingml.document') !== false && strpos
 [$st, $bin, $cab] = pide('GET', '/panel/invitados/exportar?f=pdf');
 ok($st === 200 && stripos($cab, 'application/pdf') !== false && strpos($bin, '%PDF-1.4') === 0 && substr(rtrim($bin), -5) === '%%EOF' && strpos($bin, 'startxref') !== false, 'exportar pdf: cabecera y cierre de un PDF');
 file_put_contents(sys_get_temp_dir() . '/bodas_export_prueba.pdf', $bin);
+
+// Subir la lista desde un archivo (app/importar.php): lo que descargamos se puede volver a subir; el archivo no se guarda y la lista no cambia hasta «Guardar lista»
+function pide_archivo(string $ruta, string $nombre, string $contenido, array $campos): array {
+    global $pApp, $cookie, $host;
+    $tmpf = tempnam(sys_get_temp_dir(), 'bsub'); file_put_contents($tmpf, $contenido);
+    $ch = curl_init('http://127.0.0.1:' . $pApp . $ruta);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => array_merge(['Host: ' . $host], $cookie !== '' ? ['Cookie: ' . $cookie] : []),
+        CURLOPT_POST => true, CURLOPT_POSTFIELDS => $campos + ['archivo' => new CURLFile($tmpf, 'application/octet-stream', $nombre)]]);
+    $r = (string) curl_exec($ch); $st = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch); @unlink($tmpf);
+    return [$st, $r];
+}
+$antes = file_get_contents(inv_fichero($slug));
+[, $bx] = pide('GET', '/panel/invitados/exportar?f=xlsx'); [, $bd] = pide('GET', '/panel/invitados/exportar?f=docx'); [, $bp] = pide('GET', '/panel/invitados/exportar?f=pdf');
+ok(strpos($h, 'action="/panel/invitados/importar"') !== false && strpos($h, 'enctype="multipart/form-data"') !== false && strpos($h, 'name="archivo"') !== false && strpos($h, 'name="lista"') !== false, 'invitados: subir archivo Y pegar, los dos');
+[$st] = pide_archivo('/panel/invitados/importar', 'x.xlsx', $bx, []);
+ok($st === 403, 'subir sin CSRF: 403');
+foreach (['xlsx' => $bx, 'docx' => $bd, 'pdf' => $bp] as $ext => $bin) {
+    [$st, $r] = pide_archivo('/panel/invitados/importar', 'lista.' . $ext, $bin, ['csrf' => $csrf]);
+    ok($st === 200 && strpos($r, 'He leído 6 invitados') !== false && strpos($r, 'hasta entonces no se ha guardado nada') !== false && strpos($r, 'Tíos &lt;b&gt;Ruiz&lt;/b&gt;') !== false, "subir $ext (el que descargamos): lee los 6 y los enseña para revisar ($st)");
+    ok(strpos($r, 'Pedro Sol; Vecinos') !== false, "subir $ext: el cuadro lleva nombre y grupo");
+}
+ok(file_get_contents(inv_fichero($slug)) === $antes, 'subir: no guarda nada hasta «Guardar lista»');
+[$st, $r] = pide_archivo('/panel/invitados/importar', 'nueva.csv', "Nombre;Grupo\nLaura Mora;Amigos\nAna Pérez;Familia Pérez\n", ['csrf' => $csrf]);
+ok(strpos($r, 'He leído 2 invitados del archivo y 1 es nuevo') !== false && strpos($r, 'Laura Mora; Amigos') !== false && strpos($r, 'Pedro Sol; Vecinos') !== false, 'subir csv: suma lo nuevo a la lista actual sin duplicar');
+[$st, $r] = pide_archivo('/panel/invitados/importar', 'x.xlsx', 'esto no es nada' . "\0\1", ['csrf' => $csrf]);
+ok($st === 200 && strpos($r, 'No reconozco ese archivo') !== false, 'subir basura: mensaje claro, no un error');
+[$st, $r] = pide_archivo('/panel/invitados/importar', 'x.xls', "\xD0\xCF\x11\xE0" . str_repeat('a', 50), ['csrf' => $csrf]);
+ok(strpos($r, '.xls o .doc') !== false, 'subir Excel antiguo: dice que lo guarden como .xlsx');
+$docxMalo = exp_zip(['[Content_Types].xml' => '<x/>', 'word/document.xml' => '<?xml version="1.0"?><!DOCTYPE d [<!ENTITY e SYSTEM "file:///etc/passwd">]><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body><w:p><w:r><w:t>&e;</w:t></w:r></w:p></w:body></w:document>']);
+[$st, $r] = pide_archivo('/panel/invitados/importar', 'x.docx', $docxMalo, ['csrf' => $csrf]);
+ok($st === 200 && strpos($r, 'no es un documento válido') !== false && strpos($r, 'root:') === false, 'subir un docx con entidad externa: rechazado');
+$bomba = gzdeflate(str_repeat('a', 30 * 1024 * 1024), 9);
+$z = exp_zip(['word/document.xml' => 'x']); $z = str_replace('word/document.xml', 'word/document.xml', $z);
+// zip con deflate que dice pesar poco y descomprime mucho: se rechaza sin agotar memoria
+$nom = 'word/document.xml'; $lon = strlen($bomba);
+$loc = "PK\x03\x04" . pack('vvvvvVVVvv', 20, 0, 8, 0, 33, 0, $lon, 10, strlen($nom), 0) . $nom . $bomba;
+$cen = "PK\x01\x02" . pack('vvvvvvVVVvvvvvVV', 20, 20, 0, 8, 0, 33, 0, $lon, 10, strlen($nom), 0, 0, 0, 0, 0, 0) . $nom;
+$zb = $loc . $cen . "PK\x05\x06" . pack('vvvvVVv', 0, 0, 1, 1, strlen($cen), strlen($loc), 0);
+[$st, $r] = pide_archivo('/panel/invitados/importar', 'b.docx', $zb, ['csrf' => $csrf]);
+ok($st === 200 && (strpos($r, 'No se ha podido leer') !== false || strpos($r, 'No he podido leer') !== false || strpos($r, 'demasiado grande') !== false), 'subir una bomba de descompresión: rechazada');
 
 // Respuestas
 $h = $H['respuestas'];

@@ -352,11 +352,21 @@ function panel_invitados(string $slug, array $c): string {
     $inv = inv_lee($slug);
     $csrf = '<input type="hidden" name="csrf" value="' . h(panel_csrf()) . '">';
     $texto = implode("\n", array_map(fn($g) => $g['nombre'] . ($g['grupo'] !== '' ? '; ' . $g['grupo'] : ''), $inv['lista']));
+    // Venida de «Subir archivo» (app/importar.php): el cuadro lleva la lista actual más lo leído, sin guardar, para revisarlo
+    $imp = $GLOBALS['INV_IMPORTADO'] ?? null;
+    if (is_array($imp) && $imp['texto'] !== null) $texto = $imp['texto'];
+    $avisoImp = is_array($imp) ? ($imp['error'] !== '' ? '<p class="aviso" role="alert">' . h($imp['error']) . '</p>' : ($imp['aviso'] !== '' ? '<p class="aviso" role="status">' . h($imp['aviso']) . '</p>' : '')) : '';
     $nota = '<p class="sub">Solo nombres y, si queréis, un grupo (por ejemplo «Familia de Lucía»). Ni teléfonos ni alergias: eso ya lo dejan ellos al confirmar. Esta lista solo la veis vosotros y se borra junto con las respuestas.</p>';
     $form = '<form method="post" action="/panel/invitados" class="form-lista">' . $csrf . '<input type="hidden" name="accion" value="lista">'
         . '<label for="invLista">Una persona por línea. Para el grupo, un punto y coma: <i>Ana García; Familia de Lucía</i>. También podéis pegar dos columnas de Excel.</label>'
         . '<textarea id="invLista" name="lista" rows="9" maxlength="' . INVITADOS_MAX_BYTES . '" spellcheck="false">' . h($texto) . '</textarea>'
         . '<div class="fila-bot"><button class="btn b-rosa" type="submit">Guardar lista</button></div></form>';
+    // O subir un archivo: Excel, Word o PDF con la lista (se lee y se enseña en el cuadro de arriba; no se guarda hasta «Guardar lista»)
+    $subir = '<form method="post" action="/panel/invitados/importar" enctype="multipart/form-data" class="form-lista form-subir">' . $csrf
+        . '<label for="invArchivo">O subid un archivo con la lista: Excel (.xlsx), Word (.docx), PDF, .csv o .txt. Un nombre por fila y, si queréis, el grupo en la columna de al lado (o poned las cabeceras «Nombre» y «Grupo»). Lo leemos y os lo enseñamos para que lo reviséis antes de guardar; no nos quedamos con el archivo.</label>'
+        . '<div class="fila-bot"><input id="invArchivo" type="file" name="archivo" required accept=".xlsx,.docx,.pdf,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,text/csv,text/plain">'
+        . '<button class="btn b-papel" type="submit">Subir archivo</button></div></form>';
+    $form = $avisoImp . $form . $subir;
     if (!$inv['lista']) {
         return '<section class="card" id="lista">' . panel_card_cab('Vuestra lista de invitados', 'Pegad aquí a quién habéis invitado: os diremos quién falta por contestar y cada grupo tendrá su enlace personal.') . $nota . $form . '</section>';
     }
@@ -426,7 +436,7 @@ function panel_invitados(string $slug, array $c): string {
         . ($tb !== '' ? '<div class="tabla-w"><table class="t"><thead><tr><th>Nombre</th><th>Grupo</th><th>Estado</th><th>Corregir</th></tr></thead><tbody>' . $tb . '</tbody></table></div>' : '<p class="vacio">Nadie con esa búsqueda.</p>')
         . '</details>';
 
-    $o .= '<details class="card detalle-card" id="lista"' . (($_GET['editar'] ?? '') === '1' ? ' open' : '') . '><summary><span class="h2">Añadir o editar la lista</span></summary>' . $nota . $form . '</details>';
+    $o .= '<details class="card detalle-card" id="lista"' . ((($_GET['editar'] ?? '') === '1' || is_array($imp)) ? ' open' : '') . '><summary><span class="h2">Añadir o editar la lista</span></summary>' . $nota . $form . '</details>';
     return $o;
 }
 
