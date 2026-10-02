@@ -160,7 +160,7 @@ details.detalle-card > summary .sub { display: block; margin: 2px 0 0; }
 .feed { list-style: none; margin: 0; padding: 0; display: grid; }
 .feed li { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
 .feed li:last-child { border-bottom: 0; }
-.feed .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; flex-shrink: 0; background: var(--surface-high); color: var(--ink-2); }
+.feed .av { box-sizing: border-box; width: 32px; height: 32px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1; letter-spacing: 0; font-size: 12px; font-weight: 600; flex: none; overflow: hidden; background: var(--surface-high); color: var(--ink-2); }
 .feed .av.ok { background: var(--ok-c); color: var(--ok-t); }
 .feed .av.mal { background: var(--mal-c); color: var(--mal-t); }
 .feed .av.warn { background: var(--warn-c); color: var(--warn-t); }
