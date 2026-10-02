@@ -13,6 +13,10 @@
 //    host idéntico a uno propio, sin usuario ni puerto; el href se reconstruye.
 //  · Cuarentena: 24 h en noindex tras publicar o editar, para que el owner pueda vetar (el servicio del
 //    Padrino le avisa por Telegram). Retirar se puede deshacer: las versiones se guardan.
+//  · Etiqueta de IA (BOD-52, Legal #189): la pone el SERVIDOR al renderizar, en guia_pagina() —único punto
+//    de render de una guía—, junto al titular y en meta + JSON-LD. No depende del Padrino ni de su prompt, y
+//    sin etiqueta ni se publica (padrino_contenido) ni se sirve. Solo dice que la redacta una IA: la revisión
+//    humana solo es real con el veto de 24 h, así que no se afirma.
 //  · Pie honesto: se publica sin revisión humana previa y lo dice (arts. 5 LCD y 20 TRLGDCU).
 
 declare(strict_types=1);
@@ -43,6 +47,20 @@ function guias_dir(string ...$p): string { return dir_datos('contenido', ...$p);
 function guia_slug_valido(string $s): bool {
     return strlen($s) <= 80 && (bool) preg_match('/^[a-z0-9]+(?:-[a-z0-9]+){0,9}$/', $s) && !in_array($s, GUIAS_RESERVADOS, true);
 }
+const GUIAS_ETIQUETA_IA = 'Esta guía ha sido redactada por El Padrino, el asistente de inteligencia artificial de BodaEnlace.';
+const GUIAS_ORIGEN_IA = 'padrino-ia';
+
+/** Etiqueta de IA de una guía (solo ES: es el único idioma del sitio para guías). null = no se puede etiquetar. */
+function guia_etiqueta_ia(array $g): ?array {
+    $origen = (string) ($g['origen'] ?? GUIAS_ORIGEN_IA);   // guías anteriores a BOD-52: solo las publicaba el Padrino
+    $f = substr((string) ($g['publicada'] ?? ''), 0, 10);
+    $ts = strtotime((string) ($g['publicada'] ?? ''));
+    $txt = fecha_larga($f, false);
+    if ($origen !== GUIAS_ORIGEN_IA || $ts === false || $txt === '') return null;
+    return ['texto' => GUIAS_ETIQUETA_IA, 'iso' => date('c', $ts), 'fecha' => $txt,
+        'html' => '<p class="g-ia" data-ia="padrino">' . h(GUIAS_ETIQUETA_IA) . ' <time datetime="' . h(date('c', $ts)) . '">Publicada el ' . h($txt) . '.</time></p>'];
+}
+
 function guia_lee(string $slug): ?array { return guia_slug_valido($slug) ? lee_json(guias_dir($slug, 'actual.json')) : null; }
 
 /** Lista de motivos de rechazo (vacía = se puede publicar). Se valida el texto CRUDO. */
@@ -147,6 +165,14 @@ function guias_publicadas_hoy(): int {
     return $n;
 }
 
+/** Registro que se guarda al publicar; el origen de IA lo pone el servidor. null = no se puede etiquetar. */
+function guia_registro(string $slug, string $titulo, string $desc, string $cuerpo, ?array $prev, string $ahora): ?array {
+    $g = ['slug' => $slug, 'version' => (int) ($prev['version'] ?? 0) + 1, 'titulo' => $titulo, 'descripcion' => $desc, 'cuerpo' => $cuerpo,
+        'creada' => (string) ($prev['creada'] ?? $ahora), 'publicada' => $ahora, 'retirada' => false,
+        'origen' => GUIAS_ORIGEN_IA, 'autor' => 'El Padrino'];
+    return guia_etiqueta_ia($g) === null ? null : $g;
+}
+
 /** API: POST contenido {slug, titulo, descripcion, cuerpo} · POST contenido/retirar {slug} · POST contenido/restaurar {slug}. */
 function padrino_contenido(string $sub, array $c, string $quien = 'padrino'): void {
     $slug = strtolower(clean_str($c['slug'] ?? '', 80));
@@ -171,13 +197,14 @@ function padrino_contenido(string $sub, array $c, string $quien = 'padrino'): vo
     if (guias_publicadas_hoy() >= GUIAS_MAX_DIA) json_response(['ok' => false, 'error' => 'Máximo ' . GUIAS_MAX_DIA . ' publicaciones al día.'], 429);
     $r = con_cerrojo(function () use ($slug, $titulo, $desc, $cuerpo) {
         $prev = guia_lee($slug);
-        $v = (int) ($prev['version'] ?? 0) + 1;
-        $g = ['slug' => $slug, 'version' => $v, 'titulo' => $titulo, 'descripcion' => $desc, 'cuerpo' => $cuerpo,
-            'creada' => (string) ($prev['creada'] ?? date('c')), 'publicada' => date('c'), 'retirada' => false];
+        $g = guia_registro($slug, $titulo, $desc, $cuerpo, $prev, date('c'));
+        if ($g === null) return null;   // sin etiqueta no se publica (BOD-52)
+        $v = $g['version'];
         escribe_json(guias_dir($slug, 'v' . $v . '.json'), $g);
         escribe_json(guias_dir($slug, 'actual.json'), $g);
         return $g;
     });
+    if ($r === null) { guias_log(['accion' => 'rechazo', 'slug' => $slug, 'errores' => ['etiqueta-ia']]); json_response(['ok' => false, 'error' => 'No se puede etiquetar la guía como contenido de IA; no se publica.'], 500); }
     $hash = hash('sha256', $titulo . "\n" . $desc . "\n" . $cuerpo);
     guias_log(['accion' => 'publicar', 'slug' => $slug, 'version' => $r['version'], 'sha256' => $hash]);
     json_response(['ok' => true, 'slug' => $slug, 'version' => $r['version'], 'url' => url_creador('guia/' . $slug), 'sha256' => $hash, 'cuarentena_hasta' => date('c', time() + GUIAS_CUARENTENA_H * 3600)]);
@@ -205,22 +232,35 @@ function sirve_guia(string $slug): bool {
     $g = guia_lee($slug);
     if (!$g || !empty($g['retirada'])) return false;
     $cuarentena = strtotime((string) $g['publicada']) > time() - GUIAS_CUARENTENA_H * 3600;
+    if (guia_etiqueta_ia($g) === null) { guias_log(['accion' => 'sin-etiqueta', 'slug' => $slug]); return false; }   // nunca sin etiqueta
     $pie = '<p class="g-pie">Texto redactado y publicado por un sistema de IA sin revisión humana previa. Fecha: ' . h(fecha_larga(substr((string) $g['publicada'], 0, 10), false))
         . '. Si ves un error, escríbenos a <a href="mailto:' . h(empresa()['email']) . '">' . h(empresa()['email']) . '</a>.</p>';
-    echo guia_pagina(guia_texto($g['titulo']), guia_texto($g['descripcion']), '<article class="legal g-art">' . guia_html($g['cuerpo']) . $pie . '</article>', !$cuarentena, $slug);
+    echo guia_pagina(guia_texto($g['titulo']), guia_texto($g['descripcion']), '<article class="legal g-art">' . guia_html($g['cuerpo']) . $pie . '</article>', !$cuarentena, $slug, $g);
     return true;
 }
 
-function guia_pagina(string $titulo, string $desc, string $cuerpo, bool $indexable, string $slug): string {
+/** ÚNICO punto de render de guías: con slug exige la guía y su etiqueta de IA (BOD-52); sin ella lanza, no pinta. */
+function guia_pagina(string $titulo, string $desc, string $cuerpo, bool $indexable, string $slug, ?array $guia = null): string {
+    $et = null; $metaIa = '';
+    if ($slug !== '') {
+        $et = $guia !== null ? guia_etiqueta_ia($guia) : null;
+        if ($et === null) throw new LogicException('Guía sin etiqueta de IA: no se renderiza.');
+        $ld = ['@context' => 'https://schema.org', '@type' => 'Article', 'headline' => $titulo, 'description' => $desc,
+            'datePublished' => $et['iso'], 'inLanguage' => 'es',
+            'author' => ['@type' => 'Organization', 'name' => 'El Padrino, asistente de inteligencia artificial de BodaEnlace'],
+            'creditText' => $et['texto'], 'abstract' => $et['texto'], 'url' => url_creador('guia/' . $slug)];
+        $metaIa = '<meta name="author" content="El Padrino (IA)"><meta name="ai-generated" content="true"><meta name="ai-disclosure" content="' . h($et['texto']) . '">'
+            . '<script type="application/ld+json">' . json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . '</script>';
+    }
     $robots = (OCULTO || !$indexable) ? 'noindex, nofollow' : 'index, follow';
     if (OCULTO || !$indexable) header('X-Robots-Tag: noindex, nofollow');
     $url = url_creador('guia' . ($slug !== '' ? '/' . $slug : ''));
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
-        . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="description" content="' . h($desc) . '"><meta name="robots" content="' . $robots . '">'
+        . '<title>' . h($titulo) . ' — ' . h(marca()) . '</title><meta name="description" content="' . h($desc) . '"><meta name="robots" content="' . $robots . '">' . $metaIa
         . '<link rel="canonical" href="' . h($url) . '">' . favicon_links()
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple">'
         . '<header class="s-top">' . logo_marca('c-marca', BASE_PATH . '/') . '</header>'
-        . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . $cuerpo
+        . '<main class="simple-main"><h1>' . h($titulo) . '</h1>' . ($et['html'] ?? '') . $cuerpo
         . '<p class="g-cta"><a class="c-btn" href="' . BASE_PATH . '/crear">Crear la web de vuestra boda</a></p></main>' . pie_creador() . '</body></html>';
 }
 
