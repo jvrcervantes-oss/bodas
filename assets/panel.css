@@ -250,7 +250,7 @@ table.t-corta { min-width: 0; }
 /* Móvil: una mesa por fila. El círculo con sus sillas a la izquierda, nombre y plazas al lado, y la lista de personas a todo el ancho
    (con dos mesas por fila al nombre le quedaban ~50 px y se cortaba). El enganche sigue siendo data-mesa / data-persona / data-sentar. */
 @media (max-width: 600px) {
-  .salon { grid-template-columns: minmax(0, 1fr); }
+  .mesas .salon { grid-template-columns: minmax(0, 1fr); }   /* con .mesas: gana al .salon de 170 px del bloque de 900 px, que va más abajo */
   .mesa { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "circ info" "lista lista" "edit edit"; align-items: center; justify-items: stretch; gap: 4px 10px; padding: 12px; }
   .mesa .m-wrap { grid-area: circ; margin: 20px 18px; }
   .mesa > small { display: none; }
