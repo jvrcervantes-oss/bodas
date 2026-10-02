@@ -268,7 +268,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <title><?= h($titulo === $nom ? $nom . $fechaTxt : $titulo . ' — ' . ($nom ?: 'Nuestra boda')) ?></title>
 <meta name="robots" content="noindex, nofollow">
 <?php if ($ctx['modo'] === 'preview'): ?><base href="<?= h($A) ?>">
-<style>body{visibility:hidden}</style><?php /* vista-previa.js lo muestra al tener las fuentes: sin esto, cada cambio de letra enseña un instante la de reserva */ endif; ?>
+<style>body{visibility:hidden;animation:vp-ver 0s 3s forwards}@keyframes vp-ver{to{visibility:visible}}</style><?php /* vista-previa.js lo muestra al tener las fuentes: sin esto, cada cambio de letra enseña un instante la de reserva */ endif; ?>
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
 <style><?= tema_css($c) ?><?= fuente_autor_css($c, $ctx) ?></style>
 </head>
