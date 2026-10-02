@@ -159,6 +159,7 @@
       if (!arr) return;
       var a = arr; arr = null;
       if (!a.activo) return;
+      cancelAnimationFrame(a.raf);
       acabaDeArrastrar = true; setTimeout(function () { acabaDeArrastrar = false; }, 0);   // el click que sigue al soltar no cuenta
       a.fantasma.remove(); document.body.classList.remove('arrastrando'); marcaDestino(null, null);
       if (ev.type !== 'pointerup') return;
@@ -177,9 +178,24 @@
         arr.fantasma.textContent = arr.ids.length > 1 ? arr.ids.length + ' personas' : (arr.origen.getAttribute('data-nombre') || arr.origen.textContent).replace(/\s+/g, ' ').trim();
         document.body.appendChild(arr.fantasma); document.body.classList.add('arrastrando');
       }
-      arr.fantasma.style.left = (ev.clientX + 12) + 'px'; arr.fantasma.style.top = (ev.clientY + 12) + 'px';
-      marcaDestino(mesaBajo(ev.clientX, ev.clientY), sillaBajo(ev.clientX, ev.clientY));
-      if (ev.clientY < 60) window.scrollBy(0, -14); else if (ev.clientY > window.innerHeight - 60) window.scrollBy(0, 14);
+      arr.cx = ev.clientX; arr.cy = ev.clientY;
+      pintaArrastre();
+      if (!arr.raf) arr.raf = requestAnimationFrame(autoscroll);
+    }
+    function pintaArrastre() {
+      arr.fantasma.style.left = (arr.cx + 12) + 'px'; arr.fantasma.style.top = (arr.cy + 12) + 'px';
+      marcaDestino(mesaBajo(arr.cx, arr.cy), sillaBajo(arr.cx, arr.cy));
+    }
+    // Con el dedo quieto cerca del borde no llegan más eventos: la página sigue desplazándose mientras se mantenga ahí
+    // (la «Sin mesa» y las mesas no caben juntas en una pantalla de móvil)
+    function autoscroll() {
+      if (!arr || !arr.activo) return;
+      // Zonas de empuje: arriba bajo la cabecera y abajo sobre la barra de pestañas del móvil (si la hay), no el borde de la ventana
+      var tb = document.querySelector('.tabbar'), fondo = tb && tb.getBoundingClientRect().top > 0 ? tb.getBoundingClientRect().top : window.innerHeight;
+      var arriba = 110, abajo = fondo - 56, v = 0;
+      if (arr.cy < arriba) v = -Math.ceil((arriba - arr.cy) / 4); else if (arr.cy > abajo) v = Math.ceil((arr.cy - abajo) / 4);
+      if (v) { window.scrollBy({ top: v, behavior: 'instant' }); pintaArrastre(); }   // «instant»: la hoja de estilos pone scroll-behavior: smooth
+      arr.raf = requestAnimationFrame(autoscroll);
     }
     document.querySelectorAll('.mesa-persona[data-persona], .todo-grupo[data-grupo-sel], .silla[data-sp]').forEach(function (o) {
       o.addEventListener('pointerdown', function (ev) {
