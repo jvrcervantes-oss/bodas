@@ -242,7 +242,7 @@ function mesas_herramienta(string $slug): string {
         . '<div class="campo campo-corto"><label for="mesa-plazas">Plazas</label><input type="number" id="mesa-plazas" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="10" required></div>'
         . '<button class="btn b-papel">Crear mesa</button></form>';
     $o .= '<div class="rej r-12 mesas"><section class="card" id="plano">'
-        . panel_card_cab('Plano de mesas', 'Tocad a una persona (o «Todo el grupo») y luego la mesa donde se sienta. Tocad a alguien ya sentado para cambiarlo de mesa.', '<span class="chip incl">Incluido en vuestro pack</span>')
+        . panel_card_cab('Plano de mesas', 'Arrastrad a una persona (o «Todo el grupo») hasta su mesa, también de una mesa a otra. Si preferís tocar: elegid a la persona y luego tocad la mesa.', '<span class="chip incl">Incluido en vuestro pack</span>')
         . '<div class="cifras tab"><span><b>' . $sentados . '</b> sentados</span><span><b>' . count($E['sin_mesa']) . '</b> sin mesa</span><span><b>' . count($E['mesas']) . '</b> mesas</span><span><b>' . $plazas . '</b> plazas</span></div>'
         . ($salon !== '' ? '<div class="salon">' . $salon . '</div>' : '<p class="vacio">Todavía no hay mesas. Cread la primera aquí abajo.</p>')
         . $nueva . '<div class="fila-bot"><a class="btn b-osc" href="/panel/mesas/imprimir">' . p_ico('hoja') . 'Hoja para el restaurante</a></div></section>';

@@ -223,6 +223,10 @@ table.t-corta { min-width: 0; }
 .mesa-persona:hover { background: var(--surface-high); }
 .mesa-persona[aria-pressed="true"] { background: var(--espresso); border-color: var(--espresso); color: #fff; }
 .mesa-persona[aria-pressed="true"] .muted, .mesa-persona[aria-pressed="true"] .alergia, .mesa-persona[aria-pressed="true"] .rep { color: #fff; }
+.mesa-persona[data-persona], .todo-grupo[data-grupo-sel] { cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none; }
+.arrastre-fantasma { position: fixed; z-index: 1000; pointer-events: none; padding: 6px 14px; border-radius: var(--pill); background: var(--espresso); color: #fff; font-size: 12.5px; box-shadow: 0 6px 18px rgba(0,0,0,.25); max-width: 70vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.arrastrando, body.arrastrando * { cursor: grabbing !important; -webkit-user-select: none; user-select: none; }
+.mesa.es-destino { outline: 2px dashed var(--rose); outline-offset: 2px; background: var(--rose-c); }
 .mesa-persona.is-sin-id { cursor: default; color: var(--p-muted); background: var(--surface-c); }
 .mesa-editar { width: 100%; font-size: 12.5px; }
 .mesa-editar summary { cursor: pointer; color: var(--ink-2); text-align: center; }

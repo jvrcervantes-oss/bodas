@@ -106,21 +106,79 @@
         pinta();
       });
     });
-    destinos.forEach(function (d) {
-      d.addEventListener('click', function () {
-        var ids = Object.keys(elegidas);
-        if (!ids.length) return;
-        formSentar.querySelector('[name="mesa"]').value = d.getAttribute('data-sentar');
-        formSentar.querySelectorAll('[name="personas[]"]').forEach(function (i) { i.remove(); });
-        ids.forEach(function (id) {
-          var i = document.createElement('input');
-          i.type = 'hidden'; i.name = 'personas[]'; i.value = id;
-          formSentar.appendChild(i);
-        });
-        formSentar.submit();
+    // Sentar a estas personas en esta mesa (lo mismo toquen o arrastren: el servidor decide si caben)
+    function sienta(ids, mesaId) {
+      if (!ids.length) return;
+      formSentar.querySelector('[name="mesa"]').value = mesaId;
+      formSentar.querySelectorAll('[name="personas[]"]').forEach(function (i) { i.remove(); });
+      ids.forEach(function (id) {
+        var i = document.createElement('input');
+        i.type = 'hidden'; i.name = 'personas[]'; i.value = id;
+        formSentar.appendChild(i);
       });
+      formSentar.submit();
+    }
+    destinos.forEach(function (d) {
+      d.addEventListener('click', function () { sienta(Object.keys(elegidas), d.getAttribute('data-sentar')); });
     });
     pinta();
+
+    // Arrastrar y soltar con ratón o dedo (Pointer Events): una persona, o «Todo el grupo», hasta una mesa; también de una
+    // mesa a otra. Si la persona arrastrada está entre las elegidas, van todas las elegidas. Tocar sin mover sigue eligiendo.
+    var arr = null, acabaDeArrastrar = false;
+    function idsDeArrastre(o) {
+      if (o.hasAttribute('data-grupo-sel')) {
+        var g = o.getAttribute('data-grupo-sel'), r = [];
+        document.querySelectorAll('.mesa-sin [data-persona]').forEach(function (p) { if (p.getAttribute('data-grupo') === g) r.push(p.getAttribute('data-persona')); });
+        return r;
+      }
+      var id = o.getAttribute('data-persona'), sel = Object.keys(elegidas);
+      return elegidas[id] && sel.length > 1 ? sel : [id];
+    }
+    function mesaBajo(x, y) { var e = document.elementFromPoint(x, y); return e && e.closest ? e.closest('.mesa') : null; }
+    function marcaDestino(m) {
+      document.querySelectorAll('.mesa.es-destino').forEach(function (x) { if (x !== m) x.classList.remove('es-destino'); });
+      if (m) m.classList.add('es-destino');
+    }
+    function termina(ev) {
+      document.removeEventListener('pointermove', mueve);
+      document.removeEventListener('pointerup', termina);
+      document.removeEventListener('pointercancel', termina);
+      if (!arr) return;
+      var a = arr; arr = null;
+      if (!a.activo) return;
+      acabaDeArrastrar = true; setTimeout(function () { acabaDeArrastrar = false; }, 0);   // el click que sigue al soltar no cuenta
+      a.fantasma.remove(); document.body.classList.remove('arrastrando'); marcaDestino(null);
+      if (ev.type !== 'pointerup') return;
+      var m = mesaBajo(ev.clientX, ev.clientY);
+      if (m && m !== a.origen.closest('.mesa')) sienta(a.ids, m.getAttribute('data-mesa'));
+    }
+    function mueve(ev) {
+      if (!arr) return;
+      if (!arr.activo) {
+        if (Math.abs(ev.clientX - arr.x) + Math.abs(ev.clientY - arr.y) < 8) return;
+        arr.activo = true;
+        arr.ids = idsDeArrastre(arr.origen);
+        arr.fantasma = document.createElement('div');
+        arr.fantasma.className = 'arrastre-fantasma';
+        arr.fantasma.textContent = arr.ids.length > 1 ? arr.ids.length + ' personas' : arr.origen.textContent.replace(/\s+/g, ' ').trim();
+        document.body.appendChild(arr.fantasma); document.body.classList.add('arrastrando');
+      }
+      arr.fantasma.style.left = (ev.clientX + 12) + 'px'; arr.fantasma.style.top = (ev.clientY + 12) + 'px';
+      marcaDestino(mesaBajo(ev.clientX, ev.clientY));
+      if (ev.clientY < 60) window.scrollBy(0, -14); else if (ev.clientY > window.innerHeight - 60) window.scrollBy(0, 14);
+    }
+    document.querySelectorAll('.mesa-persona[data-persona], .todo-grupo[data-grupo-sel]').forEach(function (o) {
+      o.addEventListener('pointerdown', function (ev) {
+        if ((ev.pointerType === 'mouse' && ev.button !== 0) || arr) return;
+        arr = { origen: o, x: ev.clientX, y: ev.clientY, activo: false };
+        document.addEventListener('pointermove', mueve);
+        document.addEventListener('pointerup', termina);
+        document.addEventListener('pointercancel', termina);
+      });
+      o.addEventListener('dragstart', function (ev) { ev.preventDefault(); });
+    });
+    document.addEventListener('click', function (ev) { if (acabaDeArrastrar) { ev.stopPropagation(); ev.preventDefault(); } }, true);
   }
 
   // ------------------------------------------------------------ compra de un extra (app/extras.php → /panel/extra)
