@@ -174,7 +174,7 @@ function guia_registro(string $slug, string $titulo, string $desc, string $cuerp
 }
 
 /** API: POST contenido {slug, titulo, descripcion, cuerpo} · POST contenido/retirar {slug} · POST contenido/restaurar {slug}. */
-function padrino_contenido(string $sub, array $c, string $quien = 'padrino'): void {
+function padrino_contenido(string $sub, array $c, string $quien = 'padrino', ?string $ahora = null): void {   // $ahora: solo para tests
     $slug = strtolower(clean_str($c['slug'] ?? '', 80));
     if (!guia_slug_valido($slug)) json_response(['ok' => false, 'error' => 'Slug no válido.'], 422);
     if ($sub === 'retirar' || $sub === 'restaurar') {
@@ -195,9 +195,9 @@ function padrino_contenido(string $sub, array $c, string $quien = 'padrino'): vo
     $err = guia_errores($titulo, $desc, $cuerpo);
     if ($err) { guias_log(['accion' => 'rechazo', 'slug' => $slug, 'errores' => $err]); json_response(['ok' => false, 'errores' => $err], 422); }
     if (guias_publicadas_hoy() >= GUIAS_MAX_DIA) json_response(['ok' => false, 'error' => 'Máximo ' . GUIAS_MAX_DIA . ' publicaciones al día.'], 429);
-    $r = con_cerrojo(function () use ($slug, $titulo, $desc, $cuerpo) {
+    $r = con_cerrojo(function () use ($slug, $titulo, $desc, $cuerpo, $ahora) {
         $prev = guia_lee($slug);
-        $g = guia_registro($slug, $titulo, $desc, $cuerpo, $prev, date('c'));
+        $g = guia_registro($slug, $titulo, $desc, $cuerpo, $prev, $ahora ?? date('c'));
         if ($g === null) return null;   // sin etiqueta no se publica (BOD-52)
         $v = $g['version'];
         escribe_json(guias_dir($slug, 'v' . $v . '.json'), $g);
@@ -207,7 +207,10 @@ function padrino_contenido(string $sub, array $c, string $quien = 'padrino'): vo
     if ($r === null) { guias_log(['accion' => 'rechazo', 'slug' => $slug, 'errores' => ['etiqueta-ia']]); json_response(['ok' => false, 'error' => 'No se puede etiquetar la guía como contenido de IA; no se publica.'], 500); }
     $hash = hash('sha256', $titulo . "\n" . $desc . "\n" . $cuerpo);
     guias_log(['accion' => 'publicar', 'slug' => $slug, 'version' => $r['version'], 'sha256' => $hash]);
-    json_response(['ok' => true, 'slug' => $slug, 'version' => $r['version'], 'url' => url_creador('guia/' . $slug), 'sha256' => $hash, 'cuarentena_hasta' => date('c', time() + GUIAS_CUARENTENA_H * 3600)]);
+    // `etiquetada` lo calcula el servidor sobre lo guardado, nunca sale del cuerpo de la petición (BOD-52)
+    $etiquetada = ($g2 = guia_lee($slug)) !== null && guia_etiqueta_ia($g2) !== null && ($g2['origen'] ?? '') === GUIAS_ORIGEN_IA;
+    if (!$etiquetada) { guias_log(['accion' => 'rechazo', 'slug' => $slug, 'errores' => ['etiqueta-ia-guardada']]); json_response(['ok' => false, 'error' => 'La guía guardada no tiene etiqueta de IA válida.'], 500); }
+    json_response(['ok' => true, 'etiquetada' => true, 'slug' => $slug, 'version' => $r['version'], 'url' => url_creador('guia/' . $slug), 'sha256' => $hash, 'cuarentena_hasta' => date('c', time() + GUIAS_CUARENTENA_H * 3600)]);
 }
 
 function guias_todas(bool $conRetiradas = false): array {

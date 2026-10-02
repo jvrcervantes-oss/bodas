@@ -21,12 +21,13 @@ foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia', 'estud
 }
 
 if ($hijo) {   // subproceso: json_response hace exit, así que el endpoint se ejecuta aparte
-    padrino_contenido('', ['slug' => 'prueba-guia', 'titulo' => 'Cómo organizar la confirmación de invitados',
+    $f = ($argv[2] ?? '') === 'fallo';
+    padrino_contenido('', ['slug' => $f ? 'guia-rota' : 'prueba-guia', 'etiquetada' => true, 'titulo' => 'Cómo organizar la confirmación de invitados',
         'descripcion' => 'Pasos sencillos para recoger las confirmaciones de vuestros invitados sin perseguir a nadie.',
         'cuerpo' => str_repeat("Una guía de prueba sobre cómo organizar la confirmación de invitados con calma y sin papeles.
 
 ", 6),
-        'origen' => 'humano', 'autor' => 'Otro']);
+        'origen' => 'humano', 'autor' => 'Otro'], 'padrino', $f ? 'basura' : null);
     exit;
 }
 $fallos = 0;
@@ -49,6 +50,9 @@ ok(guia_etiqueta_ia(['origen' => 'humano', 'publicada' => '2026-10-02T10:00:00+0
 putenv('BODAS_TEST_TMP=' . $tmp);
 $resp = json_decode((string) shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' --hijo'), true);
 ok(is_array($resp) && ($resp['ok'] ?? false) === true, 'el endpoint publica la guía');
+ok(($resp['etiquetada'] ?? null) === true && isset($resp['url'], $resp['sha256'], $resp['version']), 'la respuesta trae etiquetada===true (lo calcula el servidor; el cuerpo mandaba etiquetada:true)');
+$rf = json_decode((string) shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' --hijo fallo'), true);
+ok(is_array($rf) && ($rf['ok'] ?? true) === false && !array_key_exists('etiquetada', $rf) && guia_lee('guia-rota') === null, 'fallo de etiquetado: 500 sin el campo etiquetada y nada guardado');
 $act = guia_lee('prueba-guia');
 ok($act && $act['origen'] === 'padrino-ia' && $act['autor'] === 'El Padrino', 'origen/autor del cliente ignorados: manda el servidor');
 
