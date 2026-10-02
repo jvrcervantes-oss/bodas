@@ -979,8 +979,18 @@
   // Vosotros y Ceremonia salen de faltan() del servidor, así que verde = rellenados de verdad, no
   // «abierto»; la confirmación es la base del producto y pide haber pasado a revisar sus menús.
   // Portada y Más secciones son opcionales: abrirlas no las completa.
+  // Portada sí se completa al rellenarla (2-oct-2026: se rellenaba y seguía sin verde): con foto, o
+  // con algo escrito en sus campos. Sus textos vienen ya puestos por el servidor, así que «tiene
+  // texto» no vale; se mira que la pareja haya escrito, y eso se apunta en vistos (2 = rellenado).
+  // No cuenta para el arco de progreso, que sigue siendo solo lo obligatorio y publicar.
   var OBLIGATORIOS = { estilo: 1, pareja: 1, lugares: 1, rsvp: 1 };
+  // La foto no cuenta aquí (cuenta st.foto): si no, quitarla dejaría el paso en verde
+  document.getElementById('panel-portada').addEventListener('input', function (e) {
+    if (vistos.portada === 2 || e.target.type === 'file') return;
+    vistos.portada = 2; if (MODO === 'crear') guarda(CLAVE_VISTOS, JSON.stringify(vistos));
+  });
   function pasoHecho(k, fp) {
+    if (k === 'portada') return !!(faltasRecibidas && (st.foto || vistos.portada === 2) && !fp[k]);
     if (!OBLIGATORIOS[k]) return false;
     if (k === 'estilo') return !!estiloListo;
     if (k === 'rsvp') return !!(faltasRecibidas && (vistos[k] || MODO === 'editar') && !fp[k]);
@@ -991,7 +1001,7 @@
     var fp = faltasPorPaso(), hechos = 0;
     var i = ordenTabs.map(function (o) { return o.k; }).indexOf(pasoActual);
     ordenTabs.forEach(function (o, j) {
-      var h = pasoHecho(o.k, fp); if (h) hechos++;
+      var h = pasoHecho(o.k, fp); if (h && OBLIGATORIOS[o.k]) hechos++;
       // Un paso con una falta que el servidor ha devuelto (p. ej. un IBAN que no vale) se marca aunque no sea obligatorio
       var falta = !h && fp[o.k] > 0 && !OBLIGATORIOS[o.k];
       var t = barraPasos.children[j]; if (t) t.className = (h ? 'hecho' : j === i ? 'actual' : '') + (falta ? ' falta' : '');
