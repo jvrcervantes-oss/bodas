@@ -31,5 +31,20 @@
   }, { passive: true });
   // Sin animación de aparición en la vista previa: se vería en blanco al recargar cada tecla
   document.querySelectorAll('.rv').forEach(function (el) { el.classList.add('in'); });
-  parent.postMessage({ tipo: 'lista' }, '*');
+  // El iframe se recarga entero en cada cambio: hasta que baja la letra elegida se vería la de reserva
+  // y luego el salto. El cuerpo va oculto (render.php) hasta que las fuentes estén listas, con tope de 2,5 s.
+  // «lista» se avisa después, para que el scroll se restaure sobre la maqueta definitiva.
+  var avisada = false;
+  function lista() {
+    if (avisada) return;
+    avisada = true;
+    document.body.style.visibility = 'visible';
+    parent.postMessage({ tipo: 'lista' }, '*');
+  }
+  setTimeout(lista, 2500);
+  if (document.fonts && document.fonts.ready) {
+    // load = CSS e imágenes ya aplicados, así que fonts.ready ya sabe qué letras se usan
+    var espera = function () { document.fonts.ready.then(lista, lista); };
+    if (document.readyState === 'complete') espera(); else window.addEventListener('load', espera);
+  } else lista();
 })();
