@@ -294,6 +294,8 @@ function mesas_herramienta(string $slug): string {
             . '<button type="button" class="m-circ mesa-destino" data-sentar="' . h($m['id']) . '" disabled aria-label="Sentar aquí: ' . h(mesa_nombre($m)) . ($libres > 0 ? '' : ' (llena)') . '">'
             . '<b>' . h(mesa_nombre($m)) . '</b><span class="m-sentar" aria-hidden="true">Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</span></button>' . mesa_sillas($m) . '</div>'
             . '<small class="tab">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . ($conAlergia ? ' · ' . $conAlergia . ' con alergia' : '') . '</small>'
+            // Solo en el móvil (CSS): nombre y plazas al lado del círculo, para que la lista de personas ocupe todo el ancho
+            . '<div class="m-info" aria-hidden="true"><span class="nom">' . h(mesa_nombre($m)) . '</span><small class="tab">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . ($conAlergia ? ' · ' . $conAlergia . ' con alergia' : '') . '</small></div>'
             . '<ul class="mesa-personas">';
         $np = count($m['personas']);
         foreach ($m['personas'] as $j => $p) {
@@ -305,7 +307,7 @@ function mesas_herramienta(string $slug): string {
                     . '<input type="hidden" name="persona" value="' . h($p['id']) . '"><input type="hidden" name="mesa" value="' . h($m['id']) . '"><input type="hidden" name="silla" value="' . ($vecino ? (int) $vecino['silla'] : '') . '">'
                     . '<button class="mesa-flecha"' . ($vecino ? '' : ' disabled') . ' aria-label="' . $verbo . ' a ' . h($p['nombre']) . ($vecino ? ' (cambia de sitio con ' . h($vecino['nombre']) . ')' : '') . '">' . $ic . '</button></form>';
             }
-            $salon .= '<li>' . $flechas . mesas_boton_persona($p, $rep) . '<form method="post" action="/panel/mesas" class="mesa-quitar"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar">'
+            $salon .= '<li>' . mesas_boton_persona($p, $rep) . '<span class="mover">' . $flechas . '</span><form method="post" action="/panel/mesas" class="mesa-quitar"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar">'
                 . '<input type="hidden" name="persona" value="' . h($p['id']) . '"><button class="mesa-x" aria-label="Quitar a ' . h($p['nombre']) . ' de la mesa">×</button></form></li>';
         }
         $salon .= '</ul><details class="mesa-editar"><summary>Cambiar</summary>'
