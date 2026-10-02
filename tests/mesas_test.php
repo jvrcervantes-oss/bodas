@@ -258,6 +258,35 @@ pide('POST', $reg . '.bodaenlace.com', '/panel/entrar', ['clave' => 'clave-de-pr
 [$st, $h] = pide('GET', $reg . '.bodaenlace.com', '/panel/mesas');
 ok($st === 200 && strpos($h, 'Crear mesa') !== false && strpos($h, 'Comprar por') === false, 'web regalada: /panel/mesas con la herramienta, sin compra (' . $st . ')');
 
+// ---------------------------------------------------------------- sillas: la pareja coloca a cada uno en su silla (función pura, sin servidor)
+{
+    $banS = [];
+    foreach (['a1', 'b2', 'c3', 'd4', 'e5'] as $i => $k) $banS[str_repeat('0', 15) . $i] = ['id' => str_repeat('0', 15) . $i, 'nombre' => 'Persona ' . $k, 'tipo' => 'adulto', 'menu' => 'x', 'menu_nombre' => 'X', 'alergias' => '', 'grupo' => 'g'];
+    $P = array_keys($banS);   // ids válidos de 16 caracteres hexadecimales
+    $d = [];
+    mesas_aplica($d, 'crear', ['nombre' => 'Uno', 'plazas' => 4], $banS);
+    mesas_aplica($d, 'crear', ['nombre' => 'Dos', 'plazas' => 4], $banS);
+    [$m1, $m2] = array_column($d['mesas'], 'id');
+    mesas_aplica($d, 'sentar', ['mesa' => $m1, 'personas' => [$P[0], $P[1], $P[2]]], $banS);
+    $sil = function (string $pid) use (&$d) { return $d["sitios"][$pid]["silla"] ?? null; };
+    ok([$sil($P[0]), $sil($P[1]), $sil($P[2])] === [0, 1, 2], 'sillas: al sentar, quedan escritas en las libres de menor número');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[1], 'mesa' => $m1, 'silla' => '3'], $banS) === '' && $sil($P[1]) === 3 && $sil($P[0]) === 0 && $sil($P[2]) === 2, 'sillas: mover a una silla libre no toca a los demás');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[0], 'mesa' => $m1, 'silla' => '3'], $banS) === '' && $sil($P[0]) === 3 && $sil($P[1]) === 0, 'sillas: sobre una ocupada se intercambian');
+    ok(mesas_aplica($d, 'levantar', ['persona' => $P[2]], $banS) === '' && $sil($P[0]) === 3 && $sil($P[1]) === 0, 'sillas: si alguien se levanta, los demás no cambian de silla');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[0], 'mesa' => $m2, 'silla' => '2'], $banS) === '' && ($d['sitios'][$P[0]]['mesa'] ?? '') === $m2 && $sil($P[0]) === 2, 'sillas: a una silla de otra mesa');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[3], 'mesa' => $m2, 'silla' => '2'], $banS) === 'ocupada' && !isset($d['sitios'][$P[3]]), 'sillas: quien no estaba sentado no echa a nadie de su silla');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[1], 'mesa' => $m2, 'silla' => '2'], $banS) === '' && ($d['sitios'][$P[1]]['mesa'] ?? '') === $m2 && ($d['sitios'][$P[0]]['mesa'] ?? '') === $m1 && $sil($P[0]) === 0, 'sillas: intercambio entre mesas: cada uno ocupa el sitio del otro');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[3], 'mesa' => $m1, 'silla' => '4'], $banS) === 'silla' && mesas_aplica($d, 'silla', ['persona' => $P[3], 'mesa' => $m1, 'silla' => '-1'], $banS) === 'silla'
+        && mesas_aplica($d, 'silla', ['persona' => $P[3], 'mesa' => $m1, 'silla' => 'x'], $banS) === 'silla', 'sillas: una silla que no existe se rechaza (el servidor no se cree el número)');
+    ok(mesas_aplica($d, 'silla', ['persona' => 'ffffffffffffffff', 'mesa' => $m1, 'silla' => '0'], $banS) === 'persona' && mesas_aplica($d, 'silla', ['persona' => $P[3], 'mesa' => 'mzzzzzzzz', 'silla' => '0'], $banS) === 'sin-mesa', 'sillas: persona o mesa inventadas, rechazadas');
+    // Reducir las plazas con sillas altas ocupadas: nadie se pierde ni se repite silla
+    mesas_aplica($d, 'silla', ['persona' => $P[0], 'mesa' => $m1, 'silla' => '3'], $banS);
+    ok(mesas_aplica($d, 'editar', ['mesa' => $m1, 'nombre' => 'Uno', 'plazas' => 3], $banS) === '' && $sil($P[0]) < 3, 'sillas: al reducir plazas, quien estaba en una silla que ya no existe pasa a una libre');
+    ok(mesas_aplica($d, 'silla', ['persona' => $P[0], 'mesa' => $m1, 'silla' => '3'], $banS) === 'silla', 'sillas: con 3 plazas no hay silla 3');
+    $mapa = [];
+    foreach ($d['sitios'] as $pid => $s) { $k = $s['mesa'] . '|' . $s['silla']; $mapa[$k] = ($mapa[$k] ?? 0) + 1; }
+    ok(max($mapa) === 1, 'sillas: nunca dos personas en la misma silla de la misma mesa');
+}
 proc_terminate($srv); proc_close($srv);
 proc_terminate($sim); proc_close($sim);
 foreach ([$tmp, $web, $ls] as $d) {

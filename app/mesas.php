@@ -7,7 +7,10 @@
 //  · Quién viene, su nombre, su menú y sus alergias → guardado/rsvp.json, leído SIEMPRE por rsvp_vigentes() +
 //    personas(). Aquí no se copia nada de eso para pintarlo.
 //  · Las mesas y quién se sienta dónde → guardado/mesas.json, dueño este fichero:
-//      {mesas: [{id, nombre, plazas}], sitios: {<id de persona>: {mesa, nombre}}}
+//      {mesas: [{id, nombre, plazas}], sitios: {<id de persona>: {mesa, nombre, silla}}}
+//    `silla` (0…plazas-1) es la silla de la mesa redonda donde se sienta; la pareja la cambia arrastrando. La resuelve
+//    mesas_sillas_de() (una sola función para la página, la hoja y las acciones); mesas_fija_sillas() la deja escrita
+//    tras cada cambio para que nadie «salte» de silla porque otro se levantó.
 //    El sitio se guarda por el `id` de persona (Seguridad #133), nunca por nombre ni por posición: una alergia
 //    impresa en la mesa equivocada es un riesgo físico. `nombre` es una COPIA CONGELADA al sentarla y solo sirve
 //    para una cosa: poder decir «ya no viene: X estaba en la mesa N» cuando ese id desaparece de las respuestas
@@ -40,9 +43,37 @@ function mesas_lee(string $slug): array {
     $sitios = [];
     foreach ((array) ($d['sitios'] ?? []) as $pid => $s) {
         if (!is_array($s) || !preg_match(MESAS_PERSONA_RE, (string) $pid) || !in_array((string) ($s['mesa'] ?? ''), $ids, true)) continue;
-        $sitios[(string) $pid] = ['mesa' => (string) $s['mesa'], 'nombre' => (string) ($s['nombre'] ?? '')];
+        $sitios[(string) $pid] = ['mesa' => (string) $s['mesa'], 'nombre' => (string) ($s['nombre'] ?? '')]
+            + (isset($s['silla']) && is_int($s['silla']) && $s['silla'] >= 0 && $s['silla'] < MESAS_MAX_PLAZAS ? ['silla' => $s['silla']] : []);
     }
     return ['mesas' => $mesas, 'sitios' => $sitios];
+}
+
+/**
+ * Silla de cada persona de una mesa que SIGUE viniendo, por id: la guardada si es válida y no la repite otro; el resto
+ * ocupa las libres de menor número. (Quien ya no viene no ocupa silla: aparece en los avisos.)
+ */
+function mesas_sillas_de(array $mesa, array $sitios, array $ban): array {
+    $n = (int) $mesa['plazas'];
+    $res = [];
+    $uso = [];
+    foreach ($sitios as $pid => $s) {
+        if (($s['mesa'] ?? '') !== $mesa['id'] || !isset($ban[$pid])) continue;
+        $k = $s['silla'] ?? null;
+        if (is_int($k) && $k >= 0 && $k < $n && !isset($uso[$k])) { $res[$pid] = $k; $uso[$k] = true; } else $res[$pid] = null;
+    }
+    $libre = 0;
+    foreach ($res as $pid => $k) {
+        if ($k !== null) continue;
+        while (isset($uso[$libre])) $libre++;
+        $res[$pid] = $libre; $uso[$libre] = true;
+    }
+    return $res;
+}
+
+/** Escribe en mesas.json la silla resuelta de cada persona que viene (se llama tras cada acción que cambia a alguien). */
+function mesas_fija_sillas(array &$d, array $ban): void {
+    foreach ($d['mesas'] as $m) foreach (mesas_sillas_de($m, $d['sitios'], $ban) as $pid => $k) $d['sitios'][$pid]['silla'] = $k;
 }
 
 /**
@@ -82,6 +113,11 @@ function mesas_estado(string $slug): array {
         $m = $mesas[$s['mesa']];
         $avisos[] = ['id' => (string) $pid, 'nombre' => $s['nombre'], 'mesa' => mesa_nombre($m), 'respondio' => isset($nombresSin[clave_nombre($s['nombre'])])];
     }
+    foreach ($mesas as $id => $m) {
+        $sillas = mesas_sillas_de($m, $plano['sitios'], $ban);
+        foreach ($mesas[$id]['personas'] as $j => $p) $mesas[$id]['personas'][$j]['silla'] = $sillas[$p['id']] ?? 0;
+        usort($mesas[$id]['personas'], fn($a, $b) => $a['silla'] <=> $b['silla']);
+    }
     return ['mesas' => array_values($mesas), 'sin_mesa' => $sinMesa, 'avisos' => $avisos];
 }
 
@@ -101,6 +137,12 @@ function mesa_nombre(array $m): string { return $m['nombre'] !== '' ? $m['nombre
  * Devuelve '' si se hizo, o el código de error. Todo o nada: si un grupo no cabe, no se sienta a nadie.
  */
 function mesas_aplica(array &$d, string $accion, array $in, array $ban): string {
+    $r = mesas_aplica_base($d, $accion, $in, $ban);
+    if ($r === '') mesas_fija_sillas($d, $ban);
+    return $r;
+}
+
+function mesas_aplica_base(array &$d, string $accion, array $in, array $ban): string {
     $d['mesas'] = array_values(array_filter((array) ($d['mesas'] ?? []), 'is_array'));
     $d['sitios'] = (array) ($d['sitios'] ?? []);
     $idx = [];
@@ -141,7 +183,28 @@ function mesas_aplica(array &$d, string $accion, array $in, array $ban): string 
             foreach ($ids as $pid) if (!preg_match(MESAS_PERSONA_RE, $pid) || !isset($ban[$pid])) return 'persona';
             $nuevas = count(array_filter($ids, fn($pid) => ($d['sitios'][$pid]['mesa'] ?? '') !== $mid));
             if ($ocupadas($mid) + $nuevas > (int) $d['mesas'][$idx[$mid]]['plazas']) return 'no-caben';
-            foreach ($ids as $pid) $d['sitios'][$pid] = ['mesa' => $mid, 'nombre' => (string) $ban[$pid]['nombre']];
+            foreach ($ids as $pid) {
+                $ya = ($d['sitios'][$pid]['mesa'] ?? '') === $mid ? ($d['sitios'][$pid]['silla'] ?? null) : null;   // en la misma mesa conserva su silla
+                $d['sitios'][$pid] = ['mesa' => $mid, 'nombre' => (string) $ban[$pid]['nombre']] + ($ya !== null ? ['silla' => $ya] : []);
+            }
+            return '';
+        case 'silla':   // sentar a UNA persona en una silla concreta; si está ocupada, se intercambian (solo si ella ya estaba sentada)
+            $pid = (string) ($in['persona'] ?? '');
+            $n = (string) ($in['silla'] ?? '');
+            if (!isset($idx[$mid])) return 'sin-mesa';
+            if (!preg_match(MESAS_PERSONA_RE, $pid) || !isset($ban[$pid])) return 'persona';
+            if (!preg_match('/^\d{1,2}$/', $n) || (int) $n >= (int) $d['mesas'][$idx[$mid]]['plazas']) return 'silla';
+            $n = (int) $n;
+            mesas_fija_sillas($d, $ban);
+            $ocupante = null;
+            foreach ($d['sitios'] as $otro => $s) if ((string) $otro !== $pid && ($s['mesa'] ?? '') === $mid && isset($ban[$otro]) && ($s['silla'] ?? -1) === $n) $ocupante = (string) $otro;
+            $origen = $d['sitios'][$pid] ?? null;
+            if ($ocupante !== null) {
+                if ($origen === null) return 'ocupada';
+                $d['sitios'][$ocupante]['mesa'] = $origen['mesa'];
+                $d['sitios'][$ocupante]['silla'] = $origen['silla'] ?? 0;
+            } elseif (($origen['mesa'] ?? '') !== $mid && $ocupadas($mid) + 1 > (int) $d['mesas'][$idx[$mid]]['plazas']) return 'no-caben';
+            $d['sitios'][$pid] = ['mesa' => $mid, 'nombre' => (string) $ban[$pid]['nombre'], 'silla' => $n];
             return '';
         case 'levantar':   // quitar a alguien de su mesa, o dar por visto el aviso de quien ya no viene
             $pid = (string) ($in['persona'] ?? '');
@@ -155,7 +218,7 @@ function mesas_aplica(array &$d, string $accion, array $in, array $ban): string 
 const MESAS_ERRORES = ['max-mesas' => 'Como máximo ' . MESAS_MAX . ' mesas.', 'plazas' => 'Entre 1 y ' . MESAS_MAX_PLAZAS . ' plazas por mesa.',
     'plazas-ocupadas' => 'Hay más personas sentadas que esas plazas. Levantad a alguien primero.', 'sin-mesa' => 'Esa mesa ya no existe.',
     'sin-personas' => 'Elegid primero a quién sentar.', 'persona' => 'Alguien de la selección ya no va al banquete. Recargad la página.',
-    'no-caben' => 'No caben todos en esa mesa.', 'accion' => 'No se ha podido hacer.', 'lleno' => 'El plano es demasiado grande.'];
+    'no-caben' => 'No caben todos en esa mesa.', 'ocupada' => 'Ese sitio ya está ocupado.', 'silla' => 'Esa silla no existe.', 'accion' => 'No se ha podido hacer.', 'lleno' => 'El plano es demasiado grande.'];
 
 /** /panel/mesas: GET = la página; POST = una acción (CSRF + plano disponible, o 403). */
 function panel_mesas(string $slug, array $c, string $metodo): void {
@@ -167,7 +230,7 @@ function panel_mesas(string $slug, array $c, string $metodo): void {
         if (!limite('mesas|' . $slug, 600, 3600)) { header('Location: /panel/mesas?e=accion', true, 303); exit; }
         $ban = mesas_banquete($slug);
         $in = ['mesa' => $_POST['mesa'] ?? '', 'nombre' => $_POST['nombre'] ?? '', 'plazas' => $_POST['plazas'] ?? 0,
-            'personas' => $_POST['personas'] ?? [], 'persona' => $_POST['persona'] ?? ''];
+            'personas' => $_POST['personas'] ?? [], 'persona' => $_POST['persona'] ?? '', 'silla' => $_POST['silla'] ?? ''];
         $accion = (string) ($_POST['accion'] ?? '');
         $r = muta_json(mesas_fichero($slug), fn(array &$d) => mesas_aplica($d, $accion, $in, $ban), MAX_BYTES_MESAS);
         $e = $r === null ? 'lleno' : (string) $r;
@@ -190,12 +253,16 @@ function panel_mesas(string $slug, array $c, string $metodo): void {
 function mesa_sillas(array $m, int $radio = 70, int $centro = 60): string {
     $n = max(1, (int) $m['plazas']);
     $tam = (int) max(10, min(24, floor(2 * M_PI * $radio / $n) - 4));
+    $porSilla = [];
+    foreach ($m['personas'] as $p) $porSilla[$p['silla'] ?? 0] = $p;
     $o = '';
     for ($i = 0; $i < $n; $i++) {
         $a = $i / $n * M_PI * 2 - M_PI / 2;
-        $p = $m['personas'][$i] ?? null;
+        $p = $porSilla[$i] ?? null;
         $cls = $p ? ($p['alergias'] !== '' ? ' a' : ' o') : '';
-        $o .= '<span class="silla' . $cls . '" style="left:' . round($centro + cos($a) * $radio, 1) . 'px;top:' . round($centro + sin($a) * $radio, 1) . 'px;width:' . $tam . 'px;height:' . $tam . 'px;margin:-' . ($tam / 2) . 'px 0 0 -' . ($tam / 2) . 'px">'
+        // data-n = nº de silla (destino al arrastrar); data-sp = id de la persona sentada (lo que se arrastra). El servidor lo vuelve a comprobar todo.
+        $o .= '<span class="silla' . $cls . '" data-mesa-silla="' . h($m['id']) . '" data-n="' . $i . '"' . ($p ? ' data-sp="' . h($p['id']) . '" data-nombre="' . h($p['nombre']) . '"' : '')
+            . ' aria-hidden="true" style="left:' . round($centro + cos($a) * $radio, 1) . 'px;top:' . round($centro + sin($a) * $radio, 1) . 'px;width:' . $tam . 'px;height:' . $tam . 'px;margin:-' . ($tam / 2) . 'px 0 0 -' . ($tam / 2) . 'px">'
             . ($p && $tam >= 20 ? h(panel_iniciales($p['nombre'])) : '') . '</span>';
     }
     return $o;
@@ -213,16 +280,17 @@ function mesas_herramienta(string $slug): string {
     $rep = mesas_repetidos($E);
 
     // Formulario único para sentar: el JS lo rellena con la selección y la mesa tocada
-    $o .= '<form method="post" action="/panel/mesas" id="form-sentar" hidden><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="sentar"><input type="hidden" name="mesa" value=""></form>';
+    $o .= '<form method="post" action="/panel/mesas" id="form-sentar" hidden><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="sentar"><input type="hidden" name="mesa" value=""></form>'
+        . '<form method="post" action="/panel/mesas" id="form-silla" hidden><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="silla"><input type="hidden" name="persona" value=""><input type="hidden" name="mesa" value=""><input type="hidden" name="silla" value=""></form>';
 
     // Salón: una mesa redonda por mesa, con sus sillas. Tocar la mesa = sentar ahí a quien esté elegido
     $salon = '';
     foreach ($E['mesas'] as $m) {
         $libres = $m['plazas'] - count($m['personas']);
         $conAlergia = count(array_filter($m['personas'], fn($p) => $p['alergias'] !== ''));
-        $salon .= '<div class="mesa" data-mesa="' . h($m['id']) . '">'
+        $salon .= '<div class="mesa" data-mesa="' . h($m['id']) . '"><div class="m-wrap">'
             . '<button type="button" class="m-circ mesa-destino" data-sentar="' . h($m['id']) . '" disabled aria-label="Sentar aquí: ' . h(mesa_nombre($m)) . ($libres > 0 ? '' : ' (llena)') . '">'
-            . '<b>' . h(mesa_nombre($m)) . '</b><span class="m-sentar" aria-hidden="true">Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</span>' . mesa_sillas($m) . '</button>'
+            . '<b>' . h(mesa_nombre($m)) . '</b><span class="m-sentar" aria-hidden="true">Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</span></button>' . mesa_sillas($m) . '</div>'
             . '<small class="tab">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . ($conAlergia ? ' · ' . $conAlergia . ' con alergia' : '') . '</small>'
             . '<ul class="mesa-personas">';
         foreach ($m['personas'] as $p) {
@@ -242,7 +310,7 @@ function mesas_herramienta(string $slug): string {
         . '<div class="campo campo-corto"><label for="mesa-plazas">Plazas</label><input type="number" id="mesa-plazas" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="10" required></div>'
         . '<button class="btn b-papel">Crear mesa</button></form>';
     $o .= '<div class="rej r-12 mesas"><section class="card" id="plano">'
-        . panel_card_cab('Plano de mesas', 'Arrastrad a una persona (o «Todo el grupo») hasta su mesa, también de una mesa a otra. Si preferís tocar: elegid a la persona y luego tocad la mesa.', '<span class="chip incl">Incluido en vuestro pack</span>')
+        . panel_card_cab('Plano de mesas', 'Arrastrad a una persona (o «Todo el grupo») hasta su mesa, también de una mesa a otra. Ya sentadas, arrastrad su círculo a otra silla de la mesa (o de otra mesa): si está ocupada, se cambian de sitio. Si preferís tocar: elegid a la persona y luego tocad la mesa.', '<span class="chip incl">Incluido en vuestro pack</span>')
         . '<div class="cifras tab"><span><b>' . $sentados . '</b> sentados</span><span><b>' . count($E['sin_mesa']) . '</b> sin mesa</span><span><b>' . count($E['mesas']) . '</b> mesas</span><span><b>' . $plazas . '</b> plazas</span></div>'
         . ($salon !== '' ? '<div class="salon">' . $salon . '</div>' : '<p class="vacio">Todavía no hay mesas. Cread la primera aquí abajo.</p>')
         . $nueva . '<div class="fila-bot"><a class="btn b-osc" href="/panel/mesas/imprimir">' . p_ico('hoja') . 'Hoja para el restaurante</a></div></section>';
