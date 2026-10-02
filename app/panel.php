@@ -550,6 +550,34 @@ function panel_respuestas_misma(string $slug, array $c, string $metodo): void {
 
 // ---------------------------------------------------------------- música
 
+/** Clave para reconocer la misma canción aunque cambien mayúsculas, tildes o espacios. */
+function cancion_clave(string $artista, string $cancion): string {
+    $n = fn(string $t) => preg_replace('/[^a-z0-9]+/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $t) ?: $t));
+    return $n($artista) . '|' . $n($cancion);
+}
+
+/** POST /panel/musica/quitar (sesión ya exigida por rutas_panel; CSRF aquí). Quita la canción y apunta su clave para que no vuelvan a proponerla. */
+function panel_musica_quitar(string $slug, array $c, string $metodo): void {
+    if ($metodo !== 'POST') { header('Allow: POST'); http_response_code(405); exit; }
+    if (!panel_csrf_ok()) { http_response_code(403); exit; }
+    $id = (string) ($_POST['id'] ?? '');
+    if (preg_match('/^[A-Za-z0-9_-]{1,40}$/', $id)) {
+        $dir = dir_boda($slug) . '/guardado/';
+        $quitada = muta_json($dir . 'canciones.json', function (array &$d) use ($id) {
+            foreach ($d as $i => $r) if (is_array($r) && ($r['id'] ?? '') === $id) { unset($d[$i]); $d = array_values($d); return $r; }
+            return null;
+        }, MAX_BYTES_CANCIONES);
+        if (is_array($quitada)) {
+            muta_json($dir . 'canciones_quitadas.json', function (array &$d) use ($quitada) {
+                $k = cancion_clave((string) ($quitada['artista'] ?? ''), (string) ($quitada['cancion'] ?? ''));
+                if (!in_array($k, $d, true) && count($d) < 500) $d[] = $k;
+            }, 65536);
+            registra('canción quitada desde el panel', ['slug' => $slug]);
+        }
+    }
+    header('Location: /panel/musica', true, 303);
+}
+
 function panel_musica(string $slug, array $c): string {
     $canciones = array_values(array_filter(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? [], 'is_array'));
     usort($canciones, fn($a, $b) => ((int) ($b['votos'] ?? 0)) <=> ((int) ($a['votos'] ?? 0)));
@@ -566,7 +594,9 @@ function panel_musica(string $slug, array $c): string {
     foreach ($canciones as $i => $s) {
         $v = (int) ($s['votos'] ?? 0);
         $o .= '<div class="cancion"><span class="n">' . ($i + 1) . '</span><div><b>' . h($s['cancion'] ?? '') . '</b><small>' . h($s['artista'] ?? '') . '</small></div>'
-            . '<div class="barra" aria-hidden="true"><i style="width:' . round($v / $max * 100) . '%"></i></div><span class="tab">' . $v . '<span class="vh"> votos</span></span></div>';
+            . '<div class="barra" aria-hidden="true"><i style="width:' . round($v / $max * 100) . '%"></i></div><span class="tab">' . $v . '<span class="vh"> votos</span></span>'
+            . '<form method="post" action="/panel/musica/quitar" class="quitar"><input type="hidden" name="csrf" value="' . h(panel_csrf()) . '"><input type="hidden" name="id" value="' . h((string) ($s['id'] ?? '')) . '">'
+            . '<button type="submit" class="btn b-sm b-papel" aria-label="Quitar ' . h(($s['cancion'] ?? '') . ' — ' . ($s['artista'] ?? '')) . '" data-confirmar="¿Quitar esta canción de la lista? Los invitados no podrán volver a proponerla.">Quitar</button></form></div>';
     }
     $o .= '</section>';
     if ($pedidas) {

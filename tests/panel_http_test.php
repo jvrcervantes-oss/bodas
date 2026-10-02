@@ -237,6 +237,21 @@ ok($st === 403 && strpos($j, '"ok":false') !== false, 'subir foto sin CSRF: 403'
 ok($st === 303 && strpos($cab, 'Location: /panel/galeria#libro') !== false && !empty((lee_json(dir_libro($slug) . '/libro.json') ?? [])[0]['oculto']), 'ocultar un mensaje: vuelve a Galería y libro');
 [$st] = pide('POST', '/panel/libro', ['id' => 'e1', 'accion' => 'borrar']);
 ok($st === 403 && count(lee_json(dir_libro($slug) . '/libro.json') ?? []) === 1, 'libro sin CSRF: 403, no borra');
+// Música: los novios quitan una canción que no quieren
+ok(strpos($H['musica'], 'action="/panel/musica/quitar"') !== false && strpos($H['musica'], 'data-confirmar=') !== false, 'música: cada canción lleva su botón Quitar con confirmación');
+[$st] = pide('POST', '/panel/musica/quitar', ['id' => 'c2']);
+ok($st === 403 && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? []) === 2, 'quitar canción sin CSRF: 403, no quita');
+[$st] = pide('GET', '/panel/musica/quitar');
+ok($st === 405, 'quitar canción por GET: 405');
+[$st, , $cab] = pide('POST', '/panel/musica/quitar', ['csrf' => $csrf, 'id' => 'c2']);
+$resta = lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? [];
+ok($st === 303 && strpos($cab, 'Location: /panel/musica') !== false && count($resta) === 1 && $resta[0]['id'] === 'c1', 'quitar canción: vuelve a Música y solo queda la otra');
+[$st] = pide('POST', '/panel/musica/quitar', ['csrf' => $csrf, 'id' => '../x']);
+ok($st === 303 && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? []) === 1, 'quitar canción con id raro: no hace nada');
+[$st, $j] = pide('POST', '/api/musica', ['artista' => 'abba', 'cancion' => 'DANCING  queen']);
+ok(strpos($j, '"ok":false') !== false && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? []) === 1, 'una canción quitada no se puede volver a proponer (aunque cambien mayúsculas y espacios)');
+[$st, $j] = pide('POST', '/api/musica', ['artista' => 'Queen', 'cancion' => 'Dancing Queen']);
+ok(strpos($j, '"ok":true') !== false && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? []) === 2, 'otras canciones se siguen pudiendo proponer');
 [$st] = pide('GET', '/panel/libro');
 ok($st === 404, 'GET /panel/libro: 404');
 foreach (['/panel', '/panel/respuestas', '/panel/musica', '/panel/descargas', '/panel/mas', '/panel/catering'] as $r) {

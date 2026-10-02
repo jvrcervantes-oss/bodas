@@ -215,6 +215,8 @@ function api_musica(string $slug, array $c, string $metodo): void {
     $artista = clean_str($_POST['artista'] ?? '', 120);
     $cancion = clean_str($_POST['cancion'] ?? '', 120);
     if ($artista === '' || $cancion === '') json_response(['ok' => false, 'error' => 'Indica artista y canción.']);
+    // Las que los novios quitaron desde el panel no vuelven a entrar
+    if (in_array(cancion_clave($artista, $cancion), lee_json(dir_boda($slug) . '/guardado/canciones_quitadas.json') ?? [], true)) json_response(['ok' => false, 'error' => 'Esa canción no está disponible.']);
     $rec = ['id' => bin2hex(random_bytes(8)), 'fecha' => date('c'), 'artista' => $artista, 'cancion' => $cancion, 'votos' => 0];
     $ok = muta_json($f, function (array &$d) use ($rec) { $d[] = $rec; return true; }, MAX_BYTES_CANCIONES);
     if ($ok !== true) json_response(['ok' => false, 'error' => 'La lista está llena.'], 507);
@@ -260,6 +262,7 @@ function rutas_panel(string $slug, array $c, string $ruta, string $metodo): void
     switch ($sub) {
         case 'invitados': panel_invitados_accion($slug, $metodo); return;
         case 'respuestas/misma': panel_respuestas_misma($slug, $c, $metodo); return;   // BOD-22 (app/panel.php)
+        case 'musica/quitar': panel_musica_quitar($slug, $c, $metodo); return;
         case 'galeria':   // POST = subir una foto (la usa el editor); GET/HEAD = la página, arriba
             if ($metodo !== 'POST') { header('Allow: GET, HEAD, POST'); http_response_code(405); exit; }
             panel_galeria_subir($slug); return;

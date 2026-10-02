@@ -238,7 +238,8 @@ table.t-corta { min-width: 0; }
 .leyenda .silla { position: static; width: 12px; height: 12px; margin-left: 6px; }
 
 /* ---------- música ---------- */
-.cancion { display: grid; grid-template-columns: 28px minmax(0, 1fr) 140px 40px; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+.cancion { display: grid; grid-template-columns: 28px minmax(0, 1fr) 140px 40px auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+.cancion .quitar { margin: 0; }
 .cancion:last-child { border-bottom: 0; }
 .cancion .n { font-family: var(--serif); font-size: 18px; color: var(--p-muted); }
 .cancion b { display: block; font-weight: 500; }
@@ -300,7 +301,7 @@ table.t-corta { min-width: 0; }
   .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: rgba(253, 251, 249, .96); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line-soft); padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)); }
   .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0; font-size: 10.5px; font-weight: 500; color: var(--p-muted); text-decoration: none; }
   .tabbar a[aria-current="page"] { color: var(--rose-t); }
-  .cancion { grid-template-columns: 24px minmax(0, 1fr) 70px 32px; }
+  .cancion { grid-template-columns: 24px minmax(0, 1fr) 70px 32px auto; }
   .salon { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
 }
 /* Grupos en el móvil: una tarjeta por grupo en vez de una tabla que obliga a desplazarse de lado.
