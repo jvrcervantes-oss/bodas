@@ -4,4 +4,4 @@
 // otro con `tools/bodas.py padrino-tokens` en el repo de la agencia, que actualiza esto y Railway a la vez.
 // `contenido` publica guías: token propio, se rota y revoca aparte del de decisión (Seguridad #100).
 // `tesoreria` lee los pedidos de Lemon Squeezy (solo el Tesorero, 30-sep). Vacío hasta generarlo: 401.
-return ['lectura' => 'e714b6846dba587181bda92801ab6684b5638e1533598c4bd19c55cb16b25750', 'decision' => '8acd3d7a0e5dcc32b44d7338c5c602477f7f4263f79b786d94111f5320f4360c', 'contenido' => '82f27166da0a7019c88984ff01bd23e9ff9fd25771ef838aeb66ec01056c5d2c', 'tesoreria' => ''];
+return ['lectura' => 'e714b6846dba587181bda92801ab6684b5638e1533598c4bd19c55cb16b25750', 'decision' => '8acd3d7a0e5dcc32b44d7338c5c602477f7f4263f79b786d94111f5320f4360c', 'contenido' => '82f27166da0a7019c88984ff01bd23e9ff9fd25771ef838aeb66ec01056c5d2c', 'tesoreria' => '89d73edde838ecf5884ac8fc23b1d43803c014e243fb7d4d9a7f35d5c08d1a25'];
