@@ -320,6 +320,7 @@ function panel_grupos(string $slug, array $c): array {
     $inv = inv_lee($slug);
     $porGid = [];
     foreach (rsvp_vigentes($slug) as $r) if (($r['grupo'] ?? '') !== '') $porGid[(string) $r['grupo']] = $r;
+    $enlace = inv_por_enlace($slug);
     $o = [];
     foreach (inv_grupos_de($inv['lista']) as $k => $g) {
         $e = $inv['grupos'][$k] ?? null;
@@ -333,7 +334,7 @@ function panel_grupos(string $slug, array $c): array {
         } else {
             $estado = (string) ($e['abierto'] ?? '') !== '' ? 'abierto' : 'sin';
         }
-        $o[] = ['gid' => $e['gid'], 'token' => $e['token'], 'nombre' => $g['nombre'], 'personas' => $g['personas'], 'estado' => $estado,
+        $o[] = ['gid' => $e['gid'], 'token' => $e['token'], 'nombre' => $g['nombre'], 'personas' => $g['personas'], 'extras' => $enlace[$e['gid']]['extras'] ?? [], 'estado' => $estado,
             'abierto' => (string) ($e['abierto'] ?? ''), 'menus' => $menus];
     }
     return $o;
@@ -385,14 +386,15 @@ function panel_invitados(string $slug, array $c): string {
         foreach (PANEL_EST_GRUPO as $k => [$rot]) $ops[$k] = explode(',', $rot)[0] . ' · ' . ($cuenta[$k] ?? 0);
         $filas = '';
         foreach ($G as $g) {
-            if (($f !== 'todos' && $g['estado'] !== $f) || !$coincide($g['nombre'], ...$g['personas'])) continue;
+            if (($f !== 'todos' && $g['estado'] !== $f) || !$coincide($g['nombre'], ...$g['personas'], ...$g['extras'])) continue;
             [$et, $cls] = PANEL_EST_GRUPO[$g['estado']];
             if ($g['estado'] === 'abierto') $et = 'Abierto el ' . date('d/m/Y', (int) strtotime($g['abierto'])) . ', sin responder';
             $url = url_boda($slug, 'i/' . $g['token']);
             $msg = '¡Hola, ' . $g['nombre'] . '! Nos casamos y nos encantaría que vinierais. En este enlace tenéis toda la información y podéis confirmar: ' . $url;
             $menus = $g['menus'] ? implode(' · ', array_map(fn($m, $n) => $m . ($n > 1 ? ' ×' . $n : ''), array_keys($g['menus']), $g['menus'])) : '—';
-            $filas .= '<tr><td><b>' . h($g['nombre']) . '</b><div class="muted">' . count($g['personas']) . (count($g['personas']) === 1 ? ' persona' : ' personas')
-                . (count($g['personas']) > 1 || $g['personas'][0] !== $g['nombre'] ? ': ' . h(implode(', ', $g['personas'])) : '') . '</div><code class="enl-url">' . h($url) . '</code></td>'
+            $quienes = array_merge(array_map('h', $g['personas']), array_map(fn($n) => h($n) . ' <i>(añadido al confirmar)</i>', $g['extras']));
+            $filas .= '<tr><td><b>' . h($g['nombre']) . '</b><div class="muted">' . count($quienes) . (count($quienes) === 1 ? ' persona' : ' personas')
+                . (count($quienes) > 1 || $g['personas'][0] !== $g['nombre'] ? ': ' . implode(', ', $quienes) : '') . '</div><code class="enl-url">' . h($url) . '</code></td>'
                 . '<td><span class="chip ' . $cls . '">' . h($et) . '</span></td><td class="muted">' . h($menus) . '</td>'
                 . '<td><div class="acc"><button type="button" class="btn b-sm b-papel" data-copiar-enlace="' . h($url) . '">Copiar enlace</button><span class="copiado" role="status" hidden>Copiado</span>'
                 . '<a class="btn b-sm b-osc" href="https://wa.me/?text=' . h(rawurlencode($msg)) . '" target="_blank" rel="noopener">WhatsApp</a>'
@@ -422,8 +424,9 @@ function panel_invitados(string $slug, array $c): string {
             if ($k !== $x['estado']) $botones .= '<button class="btn b-sm b-papel" name="estado" value="' . $k . '">' . $t . '</button>';
         }
         if ($x['manual']) $botones .= '<button class="btn b-sm b-papel" name="estado" value="auto" title="Volver a lo que digan las confirmaciones">Automático</button>';
-        $tb .= '<tr><td><b>' . h($x['nombre']) . '</b></td><td class="muted">' . h($x['grupo']) . '</td><td><span class="chip ' . $etq[$x['estado']][1] . '">' . $etq[$x['estado']][0] . '</span>' . ($x['manual'] ? ' <span class="muted">(a mano)</span>' : '') . '</td>'
-            . '<td><form method="post" action="/panel/invitados" class="acc">' . $csrf . '<input type="hidden" name="accion" value="marcar"><input type="hidden" name="id" value="' . h($x['id']) . '">' . $botones . '</form></td></tr>';
+        $extra = !empty($x['extra']);   // añadido al confirmar por el enlace de su grupo: no está en la lista, así que no se corrige a mano
+        $tb .= '<tr><td><b>' . h($x['nombre']) . '</b>' . ($extra ? ' <span class="muted">(añadido al confirmar)</span>' : '') . '</td><td class="muted">' . h($x['grupo']) . '</td><td><span class="chip ' . $etq[$x['estado']][1] . '">' . $etq[$x['estado']][0] . '</span>' . ($x['manual'] ? ' <span class="muted">(a mano)</span>' : '') . '</td>'
+            . ($extra ? '<td class="muted">—</td></tr>' : '<td><form method="post" action="/panel/invitados" class="acc">' . $csrf . '<input type="hidden" name="accion" value="marcar"><input type="hidden" name="id" value="' . h($x['id']) . '">' . $botones . '</form></td></tr>');
     }
     // Plegada (el artifact solo enseña los grupos): se abre sola al buscar, sin enlaces por grupo, o al volver de corregir (#personas, panel.js)
     $abierta = $q !== '' || !$G;

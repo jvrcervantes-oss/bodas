@@ -113,6 +113,59 @@ function inv_parsea(string $texto): array {
 /** Palabras de un nombre sin tildes ni mayúsculas. */
 function inv_palabras(string $n): array { return array_values(array_filter(explode(' ', clave_nombre($n)))); }
 
+/** ¿Son la misma persona por nombre? Igual, o uno contiene todas las palabras del otro y el más corto tiene al menos `$minimo`. */
+function inv_coincide(array $a, array $b, int $minimo = 2): bool {
+    $corto = count($a) <= count($b) ? $a : $b;
+    $largo = $corto === $a ? $b : $a;
+    return $a === $b || (count($corto) >= $minimo && !array_diff($corto, $largo));
+}
+
+/**
+ * Lo que trajo cada respuesta llegada por el enlace de un grupo de la lista (la lista dice quién está invitado; la
+ * respuesta puede traer más gente: «Marta Gil» confirma y añade a su hijo):
+ *   gid => ['viene', 'nombre' (del grupo), 'pares' => [id de fila de la lista => true], 'extras' => [nombres añadidos]]
+ *  - Primero se empareja por nombre (como inv_cruza). Lo que sobra se empareja con las filas libres del MISMO grupo si el
+ *    nombre cabe dentro del otro aunque sea de una sola palabra («Marta» ≈ «Marta Gil»): llegó por su enlace.
+ *  - Lo que aún sobra es una persona añadida al confirmar. Si su nombre ya está en la lista en otro grupo, es esa
+ *    persona y no se duplica. Solo respuestas con grupo: la confirmación general es abierta y no dice a quién se invitó.
+ */
+function inv_por_enlace(string $slug): array {
+    $inv = inv_lee($slug);
+    $grupos = inv_grupos_de($inv['lista']);
+    $filasDe = [];
+    $todas = [];
+    foreach ($inv['lista'] as $g) { $filasDe[inv_clave_grupo($g)][] = $g; $todas[] = inv_palabras((string) $g['nombre']); }
+    $porGid = [];
+    foreach (rsvp_vigentes($slug) as $r) if (($r['grupo'] ?? '') !== '') $porGid[(string) $r['grupo']] = $r;
+    $o = [];
+    foreach ($inv['grupos'] as $k => $e) {
+        $gid = is_array($e) ? (string) ($e['gid'] ?? '') : '';
+        if ($gid === '' || !isset($porGid[$gid], $grupos[$k])) continue;
+        $r = $porGid[$gid];
+        $libres = $filasDe[$k] ?? [];
+        $sobran = [];
+        foreach (personas($r) as $p) {
+            $pr = inv_palabras((string) $p['nombre']);
+            $hit = null;
+            foreach ($libres as $i => $g) if (inv_coincide(inv_palabras((string) $g['nombre']), $pr)) { $hit = $i; break; }
+            if ($hit !== null) unset($libres[$hit]); else $sobran[] = (string) $p['nombre'];
+        }
+        $pares = [];
+        $extras = [];
+        foreach ($sobran as $nombre) {
+            $pr = inv_palabras($nombre);
+            $hit = null;
+            foreach ($libres as $i => $g) if (inv_coincide(inv_palabras((string) $g['nombre']), $pr, 1)) { $hit = $i; break; }
+            if ($hit !== null) { $pares[(string) $libres[$hit]['id']] = true; unset($libres[$hit]); continue; }
+            $enLista = false;
+            foreach ($todas as $pg) if (inv_coincide($pg, $pr)) { $enLista = true; break; }
+            if (!$enLista && trim($nombre) !== '') $extras[] = $nombre;
+        }
+        $o[$gid] = ['viene' => !empty($r['asiste_ceremonia']) || !empty($r['asiste_banquete']), 'nombre' => $grupos[$k]['nombre'], 'pares' => $pares, 'extras' => $extras];
+    }
+    return $o;
+}
+
 /**
  * Cruza la lista con las respuestas: coincide si el nombre es igual o si uno contiene todas las
  * palabras del otro y el más corto tiene al menos dos («Ana García» ~ «Ana García López»).
@@ -127,18 +180,28 @@ function inv_cruza(string $slug, array $c): array {
     }
     $filas = [];
     $res = ['viene' => 0, 'no' => 0, 'pend' => 0];
+    $enlace = inv_por_enlace($slug);
+    $par = [];   // fila de la lista → si viene, según la respuesta que llegó por el enlace de su grupo
+    foreach ($enlace as $x) foreach ($x['pares'] as $id => $_) $par[$id] = $x['viene'];
     foreach ($inv['lista'] as $g) {
         $pg = inv_palabras($g['nombre']);
         $auto = 'pend';
         foreach ($resp as [$pr, $viene]) {
-            $corto = count($pg) <= count($pr) ? $pg : $pr;
-            $largo = $corto === $pg ? $pr : $pg;
-            if ($pg === $pr || (count($corto) >= 2 && !array_diff($corto, $largo))) { $auto = $viene ? 'viene' : 'no'; if ($viene) break; }
+            if (inv_coincide($pg, $pr)) { $auto = $viene ? 'viene' : 'no'; if ($viene) break; }
         }
+        if ($auto === 'pend' && isset($par[$g['id']])) $auto = $par[$g['id']] ? 'viene' : 'no';
         $manual = (string) ($inv['manual'][$g['id']] ?? '');
         $estado = in_array($manual, ['viene', 'no', 'pend'], true) ? $manual : $auto;
         $res[$estado]++;
         $filas[] = $g + ['estado' => $estado, 'manual' => $manual !== ''];
+    }
+    // Quien se añadió al confirmar por el enlace de un grupo: sale en la lista, con el grupo que lo trajo (sin corrección a mano: no está en la lista)
+    foreach ($enlace as $gid => $x) {
+        foreach ($x['extras'] as $nombre) {
+            $estado = $x['viene'] ? 'viene' : 'no';
+            $res[$estado]++;
+            $filas[] = ['id' => substr(sha1('x|' . $gid . '|' . clave_nombre($nombre)), 0, 12), 'nombre' => $nombre, 'grupo' => (string) $x['nombre'], 'estado' => $estado, 'manual' => false, 'extra' => true];
+        }
     }
     $orden = ['pend' => 0, 'no' => 1, 'viene' => 2];
     usort($filas, fn($a, $b) => [$orden[$a['estado']], $a['grupo'], $a['nombre']] <=> [$orden[$b['estado']], $b['grupo'], $b['nombre']]);
