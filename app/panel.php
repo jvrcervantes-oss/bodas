@@ -550,29 +550,40 @@ function panel_respuestas_misma(string $slug, array $c, string $metodo): void {
 
 // ---------------------------------------------------------------- música
 
-/** Clave para reconocer la misma canción aunque cambien mayúsculas, tildes o espacios. */
+/** Clave para reconocer la misma canción aunque cambien mayúsculas, tildes o espacios. Los alfabetos que iconv no pasa a ASCII
+ *  (cirílico, CJK…) se comparan tal cual en minúsculas: sin esto su clave sería vacía y quitar una bloquearía todas las del artista. */
 function cancion_clave(string $artista, string $cancion): string {
-    $n = fn(string $t) => preg_replace('/[^a-z0-9]+/', '', strtolower(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $t) ?: $t));
+    $n = function (string $t): string {
+        $a = preg_replace('/[^a-z0-9]+/', '', strtolower((string) iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $t)));
+        return $a !== '' ? $a : preg_replace('/[^\p{L}\p{N}]+/u', '', mb_strtolower($t, 'UTF-8'));
+    };
     return $n($artista) . '|' . $n($cancion);
 }
 
-/** POST /panel/musica/quitar (sesión ya exigida por rutas_panel; CSRF aquí). Quita la canción y apunta su clave para que no vuelvan a proponerla. */
+/** POST /panel/musica/quitar (sesión ya exigida por rutas_panel; CSRF aquí). Apunta primero su clave para que no vuelvan a proponerla y después la quita. */
 function panel_musica_quitar(string $slug, array $c, string $metodo): void {
     if ($metodo !== 'POST') { header('Allow: POST'); http_response_code(405); exit; }
     if (!panel_csrf_ok()) { http_response_code(403); exit; }
     $id = (string) ($_POST['id'] ?? '');
     if (preg_match('/^[A-Za-z0-9_-]{1,40}$/', $id)) {
         $dir = dir_boda($slug) . '/guardado/';
-        $quitada = muta_json($dir . 'canciones.json', function (array &$d) use ($id) {
-            foreach ($d as $i => $r) if (is_array($r) && ($r['id'] ?? '') === $id) { unset($d[$i]); $d = array_values($d); return $r; }
-            return null;
-        }, MAX_BYTES_CANCIONES);
-        if (is_array($quitada)) {
-            muta_json($dir . 'canciones_quitadas.json', function (array &$d) use ($quitada) {
-                $k = cancion_clave((string) ($quitada['artista'] ?? ''), (string) ($quitada['cancion'] ?? ''));
-                if (!in_array($k, $d, true) && count($d) < 500) $d[] = $k;
-            }, 65536);
-            registra('canción quitada desde el panel', ['slug' => $slug]);
+        $quitar = null;
+        foreach (lee_json($dir . 'canciones.json') ?? [] as $r) if (is_array($r) && ($r['id'] ?? '') === $id) $quitar = $r;
+        if ($quitar !== null) {
+            $k = cancion_clave((string) ($quitar['artista'] ?? ''), (string) ($quitar['cancion'] ?? ''));
+            // Primero se apunta: si no cabe o falla el disco, la canción se queda en vez de quitarse sin bloquear
+            $apuntada = muta_json($dir . 'canciones_quitadas.json', function (array &$d) use ($k) {
+                if (in_array($k, $d, true)) return true;
+                if (count($d) >= 2000) return false;
+                $d[] = $k; return true;
+            }, 131072);
+            if ($apuntada === true) {
+                muta_json($dir . 'canciones.json', function (array &$d) use ($id) {
+                    $d = array_values(array_filter($d, fn($r) => !(is_array($r) && ($r['id'] ?? '') === $id)));
+                    return true;
+                }, MAX_BYTES_CANCIONES);
+                registra('canción quitada desde el panel', ['slug' => $slug]);
+            }
         }
     }
     header('Location: /panel/musica', true, 303);

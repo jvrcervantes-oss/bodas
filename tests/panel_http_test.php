@@ -252,6 +252,7 @@ ok($st === 303 && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?
 ok(strpos($j, '"ok":false') !== false && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? []) === 1, 'una canción quitada no se puede volver a proponer (aunque cambien mayúsculas y espacios)');
 [$st, $j] = pide('POST', '/api/musica', ['artista' => 'Queen', 'cancion' => 'Dancing Queen']);
 ok(strpos($j, '"ok":true') !== false && count(lee_json(dir_boda($slug) . '/guardado/canciones.json') ?? []) === 2, 'otras canciones se siguen pudiendo proponer');
+ok(cancion_clave('Ария', 'Беспечный ангел') !== cancion_clave('Ария', 'Улица роз') && cancion_clave('Ария', 'Улица роз') !== '|' && cancion_clave('東京', '夜') !== cancion_clave('東京', '朝'), 'clave de canción: los alfabetos no latinos no se confunden entre sí');
 [$st] = pide('GET', '/panel/libro');
 ok($st === 404, 'GET /panel/libro: 404');
 foreach (['/panel', '/panel/respuestas', '/panel/musica', '/panel/descargas', '/panel/mas', '/panel/catering'] as $r) {
