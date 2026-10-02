@@ -234,7 +234,9 @@ function panel_mesas(string $slug, array $c, string $metodo): void {
         $accion = (string) ($_POST['accion'] ?? '');
         $r = muta_json(mesas_fichero($slug), fn(array &$d) => mesas_aplica($d, $accion, $in, $ban), MAX_BYTES_MESAS);
         $e = $r === null ? 'lleno' : (string) $r;
-        header('Location: /panel/mesas' . ($e !== '' ? '?e=' . rawurlencode($e) : ''), true, 303);
+        // Vuelve a la mesa tocada (si el id tiene la forma de una mesa): en el móvil cada flecha recarga y no debe mandar arriba del todo
+        $ancla = preg_match('/^m[a-f0-9]{8}$/', (string) ($_POST['mesa'] ?? '')) ? '#mesa-' . $_POST['mesa'] : '';
+        header('Location: /panel/mesas' . ($e !== '' ? '?e=' . rawurlencode($e) : '') . $ancla, true, 303);
         exit;
     }
     if ($metodo !== 'GET' && $metodo !== 'HEAD') { http_response_code(405); exit; }
@@ -288,7 +290,7 @@ function mesas_herramienta(string $slug): string {
     foreach ($E['mesas'] as $m) {
         $libres = $m['plazas'] - count($m['personas']);
         $conAlergia = count(array_filter($m['personas'], fn($p) => $p['alergias'] !== ''));
-        $salon .= '<div class="mesa" data-mesa="' . h($m['id']) . '"><div class="m-wrap">'
+        $salon .= '<div class="mesa" id="mesa-' . h($m['id']) . '" data-mesa="' . h($m['id']) . '"><div class="m-wrap">'
             . '<button type="button" class="m-circ mesa-destino" data-sentar="' . h($m['id']) . '" disabled aria-label="Sentar aquí: ' . h(mesa_nombre($m)) . ($libres > 0 ? '' : ' (llena)') . '">'
             . '<b>' . h(mesa_nombre($m)) . '</b><span class="m-sentar" aria-hidden="true">Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</span></button>' . mesa_sillas($m) . '</div>'
             . '<small class="tab">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . ($conAlergia ? ' · ' . $conAlergia . ' con alergia' : '') . '</small>'
