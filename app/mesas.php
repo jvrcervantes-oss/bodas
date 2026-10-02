@@ -293,8 +293,17 @@ function mesas_herramienta(string $slug): string {
             . '<b>' . h(mesa_nombre($m)) . '</b><span class="m-sentar" aria-hidden="true">Sentar aquí' . ($libres > 0 ? '' : ' (llena)') . '</span></button>' . mesa_sillas($m) . '</div>'
             . '<small class="tab">' . count($m['personas']) . ' / ' . (int) $m['plazas'] . ($conAlergia ? ' · ' . $conAlergia . ' con alergia' : '') . '</small>'
             . '<ul class="mesa-personas">';
-        foreach ($m['personas'] as $p) {
-            $salon .= '<li>' . mesas_boton_persona($p, $rep) . '<form method="post" action="/panel/mesas" class="mesa-quitar"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar">'
+        $np = count($m['personas']);
+        foreach ($m['personas'] as $j => $p) {
+            // Solo en el móvil (CSS): flechas para cambiar de sitio con quien tiene al lado en la mesa (acción «silla» = intercambio)
+            $flechas = '';
+            foreach ([[-1, '↑', 'Subir'], [1, '↓', 'Bajar']] as [$d, $ic, $verbo]) {
+                $vecino = $m['personas'][$j + $d] ?? null;
+                $flechas .= '<form method="post" action="/panel/mesas" class="mesa-mover"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="silla">'
+                    . '<input type="hidden" name="persona" value="' . h($p['id']) . '"><input type="hidden" name="mesa" value="' . h($m['id']) . '"><input type="hidden" name="silla" value="' . ($vecino ? (int) $vecino['silla'] : '') . '">'
+                    . '<button class="mesa-flecha"' . ($vecino ? '' : ' disabled') . ' aria-label="' . $verbo . ' a ' . h($p['nombre']) . ($vecino ? ' (cambia de sitio con ' . h($vecino['nombre']) . ')' : '') . '">' . $ic . '</button></form>';
+            }
+            $salon .= '<li>' . $flechas . mesas_boton_persona($p, $rep) . '<form method="post" action="/panel/mesas" class="mesa-quitar"><input type="hidden" name="csrf" value="' . $csrf . '"><input type="hidden" name="accion" value="levantar">'
                 . '<input type="hidden" name="persona" value="' . h($p['id']) . '"><button class="mesa-x" aria-label="Quitar a ' . h($p['nombre']) . ' de la mesa">×</button></form></li>';
         }
         $salon .= '</ul><details class="mesa-editar"><summary>Cambiar</summary>'
@@ -310,7 +319,9 @@ function mesas_herramienta(string $slug): string {
         . '<div class="campo campo-corto"><label for="mesa-plazas">Plazas</label><input type="number" id="mesa-plazas" name="plazas" min="1" max="' . MESAS_MAX_PLAZAS . '" value="10" required></div>'
         . '<button class="btn b-papel">Crear mesa</button></form>';
     $o .= '<div class="rej r-12 mesas"><section class="card" id="plano">'
-        . panel_card_cab('Plano de mesas', 'Arrastrad a una persona (o «Todo el grupo») hasta su mesa, también de una mesa a otra. Ya sentadas, arrastrad su círculo a otra silla de la mesa (o de otra mesa): si está ocupada, se cambian de sitio. Si preferís tocar: elegid a la persona y luego tocad la mesa.', '<span class="chip incl">Incluido en vuestro pack</span>')
+        . panel_card_cab('Plano de mesas', '', '<span class="chip incl">Incluido en vuestro pack</span>')
+        . '<p class="sub ayuda-mesas"><span class="solo-pc">' . h('Arrastrad a una persona (o «Todo el grupo») hasta su mesa, también de una mesa a otra. Ya sentadas, arrastrad su círculo a otra silla de la mesa (o de otra mesa): si está ocupada, se cambian de sitio. Si preferís tocar: elegid a la persona y luego tocad la mesa.') . '</span>'
+        . '<span class="solo-movil">' . h('Elegid a una persona (o «Todo el grupo») y tocad la mesa donde se sienta. Para cambiar de sitio dentro de la mesa, usad las flechas ↑ ↓ de su lista: se cambia con quien tiene al lado.') . '</span></p>'
         . '<div class="cifras tab"><span><b>' . $sentados . '</b> sentados</span><span><b>' . count($E['sin_mesa']) . '</b> sin mesa</span><span><b>' . count($E['mesas']) . '</b> mesas</span><span><b>' . $plazas . '</b> plazas</span></div>'
         . ($salon !== '' ? '<div class="salon">' . $salon . '</div>' : '<p class="vacio">Todavía no hay mesas. Cread la primera aquí abajo.</p>')
         . $nueva . '<div class="fila-bot"><a class="btn b-osc" href="/panel/mesas/imprimir">' . p_ico('hoja') . 'Hoja para el restaurante</a></div></section>';
