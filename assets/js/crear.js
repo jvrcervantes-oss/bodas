@@ -388,6 +388,7 @@
     st.portada = st.portada || {};
     if (typeof st.portada.hashtag !== 'string') st.portada.hashtag = '';
     if (typeof st.portada.vestimenta !== 'string') st.portada.vestimenta = '';
+    ['fecha_kicker', 'fecha_titulo', 'cancion_kicker', 'rsvp_boton', 'rsvp_ok'].forEach(function (k) { if (typeof st.portada[k] !== 'string') st.portada[k] = ''; });
     if (D.secciones.historia && !st.secciones.some(function (x) { return x.tipo === 'historia'; })) {
       st.secciones.push({ id: idNuevo('s'), tipo: 'historia', on: false, titulo: D.secciones.historia.titulo, datos: { texto: '' } });
     }

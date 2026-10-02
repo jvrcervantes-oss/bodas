@@ -248,6 +248,10 @@ function entrada_atelier(array $c, array $ctx): string {
         . '</div></div>';
 }
 
+/** Frase que la pareja cambió en el creador, o '' si deja la de siempre. */
+function frase_propia(array $c, string $k): string { return (string) ($c['portada'][$k] ?? ''); }
+function frase_web(array $c, string $k, string $porDefecto): string { return frase_propia($c, $k) ?: $porDefecto; }
+
 function linea_fecha(array $c): string {
     $partes = array_filter([fecha_puntos($c['fecha']), $c['ciudad']]);
     return implode(' · ', $partes);
@@ -462,8 +466,8 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php if ($c['fecha'] !== ''): ?>
   <section class="save-band">
     <div class="save-card rv">
-      <span class="kicker">Guardad el momento</span>
-      <h2>Anotad la fecha</h2>
+      <span class="kicker"><?= h(frase_web($c, 'fecha_kicker', 'Guardad el momento')) ?></span>
+      <h2><?= h(frase_web($c, 'fecha_titulo', 'Anotad la fecha')) ?></h2>
       <p class="save-date-text"><?= h(ucfirst(fecha_larga($c['fecha']))) ?></p>
       <div class="countdown" id="countdown" data-objetivo="<?= h($objetivo) ?>" aria-label="Cuenta atrás para la boda">
         <div class="countdown-item"><b data-c="days">0</b><span>Días</span></div>
@@ -529,7 +533,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php elseif ($s['tipo'] === 'musica'): ?>
       <div class="q-card q-music rv">
         <div>
-          <span class="kicker" style="margin-bottom:4px">¿Qué canción no puede faltar?</span>
+          <span class="kicker" style="margin-bottom:4px"><?= h(frase_web($c, 'cancion_kicker', '¿Qué canción no puede faltar?')) ?></span>
           <h3><?= h($s['titulo']) ?></h3>
 <?php if ($resumen !== ''): ?>          <p><?= h($resumen) ?></p><?php endif; ?>
         </div>
@@ -1002,12 +1006,12 @@ function form_rsvp(array $c, array $s, array $ctx): string {
     <div class="field" data-si-grupo hidden><label class="check-group"><input type="checkbox" name="consent_acompanantes" value="si"> <?= h($L['check_acompanantes'] ?? 'Tengo permiso de las personas que apunto para facilitar sus datos.') ?></label></div>
   </div>
 
-  <div class="form-actions"><button type="submit" class="btn" id="rsvpSubmit">¡Allí estaré!</button></div>
+  <div class="form-actions"><button type="submit" class="btn" id="rsvpSubmit"<?= frase_propia($c, 'rsvp_boton') ? ' data-fijo="1"' : '' ?>><?= h(frase_web($c, 'rsvp_boton', '¡Allí estaré!')) ?></button></div>
   <div class="form-msg" role="alert"></div>
 </form>
 <div class="modal-overlay" id="rsvpSuccessModal">
   <div class="modal">
-    <h2>¡Apuntado!</h2>
+    <h2<?= frase_propia($c, 'rsvp_ok') ? ' data-fijo="1"' : '' ?>><?= h(frase_web($c, 'rsvp_ok', '¡Apuntado!')) ?></h2>
     <p>Gracias por confirmar. ¡Nos vemos<?= $c['fecha'] !== '' ? ' el ' . h(fecha_larga($c['fecha'], false)) : ' pronto' ?>!</p>
     <button type="button" class="btn" data-close-modal>Cerrar</button>
   </div>

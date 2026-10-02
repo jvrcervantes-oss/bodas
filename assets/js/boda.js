@@ -118,7 +118,7 @@
         n[kind]++;
         card.querySelector('.guest-tag').textContent = (kind === 'nino' ? 'Niño/a ' : 'Adulto ') + n[kind];
       });
-      if (submit) submit.textContent = cards.length > 1 ? '¡Allí estaremos!' : '¡Allí estaré!';
+      if (submit && !submit.hasAttribute('data-fijo')) submit.textContent = cards.length > 1 ? '¡Allí estaremos!' : '¡Allí estaré!';
       document.querySelectorAll('[data-add-guest]').forEach(function (b) { b.disabled = cards.length >= MAX; });
       legal();
     }
@@ -478,7 +478,7 @@
     initAjaxForm('libroForm', '/api/libro', { onSuccess: function () { location.reload(); } });
     initAjaxForm('rsvpForm', '/api/rsvp', { onSuccess: function (json) {
       var h = document.querySelector('#rsvpSuccessModal h2');
-      if (h) h.textContent = json && json.personas > 1 ? '¡Apuntados los ' + json.personas + '!' : '¡Apuntado!';
+      if (h && !h.hasAttribute('data-fijo')) h.textContent = json && json.personas > 1 ? '¡Apuntados los ' + json.personas + '!' : '¡Apuntado!';
       rsvpModal.open();
       // Enlace de grupo: el reset deja solo la primera ficha y un segundo envío con el mismo token
       // sustituiría la respuesta del grupo entero por la de una persona. Se retira el formulario.

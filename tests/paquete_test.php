@@ -306,5 +306,24 @@ foreach (['flores' => 'flores-portada-movil', 'eucalipto' => 'eucalipto-portada-
 $hA = pagina_inicio(normaliza_config(crudo(['foto' => true, 'decoracion' => 'flores', 'foto_estilo' => 'arco'])), ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'x', 'foto' => '/foto?v=1', 'mapa' => null]);
 ok(!hay($hA, 'deco-entre'), 'fundida en móvil: solo la Fundida lleva la guirnalda entre la fecha y la bienvenida');
 
+// ============================================================ 6. Frases fijas editables
+$fr = ['fecha_kicker' => 'Apuntad el día', 'fecha_titulo' => 'Ese sábado', 'cancion_kicker' => 'Vuestra canción', 'rsvp_boton' => 'Cuenta conmigo', 'rsvp_ok' => '¡Hecho!'];
+$hF = (string) pag(crudo(['portada' => $fr]));
+ok(hay($hF, '>Apuntad el día<') && hay($hF, '>Ese sábado<') && !hay($hF, 'Guardad el momento') && !hay($hF, 'Anotad la fecha'), 'frases: la banda de la fecha lleva las de la pareja');
+$rutaR = SECCIONES['rsvp'][1];
+$pR = (string) pag(crudo(['portada' => $fr]), (string) $rutaR);
+ok(hay($pR, 'id="rsvpSubmit" data-fijo="1">Cuenta conmigo<') && hay($pR, '<h2 data-fijo="1">¡Hecho!</h2>'), 'frases: botón y título de confirmar propios, y marcados para que el JS no los pise');
+ok(hay($hF, '>Vuestra canción<') && !hay($hF, 'canción no puede faltar?<'), 'frases: la pregunta de la música es la de la pareja');
+$pD = (string) pag(crudo(), (string) $rutaR);
+ok(hay($pD, 'id="rsvpSubmit">¡Allí estaré!<') && hay($pD, '<h2>¡Apuntado!</h2>') && hay((string) pag(crudo()), '>Guardad el momento<'), 'frases vacías: las de siempre, sin marca');
+ok(normaliza_config(crudo(['portada' => ['fecha_titulo' => str_repeat('x', 200), 'rsvp_boton' => "A
+B", 'rsvp_ok' => ['x']]]))['portada']['fecha_titulo'] === str_repeat('x', 50)
+    && normaliza_config(crudo(['portada' => ['rsvp_boton' => "A
+B"]]))['portada']['rsvp_boton'] === 'A B'
+    && normaliza_config(crudo(['portada' => ['rsvp_ok' => ['x']]]))['portada']['rsvp_ok'] === '', 'frases: tope, una línea y tipos raros');
+$xf = (string) pag(crudo(['portada' => ['rsvp_boton' => '"><img src=x onerror=alert(1)>']]), (string) $rutaR);
+ok(!hay($xf, '<img src=x') && hay($xf, '&lt;img'), 'frases: escapadas');
+ok(!hay(ics(normaliza_config(crudo(['portada' => $fr]))), 'Apuntad el día'), 'frases: fuera del .ics');
+
 echo $fallos ? "ROJO: " . ($n - $fallos) . "/$n\n" : "VERDE: $n/$n\n";
 exit($fallos ? 1 : 0);

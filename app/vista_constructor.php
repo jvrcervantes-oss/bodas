@@ -206,6 +206,15 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
           <small>Sin la almohadilla y sin espacios: solo letras, números y guion bajo. Sale como texto bajo la fecha y en el pie, sin enlace.</small></label>
         <label class="c-campo"><span>Vestimenta <small>(opcional)</small></span><input data-k="portada.vestimenta" maxlength="60" autocomplete="off" placeholder="Etiqueta, sin corbata">
           <small>Una línea: sale como una píldora en la portada y sustituye a la tarjeta de dress code de la portada (la página de dress code sigue si la tenéis activa).</small></label>
+        <hr class="c-hr">
+        <span class="overline overline-bronze">Frases de la web</span>
+        <p class="c-ayuda">Estas frases salen en vuestra web. Si dejáis un campo vacío, se queda la de siempre.</p>
+        <label class="c-campo"><span>Fecha: frase pequeña</span><input data-k="portada.fecha_kicker" maxlength="40" autocomplete="off" placeholder="Guardad el momento"></label>
+        <label class="c-campo"><span>Fecha: título</span><input data-k="portada.fecha_titulo" maxlength="50" autocomplete="off" placeholder="Anotad la fecha"></label>
+        <label class="c-campo"><span>Música: pregunta</span><input data-k="portada.cancion_kicker" maxlength="50" autocomplete="off" placeholder="¿Qué canción no puede faltar?"></label>
+        <label class="c-campo"><span>Botón de confirmar asistencia</span><input data-k="portada.rsvp_boton" maxlength="30" autocomplete="off" placeholder="¡Allí estaré!">
+          <small>Si lo cambiáis, sale tal cual aunque confirme más de una persona (por ejemplo, no pasa a «Allí estaremos»).</small></label>
+        <label class="c-campo"><span>Título al confirmar</span><input data-k="portada.rsvp_ok" maxlength="30" autocomplete="off" placeholder="¡Apuntado!"></label>
       </div>
 
       <div class="c-panel" role="tabpanel" id="panel-rsvp" data-panel="rsvp" aria-labelledby="tab-rsvp" hidden>

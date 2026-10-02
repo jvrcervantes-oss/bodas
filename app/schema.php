@@ -153,6 +153,9 @@ const MAX_TRAYECTOS = 6;
 const MAX_PROGRAMA = 6;         // momentos EXTRA del programa del día (además de ceremonia y convite)
 const MAX_HASHTAG = 30;
 const MAX_VESTIMENTA = 60;
+// Frases fijas de la web que la pareja puede cambiar (vacía = la de siempre). Clave => [tope, nombre para el aviso]
+const FRASES_PROPIAS = ['fecha_kicker' => [40, 'la frase pequeña de la fecha'], 'fecha_titulo' => [50, 'el título de la fecha'], 'cancion_kicker' => [50, 'la pregunta de la canción'],
+    'rsvp_boton' => [30, 'el botón de confirmar'], 'rsvp_ok' => [30, 'el título del mensaje de confirmación']];
 const MAX_HISTORIA = 2000;
 const MAX_GALERIA = 24;
 
@@ -228,6 +231,7 @@ function config_inicial(): array {
             'pie' => 'Gracias por formar parte de nuestra historia.',
             'hashtag' => '',
             'vestimenta' => '',
+            'fecha_kicker' => '', 'fecha_titulo' => '', 'cancion_kicker' => '', 'rsvp_boton' => '', 'rsvp_ok' => '',   // vacío = la frase de siempre
         ],
         'foto' => false,
         'codigo' => '',
@@ -425,6 +429,7 @@ function normaliza_config($in): array {
     $c['portada'] = ['invitacion' => clean_str($po['invitacion'] ?? '', 120), 'titulo' => clean_str($po['titulo'] ?? '', 80),
         'frase' => clean_str($po['frase'] ?? '', 240), 'texto' => clean_str($po['texto'] ?? '', 1200), 'pie' => clean_str($po['pie'] ?? '', 200),
         'hashtag' => norm_hashtag($po['hashtag'] ?? ''), 'vestimenta' => linea($po['vestimenta'] ?? '', MAX_VESTIMENTA)];
+    foreach (FRASES_PROPIAS as $k => [$max]) $c['portada'][$k] = linea($po[$k] ?? '', $max);
     $c['programa'] = norm_programa($in['programa'] ?? null);
     $c['foto'] = norm_bool($in['foto'] ?? false);
     // Código de acceso a la galería y al libro (owner, 25-sep): lo reparte la pareja en la invitación
@@ -553,6 +558,9 @@ function datos_descartados($crudo): array {
     }
     if (se_pasa($po['vestimenta'] ?? '', MAX_VESTIMENTA, true)) {
         $f['portada.vestimenta'] = 'Portada: la vestimenta admite ' . MAX_VESTIMENTA . ' caracteres como máximo, en una línea: se cortaría al publicar. Acortadla.';
+    }
+    foreach (FRASES_PROPIAS as $k => [$max, $quien]) {
+        if (se_pasa($po[$k] ?? '', $max, true)) $f['portada.' . $k] = 'Portada: ' . $quien . ' admite ' . $max . ' caracteres como máximo: se cortaría al publicar. Acortadla.';
     }
     // Programa del día: el índice es el de la lista TAL COMO LA MANDÓ el navegador (antes de ordenar por hora)
     if (is_array($crudo) && is_array($crudo['programa'] ?? null)) {
