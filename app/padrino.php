@@ -23,6 +23,12 @@
 //    (#109): este guarda relee LS con ella y devuelve una lista CERRADA de cifras y enums, sin email,
 //    nombre, cliente ni recibo. Se lee LS y no pedidos/*.json porque así cuenta también un pedido
 //    cobrado cuyo webhook falló.
+//  · MARCA DE PAUSA (8-oct-2026, decisión del owner, departamentos/pilotos/contrato_a2.md §7b): mientras exista
+//    DATA_DIR/padrino/pausa.json, las rutas que ESCRIBEN (precios, marca, campanas, contenido) responden 423. Las de
+//    lectura siguen igual. La pone el owner desde el panel del estudio o el Padrino con el token `pausa` (POST pausa),
+//    que SOLO puede ponerla. Quitarla es solo del owner, en el panel del estudio (sesión + CSRF): no hay ruta de API
+//    que reanude, así que un token robado, del tipo que sea, no puede deshacer una pausa. Falla en cerrado: el fichero
+//    existe = pausado, esté su contenido como esté.
 
 declare(strict_types=1);
 
@@ -164,10 +170,41 @@ function padrino_marca_error(string $n, ?array $vigente): string {
     return '';
 }
 
+function padrino_pausa_fichero(): string { return padrino_dir('pausa.json'); }
+
+/** ¿Está la marca de pausa puesta? Existir el fichero basta: ilegible o a medias, sigue pausado (falla en cerrado). */
+function padrino_pausado(): bool { return is_file(padrino_pausa_fichero()); }
+
+/** Quién y cuándo pausó, para el panel. Vacío si no hay marca. */
+function padrino_pausa_datos(): array { return padrino_pausado() ? (lee_json(padrino_pausa_fichero()) ?? ['desde' => '', 'quien' => '?']) : []; }
+
+/** Pone la marca. Idempotente: si ya está, no se toca (conserva quién y cuándo). true = la puso ahora. */
+function padrino_pausar(string $quien, string $motivo): bool {
+    return con_cerrojo(function () use ($quien, $motivo) {
+        if (padrino_pausado()) return false;
+        escribe_json(padrino_pausa_fichero(), ['desde' => date('c'), 'quien' => $quien, 'motivo' => $motivo]);
+        return true;
+    });
+}
+
+/** Quita la marca. SOLO la llama el panel del estudio (sesión del owner + CSRF); ninguna ruta de la API llega aquí. */
+function padrino_reanudar(): bool {
+    return con_cerrojo(function () {
+        if (!padrino_pausado()) return false;
+        return @unlink(padrino_pausa_fichero());
+    });
+}
+
+/** Hashes de los tokens. Las pruebas (router_prueba) fijan los suyos; en producción solo existe el fichero. */
+function padrino_hashes(): array {
+    if (defined('SIN_CONFIG_LOCAL') && defined('PADRINO_HASHES_PRUEBA')) return (array) PADRINO_HASHES_PRUEBA;
+    $f = APP_DIR . '/padrino_tokens.php';
+    return is_file($f) ? (array) require $f : [];
+}
+
 /** Token de la cabecera contra el sha256 guardado. Hash vacío = nadie entra. */
 function padrino_autorizado(string $tipo): bool {
-    $f = APP_DIR . '/padrino_tokens.php';
-    $hashes = is_file($f) ? (array) require $f : [];
+    $hashes = padrino_hashes();
     $h = (string) ($hashes[$tipo] ?? '');
     if (!preg_match('/^[a-f0-9]{64}$/', $h)) return false;
     $auth = (string) ($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
@@ -188,10 +225,19 @@ function rutas_padrino(string $sub, string $metodo): void {
     $contenido = $sub === 'contenido' || strpos($sub, 'contenido/') === 0;
     $escritura = in_array($sub, ['precios', 'marca', 'campanas'], true);
     $tesoreria = $sub === 'pedidos';   // solo el Tesorero: token propio, nunca el de lectura
+    $pausa = $sub === 'pausa';         // solo PONE la marca: token propio, nunca el de decisión
+    // Retiradas de la API (reducir la exposición, contrato_a2 §7 punto 1): ningún llamador. El owner retira y restaura
+    // guías desde el panel del estudio. Antes de pedir token: no hay nada que enseñar.
+    if ($sub === 'contenido/retirar' || $sub === 'contenido/restaurar') json_response(['ok' => false], 404);
     if ($contenido && !limite('padrino-contenido|' . ip_cliente(), 30, 3600, true)) json_response(['ok' => false, 'error' => 'limite'], 429);
-    if (!padrino_autorizado($contenido ? 'contenido' : ($escritura ? 'decision' : ($tesoreria ? 'tesoreria' : 'lectura')))) {
+    if (!padrino_autorizado($contenido ? 'contenido' : ($escritura ? 'decision' : ($tesoreria ? 'tesoreria' : ($pausa ? 'pausa' : 'lectura'))))) {
         padrino_log('rechazo', ['ruta' => $sub, 'ip' => hash('sha256', ip_cliente())]);
         json_response(['ok' => false], 401);
+    }
+    // Pausa puesta: nada que escriba pasa, ni con un token válido. Después de autenticar (a un extraño no se le dice el
+    // estado) y antes de leer el cuerpo.
+    if (($escritura || $contenido) && $metodo === 'POST' && padrino_pausado()) {
+        json_response(['ok' => false, 'error' => 'pausado'], 423);
     }
     $cuerpo = $metodo === 'POST' ? json_decode((string) file_get_contents('php://input', false, null, 0, 10000), true) : null;
     if ($metodo === 'POST' && !is_array($cuerpo)) json_response(['ok' => false, 'error' => 'JSON no válido'], 400);
@@ -216,8 +262,9 @@ function rutas_padrino(string $sub, string $metodo): void {
             json_response(padrino_remitente((string) ($cuerpo['email'] ?? '')));
         case 'precios':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
-            // {extra, cent, motivo} mueve el precio de un extra; {esencial_cent, atelier_cent, motivo}, el de los packs
-            if (isset($cuerpo['extra'])) padrino_cambia_precio_extra($cuerpo);
+            // Solo los packs. El precio de un extra (`extra`) no tiene llamador hasta BOD-25: 404 (contrato_a2 §7).
+            // Cuando el Padrino lo cablee se reabre aquí, con su fila en la tabla de §7.
+            if (isset($cuerpo['extra'])) json_response(['ok' => false], 404);
             padrino_cambia_precios($cuerpo);
         case 'marca':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
@@ -225,9 +272,15 @@ function rutas_padrino(string $sub, string $metodo): void {
         case 'campanas':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
             padrino_alta_campana($cuerpo);
-        case 'contenido': case 'contenido/retirar': case 'contenido/restaurar':
+        case 'contenido':
             if ($metodo !== 'POST') json_response(['ok' => false], 405);
-            padrino_contenido((string) substr($sub, 10), $cuerpo);
+            padrino_contenido('', $cuerpo);
+        case 'pausa':
+            if ($metodo !== 'POST') json_response(['ok' => false], 405);
+            // Idempotente. Solo pone la marca: no hay ruta que la quite (se quita en el panel del estudio)
+            $nueva = padrino_pausar('padrino', clean_str($cuerpo['motivo'] ?? '', 300));
+            padrino_log('pausa', ['quien' => 'padrino', 'nueva' => $nueva]);
+            json_response(['ok' => true, 'pausado' => true, 'nueva' => $nueva]);
     }
     json_response(['ok' => false], 404);
 }
@@ -420,21 +473,9 @@ function padrino_guarda_precios(int $e, int $a, string $motivo): string {
     });
 }
 
-/**
- * Precio de un extra: al mismo historial que los packs (el precio de referencia de 30 días de Ómnibus sale
- * de ahí), con la clave del extra en cada entrada. La primera vez se apunta también el precio del código.
- */
-function padrino_cambia_precio_extra(array $c): void {
-    $clave = (string) ($c['extra'] ?? '');
-    $cent = (int) ($c['cent'] ?? 0);
-    $motivo = clean_str($c['motivo'] ?? '', 300);
-    if ($motivo === '') json_response(['ok' => false, 'error' => 'Falta el motivo.'], 422);
-    $r = padrino_guarda_precio_extra($clave, $cent, $motivo);
-    padrino_log('precio-extra', ['extra' => $clave, 'cent' => $cent, 'ok' => $r === '', 'error' => $r]);
-    if ($r !== '') json_response(['ok' => false, 'error' => $r], 422);
-    json_response(['ok' => true, 'extra' => $clave, 'cent' => $cent]);
-}
-
+// Precio de un extra: al mismo historial que los packs (el precio de referencia de 30 días de Ómnibus sale de ahí), con
+// la clave del extra en cada entrada. La ruta HTTP (`precios` con `extra`) se retiró el 8-oct-2026 por no tener
+// llamador (contrato_a2 §7); la regla se queda aquí, probada por tests/extras_test.php, para cuando BOD-25 la reabra.
 /** Aplica el cambio de precio de un extra bajo el cerrojo. '' si se guardó; si no, el motivo (se prueba sin HTTP). */
 function padrino_guarda_precio_extra(string $clave, int $cent, string $motivo): string {
     return con_cerrojo(function () use ($clave, $cent, $motivo) {

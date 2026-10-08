@@ -101,6 +101,7 @@ function rutas_estudio(string $sub, string $metodo): void {
         case 'pedidos': echo estudio_pagina('Pedidos', estudio_pedidos()); return;
         case 'codigos': echo estudio_pagina('Códigos de regalo', estudio_codigos($metodo)); return;
         case 'guias': echo estudio_pagina('Guías del Padrino', estudio_guias($metodo)); return;
+        case 'padrino': echo estudio_pagina('Padrino: pausa', estudio_padrino($metodo)); return;
         case 'factura':
             $html = render_factura(clean_str($_GET['n'] ?? '', 40));
             if ($html === null) { http_response_code(404); echo estudio_pagina('Factura', '<p>No existe.</p>'); return; }
@@ -316,8 +317,42 @@ function estudio_codigos(string $metodo): string {
     return $o . '</tbody></table></div>';
 }
 
+/**
+ * Marca de pausa del Padrino (8-oct-2026, contrato_a2 §7b). Pausar y reanudar son SOLO de esta página: sesión del owner +
+ * CSRF (rutas_estudio ya lo exige a todo POST). El Padrino puede pausar por la API (token `pausa`), pero reanudar no
+ * existe fuera de aquí. Las acciones se distinguen por el valor de `accion`, no por el rótulo del botón.
+ */
+function estudio_padrino(string $metodo): string {
+    $msg = '';
+    if ($metodo === 'POST') {
+        $acc = (string) ($_POST['accion'] ?? '');
+        if ($acc === 'pausar') {
+            $nueva = padrino_pausar('estudio', 'pausa desde el panel');
+            padrino_log('pausa', ['quien' => 'estudio', 'nueva' => $nueva]);
+            estudio_log('padrino-pausar', ['nueva' => $nueva]);
+            $msg = $nueva ? 'Padrino pausado: Bodas rechaza sus escrituras.' : 'Ya estaba pausado.';
+        } elseif ($acc === 'reanudar') {
+            $quitada = padrino_reanudar();
+            padrino_log('reanuda', ['quien' => 'estudio', 'quitada' => $quitada]);
+            estudio_log('padrino-reanudar', ['quitada' => $quitada]);
+            $msg = $quitada ? 'Padrino reanudado: vuelve a poder escribir.' : 'No estaba pausado.';
+        }
+    }
+    $pausado = padrino_pausado();
+    $d = padrino_pausa_datos();
+    $quien = ($d['quien'] ?? '') === 'padrino' ? 'el Padrino' : (($d['quien'] ?? '') === 'estudio' ? 'el estudio' : 'desconocido');
+    $o = $msg !== '' ? '<p class="est-ok">' . h($msg) . '</p>' : '';
+    $o .= '<p data-estado="' . ($pausado ? 'pausado' : 'activo') . '">' . ($pausado
+        ? '<b>Pausado</b> desde ' . h((string) ($d['desde'] ?? '')) . ' por ' . h($quien) . '. Precios, marca, campañas y guías responden 423; las lecturas siguen.'
+        : '<b>Activo</b>. El Padrino puede cambiar precios, marca, campañas y guías dentro de sus límites.') . '</p>';
+    $o .= '<form method="post" action="' . h(estudio_url('padrino')) . '">' . estudio_csrf_campo()
+        . '<input type="hidden" name="accion" value="' . ($pausado ? 'reanudar' : 'pausar') . '">'
+        . '<button class="b-btn b-dark" type="submit" data-accion="' . ($pausado ? 'padrino-reanudar' : 'padrino-pausar') . '">' . ($pausado ? 'Reanudar al Padrino' : 'Pausar al Padrino') . '</button></form>';
+    return $o;
+}
+
 function estudio_pagina(string $titulo, string $cuerpo, bool $menu = true): string {
-    $nav = $menu ? '<nav class="est-nav"><a href="' . h(estudio_url()) . '">Bodas</a><a href="' . h(estudio_url('pedidos')) . '">Pedidos</a><a href="' . h(estudio_url('codigos')) . '">Códigos de regalo</a><a href="' . h(estudio_url('guias')) . '">Guías</a><a href="' . h(estudio_url('salir')) . '">Salir</a></nav>' : '';
+    $nav = $menu ? '<nav class="est-nav"><a href="' . h(estudio_url()) . '">Bodas</a><a href="' . h(estudio_url('pedidos')) . '">Pedidos</a><a href="' . h(estudio_url('codigos')) . '">Códigos de regalo</a><a href="' . h(estudio_url('guias')) . '">Guías</a><a href="' . h(estudio_url('padrino')) . '">Padrino</a><a href="' . h(estudio_url('salir')) . '">Salir</a></nav>' : '';
     return '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
         . '<title>' . h($titulo) . ' — Estudio · ' . h(marca()) . '</title><meta name="robots" content="noindex, nofollow">' . favicon_links()
         . '<link rel="stylesheet" href="' . BASE_PATH . '/assets/marca.css?v=' . h(ASSETS_V) . '"><link rel="stylesheet" href="' . BASE_PATH . '/assets/crear.css?v=' . h(ASSETS_V) . '"></head><body class="simple estudio">'

@@ -116,7 +116,7 @@ lanza(fn() => padrino_pedidos(api_de([$lote(1, 100), $lote(101, 100)], 200), -1)
 // ── 6. La ruta: GET con token propio de tesorería, límite propio y 502 si LS falla (sobre el fuente)
 $fuente = (string) file_get_contents($raiz . '/app/padrino.php');
 ok(preg_match("/case 'pedidos':\\s*\\n\\s*if \\(\\\$metodo !== 'GET'\\)/", $fuente) === 1, 'pedidos solo por GET');
-ok(strpos($fuente, "\$tesoreria = \$sub === 'pedidos';") !== false && strpos($fuente, "(\$tesoreria ? 'tesoreria' : 'lectura')") !== false,
+ok(strpos($fuente, "\$tesoreria = \$sub === 'pedidos';") !== false && strpos($fuente, "(\$tesoreria ? 'tesoreria' : (\$pausa ? 'pausa' : 'lectura'))") !== false,
     'pedidos pide el token de tesorería, nunca el de lectura');
 $tokens = (array) require $raiz . '/app/padrino_tokens.php';
 ok(array_key_exists('tesoreria', $tokens) && $tokens['tesoreria'] !== $tokens['lectura'], 'token de tesorería propio (vacío = 401)');
