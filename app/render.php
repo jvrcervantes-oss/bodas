@@ -547,7 +547,7 @@ function pagina_inicio(array $c, array $ctx): string {
         <div class="q-label"><?= ico(ICONOS[$s['tipo']]) ?><span class="kicker"><?= h(['hoteles' => 'Alojamiento', 'transporte' => 'Desplazamiento', 'regalos' => 'Detalle con nosotros', 'dresscode' => 'Código de vestimenta'][$s['tipo']] ?? 'Más información') ?></span></div>
         <h3><?= h($s['titulo']) ?></h3>
 <?php if ($resumen !== ''): ?>        <p><?= h($resumen) ?></p><?php endif; ?>
-<?php if ($s['tipo'] === 'dresscode' && ($s['datos']['colores'] ?? [])): ?>        <?= muestras_color($s['datos']['colores']) ?>
+<?php if ($s['tipo'] === 'dresscode' && ($mu = muestras_color($s['datos']['colores'] ?? [])) !== ''): ?>        <?= $mu ?>
 <?php endif; ?>
         <?= a_interno($s['ruta'], $ctx, 'class="link-arrow"') ?>Ver <?= h(mb_strtolower($s['titulo'], 'UTF-8')) ?> <?= ico(ICONOS['flecha'], 'ico ico-sm') ?></a>
       </div>
@@ -575,7 +575,7 @@ function pagina_inicio(array $c, array $ctx): string {
 function muestras_color(array $colores, string $clase = ''): string {
     $o = '';
     foreach ($colores as $v) {
-        if (is_string($v) && preg_match('/^#[0-9a-f]{6}$/D', $v)) $o .= '<span class="muestra" style="background-color:' . h($v) . '"></span>';
+        if (es_color_hex($v)) $o .= '<span class="muestra" style="background-color:' . h(strtolower($v)) . '"></span>';
     }
     return $o === '' ? '' : '<span class="muestras' . ($clase !== '' ? ' ' . h($clase) : '') . '" role="img" aria-label="Colores del dress code">' . $o . '</span>';
 }

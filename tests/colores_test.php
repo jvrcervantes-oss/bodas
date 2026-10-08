@@ -80,6 +80,8 @@ ok(isset(datos_descartados(conDress(crudo(), ['texto' => '', 'colores' => [42, n
 ok(isset(datos_descartados(conDress(crudo(), ['texto' => '', 'colores' => ['a' => '#aabbcc']]))[$K]), 'objeto en vez de lista: sale en datos_descartados');
 ok(isset(datos_descartados(conDress(crudo(), ['texto' => '', 'colores' => '#aabbcc']))[$K]), 'escalar en vez de lista: sale en datos_descartados');
 ok(!isset(datos_descartados(conDress(crudo(), ['texto' => '', 'colores' => null]))[$K]), 'colores = null (ausente): no avisa');
+ok(f(conDress(crudo(), ['texto' => '', 'colores' => '']))  === [] && f(conDress(crudo(), ['texto' => '', 'colores' => false])) === [], 'colores = «» o false (vacío): ni avisa ni bloquea, no se pierde ningún color');
+ok(es_color_hex('#aBc123') && !es_color_hex("#abc123\n") && !es_color_hex('#abc12') && !es_color_hex(0xabc123), 'es_color_hex: una sola expresión para los tres usos');
 ok(!isset(datos_descartados(conDress(crudo(), ['texto' => '', 'colores' => ['red', 'url(x)']], false))[$K]), 'sección apagada: no avisa (solo se mira lo que se publica)');
 
 // ============================================================ 3. Render: solo lo normalizado, en todos los diseños y modos

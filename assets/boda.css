@@ -1659,7 +1659,7 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 .muestra{ display: block; flex: none; width: 22px; height: 22px; border-radius: var(--pill); border: 1px solid currentColor; border: 1px solid color-mix(in srgb, currentColor 40%, transparent); }
 .muestras-pag{ justify-content: center; gap: 12px; margin: 0 auto var(--s-lg); }
 .muestras-pag .muestra{ width: 40px; height: 40px; }
-.letter .muestras-vest{ display: inline-flex; gap: 6px; margin: 0; align-self: center; }
+.pildora-vest .muestras-vest{ display: inline-flex; gap: 6px; margin: 0; align-self: center; }
 .muestras-vest .muestra{ width: 16px; height: 16px; }
 
 /* Nuestra historia */

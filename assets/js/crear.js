@@ -593,32 +593,38 @@
   }
   // Colores del dress code (8-oct-2026): hasta D.maxColores muestras, sin repetir. El servidor vuelve a normalizar
   // (#rrggbb en minúsculas) y avisa de lo que no valga; aquí solo se evita pedirlo mal. Engancha por data-fk, nunca por rótulo.
+  var COLORES_BASE = ['#e9dcc9', '#b9a86a', '#4f5e45', '#a6634b', '#3b3a30', '#e4e8d5', '#ffffff', '#000000'];
   function editorColores(s) {
     var max = D.maxColores || 6;
-    var caja = el('div', { class: 'c-campo c-colores', 'data-fk': 'sec.' + s.id + '.colores' });
+    var caja = el('div', { class: 'c-campo c-colores', 'data-fk': 'sec.' + s.id + '.colores', 'data-fk-viva': '' });
     var hex = function (v) { return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : ''; };
     function pinta() {
       caja.textContent = '';
       caja.appendChild(el('span', { text: 'Colores (opcional)' }));
       var fila = el('div', { class: 'c-colores-fila' });
       s.datos.colores.forEach(function (v, i) {
+        var quitar = el('button', { type: 'button', class: 'c-link c-link-mal', 'aria-label': 'Quitar el color ' + (i + 1), text: 'Quitar', onclick: function () {
+          s.datos.colores.splice(i, 1); pinta(); cambio();
+          var ad = caja.querySelector('[data-color-add]'); if (ad) ad.focus();   // el botón pulsado ya no existe
+        } });
+        // Un valor que no es #rrggbb (borrador viejo o tocado a mano) no se disfraza de negro en el selector: se dice y se quita
+        if (!hex(v)) { fila.appendChild(el('span', { class: 'c-color' }, [el('span', { text: 'Color ' + (i + 1) + ' no válido' }), quitar])); return; }
         var inp = el('input', { type: 'color', 'aria-label': 'Color ' + (i + 1) });
-        inp.value = hex(v) || '#000000';
+        inp.value = hex(v);
         inp.addEventListener('change', function () {
           var nuevo = hex(inp.value);
           var otro = s.datos.colores.some(function (x, j) { return j !== i && hex(x) === nuevo; });
-          if (!nuevo || otro) { inp.value = hex(v) || '#000000'; return; }   // repetido: se deja el que había
+          if (!nuevo || otro) { inp.value = hex(v); return; }   // repetido: se deja el que había
           s.datos.colores[i] = v = nuevo; cambio();
         });
-        fila.appendChild(el('span', { class: 'c-color' }, [inp,
-          el('button', { type: 'button', class: 'c-link c-link-mal', 'aria-label': 'Quitar el color ' + (i + 1), text: 'Quitar', onclick: function () { s.datos.colores.splice(i, 1); pinta(); cambio(); } })]));
+        fila.appendChild(el('span', { class: 'c-color' }, [inp, quitar]));
       });
-      if (s.datos.colores.length < max) fila.appendChild(el('button', { type: 'button', class: 'b-btn b-paper c-btn-sm', text: '+ Añadir color', onclick: function () {
-        var base = ['#e9dcc9', '#b9a86a', '#4f5e45', '#a6634b', '#3b3a30', '#e4e8d5', '#ffffff', '#000000'];
-        var libre = base.filter(function (x) { return s.datos.colores.map(hex).indexOf(x) < 0; })[0];
+      if (s.datos.colores.length < max) fila.appendChild(el('button', { type: 'button', class: 'b-btn b-paper c-btn-sm', 'data-color-add': '', text: '+ Añadir color', onclick: function () {
+        var usados = s.datos.colores.map(hex);
+        var libre = COLORES_BASE.filter(function (x) { return usados.indexOf(x) < 0; })[0];
         if (!libre) return;
         s.datos.colores.push(libre); pinta(); cambio();
-        var ins = fila.querySelectorAll('input[type="color"]'); if (ins.length) ins[ins.length - 1].focus();
+        var ins = caja.querySelectorAll('input[type="color"]'); if (ins.length) ins[ins.length - 1].focus();   // caja: pinta() ya sustituyó la fila
       } }));
       caja.appendChild(fila);
       caja.appendChild(el('small', { text: 'Salen como muestras en la página del dress code y en la portada. Hasta ' + max + ', sin repetir.' }));
@@ -1237,7 +1243,8 @@
     document.querySelectorAll('.c-mal').forEach(function (n) { n.classList.remove('c-mal'); });
     Object.keys(f).forEach(function (k) {
       var inp = document.querySelector('[data-k="' + k + '"]') || document.querySelector('[data-fk="' + k + '"]');
-      if (inp && inp.value) inp.closest('.c-campo').classList.add('c-mal');
+      // data-fk-viva: campos sin .value (una lista, como los colores) cuya falta siempre es un dato mal puesto, nunca uno vacío
+      if (inp && (inp.value || inp.hasAttribute('data-fk-viva'))) inp.closest('.c-campo').classList.add('c-mal');
     });
   }
   function muestraFaltan(f, extra) {

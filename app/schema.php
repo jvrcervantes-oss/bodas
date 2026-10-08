@@ -289,11 +289,13 @@ function norm_programa($lista): array {
  * Los repetidos se quitan EN SILENCIO: avisarlos bloquearía publicar (faltan() → 422) por un duplicado inocuo.
  * Solo una LISTA: un objeto ({"a": "#fff000"}) o un escalar no son colores y se quedan en [].
  */
+/** ¿Es un color #rrggbb? Una sola expresión para normalizar, avisar y pintar (D: «$» no deja pasar un salto de línea final). */
+function es_color_hex($v): bool { return is_string($v) && preg_match('/^#[0-9a-f]{6}$/iD', $v) === 1; }
 function norm_colores($lista): array {
     if (!is_array($lista) || array_values($lista) !== $lista) return [];   // lista y no objeto (sin array_is_list: es de PHP 8.1)
     $out = [];
     foreach ($lista as $v) {   // sin recorte previo: mismo criterio que colores_descartados() (sale al llegar a MAX_COLORES)
-        if (!is_string($v) || !preg_match('/^#[0-9a-f]{6}$/iD', $v)) continue;   // D: «$» no deja pasar un salto de línea final
+        if (!es_color_hex($v)) continue;
         $v = strtolower($v);
         if (!in_array($v, $out, true)) $out[] = $v;
         if (count($out) === MAX_COLORES) break;
@@ -615,12 +617,12 @@ function datos_descartados($crudo): array {
  * MAX_COLORES; los repetidos NO cuentan (se quitan en silencio, no pueden bloquear publicar). Ausente o null: nada.
  */
 function colores_descartados($lista): string {
-    if ($lista === null) return '';
+    if ($lista === null || $lista === '' || $lista === false) return '';   // vacío: no se pierde ningún color, nada que avisar
     if (!is_array($lista) || array_values($lista) !== $lista) return 'no llegaron como una lista de colores, así no se publicarían. Volved a elegirlos.';
     $malos = 0;
     $unicos = [];
     foreach ($lista as $v) {
-        if (!is_string($v) || !preg_match('/^#[0-9a-f]{6}$/iD', $v)) { $malos++; continue; }
+        if (!es_color_hex($v)) { $malos++; continue; }
         $unicos[strtolower($v)] = true;
     }
     $m = [];
