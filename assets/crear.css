@@ -88,6 +88,10 @@
 .c-campo textarea { resize: vertical; line-height: 1.55; }
 .c-campo input:focus, .c-campo textarea:focus, .c-campo select:focus { outline: none; border-color: var(--gold); box-shadow: var(--focus); }
 .c-campo.c-mal input, .c-campo.c-mal textarea, .c-campo.c-mal .c-slug { border-color: var(--mal); }
+/* Colores del dress code: selector nativo + quitar, en fila (8-oct-2026) */
+.c-colores-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.c-color { display: inline-flex; align-items: center; gap: 6px; }
+.c-campo .c-color input[type="color"] { width: 44px; min-height: 44px; height: 44px; padding: 3px; cursor: pointer; }
 
 .c-check { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; cursor: pointer; }
 .c-check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--gold); flex-shrink: 0; }

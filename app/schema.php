@@ -153,6 +153,7 @@ const MAX_TRAYECTOS = 6;
 const MAX_PROGRAMA = 6;         // momentos EXTRA del programa del día (además de ceremonia y convite)
 const MAX_HASHTAG = 30;
 const MAX_VESTIMENTA = 60;
+const MAX_COLORES = 6;          // colores del dress code (muestras): hex #rrggbb, sin repetir
 // Frases fijas de la web que la pareja puede cambiar (vacía = la de siempre). Clave => [tope, nombre para el aviso]
 const FRASES_PROPIAS = ['fecha_kicker' => [40, 'la frase pequeña de la fecha'], 'fecha_titulo' => [50, 'el título de la fecha'], 'cancion_kicker' => [50, 'la pregunta de la canción'],
     'rsvp_boton' => [30, 'el botón de confirmar'], 'rsvp_ok' => [30, 'el título del mensaje de confirmación']];
@@ -248,7 +249,7 @@ function datos_iniciales(string $tipo): array {
         case 'transporte': return ['texto' => '', 'trayectos' => [], 'preguntar' => true];
         case 'regalos': return ['texto' => 'Vuestra compañía es el mejor regalo. Si además queréis tener un detalle con nosotros, podéis hacerlo aquí.', 'titular' => '', 'iban' => '', 'otro' => ''];
         case 'musica': return ['texto' => 'Proponed la canción que os hace saltar a la pista y votad las de los demás.'];
-        case 'dresscode': return ['texto' => ''];
+        case 'dresscode': return ['texto' => '', 'colores' => []];
         case 'galeria': return ['texto' => '', 'fotos' => [], 'consentido' => false];
         case 'libro': return ['texto' => 'Dejadnos un mensaje, un recuerdo o una foto de la boda.', 'fotos' => true];
         default: return ['texto' => ''];
@@ -281,6 +282,23 @@ function norm_programa($lista): array {
     }
     usort($out, fn($a, $b) => [$a['hora'], $a['_i']] <=> [$b['hora'], $b['_i']]);   // estable: misma hora, el orden en que se escribieron
     return array_map(function ($m) { unset($m['_i']); return $m; }, $out);
+}
+/**
+ * Colores del dress code (8-oct-2026, encargo Limonar): lista de hasta MAX_COLORES hex #rrggbb en minúsculas.
+ * Expresión cerrada porque el valor acaba en un atributo style: lo que no case se descarta (datos_descartados() lo avisa).
+ * Los repetidos se quitan EN SILENCIO: avisarlos bloquearía publicar (faltan() → 422) por un duplicado inocuo.
+ * Solo una LISTA: un objeto ({"a": "#fff000"}) o un escalar no son colores y se quedan en [].
+ */
+function norm_colores($lista): array {
+    if (!is_array($lista) || array_values($lista) !== $lista) return [];   // lista y no objeto (sin array_is_list: es de PHP 8.1)
+    $out = [];
+    foreach ($lista as $v) {   // sin recorte previo: mismo criterio que colores_descartados() (sale al llegar a MAX_COLORES)
+        if (!is_string($v) || !preg_match('/^#[0-9a-f]{6}$/iD', $v)) continue;   // D: «$» no deja pasar un salto de línea final
+        $v = strtolower($v);
+        if (!in_array($v, $out, true)) $out[] = $v;
+        if (count($out) === MAX_COLORES) break;
+    }
+    return $out;
 }
 function norm_fecha($v): string {
     $v = clean_str($v, 10);
@@ -367,6 +385,8 @@ function norm_datos(string $tipo, $d): array {
             return ['texto' => clean_str($d['texto'] ?? '', 600), 'fotos' => norm_bool($d['fotos'] ?? true)];
         case 'historia':
             return ['texto' => clean_str($d['texto'] ?? '', MAX_HISTORIA)];
+        case 'dresscode':
+            return ['texto' => $texto, 'colores' => norm_colores($d['colores'] ?? null)];
         case 'transporte':
             return ['texto' => $texto, 'trayectos' => norm_trayectos($d['trayectos'] ?? null),
                 'preguntar' => array_key_exists('preguntar', $d) ? norm_bool($d['preguntar']) : null];
@@ -519,7 +539,7 @@ function datos_descartados($crudo): array {
     foreach ($secs as $s) {
         if (!is_array($s) || !norm_bool($s['on'] ?? true)) continue;
         $tipo = (string) ($s['tipo'] ?? '');
-        if (!in_array($tipo, ['regalos', 'hoteles', 'historia'], true)) continue;
+        if (!in_array($tipo, ['regalos', 'hoteles', 'historia', 'dresscode'], true)) continue;
         $id = preg_match('/^[a-z0-9]{1,12}$/', (string) ($s['id'] ?? '')) ? (string) $s['id'] : $tipo;
         $titulo = clean_str($s['titulo'] ?? '', 40) ?: SECCIONES[$tipo][0];
         $d = is_array($s['datos'] ?? null) ? $s['datos'] : [];
@@ -532,6 +552,8 @@ function datos_descartados($crudo): array {
             if (se_pasa($d['texto'] ?? '', MAX_HISTORIA)) {
                 $f['sec.' . $id . '.texto'] = 'El texto de «' . $titulo . '» pasa de ' . MAX_HISTORIA . ' caracteres: se cortaría al publicar. Acortadlo.';
             }
+        } elseif ($tipo === 'dresscode') {
+            if ($m = colores_descartados($d['colores'] ?? null)) $f['sec.' . $id . '.colores'] = 'Los colores de «' . $titulo . '»: ' . $m;
         } else {
             foreach (array_slice(is_array($d['hoteles'] ?? null) ? array_values($d['hoteles']) : [], 0, 8) as $i => $ho) {
                 if (!is_array($ho)) continue;
@@ -586,6 +608,25 @@ function datos_descartados($crudo): array {
         }
     }
     return $f;
+}
+
+/**
+ * Qué se perdería al normalizar los colores del dress code ('' = nada). Solo lo inválido y lo que pasa de
+ * MAX_COLORES; los repetidos NO cuentan (se quitan en silencio, no pueden bloquear publicar). Ausente o null: nada.
+ */
+function colores_descartados($lista): string {
+    if ($lista === null) return '';
+    if (!is_array($lista) || array_values($lista) !== $lista) return 'no llegaron como una lista de colores, así no se publicarían. Volved a elegirlos.';
+    $malos = 0;
+    $unicos = [];
+    foreach ($lista as $v) {
+        if (!is_string($v) || !preg_match('/^#[0-9a-f]{6}$/iD', $v)) { $malos++; continue; }
+        $unicos[strtolower($v)] = true;
+    }
+    $m = [];
+    if ($malos) $m[] = ($malos === 1 ? 'hay un color que no es válido (se quitaría al publicar)' : 'hay ' . $malos . ' colores que no son válidos (se quitarían al publicar)');
+    if (count($unicos) > MAX_COLORES) $m[] = 'caben ' . MAX_COLORES . ' como máximo (sobran ' . (count($unicos) - MAX_COLORES) . ')';
+    return $m ? implode('; ', $m) . '. Quitad los que sobren o elegidlos de nuevo con el selector.' : '';
 }
 
 /** ¿El texto crudo es más largo que su tope? (lo que normalizar recortaría en silencio). $unaLinea: cuenta tras juntar los saltos. */

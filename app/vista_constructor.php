@@ -21,7 +21,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxBanquete' => MAX_BANQUETE, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
-        'maxPrograma' => MAX_PROGRAMA, 'maxHistoria' => MAX_HISTORIA,
+        'maxPrograma' => MAX_PROGRAMA, 'maxHistoria' => MAX_HISTORIA, 'maxColores' => MAX_COLORES,
         // Aviso bajo el campo de la historia: lo redacta Legal en app/legal/textos.php (clave aviso_historia); este es el texto de salida
         'avisoHistoria' => (string) ($L['aviso_historia'] ?? 'No publiquéis datos de salud ni de menores identificables, ni datos de terceros sin su permiso.'),
         'precio' => ['total' => euros(precio_esencial_cent()), 'totalAtelier' => euros(precio_atelier_cent())],

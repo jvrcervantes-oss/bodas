@@ -394,6 +394,9 @@ function pagina_inicio(array $c, array $ctx): string {
     $nom = nombres($c);
     $po = $c['portada'];
     $rsvp = seccion_tipo($c, 'rsvp');
+    // Colores del dress code en la píldora de vestimenta: solo con la sección Dress code ACTIVA ('' = nada cambia)
+    $dc = seccion_tipo($c, 'dresscode');
+    $muestrasVest = $dc ? muestras_color($dc['datos']['colores'] ?? [], 'muestras-vest') : '';
     $hayFoto = $c['foto'] && ($ctx['foto'] !== '' || $ctx['modo'] === 'preview');
     // Estilo de la foto (Pack Esencial; los Atelier traen su marco). Con flores, una sola guirnalda pegada a la foto
     // (Medallón: arriba y abajo) y la de encima de los nombres se quita (owner, 30-sep-2026).
@@ -457,7 +460,7 @@ function pagina_inicio(array $c, array $ctx): string {
     <div class="mini-rule" aria-hidden="true"></div><?php endif; ?>
 <?php if ($po['frase'] !== ''): ?>    <p class="big"><?= h($po['frase']) ?></p><?php endif; ?>
     <?= parrafos($po['texto']) ?>
-<?php if ($po['vestimenta'] !== ''): ?>    <p class="pildora-vest"><span class="pildora-vest-rot">Vestimenta</span><span class="pildora-vest-txt"><?= h($po['vestimenta']) ?></span></p>
+<?php if ($po['vestimenta'] !== ''): ?>    <p class="pildora-vest"><span class="pildora-vest-rot">Vestimenta</span><span class="pildora-vest-txt"><?= h($po['vestimenta']) ?></span><?= $muestrasVest ?></p>
 <?php endif; ?>
 <?php if ($rsvp): ?>    <?= a_interno($rsvp['ruta'], $ctx, 'class="btn"') ?><?= ico(ICONOS['corazon'], 'ico ico-sm') ?><?= h($rsvp['titulo']) ?></a><?php endif; ?>
   </section>
@@ -544,6 +547,8 @@ function pagina_inicio(array $c, array $ctx): string {
         <div class="q-label"><?= ico(ICONOS[$s['tipo']]) ?><span class="kicker"><?= h(['hoteles' => 'Alojamiento', 'transporte' => 'Desplazamiento', 'regalos' => 'Detalle con nosotros', 'dresscode' => 'Código de vestimenta'][$s['tipo']] ?? 'Más información') ?></span></div>
         <h3><?= h($s['titulo']) ?></h3>
 <?php if ($resumen !== ''): ?>        <p><?= h($resumen) ?></p><?php endif; ?>
+<?php if ($s['tipo'] === 'dresscode' && ($s['datos']['colores'] ?? [])): ?>        <?= muestras_color($s['datos']['colores']) ?>
+<?php endif; ?>
         <?= a_interno($s['ruta'], $ctx, 'class="link-arrow"') ?>Ver <?= h(mb_strtolower($s['titulo'], 'UTF-8')) ?> <?= ico(ICONOS['flecha'], 'ico ico-sm') ?></a>
       </div>
 <?php endif; endforeach; ?>
@@ -560,6 +565,19 @@ function pagina_inicio(array $c, array $ctx): string {
 </main>
 <?php
     return (string) ob_get_clean();
+}
+
+/**
+ * Muestras de los colores del dress code (8-oct-2026): '' si no hay, y entonces el HTML no cambia ni un byte.
+ * Los valores ya vienen normalizados (norm_colores: #rrggbb en minúsculas); aun así se vuelven a comprobar y pasan
+ * por h(), porque acaban en un atributo style. Mismo marcado en web, vista previa y ZIP, en todos los diseños.
+ */
+function muestras_color(array $colores, string $clase = ''): string {
+    $o = '';
+    foreach ($colores as $v) {
+        if (is_string($v) && preg_match('/^#[0-9a-f]{6}$/D', $v)) $o .= '<span class="muestra" style="background-color:' . h($v) . '"></span>';
+    }
+    return $o === '' ? '' : '<span class="muestras' . ($clase !== '' ? ' ' . h($clase) : '') . '" role="img" aria-label="Colores del dress code">' . $o . '</span>';
 }
 
 /** Primera frase de un texto, para las tarjetas de la portada. */
@@ -645,7 +663,10 @@ function pagina_seccion(array $c, array $s, array $ctx): string {
         case 'libro': return envoltorio($s['titulo'], $intro . bloque_libro($c, $s, $ctx));
         // Kicker (los nombres) sobre el título y párrafos: cada párrafo pasa por h() en parrafos()
         case 'historia': return envoltorio($s['titulo'], '<div class="historia-texto">' . $intro . '</div>', 'max-width:640px;margin:0 auto;', '<span class="kicker historia-kicker">' . h(nombres($c) ?: 'Nuestra boda') . '</span>');
-        case 'dresscode': return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>', 'max-width:560px;margin:0 auto;');
+        case 'dresscode':
+            // Con colores, las muestras van tras el texto (y sustituyen al «Pronto os contamos más» si no hay texto)
+            $mu = muestras_color($d['colores'] ?? [], 'muestras-pag');
+            return envoltorio($s['titulo'], ($intro ?: ($mu === '' ? '<p class="lede">Pronto os contamos más.</p>' : '')) . $mu, 'max-width:560px;margin:0 auto;');
         default: return envoltorio($s['titulo'], $intro ?: '<p class="lede">Pronto os contamos más.</p>');
     }
 }

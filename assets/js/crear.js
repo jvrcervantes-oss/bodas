@@ -388,6 +388,8 @@
     st.portada = st.portada || {};
     if (typeof st.portada.hashtag !== 'string') st.portada.hashtag = '';
     if (typeof st.portada.vestimenta !== 'string') st.portada.vestimenta = '';
+    // Colores del dress code (8-oct-2026): un borrador de antes no los trae
+    st.secciones.forEach(function (x) { if (x.tipo !== 'dresscode') return; x.datos = x.datos || {}; if (!Array.isArray(x.datos.colores)) x.datos.colores = []; });
     ['fecha_kicker', 'fecha_titulo', 'cancion_kicker', 'rsvp_boton', 'rsvp_ok'].forEach(function (k) { if (typeof st.portada[k] !== 'string') st.portada[k] = ''; });
     if (D.secciones.historia && !st.secciones.some(function (x) { return x.tipo === 'historia'; })) {
       st.secciones.push({ id: idNuevo('s'), tipo: 'historia', on: false, titulo: D.secciones.historia.titulo, datos: { texto: '' } });
@@ -554,6 +556,10 @@
           ayuda: 'Encended el interruptor de la sección para publicarla; sin texto, la página no se publica. Separad los párrafos con una línea en blanco.' }));
         w.appendChild(el('p', { class: 'c-aviso', 'data-aviso-historia': '', text: D.avisoHistoria || '' }));
         break;
+      case 'dresscode':
+        w.appendChild(campoTexto(s, 'texto', 'Texto', { area: true, max: 2000, rows: 5 }));
+        w.appendChild(editorColores(s));
+        break;
       case 'informacion':
         w.appendChild(el('p', { class: 'c-ayuda', text: 'Muestra la ceremonia y el convite con su mapa (los datos del paso 2).' }));
         w.appendChild(campoTexto(s, 'texto', 'Texto adicional (aparcamiento, accesos…)', { area: true, max: 2000 }));
@@ -584,6 +590,41 @@
     var p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', ICO[tipo] || ICO.libre);
     n.appendChild(p);
     return n;
+  }
+  // Colores del dress code (8-oct-2026): hasta D.maxColores muestras, sin repetir. El servidor vuelve a normalizar
+  // (#rrggbb en minúsculas) y avisa de lo que no valga; aquí solo se evita pedirlo mal. Engancha por data-fk, nunca por rótulo.
+  function editorColores(s) {
+    var max = D.maxColores || 6;
+    var caja = el('div', { class: 'c-campo c-colores', 'data-fk': 'sec.' + s.id + '.colores' });
+    var hex = function (v) { return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v.toLowerCase() : ''; };
+    function pinta() {
+      caja.textContent = '';
+      caja.appendChild(el('span', { text: 'Colores (opcional)' }));
+      var fila = el('div', { class: 'c-colores-fila' });
+      s.datos.colores.forEach(function (v, i) {
+        var inp = el('input', { type: 'color', 'aria-label': 'Color ' + (i + 1) });
+        inp.value = hex(v) || '#000000';
+        inp.addEventListener('change', function () {
+          var nuevo = hex(inp.value);
+          var otro = s.datos.colores.some(function (x, j) { return j !== i && hex(x) === nuevo; });
+          if (!nuevo || otro) { inp.value = hex(v) || '#000000'; return; }   // repetido: se deja el que había
+          s.datos.colores[i] = v = nuevo; cambio();
+        });
+        fila.appendChild(el('span', { class: 'c-color' }, [inp,
+          el('button', { type: 'button', class: 'c-link c-link-mal', 'aria-label': 'Quitar el color ' + (i + 1), text: 'Quitar', onclick: function () { s.datos.colores.splice(i, 1); pinta(); cambio(); } })]));
+      });
+      if (s.datos.colores.length < max) fila.appendChild(el('button', { type: 'button', class: 'b-btn b-paper c-btn-sm', text: '+ Añadir color', onclick: function () {
+        var base = ['#e9dcc9', '#b9a86a', '#4f5e45', '#a6634b', '#3b3a30', '#e4e8d5', '#ffffff', '#000000'];
+        var libre = base.filter(function (x) { return s.datos.colores.map(hex).indexOf(x) < 0; })[0];
+        if (!libre) return;
+        s.datos.colores.push(libre); pinta(); cambio();
+        var ins = fila.querySelectorAll('input[type="color"]'); if (ins.length) ins[ins.length - 1].focus();
+      } }));
+      caja.appendChild(fila);
+      caja.appendChild(el('small', { text: 'Salen como muestras en la página del dress code y en la portada. Hasta ' + max + ', sin repetir.' }));
+    }
+    pinta();
+    return caja;
   }
   // Código de acceso a galería y libro: uno por boda, compartido por las dos secciones
   function campoCodigo() {
