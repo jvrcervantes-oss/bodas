@@ -135,7 +135,7 @@ function lugar_linea(array $c): string {
 function arte_atelier(array $c, string $A): string {
     $img = fn($f, $cls) => '<img class="atelier-arte ' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '" alt="" aria-hidden="true">';
     switch ($c['atelier']) {
-        case 'citricos': return $img('esquina-1.webp', 'esq esq-i') . $img('esquina-2.webp', 'esq esq-d');
+        case 'citricos': return $img('esquina-1.webp', 'esq esq-i') . $img('limones.webp', 'cit-racimo');
         case 'herbario': return $img('herbario-banda.webp', 'banda-herbario');
         case 'masia': return $img('masia.webp', 'arte-masia');
         // Monograma entre las dos ramas de olivo de azulejo
@@ -157,10 +157,12 @@ function atelier_tras_texto(array $c, array $ctx): string {
     switch ($c['atelier']) {
         case 'citricos':
             $links = accesos($c, $ctx, 3);
-            return '<img class="atelier-arte arte-limones" src="' . h($A) . 'img/atelier/limones.webp" alt="" aria-hidden="true">'
-                . '<img class="div-olivo" src="' . h($A) . 'img/atelier/divisor-olivo.svg" alt="" aria-hidden="true">'
-                . ($links ? '<nav class="cit-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '')
-                . sello_circular($c, $A);
+            $d = $c['fecha'] !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $c['fecha']) : false;
+            $fecha = $d ? '<p class="cit-fecha"><span>' . h(DIAS[(int) $d->format('w')]) . '</span><b>' . (int) $d->format('j') . '</b><span>'
+                . h(MESES[(int) $d->format('n') - 1]) . '</span></p>' : '';
+            $pie = trim(($d ? $d->format('Y') : '') . ' · ' . $c['ciudad'], ' ·');
+            return $fecha . '<p class="cit-lugar">' . h($pie !== '' ? $pie : 'La fecha') . '</p>'
+                . ($links ? '<nav class="cit-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
         case 'herbario':
             return '<img class="ramita" src="' . h($A) . 'img/atelier/ramita.svg" alt="" aria-hidden="true">'
                 . ($lugar !== '' ? '<p class="herb-lugar">' . h($lugar) . '</p>' : '')
@@ -423,7 +425,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endif; ?><?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
-        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= h($nom ?: 'Vuestros nombres') ?></h1>
+        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= $c['atelier'] === 'citricos' ? str_replace(' &amp; ', ' <i>&amp;</i> ', h($nom ?: 'Vuestros nombres')) : h($nom ?: 'Vuestros nombres') ?></h1>
         <div class="hero-date">
           <span class="rule" aria-hidden="true"></span><span class="star" aria-hidden="true">✦</span>
           <span class="kicker"><?= h(linea_fecha($c) ?: 'La fecha') ?></span>
@@ -478,6 +480,8 @@ function pagina_inicio(array $c, array $ctx): string {
         <div class="countdown-item"><b data-c="mins">0</b><span>Min</span></div>
         <div class="countdown-item"><b data-c="secs">0</b><span>Seg</span></div>
       </div>
+<?php if ($c['atelier'] === 'citricos'): ?>      <?= calendario_mes($c['fecha']) ?>
+<?php endif; ?>
       <button class="btn cal-btn" type="button" id="calBtn" aria-expanded="false" aria-controls="calOptions"><?= ico(ICONOS['calendario'], 'ico ico-sm') ?>Añadir a mi calendario</button>
       <div class="cal-options" id="calOptions" hidden>
         <span class="kicker">Elige tu calendario</span>
@@ -493,6 +497,10 @@ function pagina_inicio(array $c, array $ctx): string {
       <span class="kicker">Itinerario</span>
       <h2 class="section-title"><?= $c['convite']['lugar'] !== '' ? 'Ceremonia y convite' : 'Ceremonia' ?></h2>
     </div>
+<?php $curva = $c['atelier'] === 'citricos' ? curva_itinerario($c) : ''; ?>
+<?php if ($curva !== ''): ?>    <?= $curva ?>
+    <?= bloque_mapa($c, $ctx) ?>
+<?php else: ?>
     <?= bloque_mapa($c, $ctx) ?>
     <div class="event-list">
 <?php foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot):
@@ -514,6 +522,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endforeach; ?>
     </div>
 <?php if ($c['programa']): ?><?= bloque_programa($c) ?><?php endif; ?>
+<?php endif; ?>
   </section>
 
   <section class="quick">
@@ -556,7 +565,7 @@ function pagina_inicio(array $c, array $ctx): string {
   </section>
 
 <?php if ($c['atelier'] !== ''): ?>
-  <div class="atelier-pie" aria-hidden="true"></div>
+  <div class="atelier-pie" aria-hidden="true"><?= $c['atelier'] === 'citricos' ? sello_circular($c, $A) : '' ?></div>
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
   <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/eucalipto-pie.webp" alt="" width="900" height="170"></div>
 <?php elseif ($c['decoracion'] === 'flores'): ?>
@@ -592,15 +601,73 @@ function resumen(string $t, int $max = 140): string {
  * Programa del día: la línea de tiempo de la jornada. Junta la ceremonia y el convite (los que tienen hora) con los momentos
  * extra de la pareja, por hora; las tarjetas de arriba no cambian. Solo la ceremonia lleva el acento.
  */
-function bloque_programa(array $c): string {
+/**
+ * Paradas del día ordenadas por hora: ceremonia, convite y los momentos de `programa`.
+ * Sin $completa (programa del Esencial) solo entran las que tienen hora. Con $completa (curva de Cítricos)
+ * la ceremonia sin hora va la primera y el convite sin hora justo detrás (encargo Limonar, revisión previa #231).
+ */
+function paradas_dia(array $c, bool $completa = false): array {
     $ev = [];
     foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot) {
         $e = $c[$k];
-        if ($e['hora'] === '' || ($k === 'convite' && $e['lugar'] === '')) continue;
-        $ev[] = ['hora' => $e['hora'], 'titulo' => $rot, 'lugar' => $e['lugar'], 'nota' => '', 'clase' => $k === 'ceremonia' ? ' prog-ceremonia' : ''];
+        if ($k === 'convite' && $e['lugar'] === '') continue;
+        if ($e['hora'] === '' && (!$completa || ($k === 'ceremonia' && $e['lugar'] === ''))) continue;
+        // sin hora: la ceremonia, la primera (''); el convite, justo detrás de la ceremonia ('!' va antes que cualquier hora)
+        $orden = $e['hora'] !== '' ? $e['hora'] : ($k === 'ceremonia' ? '' : ($c['ceremonia']['hora'] !== '' ? $c['ceremonia']['hora'] . '~' : '!'));
+        $ev[] = ['hora' => $e['hora'], 'titulo' => $rot, 'lugar' => $e['lugar'], 'nota' => '', 'tipo' => $k, 'orden' => $orden,
+            'clase' => $k === 'ceremonia' ? ' prog-ceremonia' : ''];
     }
-    foreach ($c['programa'] as $m) $ev[] = $m + ['clase' => ''];
-    usort($ev, fn($a, $b) => $a['hora'] <=> $b['hora']);   // PHP 8: estable, a igual hora manda el orden de inserción
+    foreach ($c['programa'] as $m) $ev[] = $m + ['clase' => '', 'tipo' => 'momento', 'orden' => $m['hora']];
+    usort($ev, fn($a, $b) => $a['orden'] <=> $b['orden']);   // PHP 8: estable, a igual hora manda el orden de inserción
+    return $ev;
+}
+
+/** Itinerario de Cítricos: una fila por parada con su tramo de curva, alternando lado; el alto lo da el texto. */
+function curva_itinerario(array $c): string {
+    $ev = paradas_dia($c, true);
+    if (!$ev) return '';
+    $ico = ['ceremonia' => '<circle cx="9.5" cy="14" r="5"/><circle cx="14.5" cy="14" r="5"/><path d="m10 6 2-3 2 3"/>',
+        'convite' => '<path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8V6"/>',
+        'momento' => '<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3 6.3 17.7"/>'];
+    $o = '<ol class="cit-curva">';
+    foreach ($ev as $i => $m) {
+        $x = $i % 2 ? 80 : 20;
+        $o .= '<li class="cit-paso ' . ($i % 2 ? 'cit-der' : 'cit-izq') . ' rv">'
+            . '<svg class="cit-tramo" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 0C50 12 ' . $x . ' 10 ' . $x . ' 22L' . $x . ' 78C' . $x . ' 90 50 88 50 100" vector-effect="non-scaling-stroke"/></svg>'
+            . '<span class="cit-ico" aria-hidden="true"><svg viewBox="0 0 24 24">' . $ico[$m['tipo']] . '</svg></span>'
+            . '<div class="cit-txt">' . ($m['hora'] !== '' ? '<span class="cit-h">' . h($m['hora']) . '</span>' : '')
+            . '<h3>' . h($m['titulo']) . '</h3>'
+            . ($m['lugar'] !== '' ? '<p class="cit-l">' . h($m['lugar']) . '</p>' : '')
+            . ($m['nota'] !== '' ? '<p class="cit-n">' . h($m['nota']) . '</p>' : '')
+            . ($m['tipo'] !== 'momento' && $m['lugar'] !== '' ? '<a class="cit-mapa" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($c[$m['tipo']]))) . '" target="_blank" rel="noopener noreferrer">Cómo llegar</a>' : '')
+            . '</div></li>';
+    }
+    return $o . '</ol>';
+}
+
+/** Calendario del mes de la boda (Cítricos): semana en lunes, el día rodeado por un corazón. Solo sale de `fecha`. */
+function calendario_mes(string $ymd): string {
+    $d = $ymd !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $ymd) : false;
+    if (!$d) return '';
+    $uno = $d->modify('first day of this month');
+    $hueco = (int) $uno->format('N') - 1;
+    $dias = (int) $d->format('t');
+    $boda = (int) $d->format('j');
+    $corazon = '<svg class="cit-corazon" viewBox="0 0 46 46" aria-hidden="true"><path d="M23 39C10 31 4 22 6 14c2-7 10-9 15-3 1 1 2 3 2 4 1-4 6-9 12-7 7 3 6 13-1 21-3 3-7 6-11 9"/></svg>';
+    $o = '<table class="cit-cal"><caption>' . h(ucfirst(MESES[(int) $d->format('n') - 1])) . ' <span>' . $d->format('Y') . '</span></caption><thead><tr>';
+    foreach (['L' => 'lunes', 'M' => 'martes', 'X' => 'miércoles', 'J' => 'jueves', 'V' => 'viernes', 'S' => 'sábado', 'D' => 'domingo'] as $l => $n)
+        $o .= '<th scope="col"><abbr title="' . h($n) . '">' . $l . '</abbr></th>';
+    $o .= '</tr></thead><tbody><tr>' . str_repeat('<td></td>', $hueco);
+    for ($i = 1, $col = $hueco; $i <= $dias; $i++, $col++) {
+        if ($col && $col % 7 === 0) $o .= '</tr><tr>';
+        $o .= $i === $boda ? '<td class="cit-boda">' . $i . $corazon . '<span class="cit-sr">, día de la boda</span></td>' : '<td>' . $i . '</td>';
+    }
+    $resto = (7 - $col % 7) % 7;
+    return $o . str_repeat('<td></td>', $resto) . '</tr></tbody></table>';
+}
+
+function bloque_programa(array $c): string {
+    $ev = paradas_dia($c);
     $o = '<div class="prog rv"><span class="kicker prog-kicker">El programa del día</span><ol class="prog-lista">';
     foreach ($ev as $m) {
         $o .= '<li class="prog-item' . $m['clase'] . '"><span class="prog-hora">' . h($m['hora']) . '</span><span class="prog-marca" aria-hidden="true"></span><div class="prog-cuerpo"><h3 class="prog-titulo">' . h($m['titulo']) . '</h3>'

@@ -1003,11 +1003,9 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .atelier .mat-photo::after{ display: none; }
 
 /* Cítricos y azahar */
-.arte-limones{ width: min(340px, 88%); margin: 0 auto -4px; }
-.atelier-citricos .hero-names, .atelier-ceramica .hero-names{ font-size: 46px; line-height: 54px; }
-.atelier-citricos .nav-names, .atelier-ceramica .nav-names{ font-size: 28px; }
-@media (min-width: 901px){ .atelier-citricos .hero-names, .atelier-ceramica .hero-names{ font-size: 80px; line-height: 92px; } .arte-limones{ width: 420px; } }
-.atelier-citricos main > .wrap::before{ content: ''; display: block; height: 96px; margin: -8px 0 4px; background: url(img/atelier/limones.webp) center / contain no-repeat; mix-blend-mode: multiply; }
+.atelier-ceramica .hero-names{ font-size: 46px; line-height: 54px; }
+.atelier-ceramica .nav-names{ font-size: 28px; }
+@media (min-width: 901px){ .atelier-ceramica .hero-names{ font-size: 80px; line-height: 92px; } }
 
 /* Herbario y lavanda: pliego prensado en su marco */
 .arte-herbario-marco{ width: min(230px, 64%); margin: 0 auto 16px; padding: 9px; background: #fff; box-shadow: 0 10px 24px rgb(var(--primary-rgb) / .14); transform: rotate(-1.5deg); border: 1px solid rgb(var(--primary-rgb) / .12); }
@@ -1031,7 +1029,6 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
    Todo se apaga con prefers-reduced-motion.
    ============================================================ */
 /* Detalles vivos de la web (no de la entrada) */
-.atelier-citricos .arte-limones{ transform-origin: 70% 15%; animation: se-mece 6s ease-in-out infinite; }
 @keyframes se-mece{ 0%, 100%{ transform: rotate(0); } 50%{ transform: rotate(1.6deg); } }
 .atelier-ceramica .mat-inner::after{ content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none;
   background: linear-gradient(115deg, transparent 35%, rgb(255 255 255 / .45) 48%, transparent 60%); background-size: 250% 100%; background-position: 150% 0; animation: vidriado 5s ease-in-out 1.6s infinite;
@@ -1065,7 +1062,6 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .atelier .countdown-item b.tic{ animation: tic .5s var(--ease-out); }
 @keyframes tic{ 0%{ transform: translateY(-40%); opacity: 0; } 100%{ transform: none; opacity: 1; } }
 .atelier .atelier-arte, .atelier .arte-sello, .atelier .arte-herbario-marco{ animation: aparece 1.4s var(--ease-out) both; }
-.atelier.atelier-citricos .arte-limones{ animation: aparece 1.4s var(--ease-out) both, se-mece 6s ease-in-out 1.4s infinite; }
 @keyframes aparece{ from{ opacity: 0; filter: blur(6px); transform: translateY(12px) scale(.98); } to{ opacity: 1; filter: none; } }
 
 @media (prefers-reduced-motion: reduce){
@@ -1084,30 +1080,22 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
    ============================================================ */
 .atelier .hero-names{ color: var(--nombres-color, var(--primary)); }
 /* Tarjetas, fichas y modales con fondo propio: en transparente se fundían con la página (25-sep) */
-.atelier-citricos, .atelier-herbario{ --card: #FFFDF9; }
+.atelier-herbario{ --card: #FFFDF9; }
 /* display:block también en móvil: la plantilla deja .hero-left en display:contents y el papel no se pintaría */
-.atelier-citricos .hero-left, .atelier-herbario .hero-left{ display: block !important; position: relative; width: 100%; max-width: 420px; margin: 0 auto; padding: 48px 30px 44px;
+.atelier-herbario .hero-left{ display: block !important; position: relative; width: 100%; max-width: 420px; margin: 0 auto; padding: 48px 30px 44px;
   background: url(img/atelier/pliego-citricos.svg) center / 100% 100% no-repeat; }
 .atelier-herbario .hero-left{ background-image: url(img/atelier/pliego-herbario.svg); padding: 44px 34px 48px; }
-.atelier-citricos .hero-text, .atelier-herbario .hero-text{ margin-bottom: 0; }
-.atelier-citricos .hero-text p, .atelier-citricos .kicker{ color: var(--primary); }
+.atelier-herbario .hero-text{ margin-bottom: 0; }
 
 /* Cítricos */
 .esq{ position: absolute; top: 3.5%; width: 34%; pointer-events: none; }
 .esq-i{ left: 4%; } .esq-d{ right: 4%; }
-.atelier-citricos .hero-text{ margin-top: 62px; }
-.atelier-citricos .arte-limones{ width: 76%; margin: 14px auto 4px; }
 .div-olivo{ display: block; width: 86%; margin: 4px auto; }
 .cit-nav{ display: flex; justify-content: space-around; gap: 6px; width: 100%; margin: 6px 0 10px; padding: 10px 0; border-top: 1px solid rgb(var(--primary-rgb) / .2); border-bottom: 1px solid rgb(var(--primary-rgb) / .2); }
 .cit-nav a{ font-family: 'Playfair Display', Georgia, serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); transition: color .3s; }
 .cit-nav a:hover{ color: var(--nombres-color); }
 .sello-circular{ display: block; width: 138px; height: 138px; margin: 12px auto 0; color: var(--primary); }
 .sello-txt{ font-family: 'Playfair Display', Georgia, serif; font-size: 8.4px; letter-spacing: .12em; fill: var(--primary); }
-.atelier-citricos main > .wrap{ background: url(img/atelier/pliego-citricos.svg) center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; padding-top: 16px; }
-.atelier-citricos main > .wrap::before{ height: 96px; margin: -6px -6px 0; mix-blend-mode: normal;
-  background: url(img/atelier/esquina-1.webp) left top / 104px auto no-repeat, url(img/atelier/esquina-2.webp) right top / 104px auto no-repeat; }
-.atelier-citricos .divider, .atelier-citricos .mini-rule{ height: 12px; width: 180px; border-radius: 0; background: url(img/atelier/divisor-olivo.svg) center / contain no-repeat; }
-.atelier-citricos .lede, .atelier-citricos .letter p{ color: var(--tinta); font-size: 17px; }
 
 /* Herbario */
 .banda-herbario{ display: block; width: 100%; height: 124px; object-fit: cover; object-position: center top; margin-bottom: 10px; }
@@ -1129,8 +1117,8 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
   /* Escritorio: la invitación sobre la mesa de roble */
   .atelier-herbario .hero{ align-self: stretch; width: 100%; background: linear-gradient(rgb(58 46 43 / .28), rgb(58 46 43 / .28)), url(img/atelier/mesa.webp) center / cover no-repeat; max-width: none; padding: 72px max(24px, calc(50vw - 570px)) 56px; }
   .atelier-herbario.page-inner{ background: linear-gradient(rgb(58 46 43 / .3), rgb(58 46 43 / .3)), url(img/atelier/mesa.webp) center / cover fixed no-repeat; }
-  .atelier-citricos .hero-left, .atelier-herbario .hero-left{ max-width: 460px; }
-  .atelier-citricos .hero-text, .atelier-herbario .hero-text{ text-align: center; }
+  .atelier-herbario .hero-left{ max-width: 460px; }
+  .atelier-herbario .hero-text{ text-align: center; }
 }
 
 /* Entradas nuevas: las esquinas llegan desde fuera; la banda del herbario se despliega */
@@ -1139,12 +1127,10 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .en-esq-d{ right: 0; animation: en-esq-d 1.4s var(--ease-out) .35s forwards; }
 @keyframes en-esq-i{ from{ opacity: 0; transform: translate(-30%, -30%) rotate(-8deg); } to{ opacity: 1; transform: none; } }
 @keyframes en-esq-d{ from{ opacity: 0; transform: translate(30%, -30%) rotate(8deg); } to{ opacity: 1; transform: none; } }
-.atelier-citricos .sello-circular{ animation: aparece 1.4s var(--ease-out) .3s both, gira-lento 60s linear 1.7s infinite; }
 @keyframes gira-lento{ to{ transform: rotate(360deg); } }
-.atelier-citricos .esq{ animation: aparece 1.6s var(--ease-out) both; }
 .atelier-herbario .banda-herbario{ animation: en-despliega-h 1.6s cubic-bezier(.6, 0, .2, 1) both; }
 @keyframes en-despliega-h{ from{ clip-path: inset(0 50% 0 50%); } to{ clip-path: inset(0 0 0 0); } }
-@media (prefers-reduced-motion: reduce){ .atelier-citricos .sello-circular, .atelier-citricos .esq, .atelier-herbario .banda-herbario{ animation: none !important; } }
+@media (prefers-reduced-motion: reduce){ .atelier-herbario .banda-herbario{ animation: none !important; } }
 
 /* ============================================================
    Cerámica, Sello de lacre y Atardecer, rehechos con las piezas del owner
@@ -1345,10 +1331,10 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 .en-aro::after{ content: ''; position: absolute; inset: -6%; background: url(img/atelier/aro-oro.svg) center / 100% 100% no-repeat; animation: gira 20s linear infinite; }
 .en-sol{ position: absolute; left: 50%; top: 18%; width: 160px; height: 160px; margin-left: -80px; border-radius: 50%; background: radial-gradient(circle, #FFE9B8, rgb(255 214 150 / .55) 45%, transparent 70%); animation: en-sol 2.6s var(--ease-out) .3s both; }
 @keyframes en-sol{ from{ opacity: 0; transform: translateY(80px) scale(.7); } to{ opacity: 1; transform: none; } }
-.entrada-citricos{ --so-papel: #FAF7F2; --so-forro: #F4ECCB; --so-sello: #FAF7F2; }
-.entrada-citricos .en-papel{ background: #F0ECE1; }
-.en-sello-citricos{ width: 24%; box-shadow: 0 4px 10px rgb(0 0 0 / .22); border: 1px solid rgb(92 107 87 / .4); }
-.en-sello-citricos::before{ border-color: rgb(92 107 87 / .35); border-style: dashed; }
+.entrada-citricos{ --so-papel: #FBF8F0; --so-forro: #E4E8D5; --so-sello: #FBF8F0; }
+.entrada-citricos .en-papel{ background: #F3EEDF; }
+.en-sello-citricos{ width: 24%; box-shadow: 0 4px 10px rgb(0 0 0 / .22); border: 1px solid rgb(79 94 69 / .4); }
+.en-sello-citricos::before{ border-color: rgb(79 94 69 / .35); border-style: dashed; }
 .en-sello-disco{ width: 74%; height: 74%; border-radius: 50%; object-fit: cover; }
 .entrada-herbario{ --so-papel: #F6F1E7; --so-forro: #EFE9DD url(img/atelier/herbario-banda.webp) center top / cover; --so-sello: #645166; --so-pista: #fff; }
 .entrada-herbario .en-papel{ background: linear-gradient(rgb(58 46 43 / .35), rgb(58 46 43 / .35)), url(img/atelier/mesa.webp) center / cover; }
@@ -1385,15 +1371,15 @@ html:has(> body.is-preview)::-webkit-scrollbar{ display: none; }
    Contraste en móvil (owner, 25-sep-2026): la tarjeta se confundía con el fondo en
    Cítricos, Herbario, Masía y Atardecer. Cada tarjeta se despega con fondo propio y sombra.
    ============================================================ */
-.atelier-citricos .hero-left, .atelier-herbario .hero-left{ filter: drop-shadow(0 14px 26px rgb(61 53 46 / .24)); }
-.atelier-citricos main > .wrap, .atelier-herbario main > .wrap{ filter: drop-shadow(0 12px 22px rgb(61 53 46 / .18)); }
+.atelier-herbario .hero-left{ filter: drop-shadow(0 14px 26px rgb(61 53 46 / .24)); }
+.atelier-herbario main > .wrap{ filter: drop-shadow(0 12px 22px rgb(61 53 46 / .18)); }
 .atelier-atardecer .hero-left{ border-color: rgb(197 160 89 / .7); box-shadow: 0 26px 50px -20px rgb(140 74 50 / .55), 0 2px 6px rgb(140 74 50 / .12); }
 .atelier-masia .hero-left{ display: block !important; position: relative; width: 100%; max-width: 440px; margin: 0 auto; padding: 26px 22px 30px; text-align: center;
   background: #FFFDF8; border: 1px solid rgb(56 49 43 / .14); box-shadow: 0 22px 44px -22px rgb(56 49 43 / .45); }
 .atelier-masia .hero-text{ text-align: center; margin-bottom: 0; }
 .atelier-masia main > .wrap{ background: #FFFDF8; box-shadow: 0 18px 36px -20px rgb(56 49 43 / .4); }
 @media (max-width: 900px){
-  .atelier-citricos .hero, .atelier-herbario .hero, .atelier-masia .hero{ align-self: stretch; width: 100%; max-width: none; padding: 26px 12px 32px; }
+  .atelier-herbario .hero, .atelier-masia .hero{ align-self: stretch; width: 100%; max-width: none; padding: 26px 12px 32px; }
   .atelier-herbario .hero{ background: linear-gradient(rgb(58 46 43 / .3), rgb(58 46 43 / .3)), url(img/atelier/mesa.webp) center / cover no-repeat; }
   .atelier-masia .hero{ background: #EDE3D3; }
   .atelier-masia{ --sage: #F1EADF; }
@@ -1422,11 +1408,6 @@ html:has(> body.is-preview)::-webkit-scrollbar{ display: none; }
 @media (prefers-reduced-motion: no-preference){ .mapa-pin i{ animation: pin-cae .7s cubic-bezier(.3, 1.4, .5, 1) .3s both; } }
 @keyframes pin-cae{ from{ opacity: 0; transform: translateY(-18px) rotate(-45deg); } to{ opacity: 1; transform: rotate(-45deg); } }
 
-/* Cítricos: fondo verde salvia también en escritorio y el texto por debajo de las ramas de limón */
-.atelier-citricos .hero{ align-self: stretch; width: 100%; max-width: none; background: linear-gradient(180deg, #D5DCC8, #E6E2CF); }
-.atelier-citricos .hero-text{ margin-top: 84px; }
-@media (min-width: 901px){ .atelier-citricos .hero{ padding: 64px max(24px, calc(50vw - 570px)) 56px; } .atelier-citricos .hero-text{ margin-top: 104px; } }
-.atelier-citricos .hero-text > .kicker{ display: block; padding: 0 16%; }
 
 /* ============================================================
    Panel de la pareja: compartir (QR y WhatsApp) y lista de invitados (25-sep-2026)
@@ -1686,3 +1667,184 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .mf-album{ width: 100%; max-width: 370px; justify-self: center; margin-top: 70px; }
 }
 /* ALBUM-FIN */
+
+/* ============================================================
+   Cítricos y azahar · piel «Limonar» (owner, 8-oct-2026; encargo 20261008_bodas_citricos_limonar).
+   Todo bajo body.atelier-citricos: ninguna regla de aquí toca otro diseño (tests/limonar_css_test.php).
+   Leyes: sin sombras ni drop-shadow en main y en la barra; un acento de acción (oliva); el oro solo en
+   filetes, nunca en texto (2,4:1 sobre papel); la terracota solo en el corazón del calendario;
+   Cormorant 300 solo en cifras grandes y nada por encima de 500. Radio 0 o pastilla, con tres
+   excepciones de forma de marca: el arco de la foto, el festón y el sello.
+   ============================================================ */
+body.atelier-citricos{
+  --canvas: #FBF8F0; --surface: #FBF8F0; --card: transparent; --line: #E2D9B8;
+  --ink: #3B3A30; --ink-soft: #55513F; --ink-muted: #5A6650; --on-sage: #3B3A30;
+  --filete: #D9CFA8; --oro: #B9A86A; --salvia: #E4E8D5; --papel-2: #F3EEDF;
+  --r: 0; --r-lg: 0; --shadow: none;
+  background: #FBF8F0; color: #3B3A30;
+}
+body.atelier-citricos .kicker{ font-family: 'Cormorant', Georgia, serif; font-size: 12px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: #4F5E45; }
+body.atelier-citricos .section-title{ font-family: 'Pinyon Script', cursive; font-weight: 400; font-style: normal; font-size: 48px; line-height: 1.1; letter-spacing: 0; color: #4F5E45; }
+body.atelier-citricos .btn{ border-radius: var(--pill); background: #4F5E45; color: #FBF8F0; box-shadow: none; font-family: 'Cormorant', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; }
+body.atelier-citricos .btn:hover{ background: #3F4B37; }
+
+/* Barra superior e inferior: papel y filete, sin sombra */
+body.atelier-citricos .nav-bar, body.atelier-citricos .tab-bar{ background: #FBF8F0; box-shadow: none; }
+body.atelier-citricos .nav-bar{ border-bottom: 1px solid var(--filete); }
+body.atelier-citricos .tab-bar{ border-top: 1px solid var(--filete); }
+body.atelier-citricos .nav-names{ font-family: 'Pinyon Script', cursive; font-style: normal; font-size: 30px; color: #4F5E45; }
+body.atelier-citricos .nav-sub{ font-family: 'Cormorant', Georgia, serif; font-weight: 500; letter-spacing: .3em; color: #4F5E45; }
+body.atelier-citricos .nav-drawer{ box-shadow: none; border-bottom: 1px solid var(--filete); }
+
+/* Portada: papel con la rama arriba a la izquierda y el racimo abajo a la derecha */
+body.atelier-citricos .hero{ position: relative; align-self: stretch; width: 100%; max-width: none; padding: 0; background: #FBF8F0; overflow: hidden; }
+body.atelier-citricos .hero-left{ display: flex !important; flex-direction: column; align-items: center; justify-content: center; position: relative;
+  width: 100%; min-height: min(800px, 100svh); padding: 176px 32px 170px; text-align: center; background: none; filter: none; }
+body.atelier-citricos .esq{ position: absolute; top: -30px; left: -46px; right: auto; width: min(262px, 66vw); pointer-events: none; }
+body.atelier-citricos .cit-racimo{ position: absolute; right: -126px; bottom: -78px; width: min(330px, 84vw); transform: rotate(-24deg); pointer-events: none; }
+body.atelier-citricos .hero-text{ position: relative; margin: 0; text-align: center; }
+body.atelier-citricos .hero-text > .kicker{ display: block; padding: 0; margin-bottom: 18px; }
+body.atelier-citricos .hero-names{ font-family: 'Pinyon Script', cursive; font-style: normal; font-weight: 400; font-size: 64px; line-height: 1.05; letter-spacing: 0; color: #4F5E45; overflow-wrap: anywhere; }
+body.atelier-citricos .hero-names i{ display: block; margin: 2px 0 6px; font-family: 'Cormorant', Georgia, serif; font-style: italic; font-weight: 300; font-size: 38px; line-height: 1; color: #7A6A32; }
+body.atelier-citricos .hero-date{ display: none; }
+body.atelier-citricos .hero-hashtag{ font-family: 'Cormorant', Georgia, serif; font-weight: 500; letter-spacing: .2em; color: #5A6650; }
+body.atelier-citricos .cit-fecha{ position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; width: 100%; max-width: 330px; margin: 26px 0 18px; }
+body.atelier-citricos .cit-fecha span{ padding: 9px 0; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete);
+  font-family: 'Cormorant', Georgia, serif; font-size: 12px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: #3B3A30; }
+body.atelier-citricos .cit-fecha b{ font-family: 'Cormorant', Georgia, serif; font-size: 72px; font-weight: 300; line-height: 1; color: #3B3A30; }
+body.atelier-citricos .cit-lugar{ position: relative; margin: 0; font-family: 'Cormorant', Georgia, serif; font-size: 15px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: #3B3A30; }
+body.atelier-citricos .cit-nav{ position: relative; max-width: 330px; margin: 26px 0 0; padding: 10px 0; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete); }
+body.atelier-citricos .cit-nav a{ font-family: 'Cormorant', Georgia, serif; font-size: 12px; font-weight: 500; letter-spacing: .24em; color: #4F5E45; }
+
+/* Foto en arco con la rama montada encima (excepción de radio nombrada: arco) */
+body.atelier-citricos .mat{ position: relative; align-self: center; width: min(300px, 78vw); margin: 8px auto 40px; padding: 0; background: none; box-shadow: none; transform: none; }
+body.atelier-citricos .mat-inner{ position: relative; padding: 10px; background: none; border: 1px solid var(--filete); border-radius: 999px 999px 0 0; box-shadow: none; }
+body.atelier-citricos .mat-photo{ border-radius: 999px 999px 0 0; aspect-ratio: 3 / 4; }
+body.atelier-citricos .mat-photo::after{ display: none; }
+body.atelier-citricos .mat-inner::after{ content: ''; position: absolute; top: -48px; right: -86px; width: 240px; aspect-ratio: 900 / 741;
+  background: url(img/atelier/limones.webp) center / contain no-repeat; transform: rotate(18deg); pointer-events: none; }
+body.atelier-citricos .mat-caption{ background: none; border-radius: 0; box-shadow: none; padding: 0; font-family: 'Cormorant', Georgia, serif; font-style: italic; font-size: 17px; color: #55513F; margin-top: 14px; }
+
+/* Carta en banda salvia con festón arriba y abajo (excepción de forma: festón) */
+body.atelier-citricos .letter{ position: relative; margin: 30px 0; padding: 60px 32px 56px; background: var(--salvia); text-align: center; }
+body.atelier-citricos .letter::before, body.atelier-citricos .letter::after{ content: ''; position: absolute; left: 0; right: 0; height: 10px;
+  background: radial-gradient(circle at 10px 10px, var(--salvia) 9.5px, transparent 10px) 0 0 / 20px 20px repeat-x; }
+body.atelier-citricos .letter::before{ top: -10px; }
+body.atelier-citricos .letter::after{ bottom: -10px; background-image: radial-gradient(circle at 10px 0, var(--salvia) 9.5px, transparent 10px); }
+body.atelier-citricos .letter .section-title{ font-size: 50px; }
+body.atelier-citricos .letter .mini-rule{ display: none; }
+body.atelier-citricos .letter p{ max-width: 26rem; margin: 0 auto 14px; font-family: 'Cormorant', Georgia, serif; font-size: 19px; font-weight: 400; line-height: 1.55; color: #3B3A30; }
+body.atelier-citricos .letter p.big{ font-size: 21px; font-style: italic; color: #3B3A30; }
+body.atelier-citricos .pildora-vest{ border-radius: var(--pill); border: 1px solid #4F5E45; background: transparent; }
+
+/* Guardad la fecha: cuenta atrás con filetes verticales, calendario del mes */
+body.atelier-citricos .save-band{ background: none; padding: 56px 28px 40px; }
+body.atelier-citricos .save-card{ max-width: 360px; padding: 0; background: none; box-shadow: none; border-radius: 0; }
+body.atelier-citricos .save-card h2{ font-family: 'Pinyon Script', cursive; font-weight: 400; font-size: 46px; line-height: 1.1; color: #4F5E45; }
+body.atelier-citricos .save-date-text{ font-family: 'Cormorant', Georgia, serif; font-size: 19px; font-style: italic; color: #55513F; }
+body.atelier-citricos .countdown{ gap: 0; margin: 10px 0 30px; }
+body.atelier-citricos .countdown-item{ background: none; border-radius: 0; padding: 6px 0; border-left: 1px solid var(--filete); }
+body.atelier-citricos .countdown-item:first-child{ border-left: 0; }
+body.atelier-citricos .countdown-item b{ font-family: 'Cormorant', Georgia, serif; font-size: 40px; font-weight: 300; line-height: 1.1; color: #3B3A30; }
+body.atelier-citricos .countdown-item span{ font-family: 'Cormorant', Georgia, serif; font-size: 11px; font-weight: 500; letter-spacing: .3em; color: #5A6650; }
+body.atelier-citricos .cit-cal{ width: 100%; max-width: 300px; margin: 8px auto 26px; border-collapse: collapse; font-family: 'Cormorant', Georgia, serif; font-size: 17px; color: #3B3A30; }
+body.atelier-citricos .cit-cal caption{ padding-bottom: 14px; font-family: 'Pinyon Script', cursive; font-size: 44px; color: #4F5E45; }
+body.atelier-citricos .cit-cal caption span{ font-family: 'Cormorant', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: .3em; color: #5A6650; vertical-align: middle; }
+body.atelier-citricos .cit-cal th{ padding-bottom: 8px; border-bottom: 1px solid var(--filete); font-size: 11px; font-weight: 500; letter-spacing: .2em; color: #5A6650; }
+body.atelier-citricos .cit-cal abbr{ text-decoration: none; }
+body.atelier-citricos .cit-cal td{ position: relative; height: 38px; text-align: center; font-weight: 400; }
+body.atelier-citricos .cit-cal tbody tr:first-child td{ padding-top: 6px; }
+body.atelier-citricos .cit-boda{ color: #A6634B; font-weight: 500; }
+body.atelier-citricos .cit-corazon{ position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; transform: translate(-50%, -50%); fill: none; stroke: #A6634B; stroke-width: 1.4; stroke-linecap: round; pointer-events: none; }
+body.atelier-citricos .cit-sr{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.atelier-citricos .cal-btn{ background: transparent; color: #4F5E45; box-shadow: none; border: 1px solid #4F5E45; font-size: 12px; letter-spacing: .18em; white-space: nowrap; }
+body.atelier-citricos .cal-btn:hover{ background: var(--salvia); }
+body.atelier-citricos .cal-options{ background: var(--papel-2); border-radius: 0; }
+body.atelier-citricos .cal-options a{ border-radius: 0; background: #FBF8F0; }
+
+/* Itinerario en curva: una fila por parada, tramo de curva alternando lado, icono en la curva */
+body.atelier-citricos .itinerary{ padding: 40px 0 24px; }
+body.atelier-citricos .itinerary-head .section-title{ font-size: 50px; }
+body.atelier-citricos .cit-curva{ width: 100%; max-width: 390px; margin: 8px 0 0; padding: 0; list-style: none; }
+body.atelier-citricos .cit-paso{ position: relative; padding: 46px 0; min-height: 150px; }
+body.atelier-citricos .cit-tramo{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+body.atelier-citricos .cit-tramo path{ fill: none; stroke: #9AA885; stroke-width: 1.4; stroke-dasharray: 2 6; stroke-linecap: round; }
+body.atelier-citricos .cit-ico{ position: absolute; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--pill); border: 1px solid #4F5E45; background: #FBF8F0; }
+body.atelier-citricos .cit-izq .cit-ico{ left: 20%; }
+body.atelier-citricos .cit-der .cit-ico{ left: 80%; }
+body.atelier-citricos .cit-ico svg{ width: 24px; height: 24px; fill: none; stroke: #4F5E45; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+body.atelier-citricos .cit-txt{ position: relative; }
+body.atelier-citricos .cit-izq .cit-txt{ margin-left: 33%; padding-right: 20px; text-align: left; }
+body.atelier-citricos .cit-der .cit-txt{ margin-right: 33%; padding-left: 20px; text-align: right; }
+body.atelier-citricos .cit-h{ display: block; font-family: 'Cormorant', Georgia, serif; font-size: 32px; font-weight: 300; line-height: 1; color: #3B3A30; }
+body.atelier-citricos .cit-txt h3{ margin: 6px 0 2px; font-family: 'Cormorant', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: #4F5E45; }
+body.atelier-citricos .cit-l, body.atelier-citricos .cit-n{ margin: 0; font-family: 'Cormorant', Georgia, serif; font-size: 17px; font-style: italic; line-height: 1.35; color: #55513F; }
+body.atelier-citricos .cit-n{ font-size: 15px; margin-top: 4px; }
+body.atelier-citricos .cit-mapa{ display: inline-block; margin-top: 8px; padding-bottom: 2px; border-bottom: 1px solid var(--oro);
+  font-family: 'Cormorant', Georgia, serif; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: #4F5E45; }
+body.atelier-citricos .mapa{ width: 100%; max-width: none; margin: 30px 0 0; border-radius: 0; box-shadow: none; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete); }
+body.atelier-citricos .mapa img, body.atelier-citricos .mapa-lienzo{ border-radius: 0; }
+
+/* Filas de información en vez de tarjetas */
+body.atelier-citricos .quick{ padding: 24px 28px 40px; }
+body.atelier-citricos .quick-grid{ display: flex; flex-direction: column; max-width: 520px; gap: 0; }
+body.atelier-citricos .quick-grid > .q-card{ grid-column: auto; width: auto; }
+body.atelier-citricos .q-card{ background: none; box-shadow: none; border-radius: 0; padding: 26px 0; border-bottom: 1px solid var(--filete); }
+body.atelier-citricos .q-card h3{ font-family: 'Pinyon Script', cursive; font-weight: 400; font-size: 36px; line-height: 1.15; color: #4F5E45; }
+body.atelier-citricos .q-card p{ font-family: 'Cormorant', Georgia, serif; font-size: 17px; font-weight: 400; line-height: 1.5; color: #55513F; }
+body.atelier-citricos .q-label{ color: #4F5E45; }
+body.atelier-citricos .link-arrow{ font-family: 'Cormorant', Georgia, serif; font-size: 12px; font-weight: 500; letter-spacing: .24em; color: #4F5E45; }
+body.atelier-citricos .q-rsvp{ background: var(--papel-2); color: #3B3A30; box-shadow: none; padding: 40px 26px; margin: 0 -28px; border-bottom: 0; text-align: center; }
+body.atelier-citricos .q-rsvp::before, body.atelier-citricos .q-rsvp::after{ display: none; }
+body.atelier-citricos .q-rsvp .q-label{ justify-content: center; }
+body.atelier-citricos .q-rsvp h3{ font-size: 46px; color: #4F5E45; }
+body.atelier-citricos .q-rsvp p{ color: #55513F; }
+body.atelier-citricos .q-rsvp .btn-light{ margin-top: 20px; background: #4F5E45; color: #FBF8F0; }
+body.atelier-citricos .round-btn{ background: transparent; color: #4F5E45; box-shadow: none; border: 1px solid #4F5E45; }
+
+/* Pie: sello circular y «Gracias» */
+body.atelier-citricos .atelier-pie{ display: flex; justify-content: center; height: auto; padding: 24px 0 0; background: none; }
+body.atelier-citricos .atelier-pie .sello-circular{ width: 180px; height: 180px; margin: 0 auto; color: #4F5E45; }
+body.atelier-citricos .sello-txt{ font-family: 'Cormorant', Georgia, serif; font-size: 9.5px; font-weight: 500; letter-spacing: .16em; fill: #4F5E45; }
+body.atelier-citricos .site-footer{ background: #FBF8F0; box-shadow: none; }
+body.atelier-citricos .footer-thanks{ font-family: 'Pinyon Script', cursive; font-style: normal; font-size: 54px; color: #4F5E45; }
+body.atelier-citricos .footer-mono span:not(.rule){ font-family: 'Cormorant', Georgia, serif; font-weight: 400; letter-spacing: .2em; }
+
+/* Páginas interiores: misma piel, campos con filete inferior y opciones en pastilla */
+body.atelier-citricos.page-inner{ background: #FBF8F0; }
+body.atelier-citricos main > .wrap{ background: none; box-shadow: none; border-radius: 0; filter: none; padding-top: 24px; }
+body.atelier-citricos .section h1{ font-family: 'Pinyon Script', cursive; font-weight: 400; font-style: normal; font-size: 48px; line-height: 1.1; color: #4F5E45; }
+body.atelier-citricos .divider{ height: 1px; width: 120px; background: var(--filete); border: 0; border-radius: 0; }
+body.atelier-citricos .lede{ font-family: 'Cormorant', Georgia, serif; font-size: 19px; color: #3B3A30; }
+body.atelier-citricos .field-label{ font-family: 'Cormorant', Georgia, serif; font-size: 11px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: #4F5E45; }
+body.atelier-citricos input[type="text"], body.atelier-citricos input[type="email"], body.atelier-citricos input[type="tel"], body.atelier-citricos textarea, body.atelier-citricos select{
+  border: 0; border-bottom: 1px solid #B9AE85; border-radius: 0; background: transparent; box-shadow: none; font-family: 'Cormorant', Georgia, serif; font-size: 19px; color: #3B3A30; }
+body.atelier-citricos input:focus-visible, body.atelier-citricos textarea:focus-visible, body.atelier-citricos select:focus-visible{ outline: 2px solid #4F5E45; outline-offset: 2px; }
+body.atelier-citricos .menu-card, body.atelier-citricos .hotel-card, body.atelier-citricos .iban-box, body.atelier-citricos .trayecto, body.atelier-citricos .modal{ background: #FBF8F0; box-shadow: none; border-radius: 0; border: 1px solid var(--filete); }
+body.atelier-citricos .galeria-foto{ padding: 9px 9px 30px; background: #FFFEFA; border: 1px solid #E4DCC2; border-radius: 0; box-shadow: none; }
+body.atelier-citricos .galeria-foto:nth-child(3n+1){ transform: rotate(-2deg); }
+body.atelier-citricos .galeria-foto:nth-child(3n+2){ transform: rotate(1.5deg); }
+
+/* Escritorio: bandas a ancho completo con el contenido a 960 px como máximo */
+@media (min-width: 901px){
+  body.atelier-citricos .hero{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; padding: 0 max(32px, calc(50vw - 480px)); }
+  body.atelier-citricos .hero-left{ min-height: 760px; padding: 170px 24px 140px; }
+  body.atelier-citricos .esq{ width: clamp(262px, 22vw, 340px); }
+  body.atelier-citricos .cit-racimo{ width: clamp(330px, 26vw, 420px); }
+  body.atelier-citricos .hero-names{ font-size: 84px; }
+  body.atelier-citricos .mat{ width: 360px; margin: 0 auto; }
+  body.atelier-citricos .letter{ padding: 80px max(32px, calc(50vw - 480px)); }
+  body.atelier-citricos .save-band{ padding: 80px 32px 56px; }
+  body.atelier-citricos .save-card{ max-width: 640px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; align-items: start; }
+  body.atelier-citricos .save-card > .kicker, body.atelier-citricos .save-card > h2, body.atelier-citricos .save-card > .save-date-text,
+  body.atelier-citricos .save-card > .countdown, body.atelier-citricos .save-card > .cal-btn, body.atelier-citricos .save-card > .cal-options{ grid-column: 1; }
+  body.atelier-citricos .save-card > .cit-cal{ grid-column: 2; grid-row: 1 / span 6; margin: 0; }
+  body.atelier-citricos .cit-curva{ max-width: 640px; }
+  body.atelier-citricos .quick-grid{ max-width: 720px; }
+  body.atelier-citricos .q-rsvp{ margin: 0 0 8px; }
+}
+@media (prefers-reduced-motion: no-preference){
+  body.atelier-citricos .atelier-pie .sello-circular{ animation: gira-lento 60s linear infinite; }
+}
+body.atelier-citricos input::placeholder, body.atelier-citricos textarea::placeholder{ font-size: 16px; }

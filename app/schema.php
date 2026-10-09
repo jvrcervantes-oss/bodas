@@ -64,11 +64,13 @@ function fuentes_autor(): array {
 // colores: mismo orden que TEMAS (primary, accent, accent-hover, secondary, sage, sage-2, sage-2-hover, gold, on-dark, on-dark-soft)
 // fuentes: títulos, textos, nombres, estilo de los nombres
 const ATELIER = [
-    // Tokens de «Jardín de cítricos y azahar» (especificación del owner, 25-sep-2026)
-    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Papel de algodón rasgado, limones y azahar en acuarela.',
-        'colores' => ['#5C6B57', '#5C6B57', '#4D5A49', '#5C6B57', '#F0ECE1', '#E6DCC4', '#DDD1B5', '#A6634B', '#F4ECCB', '#DCD3AE'],
-        'fuentes' => ["'Playfair Display', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Alex Brush', cursive", 'normal'],
-        'nombres_color' => '#A6634B', 'tinta' => '#3D352E'],
+    // Piel «Limonar» (owner, 8-oct-2026, encargo 20261008_bodas_citricos_limonar): papel de algodón, salvia, oliva
+    // como único acento de acción, oro solo en filetes (assets/boda.css) y terracota solo en el corazón del calendario.
+    // Cormorant (variable 300-700, alojada) porque el 300 de cifras no existe en el CormorantGaramond local.
+    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Papel de algodón, festones salvia, limones y azahar en acuarela.',
+        'colores' => ['#4F5E45', '#4F5E45', '#3F4B37', '#5A6650', '#FBF8F0', '#E4E8D5', '#D9DFC6', '#A6634B', '#FBF8F0', '#E4E8D5'],
+        'fuentes' => ["'Cormorant', Georgia, serif", "'Cormorant', Georgia, serif", "'Pinyon Script', cursive", 'normal'],
+        'nombres_color' => '#4F5E45', 'tinta' => '#3B3A30'],
     // Tokens de «Cerámica & Azulejo Talavera» (especificación del owner, 25-sep-2026)
     'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Cenefa de azulejo cobalto, marco barroco para vuestra foto y patio andaluz.',
         'colores' => ['#183B75', '#183B75', '#2C5EA8', '#6B7A8D', '#F5F3ED', '#E6ECF3', '#D8E2EC', '#C6A664', '#FDFCFA', '#A9C2D8'],
