@@ -24,12 +24,13 @@ function ok(bool $c, string $que): void { global $fallos, $n; $n++; if (!$c) { $
 
 // Qué reglas son de cada diseño: las que nombran su clase de body o de entrada, o una pieza que solo pinta ese diseño
 // (render.php: arte_atelier, atelier_tras_texto, entrada_atelier, sello_circular). Prefijo con «-» = empieza por.
+// S2b añadió sello-fondo (Cítricos), mas- (el lugar y la CTA del hero de Masía) y tal-rsvp (cubierto por tal-).
 const DUENO_ATELIER = [
-    'citricos' => ['atelier-citricos', 'entrada-citricos', 'en-sello-citricos', 'cit-', 'esq', 'sello-circular', 'sello-txt', 'en-petalos', 'en-esq', 'en-sello-disco'],
+    'citricos' => ['atelier-citricos', 'entrada-citricos', 'en-sello-citricos', 'cit-', 'esq', 'sello-circular', 'sello-txt', 'sello-fondo', 'en-petalos', 'en-esq', 'en-sello-disco'],
     'herbario' => ['atelier-herbario', 'entrada-herbario', 'en-sello-herbario', 'herb-', 'ramita', 'banda-herbario', 'arte-herbario', 'en-arte-banda'],
     'ceramica' => ['atelier-ceramica', 'entrada-ceramica', 'en-sello-ceramica', 'tal-'],
     'lacre' => ['atelier-lacre', 'entrada-lacre', 'en-sello-lacre', 'lac-', 'sello-bronce', 'en-poema'],
-    'masia' => ['atelier-masia', 'entrada-masia', 'en-sello-masia', 'arte-masia', 'en-dibujo', 'en-lapiz', 'en-tinta'],
+    'masia' => ['atelier-masia', 'entrada-masia', 'en-sello-masia', 'arte-masia', 'mas-', 'en-dibujo', 'en-lapiz', 'en-tinta'],
     'atardecer' => ['atelier-atardecer', 'entrada-atardecer', 'en-sello-atardecer', 'atd-', 'en-aro', 'en-sol'],
 ];
 $kd = array_keys(DUENO_ATELIER); $ka = array_keys(ATELIER); sort($kd); sort($ka);
@@ -107,6 +108,22 @@ foreach (ATELIER as $k => $a) {
     ok(!$sinUso, "«{$k}»: cada --at-* del bloque de defectos se usa (" . implode(', ', $sinUso) . ')');
     ok(!$malos, "«{$k}»: ningún literal repite un token de ATELIER (" . count($malos) . ': ' . implode(' | ', array_slice($malos, 0, 4)) . ')');
 }
+
+// S2b (ley 1): ningún :hover de los Atelier levanta la pieza ni le da sombra. Se lee del CSS porque el script de
+// medida (tests/fabrica_atelier.js) mide con «reducir movimiento», y ahí .rv{transform:none !important} tapa un
+// translateY de las tarjetas: el navegador no lo vería.
+$hoverMalos = [];
+$sondaHover = reglas_css('.atelier .q-card:hover, .atelier .event-card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-lg); }');
+foreach (array_merge($sondaHover, $reglas) as [$sel, $decl]) {
+    if (strpos($sel, ':hover') === false) continue;
+    if (!disenos_de($sel) && strpos($sel, '.atelier') === false && strpos($sel, '[data-accesos') === false) continue;
+    if (preg_match('~translate(Y|3d)?\s*\(|(^|;)\s*translate\s*:~i', $decl) || preg_match('~box-shadow\s*:\s*(?!none)~i', $decl)) {
+        $hoverMalos[] = substr(preg_replace('~\s+~', ' ', $sel), 0, 70);
+    }
+}
+ok(($hoverMalos[0] ?? '') === '.atelier .q-card:hover, .atelier .event-card:hover', 'el test ve el hover que levantaba las tarjetas (la regla de antes de S2b)');
+array_shift($hoverMalos);
+ok(!$hoverMalos, 'ningún :hover Atelier con translate ni sombra (' . implode(' | ', array_slice($hoverMalos, 0, 4)) . ')');
 
 // Control del propio test: el bloque de defectos se reconoce solo si es exacto y solo define --at-*.
 ok(es_bloque_defectos('body.atelier-lacre', ' --at-lino: #E5DED4; ', 'lacre') && !es_bloque_defectos('body.atelier-lacre', ' --at-lino: #E5DED4; color: #2D2926; ', 'lacre')

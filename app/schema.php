@@ -68,17 +68,17 @@ const ATELIER = [
     // como único acento de acción, oro solo en filetes (assets/boda.css) y terracota solo en el corazón del calendario.
     // Cormorant (variable 300-700, alojada) porque el 300 de cifras no existe en el CormorantGaramond local.
     'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Papel de algodón, festones salvia, limones y azahar en acuarela.',
-        'colores' => ['#4F5E45', '#4F5E45', '#3F4B37', '#5A6650', '#FBF8F0', '#E4E8D5', '#D9DFC6', '#A6634B', '#FBF8F0', '#E4E8D5'],
+        'colores' => ['#4F5E45', '#4F5E45', '#3F4B37', '#5A6650', '#FBF8F0', '#E4E8D5', '#D9DFC6', '#B9A86A', '#FBF8F0', '#E4E8D5'],
         'fuentes' => ["'Cormorant', Georgia, serif", "'Cormorant', Georgia, serif", "'Pinyon Script', cursive", 'normal'],
         'nombres_color' => '#4F5E45', 'tinta' => '#3B3A30'],
     // Tokens de «Cerámica & Azulejo Talavera» (especificación del owner, 25-sep-2026)
     'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Cenefa de azulejo cobalto, marco barroco para vuestra foto y patio andaluz.',
-        'colores' => ['#183B75', '#183B75', '#2C5EA8', '#6B7A8D', '#F5F3ED', '#E6ECF3', '#D8E2EC', '#C6A664', '#FDFCFA', '#A9C2D8'],
+        'colores' => ['#183B75', '#183B75', '#2C5EA8', '#5E6B7C', '#F5F3ED', '#E6ECF3', '#D8E2EC', '#C6A664', '#FDFCFA', '#A9C2D8'],
         'fuentes' => ["'Cinzel', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Pinyon Script', cursive", 'normal'],
         'nombres_color' => '#183B75', 'tinta' => '#3D352E'],
     // Tokens de «Herbario y lavanda silvestre» (especificación del owner, 25-sep-2026)
     'herbario' => ['nombre' => 'Herbario y lavanda', 'categoria' => 'Botánica', 'desc' => 'Pliego rasgado con flores prensadas sobre mesa de roble.',
-        'colores' => ['#645166', '#645166', '#54445A', '#5A674E', '#EFE9DD', '#E4DCCB', '#DCD2BE', '#5A674E', '#EDE3EE', '#D2C4D4'],
+        'colores' => ['#645166', '#645166', '#54445A', '#58654D', '#EFE9DD', '#E4DCCB', '#DCD2BE', '#5A674E', '#EDE3EE', '#D2C4D4'],
         'fuentes' => ["'Bodoni Moda', Georgia, serif", "'Cormorant Garamond', Georgia, serif", "'Newsreader', Georgia, serif", 'italic'],
         'nombres_color' => '#3D352E', 'tinta' => '#3D352E'],
     // Tokens de «Sello de cera & caligrafía poética» (especificación del owner, 25-sep-2026)
@@ -91,9 +91,9 @@ const ATELIER = [
         'fuentes' => ["'Cinzel', Georgia, serif", "'EB Garamond', Georgia, serif", "'EB Garamond', Georgia, serif", 'italic']],
     // Tokens de «Acuarela atardecer & calas» (especificación del owner, 25-sep-2026)
     'atardecer' => ['nombre' => 'Atardecer en cala', 'categoria' => 'Acuarela costera', 'desc' => 'Acuarela melocotón con polvo de oro, foto en aro dorado y mapa de la cala.',
-        'colores' => ['#BD6A4B', '#BD6A4B', '#AA583A', '#7A6E65', '#F9F5EE', '#F3D2C1', '#EDC3AE', '#C5A059', '#FDFBF7', '#F3D2C1'],
+        'colores' => ['#A95B3E', '#A95B3E', '#964D33', '#7A6E65', '#F9F5EE', '#F3D2C1', '#EDC3AE', '#C5A059', '#FDFBF7', '#F3D2C1'],
         'fuentes' => ["'Playfair Display', Georgia, serif", "'Montserrat', system-ui, sans-serif", "'Pinyon Script', cursive", 'normal'],
-        'nombres_color' => '#BD6A4B', 'tinta' => '#2D2824'],
+        'nombres_color' => '#A95B3E', 'tinta' => '#2D2824'],
 ];
 
 // Decoración (estructura visual), independiente de la paleta. Owner, 25-sep-2026.

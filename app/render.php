@@ -117,14 +117,28 @@ function fuente_autor_css(array $c, array $ctx): string {
 /** Iniciales para sellos y monogramas: «E&A». */
 function monograma(array $c): string { return str_replace(' ', '', iniciales($c)); }
 
-/** Hasta $n accesos a secciones de la web, en el orden en que la pareja las tiene. */
-function accesos(array $c, array $ctx, int $n, string $clase = ''): array {
+/** Hasta $n accesos a secciones de la web, en el orden en que la pareja las tiene. $claseRsvp: la clase del de
+ *  confirmar, si la lleva distinta (Cerámica: solo ese va relleno, S2b). */
+function accesos(array $c, array $ctx, int $n, string $clase = '', string $claseRsvp = ''): array {
     $links = [];
     foreach (['informacion', 'rsvp', 'regalos', 'musica', 'historia', 'galeria'] as $t) {
         $s = seccion_tipo($c, $t);
-        if ($s && count($links) < $n) $links[] = a_interno($s['ruta'], $ctx, $clase !== '' ? 'class="' . $clase . '"' : '') . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
+        $cl = ($t === 'rsvp' && $claseRsvp !== '') ? $claseRsvp : $clase;
+        if ($s && count($links) < $n) $links[] = a_interno($s['ruta'], $ctx, $cl !== '' ? 'class="' . $cl . '"' : '') . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
     }
     return $links;
+}
+
+/** Nombres del hero Atelier (S2b): el conector («&» o «y») y el segundo nombre van juntos en una caja en línea
+ *  (.hero-n2): si no caben tras el primero bajan enteros a la línea siguiente, así el conector nunca queda colgado
+ *  del primer nombre. Cítricos lo pone en su propia línea (<i>, en pagina_inicio). */
+function nombres_hero(array $c): string {
+    $a = $c['pareja']['nombre1'];
+    $b = $c['pareja']['nombre2'];
+    $nom = nombres($c);
+    if ($a === '' || $b === '') return h($nom ?: 'Vuestros nombres');
+    $sep = trim(substr($nom, strlen($a), strlen($nom) - strlen($a) - strlen($b)));
+    return h($a) . ' <span class="hero-n2">' . h($sep) . ' ' . h($b) . '</span>';
 }
 
 function lugar_linea(array $c): string {
@@ -146,7 +160,8 @@ function arte_atelier(array $c, string $A): string {
 
 /** Sello de cera bronce con las iniciales de ESTA pareja (el original traía un monograma ajeno, borrado). */
 function sello_bronce(array $c, string $A, string $cls = 'sello-bronce'): string {
-    return '<span class="' . $cls . '"><img src="' . h($A) . 'img/atelier/sello-bronce.webp" alt=""><b>' . h(monograma($c) ?: '♥') . '</b></span>';
+    // aria-hidden (S2b): es un adorno que repite las iniciales de los nombres del h1, como el monograma de Cerámica
+    return '<span class="' . $cls . '" aria-hidden="true"><img src="' . h($A) . 'img/atelier/sello-bronce.webp" alt=""><b>' . h(monograma($c) ?: '♥') . '</b></span>';
 }
 
 /** Lo que va bajo los nombres en cada diseño (composición de sus especificaciones). */
@@ -168,7 +183,7 @@ function atelier_tras_texto(array $c, array $ctx): string {
                 . ($lugar !== '' ? '<p class="herb-lugar">' . h($lugar) . '</p>' : '')
                 . ($rsvp ? '<span class="herb-label">Confirmación</span>' . a_interno($rsvp['ruta'], $ctx, 'class="herb-btn"') . h($rsvp['titulo']) . '</a>' : '');
         case 'ceramica':
-            $links = accesos($c, $ctx, 3, 'tal-btn');
+            $links = accesos($c, $ctx, 3, 'tal-btn', 'tal-btn tal-rsvp');
             return '<img class="tal-flor" src="' . h($A) . 'img/atelier/flor-talavera.svg" alt="" aria-hidden="true">'
                 . ($lugar !== '' ? '<p class="tal-lugar">' . h($lugar) . '</p>' : '')
                 . ($links ? '<nav class="tal-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
@@ -178,6 +193,10 @@ function atelier_tras_texto(array $c, array $ctx): string {
                 . ($lugar !== '' ? '<p class="lac-lugar">' . h($lugar) . '</p>' : '')
                 . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="lac-btn"') . h($rsvp['titulo']) . '</a>' : '')
                 . ($links ? '<nav class="lac-nav" aria-label="Accesos">' . implode('<i aria-hidden="true">•</i>', $links) . '</nav>' : '');
+        case 'masia':
+            // S2b: era el único hero sin llamada a la acción; la de confirmar va rellena (la única de la pantalla)
+            return ($lugar !== '' ? '<p class="mas-lugar">' . h($lugar) . '</p>' : '')
+                . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="btn mas-btn"') . h($rsvp['titulo']) . '</a>' : '');
         case 'atardecer':
             $links = accesos($c, $ctx, 3);
             return ($lugar !== '' ? '<p class="atd-lugar">' . h($lugar) . '</p>' : '')
@@ -193,7 +212,7 @@ function sello_circular(array $c, string $A): string {
     if (trim($txt, ' ·') === '') $txt = 'NUESTRA BODA · NUESTRA BODA · ';
     return '<svg class="sello-circular" viewBox="0 0 160 160" aria-hidden="true">'
         . '<defs><path id="anillo" d="M80,80 m-61,0 a61,61 0 1,1 122,0 a61,61 0 1,1 -122,0"/><clipPath id="disco"><circle cx="80" cy="80" r="44"/></clipPath></defs>'
-        . '<circle cx="80" cy="80" r="76" fill="#FAF7F2" stroke="currentColor" stroke-opacity=".55" stroke-width="1.2"/>'
+        . '<circle class="sello-fondo" cx="80" cy="80" r="76" stroke="currentColor" stroke-opacity=".55" stroke-width="1.2"/>'
         . '<circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width=".6" stroke-dasharray="2 3"/>'
         . '<image href="' . h($A) . 'img/atelier/sello-limon.webp" x="36" y="36" width="88" height="88" clip-path="url(#disco)"/>'
         . '<circle cx="80" cy="80" r="44" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".8"/>'
@@ -425,7 +444,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endif; ?><?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
-        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= $c['atelier'] === 'citricos' ? str_replace(' &amp; ', ' <i>&amp;</i> ', h($nom ?: 'Vuestros nombres')) : h($nom ?: 'Vuestros nombres') ?></h1>
+        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= $c['atelier'] === 'citricos' ? str_replace(' &amp; ', ' <i>&amp;</i> ', h($nom ?: 'Vuestros nombres')) : ($c['atelier'] !== '' ? nombres_hero($c) : h($nom ?: 'Vuestros nombres')) ?></h1>
         <div class="hero-date">
           <span class="rule" aria-hidden="true"></span><span class="star" aria-hidden="true">✦</span>
           <span class="kicker"><?= h(linea_fecha($c) ?: 'La fecha') ?></span>

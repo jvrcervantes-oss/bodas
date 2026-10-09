@@ -1008,17 +1008,13 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 @media (min-width: 901px){ .atelier-ceramica .hero-names{ font-size: 80px; line-height: 92px; } }
 
 /* Herbario y lavanda: pliego prensado en su marco */
-.arte-herbario-marco{ width: min(230px, 64%); margin: 0 auto 16px; padding: 9px; background: #fff; box-shadow: 0 10px 24px rgb(var(--primary-rgb) / .14); transform: rotate(-1.5deg); border: 1px solid rgb(var(--primary-rgb) / .12); }
-.arte-herbario{ width: 100%; mix-blend-mode: normal; }
 .atelier-herbario{ font-size: 16px; font-weight: 400; }
-.atelier-herbario .hero-names{ letter-spacing: .04em; }
-.atelier-herbario main > .wrap{ box-shadow: 0 1px 0 rgb(var(--primary-rgb) / .08), 0 14px 30px -12px rgb(var(--primary-rgb) / .22); }
-.atelier-herbario main > .wrap::before{ content: ''; display: block; width: 70px; height: 86px; margin: -8px auto 8px; background: url(img/atelier/herbario.webp) center / cover; border: 5px solid #fff; box-shadow: 0 4px 10px rgb(var(--primary-rgb) / .15); transform: rotate(2deg); }
 
 /* Boceto de masía: grabado a plumilla */
 .arte-masia{ width: min(420px, 96%); margin: 0 auto 6px; }
 .atelier-masia{ font-size: 16px; font-weight: 400; }
-.atelier-masia .hero-names{ font-size: 34px; }
+.atelier-masia .hero-names{ font-size: 46px; line-height: 54px; }
+@media (min-width: 901px){ .atelier-masia .hero-names{ font-size: 76px; line-height: 88px; } }
 .atelier-masia main > .wrap::before{ content: ''; display: block; height: 110px; margin: -6px 0 8px; background: url(img/atelier/masia.webp) center / contain no-repeat; mix-blend-mode: multiply; opacity: .85; }
 
 /* ============================================================
@@ -1057,11 +1053,9 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .atelier .btn{ position: relative; overflow: hidden; }
 .atelier .btn::after{ content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / .35) 50%, transparent 70%); transform: translateX(-120%); transition: transform .8s var(--ease-out); }
 .atelier .btn:hover::after{ transform: translateX(120%); }
-.atelier .q-card, .atelier .event-card{ transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out); }
-.atelier .q-card:hover, .atelier .event-card:hover{ transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .atelier .countdown-item b.tic{ animation: tic .5s var(--ease-out); }
 @keyframes tic{ 0%{ transform: translateY(-40%); opacity: 0; } 100%{ transform: none; opacity: 1; } }
-.atelier .atelier-arte, .atelier .arte-sello, .atelier .arte-herbario-marco{ animation: aparece 1.4s var(--ease-out) both; }
+.atelier .atelier-arte, .atelier .arte-sello{ animation: aparece 1.4s var(--ease-out) both; }
 @keyframes aparece{ from{ opacity: 0; filter: blur(6px); transform: translateY(12px) scale(.98); } to{ opacity: 1; filter: none; } }
 
 @media (prefers-reduced-motion: reduce){
@@ -1084,7 +1078,8 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 /* display:block también en móvil: la plantilla deja .hero-left en display:contents y el papel no se pintaría */
 .atelier-herbario .hero-left{ display: block !important; position: relative; width: 100%; max-width: 420px; margin: 0 auto; padding: 48px 30px 44px;
   background: url(img/atelier/pliego-citricos.svg) center / 100% 100% no-repeat; }
-.atelier-herbario .hero-left{ background-image: url(img/atelier/pliego-herbario.svg); padding: 44px 34px 48px; }
+.atelier-herbario .hero-left{ background-image: url(img/atelier/pliego-herbario.svg); padding: 44px 40px 48px; text-align: center; }
+.atelier-herbario .hero-names{ font-size: 44px; line-height: 52px; }
 .atelier-herbario .hero-text{ margin-bottom: 0; }
 
 /* Cítricos */
@@ -1095,20 +1090,23 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .cit-nav a:hover{ color: var(--nombres-color); }
 .sello-circular{ display: block; width: 138px; height: 138px; margin: 12px auto 0; color: var(--primary); }
 .sello-txt{ fill: var(--primary); }
+.sello-fondo{ fill: var(--sage); }
 
 /* Herbario */
 .banda-herbario{ display: block; width: 100%; height: 124px; object-fit: cover; object-position: center top; margin-bottom: 10px; }
 .atelier-herbario .hero-text .kicker{ color: var(--primary); }
 .ramita{ display: block; width: 92px; margin: 2px auto 6px; opacity: .8; }
 .herb-lugar{ margin: 0 0 14px; font-family: var(--sans); font-style: italic; font-size: 16px; color: var(--secondary); }
-.herb-label{ display: block; margin-top: 10px; font-size: 10px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--primary); }
+.herb-label{ display: block; margin-top: 10px; font-size: 12px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--primary); }
 .herb-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 210px; margin-top: 8px; padding: 0 22px;
-  background: rgb(255 255 255 / .85); border: 1.2px solid var(--tinta); border-radius: 3px; color: var(--tinta);
+  background: transparent; border: 1px solid var(--tinta); border-radius: 0; color: var(--tinta);
   font-family: var(--sans); font-size: 14px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; transition: transform .25s var(--ease-out), background .25s; }
-.herb-btn:hover{ transform: scale(1.02); background: #fff; }
+.herb-btn:hover{ transform: scale(1.02); background: var(--papel-2); }
 .herb-btn:active{ transform: scale(.98); }
-.atelier-herbario main > .wrap{ background: url(img/atelier/pliego-herbario.svg) center / 100% 100% no-repeat; box-shadow: none; border-radius: 0; }
-.atelier-herbario main > .wrap::before{ width: auto; height: 110px; margin: -10px -6px 12px; border: 0; box-shadow: none; transform: none;
+/* Páginas interiores: papel liso con filete (S2b). El pliego estirado a 100 % 100 % metía sus márgenes de papel rasgado
+   en proporción a la altura y, en una página larga, el texto acababa fuera del papel, sobre la mesa (contraste 1:1) */
+.atelier-herbario main > .wrap{ background: var(--sage); border: 1px solid var(--filete); border-radius: 0; }
+.atelier-herbario main > .wrap::before{ content: ''; display: block; height: 110px; margin: -10px -6px 12px;
   background: url(img/atelier/herbario-banda.webp) center top / cover no-repeat; }
 .atelier-herbario .divider, .atelier-herbario .mini-rule{ height: 14px; width: 92px; border-radius: 0; background: url(img/atelier/ramita.svg) center / contain no-repeat; }
 .atelier-herbario .lede, .atelier-herbario .letter p{ color: var(--tinta); font-size: 17px; }
@@ -1116,7 +1114,8 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
   /* Escritorio: la invitación sobre la mesa de roble */
   .atelier-herbario .hero{ align-self: stretch; width: 100%; background: linear-gradient(rgb(58 46 43 / .28), rgb(58 46 43 / .28)), url(img/atelier/mesa.webp) center / cover no-repeat; max-width: none; padding: 72px max(24px, calc(50vw - 570px)) 56px; }
   .atelier-herbario.page-inner{ background: linear-gradient(rgb(58 46 43 / .3), rgb(58 46 43 / .3)), url(img/atelier/mesa.webp) center / cover fixed no-repeat; }
-  .atelier-herbario .hero-left{ max-width: 460px; }
+  .atelier-herbario .hero-left{ max-width: 460px; padding: 48px 64px 52px; }
+  .atelier-herbario .hero-names{ font-size: 64px; line-height: 72px; }
   .atelier-herbario .hero-text{ text-align: center; }
 }
 
@@ -1148,28 +1147,31 @@ body.atelier-ceramica{ --at-papel-tarjeta: #FDFCFA; --at-filete-azul: #A9C2D8; }
 .atelier-ceramica .hero{ align-self: stretch; width: 100%; max-width: none; padding: 28px 12px 32px;
   background: linear-gradient(rgb(24 59 117 / .18), rgb(24 59 117 / .28)), url(img/atelier/patio.webp) center / cover no-repeat; }
 .atelier-ceramica .hero-left{ border: 22px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 22px round; background: var(--at-papel-tarjeta) padding-box; padding: 22px 16px 22px;
-  box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 5px var(--at-papel-tarjeta), inset 0 0 0 6px var(--at-filete-azul), 0 22px 44px -18px rgb(24 59 117 / .5); }
+  outline: 2px solid var(--gold); outline-offset: -24px; }
 .tal-mono{ display: flex; align-items: center; justify-content: center; gap: 4px; margin: 0 auto 4px; }
 .tal-olivo{ display: block; height: 58px; width: auto; }
 .tal-mono span{ font-family: 'Cinzel Decorative', Georgia, serif; font-size: 19px; letter-spacing: .14em; color: var(--nombres-color); white-space: nowrap; }
-.atelier-ceramica .hero-text .kicker{ font-family: var(--serif); color: var(--gold); letter-spacing: .24em; }
+.atelier-ceramica .hero-text .kicker{ font-family: var(--serif); color: var(--primary); letter-spacing: .24em; }
 .atelier-ceramica .hero-date .kicker{ color: var(--primary); }
 .tal-flor{ display: block; width: 180px; margin: 12px auto 6px; }
 .tal-lugar{ margin: 0 0 14px; font-family: var(--sans); font-style: italic; font-size: 17px; color: var(--tinta); }
 .tal-nav{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.tal-btn{ position: relative; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 12px; white-space: nowrap;
-  background: var(--accent);
-  border: 1.6px solid var(--gold); border-radius: 4px; outline: 1px dashed var(--at-filete-azul); outline-offset: -6px; box-shadow: 0 4px 8px rgb(24 59 117 / .25);
-  color: #fff; font-family: var(--serif); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; transition: transform .25s var(--ease-out); }
+/* Accesos del hero: rectos como el azulejo, con el oro de filete y el filete azul punteado dentro. Solo «Confirmar» va
+   relleno (.tal-rsvp, ley 10: una CTA rellena por pantalla); los otros, en fantasma */
+.tal-btn{ position: relative; flex: 1 1 auto; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; white-space: nowrap;
+  background: transparent;
+  border: 1.5px solid var(--gold); border-radius: 0; outline: 1px dashed var(--at-filete-azul); outline-offset: -6px;
+  color: var(--primary); font-family: var(--serif); font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; transition: transform .25s var(--ease-out); }
+.tal-btn.tal-rsvp{ background: var(--accent); color: #fff; }
 .tal-btn::before, .tal-btn::after{ content: ''; position: absolute; top: 5px; bottom: 5px; width: 5px; background: radial-gradient(circle, var(--gold) 2px, transparent 2.6px) center top / 5px 5px no-repeat, radial-gradient(circle, var(--gold) 2px, transparent 2.6px) center bottom / 5px 5px no-repeat; }
 .tal-btn::before{ left: 5px; } .tal-btn::after{ right: 5px; }
 .tal-btn:hover{ transform: scale(1.04); } .tal-btn:active{ transform: scale(.97); }
 .atelier-ceramica .mat{ background: none; box-shadow: none; padding: 0; width: 100%; max-width: 440px; margin: 18px auto 0; }
 .atelier-ceramica .mat-inner{ position: relative; aspect-ratio: 900 / 705; padding: 0; background: none; box-shadow: none; }
-.atelier-ceramica .mat-inner::before{ content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: url(img/atelier/talavera-marco.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 10px 16px rgb(24 59 117 / .3)); }
+.atelier-ceramica .mat-inner::before{ content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: url(img/atelier/talavera-marco.webp) center / 100% 100% no-repeat; }
 .atelier-ceramica .mat-photo{ position: absolute; left: 17.6%; right: 17.7%; top: 22.8%; bottom: 22.6%; aspect-ratio: auto; border-radius: 0; z-index: 1; }
 .atelier-ceramica .mat-caption{ display: none; }
-.atelier-ceramica main > .wrap{ border: 18px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 18px round; border-radius: 0; box-shadow: inset 0 0 0 2px var(--gold); background: var(--at-papel-tarjeta) padding-box; }
+.atelier-ceramica main > .wrap{ border: 18px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 18px round; border-radius: 0; outline: 2px solid var(--gold); outline-offset: -20px; background: var(--at-papel-tarjeta) padding-box; }
 .atelier-ceramica .divider, .atelier-ceramica .mini-rule{ height: 16px; width: 180px; border-radius: 0; background: url(img/atelier/flor-talavera.svg) center / contain no-repeat; }
 .atelier-ceramica .lede, .atelier-ceramica .letter p{ color: var(--tinta); font-size: 18px; }
 .atelier-ceramica .icon-dot{ width: 46px; height: 46px; background: center / contain no-repeat; }
@@ -1188,8 +1190,9 @@ body.atelier-ceramica{ --at-papel-tarjeta: #FDFCFA; --at-filete-azul: #A9C2D8; }
 /* Defectos con rol propio (S2b; palancas en S3): papel de la tarjeta y lino, antes --on-dark y --on-dark-soft */
 body.atelier-lacre{ --at-papel-tarjeta: #FAF8F5; --at-lino: #E5DED4; }
 .atelier-lacre{ background: url(img/atelier/lino.webp) center top / 100% auto no-repeat; background-color: var(--at-lino); }
-.atelier-lacre .hero-left{ padding: 46px 30px 42px; background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 14px 22px rgb(45 41 38 / .2)); }
+.atelier-lacre .hero-left{ padding: 46px 30px 42px; background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; }
 .atelier-lacre .hero-text .kicker{ font-family: 'Cinzel', Georgia, serif; letter-spacing: .22em; color: var(--secondary); }
+.atelier-lacre .hero-date .kicker{ color: var(--tinta); }
 .sello-bronce{ position: relative; display: block; width: 124px; margin: 16px auto 8px; container-type: inline-size; }
 .sello-bronce img{ display: block; width: 100%; }
 /* Iniciales en Cinzel dentro del hueco del laurel (36 % del sello, centro al 47 % de alto). En caligráfica a 34 px se salían
@@ -1197,18 +1200,18 @@ body.atelier-lacre{ --at-papel-tarjeta: #FAF8F5; --at-lino: #E5DED4; }
 .sello-bronce b{ position: absolute; left: 32%; top: 29.5%; width: 36%; height: 36%; display: grid; place-items: center; font-family: 'Cinzel', Georgia, serif; font-weight: 400; font-size: 13px; font-size: 10.5cqw; letter-spacing: .02em; line-height: 1;
   color: rgb(66 36 20 / .92); text-shadow: 0 1px 0 rgb(255 222 186 / .7), 0 -1px 1px rgb(30 14 6 / .6); }
 .lac-sello{ animation: aparece 1.4s var(--ease-out) both, respira 4s ease-in-out 1.4s infinite; }
-@keyframes respira{ 0%, 100%{ transform: none; filter: drop-shadow(0 4px 6px rgb(60 35 20 / .25)); } 50%{ transform: scale(1.03); filter: drop-shadow(0 8px 14px rgb(156 105 78 / .35)); } }
+@keyframes respira{ 0%, 100%{ transform: none; } 50%{ transform: scale(1.03); } }
 .lac-lugar{ margin: 0 0 16px; font-family: var(--sans); font-style: italic; font-size: 17px; color: var(--secondary); }
-.lac-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 22px; background: var(--at-papel-tarjeta); border: 1.2px solid var(--primary); border-radius: 2px;
-  outline: .75px dashed rgb(197 160 89 / .8); outline-offset: -5px; box-shadow: 0 3px 8px rgb(45 40 36 / .08); color: var(--primary);
+.lac-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 22px; background: var(--at-papel-tarjeta); border: 1px solid var(--primary); border-radius: 0;
+  outline: .75px dashed var(--gold); outline-offset: -5px; color: var(--primary);
   font-family: 'Cinzel', Georgia, serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; transition: transform .25s var(--ease-out), background .25s; }
-.lac-btn:hover{ transform: scale(1.02); background: #fff; } .lac-btn:active{ transform: scale(.98); }
+.lac-btn:hover{ transform: scale(1.02); background: var(--papel-2); } .lac-btn:active{ transform: scale(.98); }
 .lac-nav{ display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 4px 10px; margin-top: 20px; padding-top: 12px; border-top: 1px solid rgb(45 41 38 / .14); font-family: var(--sans); font-size: 16px; }
 .lac-nav a{ color: var(--primary); transition: color .25s; } .lac-nav a:hover{ color: var(--accent); }
 .lac-nav i{ font-style: normal; color: var(--accent); }
 .atelier-lacre .lede, .atelier-lacre .letter p{ color: var(--tinta); font-size: 18px; }
 .atelier-lacre .divider, .atelier-lacre .mini-rule{ background: var(--accent); }
-.atelier-lacre main > .wrap{ background: var(--at-papel-tarjeta); border-radius: 2px; box-shadow: 0 16px 34px -16px rgb(45 41 38 / .3); }
+.atelier-lacre main > .wrap{ background: var(--at-papel-tarjeta); border: 1px solid var(--filete); }
 .atelier-lacre main > .wrap::before{ content: ''; display: block; width: 62px; height: 62px; margin: -4px auto 10px; background: url(img/atelier/sello-bronce.webp) center / contain no-repeat; }
 @media (min-width: 901px){
   .atelier-lacre{ background: url(img/atelier/lino.webp) center / cover fixed no-repeat; background-color: var(--at-lino); }
@@ -1221,25 +1224,25 @@ body.atelier-lacre{ --at-papel-tarjeta: #FAF8F5; --at-lino: #E5DED4; }
 body.atelier-atardecer{ --at-papel-tarjeta: #FDFBF7; }
 .atelier-atardecer{ background: url(img/atelier/acuarela.webp) center top / 100% auto no-repeat; background-color: var(--sage); }
 .atelier-atardecer .hero{ background: none; }
-.atelier-atardecer .hero-left{ padding: 36px 24px 28px; background: var(--at-papel-tarjeta); border: 1px solid rgb(197 160 89 / .45); border-radius: 3px; box-shadow: 0 22px 44px -22px rgb(140 74 50 / .4); }
-.atelier-atardecer .hero-text .kicker{ font-family: var(--serif); font-style: italic; letter-spacing: .12em; text-transform: none; font-size: 15px; color: var(--primary); }
-.atelier-atardecer .hero-date .kicker{ font-family: var(--sans); font-style: normal; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--secondary); }
-.atd-lugar{ margin: 14px 0 18px; font-family: var(--sans); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--secondary); }
-.atd-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 24px; border: 1px solid #96482D; border-radius: 2px;
-  background: linear-gradient(135deg, #C87A5B, var(--accent) 50%, var(--accent-hover)); outline: .75px dashed rgb(245 213 197 / .6); outline-offset: -5px; box-shadow: 0 4px 10px rgb(140 74 50 / .22), 0 1px 2px rgb(45 40 36 / .1);
-  color: var(--on-dark); font-family: var(--serif); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; transition: transform .25s var(--ease-out), filter .25s; }
-.atd-btn:hover{ transform: scale(1.03); filter: brightness(1.05); } .atd-btn:active{ transform: scale(.97); }
+.atelier-atardecer .hero-left{ padding: 36px 24px 28px; background: var(--at-papel-tarjeta); border: 1px solid var(--gold); }
+.atelier-atardecer .hero-text .kicker{ font-family: var(--serif); font-style: italic; letter-spacing: .12em; text-transform: none; font-size: 16px; color: var(--primary); }
+.atelier-atardecer .hero-date .kicker{ font-family: var(--sans); font-style: normal; font-size: 12px; letter-spacing: .22em; text-transform: uppercase; color: var(--secondary); }
+.atd-lugar{ margin: 14px 0 18px; font-family: var(--sans); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--secondary); }
+.atd-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 24px; border: 1px solid var(--accent-hover); border-radius: 0;
+  background: var(--accent); outline: .75px dashed rgb(var(--on-dark-rgb) / .6); outline-offset: -5px;
+  color: var(--on-dark); font-family: var(--serif); font-size: 12px; letter-spacing: .2em; text-transform: uppercase; transition: transform .25s var(--ease-out), background .25s; }
+.atd-btn:hover{ transform: scale(1.03); background: var(--accent-hover); } .atd-btn:active{ transform: scale(.97); }
 .atd-nav{ display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin-top: 20px; padding-top: 12px; border-top: 1px solid rgb(197 160 89 / .35); }
-.atd-nav a{ font-family: var(--serif); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--secondary); transition: color .25s; }
+.atd-nav a{ font-family: var(--serif); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--secondary); transition: color .25s; }
 .atd-nav a:hover{ color: var(--accent); }
 .atelier-atardecer .mat, .atelier-atardecer .mat-inner{ background: none; box-shadow: none; }
 .atelier-atardecer .mat{ width: 100%; max-width: 380px; margin: 22px auto 0; padding: 0; }
 .atelier-atardecer .mat-inner{ position: relative; padding: 4.6%; border-radius: 50%; }
 .atelier-atardecer .mat-inner::before{ content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: url(img/atelier/aro-oro.svg) center / 100% 100% no-repeat; animation: gira 60s linear infinite; }
-.atelier-atardecer .mat-photo{ aspect-ratio: 1; border-radius: 50%; box-shadow: 0 10px 26px rgb(140 74 50 / .25); }
+.atelier-atardecer .mat-photo{ aspect-ratio: 1; border-radius: 50%; }
 .atelier-atardecer .mat-caption{ display: none; }
 .atelier-atardecer .lede, .atelier-atardecer .letter p{ color: var(--tinta); }
-.atelier-atardecer main > .wrap{ overflow: hidden; background: var(--at-papel-tarjeta); border: 1px solid rgb(197 160 89 / .4); border-radius: 3px; box-shadow: 0 20px 40px -22px rgb(140 74 50 / .35); }
+.atelier-atardecer main > .wrap{ overflow: hidden; background: var(--at-papel-tarjeta); border: 1px solid var(--gold); }
 .atelier-atardecer main > .wrap::before{ content: ''; display: block; height: 90px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 12px; background: url(img/atelier/acuarela.webp) center 30% / cover; animation: deriva 30s linear infinite alternate; }
 @media (min-width: 901px){
   .atelier-atardecer{ background: url(img/atelier/acuarela.webp) center / cover fixed no-repeat; background-color: var(--sage); }
@@ -1269,9 +1272,9 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 .en-tarjeta{ position: absolute; left: 5%; right: 5%; top: 4%; height: 92%; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: 5% 7%; text-align: center; background: var(--so-tarjeta); border-radius: 2px; box-shadow: 0 2px 12px rgb(0 0 0 / .14); }
 .en-arte{ display: block; max-width: 72%; max-height: 34%; width: auto; object-fit: contain; margin: 0 auto 3%; }
-.en-kicker{ margin: 0 0 4px; font-size: 9px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--secondary); }
+.en-kicker{ margin: 0 0 4px; font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--secondary); }
 .en-nombres{ margin: 0; font-family: var(--nombres, var(--serif)); font-style: var(--nombres-estilo, italic); font-weight: 400; font-size: clamp(24px, 7.6vw, 36px); line-height: 1.12; color: var(--nombres-color, var(--primary)); }
-.en-fecha{ margin: 6px 0 0; font-size: 10px; font-weight: 500; letter-spacing: .2em; color: var(--ink-muted); }
+.en-fecha{ margin: 6px 0 0; font-size: 12px; font-weight: 500; letter-spacing: .2em; color: var(--ink-muted); }
 .en-bolsillo{ position: absolute; inset: 0; z-index: 3; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 4.5%; border-radius: 0 0 4px 4px;
   background: linear-gradient(to top right, transparent calc(50% - .6px), rgb(0 0 0 / .07) 50%, transparent calc(50% + .6px)), linear-gradient(to top left, transparent calc(50% - .6px), rgb(0 0 0 / .07) 50%, transparent calc(50% + .6px)), var(--so-papel);
   clip-path: polygon(0 0, 50% 56%, 100% 0, 100% 100%, 0 100%); }
@@ -1325,7 +1328,7 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 .en-sello-lacre{ width: 32%; background: none; box-shadow: none; container-type: inline-size; }
 .en-sello-lacre::before{ display: none; }
 .en-sello-lacre img{ position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 5px 8px rgb(60 35 20 / .35)); }
-.en-sello-lacre b{ top: -3cqw; font-family: 'Cinzel', Georgia, serif; font-size: 10.5cqw; letter-spacing: .02em; color: rgb(92 55 36 / .9); text-shadow: 0 1px 0 rgb(255 226 196 / .45), 0 -1px 1px rgb(40 20 10 / .55); }
+.en-sello-lacre b{ top: -3cqw; font-family: 'Cinzel', Georgia, serif; font-size: max(12px, 10.5cqw); letter-spacing: .02em; color: rgb(92 55 36 / .9); text-shadow: 0 1px 0 rgb(255 226 196 / .45), 0 -1px 1px rgb(40 20 10 / .55); }
 .entrada-lacre.abre .en-sello{ animation: so-rompe .7s cubic-bezier(.5, 0, .7, .4) forwards; }
 @keyframes so-rompe{ 25%{ scale: 1.18; rotate: -7deg; } 100%{ scale: .4; rotate: 20deg; opacity: 0; filter: blur(4px); } }
 .en-poema{ font-family: var(--nombres); font-size: clamp(18px, 5vw, 24px); color: var(--accent); }
@@ -1344,7 +1347,7 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 .entrada-herbario{ --so-papel: #F6F1E7; --so-forro: var(--sage) url(img/atelier/herbario-banda.webp) center top / cover; --so-sello: var(--accent); --so-pista: #fff; }
 .entrada-herbario .en-papel{ background: linear-gradient(rgb(58 46 43 / .35), rgb(58 46 43 / .35)), url(img/atelier/mesa.webp) center / cover; }
 .en-arte-banda{ max-width: 100%; width: 100%; max-height: 26%; object-fit: cover; }
-.entrada-masia{ --so-papel: rgb(var(--sage-rgb)); --so-forro: var(--sage-2); --so-sello: var(--accent); }
+.entrada-masia{ --so-papel: var(--sage); --so-forro: var(--sage-2); --so-sello: var(--accent); }
 .entrada-masia .en-papel{ background: #F1EADF; }
 .en-dibujo{ position: relative; width: 76%; margin: 0 auto 3%; }
 .en-dibujo img{ display: block; width: 100%; }
@@ -1374,20 +1377,21 @@ html:has(> body.is-preview)::-webkit-scrollbar{ display: none; }
 
 /* ============================================================
    Contraste en móvil (owner, 25-sep-2026): la tarjeta se confundía con el fondo en
-   Cítricos, Herbario, Masía y Atardecer. Cada tarjeta se despega con fondo propio y sombra.
+   Cítricos, Herbario, Masía y Atardecer. Desde S2b (20261009) se despega con papel propio y
+   un filete de 1 px, sin sombra (ley 1).
    ============================================================ */
-.atelier-herbario .hero-left{ filter: drop-shadow(0 14px 26px rgb(61 53 46 / .24)); }
-.atelier-herbario main > .wrap{ filter: drop-shadow(0 12px 22px rgb(61 53 46 / .18)); }
-.atelier-atardecer .hero-left{ border-color: rgb(197 160 89 / .7); box-shadow: 0 26px 50px -20px rgb(140 74 50 / .55), 0 2px 6px rgb(140 74 50 / .12); }
+/* Masía: papel de su tarjeta como rol propio (palanca en S3); la página es su --sage en todos los anchos (antes el
+   móvil lo pisaba con un literal que no seguía a --sage-rgb) */
+body.atelier-masia{ --at-papel-tarjeta: #FFFDF8; }
 .atelier-masia .hero-left{ display: block !important; position: relative; width: 100%; max-width: 440px; margin: 0 auto; padding: 26px 22px 30px; text-align: center;
-  background: #FFFDF8; border: 1px solid rgb(56 49 43 / .14); box-shadow: 0 22px 44px -22px rgb(56 49 43 / .45); }
+  background: var(--at-papel-tarjeta); border: 1px solid var(--filete); }
 .atelier-masia .hero-text{ text-align: center; margin-bottom: 0; }
-.atelier-masia main > .wrap{ background: #FFFDF8; box-shadow: 0 18px 36px -20px rgb(56 49 43 / .4); }
+.mas-lugar{ margin: 4px 0 18px; font-family: var(--sans); font-style: italic; font-size: 17px; color: var(--secondary); }
+.atelier-masia main > .wrap{ background: var(--at-papel-tarjeta); border: 1px solid var(--filete); }
 @media (max-width: 900px){
   .atelier-herbario .hero, .atelier-masia .hero{ align-self: stretch; width: 100%; max-width: none; padding: 26px 12px 32px; }
   .atelier-herbario .hero{ background: linear-gradient(rgb(58 46 43 / .3), rgb(58 46 43 / .3)), url(img/atelier/mesa.webp) center / cover no-repeat; }
   .atelier-masia .hero{ background: #EDE3D3; }
-  .atelier-masia{ --sage: #F1EADF; }
 }
 @media (min-width: 901px){
   .atelier-masia .hero{ align-self: stretch; width: 100%; max-width: none; padding: 64px max(24px, calc(50vw - 570px)) 56px; background: #EDE3D3; }
@@ -1705,24 +1709,124 @@ body[data-accesos="filetes"] .event-list > .event-card:first-child{ border-top: 
 }
 
 /* ============================================================
+   Fábrica Atelier (encargo 20261009_bodas_editor_disenos_atelier, S2b; anexo S1 «Qué se corrige en FÁBRICA»).
+   El suelo de calidad de los seis diseños, igual para todos y no palanca: sin sombras (ley 1), radio 0 o
+   pastilla (ley 8), ningún peso por encima de 500 (ley 7), el oro nunca como texto, etiquetas de 12 px y texto
+   de 16 px como mínimo, una sola CTA rellena por pantalla (ley 10) y la cabecera que parte los nombres largos
+   en vez de cortarlos. Lo mide tests/fabrica_atelier.js en el navegador. Va antes del bloque de Limonar: donde
+   Limonar dice otra cosa con la misma especificidad, manda Limonar.
+   ============================================================ */
+body.atelier{ --r: 0; --r-lg: 0; --shadow: none; --shadow-lg: none; --shadow-btn: none; --card: var(--sage);
+  --ink: var(--tinta, var(--primary)); --ink-soft: var(--tinta, var(--primary)); --ink-muted: var(--secondary);
+  font-size: 16px; font-weight: 400; }
+body.atelier .hero-names{ letter-spacing: 0; }
+body.atelier .hero-n2{ display: inline-block; }
+
+/* Barras: papel y filete, sin sombra ni cristal (como Limonar) */
+body.atelier .nav-bar, body.atelier .tab-bar{ background: var(--sage); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+body.atelier .nav-bar{ border-bottom: 1px solid var(--filete); }
+body.atelier .tab-bar{ border-top: 1px solid var(--filete); }
+body.atelier .nav-drawer{ box-shadow: none; }
+body.atelier .site-footer{ background: var(--sage); }
+
+/* Sin sombras en lo que queda de la plantilla común */
+body.atelier .mat, body.atelier .mat-inner, body.atelier .modal, body.atelier .mapa-pin i, body.atelier .mapa-pin b{ box-shadow: none; }
+body.atelier .modal{ border: 1px solid var(--filete); }
+body.atelier .mapa-lienzo{ box-shadow: none; border: 1px solid var(--filete); }
+body.atelier .cal-options a{ border-radius: 0; }
+body.atelier .mat-caption{ background: none; -webkit-backdrop-filter: none; backdrop-filter: none; border-radius: 0; }
+/* Foto de Herbario, Lacre y Masía: con un filete en vez de paspartú (los otros tres traen su marco) */
+body.atelier-herbario .mat, body.atelier-lacre .mat, body.atelier-masia .mat{ background: none; padding: 0; }
+body.atelier-herbario .mat-inner, body.atelier-lacre .mat-inner, body.atelier-masia .mat-inner{ background: none; padding: 10px; border: 1px solid var(--filete); }
+body.atelier-herbario .mat-caption{ background: var(--sage); padding: 8px 12px; }
+
+/* Peso: la jerarquía la hace el tamaño (ley 7) */
+body.atelier .kicker, body.atelier .nav-sub, body.atelier .tab-bar a, body.atelier .nav-toggle, body.atelier .countdown-item span,
+body.atelier .field label:not(.check-group), body.atelier .field-label, body.atelier .info-title, body.atelier .menu-tag,
+body.atelier .q-dress .tag, body.atelier .mapa-pin b{ font-weight: 500; }
+
+/* Suelos de tamaño: etiquetas a 12 px, texto de lectura a 16 px (antes 10-11 y 13 px a peso 300) */
+body.atelier .kicker, body.atelier .nav-sub, body.atelier .tab-bar a, body.atelier .countdown-item span, body.atelier .field label:not(.check-group),
+body.atelier .field-label, body.atelier .info-title, body.atelier .menu-tag, body.atelier .pildora-vest-rot, body.atelier .trayecto-ruta .kicker,
+body.atelier .mapa-pin b, body.atelier .mapa figcaption, body.atelier .q-pair .link-arrow, body.atelier .q-dress .tag, body.atelier .link-arrow{ font-size: 12px; }
+body.atelier .tab-bar a{ letter-spacing: .06em; }
+body.atelier .q-card p, body.atelier .itinerary-head p, body.atelier .event-card .where, body.atelier .prog-lugar, body.atelier .prog-nota,
+body.atelier .guests-hint, body.atelier .guests-note, body.atelier .rsvp-capa1, body.atelier .menu-item p, body.atelier .trayecto-nota,
+body.atelier .song-card .meta span, body.atelier .menu-desc, body.atelier .field-error, body.atelier .form-msg, body.atelier .maximo-msg,
+body.atelier .form-ok, body.atelier .rsvp-legal .check-group, body.atelier .field label.check-group, body.atelier .check-group label,
+body.atelier .radio-group label, body.atelier .pildora-vest, body.atelier .libro-retirar{ font-size: 16px; line-height: 1.5; font-weight: 400; }
+
+/* El oro nunca como texto; y el acento solo como texto donde pasa 4,5 sobre el papel: la hora de la ceremonia
+   va en la tinta del diseño (el punto del filete sigue en el acento) */
+body.atelier .save-date-text, body.atelier .prog-ceremonia .prog-hora{ color: var(--primary); }
+
+/* Una sola CTA rellena por pantalla (ley 10): la de la cabecera, la del pie y las secundarias van en fantasma */
+body.atelier .btn.btn-add, body.atelier .site-footer .btn, body.atelier .cal-btn, body.atelier .btn.btn-soft, body.atelier .round-btn, body.atelier .vote-btn{
+  background: transparent; color: var(--primary); border: 1px solid var(--accent); box-shadow: none; }
+body.atelier .btn.btn-add:hover, body.atelier .site-footer .btn:hover, body.atelier .cal-btn:hover, body.atelier .btn.btn-soft:hover,
+body.atelier .round-btn:hover, body.atelier .vote-btn:hover{ background: var(--papel-2); }
+body.atelier .tab-btn{ color: var(--primary); border-width: 1px; }
+body.atelier .tab-btn[aria-selected="true"]{ color: #fff; }
+body.atelier .q-rsvp h3{ color: var(--primary); }
+body.atelier .q-rsvp .q-label{ color: var(--primary); }
+body.atelier .q-rsvp p{ color: var(--tinta, var(--primary)); }
+body.atelier .q-rsvp .btn-light{ background: var(--accent); color: #fff; }
+body.atelier .q-rsvp .btn-light:hover{ background: var(--accent-hover); }
+/* Donde el hero ya lleva la CTA rellena (Cerámica, Masía, Atardecer), la de la bienvenida va en fantasma */
+body.atelier-ceramica .letter .btn, body.atelier-masia .letter .btn, body.atelier-atardecer .letter .btn{ background: transparent; color: var(--primary); border: 1px solid var(--accent); }
+body.atelier-ceramica .letter .btn:hover, body.atelier-masia .letter .btn:hover, body.atelier-atardecer .letter .btn:hover{ background: var(--papel-2); }
+/* Atardecer: su papel-2 (--sage-2, melocotón) no da 4,5 con la terracota; el bloque de confirmar va en el papel de tarjeta */
+body.atelier-atardecer{ --papel-2: var(--at-papel-tarjeta); }
+@media (min-width: 901px){
+  body.atelier .btn.nav-cta{ background: transparent; color: var(--primary); border: 1px solid var(--accent); box-shadow: none; }
+  body.atelier .btn.nav-cta:hover{ background: var(--papel-2); }
+  body.atelier .btn.nav-cta[aria-current="page"]{ color: var(--primary); box-shadow: none; }
+  body.atelier .nav-toggle{ font-weight: 500; }
+  body.atelier .nav-drawer{ border-bottom: 1px solid var(--filete); }
+  body[data-accesos="filetes"] .quick-grid{ max-width: 720px; }
+}
+
+/* Cabecera: los nombres largos parten en dos líneas equilibradas; nunca se cortan. En el móvil la barra
+   (80 px) no tiene sitio para dos líneas y el rótulo «Nuestra boda»: el rótulo se queda para el ordenador */
+body.atelier .nav-brand{ min-width: 0; }
+body.atelier .nav-names{ white-space: normal; text-wrap: balance; overflow-wrap: anywhere; }
+/* Y un cuerpo común de 24 px en el móvil: a 28-30 px (Cerámica, Cítricos) las dos líneas de una letra de pluma se salían
+   por arriba de la barra. Los nombres grandes son los del hero */
+@media (max-width: 900px){
+  body.atelier .nav-brand .nav-sub{ display: none; }
+  body.atelier .nav-bar .nav-names{ font-size: 24px; line-height: 1.1; }
+}
+
+/* Lacre y Atardecer: bajo el hero, una hoja de papel continua sobre el lino o la acuarela (el texto no puede ir
+   sobre una imagen fija: el peor píxel no llega a 4,5). En el ordenador, una columna con el material a los lados */
+body.atelier-lacre main.home > :not(.hero), body.atelier-atardecer main.home > :not(.hero){ background: var(--sage); }
+@media (min-width: 901px){
+  body.atelier-lacre main.home > :not(.hero), body.atelier-atardecer main.home > :not(.hero),
+  body.atelier-lacre .site-footer, body.atelier-atardecer .site-footer{ width: min(1080px, 100% - 48px); margin-left: auto; margin-right: auto; }
+  body.atelier-lacre .site-footer, body.atelier-atardecer .site-footer{ margin-top: 0; margin-bottom: 56px; }
+}
+
+/* ============================================================
    Cítricos y azahar · piel «Limonar» (owner, 8-oct-2026; encargo 20261008_bodas_citricos_limonar).
    Todo bajo body.atelier-citricos: ninguna regla de aquí toca otro diseño (tests/limonar_test.php).
    Leyes: sin sombras ni drop-shadow en main y en la barra; un acento de acción (oliva); el oro solo en
    filetes, nunca en texto (2,4:1 sobre papel); la terracota solo en el corazón del calendario;
    Cormorant 300 solo en cifras grandes y nada por encima de 500. Radio 0 o pastilla, con tres
    excepciones de forma de marca: el arco de la foto, el festón y el sello.
+   Escala (S2b, ley 3: saltos, no escalera; antes 21 tallas en la portada): 12 rótulos · 16 texto ·
+   19 lectura · 30 subtítulos y cifras · 46 títulos · 64 nombres y el día (84 los nombres en el ordenador).
    ============================================================ */
 /* Defecto con rol propio (S2b; palanca en S3): la terracota del día de la boda, antes en la ranura --gold */
-body.atelier-citricos{ --at-terracota: #A6634B; }
+body.atelier-citricos{ --at-terracota: #A3614A; }
 body.atelier-citricos{
   --canvas: var(--sage); --surface: var(--sage); --card: transparent; --line: #E2D9B8;
   --ink: var(--tinta); --ink-soft: #55513F; --ink-muted: var(--secondary); --on-sage: var(--tinta);
-  --filete: #D9CFA8; --oro: #B9A86A; --salvia: var(--sage-2); --papel-2: #F3EEDF;
+  --filete: #D9CFA8; --oro: var(--gold); --salvia: var(--sage-2); --papel-2: #F3EEDF;
   --r: 0; --r-lg: 0; --shadow: none;
   background: var(--sage); color: var(--tinta);
 }
 body.atelier-citricos .kicker{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--primary); }
-body.atelier-citricos .section-title{ font-family: var(--nombres); font-weight: 400; font-style: normal; font-size: 48px; line-height: 1.1; letter-spacing: 0; color: var(--primary); }
+body.atelier-citricos .section-title{ font-family: var(--nombres); font-weight: 400; font-style: normal; font-size: 46px; line-height: 1.1; letter-spacing: 0; color: var(--primary); }
 body.atelier-citricos .btn{ border-radius: var(--pill); background: var(--accent); color: var(--on-dark); box-shadow: none; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; }
 body.atelier-citricos .btn:hover{ background: var(--accent-hover); }
 
@@ -1743,16 +1847,18 @@ body.atelier-citricos .cit-racimo{ position: absolute; right: -126px; bottom: -7
 body.atelier-citricos .hero-text{ position: relative; margin: 0; text-align: center; }
 body.atelier-citricos .hero-text > .kicker{ display: block; padding: 0; margin-bottom: 18px; }
 body.atelier-citricos .hero-names{ font-family: var(--nombres); font-style: normal; font-weight: 400; font-size: 64px; line-height: 1.05; letter-spacing: 0; color: var(--nombres-color); overflow-wrap: anywhere; }
-body.atelier-citricos .hero-names i{ display: block; margin: 2px 0 6px; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 38px; line-height: 1; color: var(--nombres-color); }
+body.atelier-citricos .hero-names i{ display: block; margin: 2px 0 6px; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 30px; line-height: 1; color: var(--nombres-color); }
 body.atelier-citricos .hero-date{ display: none; }
-body.atelier-citricos .hero-hashtag{ font-family: var(--sans); font-weight: 500; letter-spacing: .2em; color: var(--secondary); }
+body.atelier-citricos .hero-hashtag{ font-family: var(--sans); font-size: 16px; font-weight: 500; letter-spacing: .2em; color: var(--secondary); }
 body.atelier-citricos .cit-fecha{ position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; width: 100%; max-width: 330px; margin: 26px 0 18px; }
 body.atelier-citricos .cit-fecha span{ padding: 9px 0; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete);
   font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--tinta); }
-body.atelier-citricos .cit-fecha b{ font-family: var(--serif); font-size: 72px; font-weight: 300; line-height: 1; color: var(--tinta); }
-body.atelier-citricos .cit-lugar{ position: relative; margin: 0; font-family: var(--sans); font-size: 15px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: var(--tinta); }
-body.atelier-citricos .cit-nav{ position: relative; max-width: 330px; margin: 26px 0 0; padding: 10px 0; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete); }
-body.atelier-citricos .cit-nav a{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .24em; color: var(--primary); }
+body.atelier-citricos .cit-fecha b{ font-family: var(--serif); font-size: 64px; font-weight: 300; line-height: 1; color: var(--tinta); }
+body.atelier-citricos .cit-lugar{ position: relative; margin: 0; font-family: var(--sans); font-size: 16px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: var(--tinta); }
+/* Accesos en dos filas deliberadas cuando no caben en una: «Lista de bodas» nunca se parte por la mitad */
+body.atelier-citricos .cit-nav{ position: relative; max-width: 330px; margin: 26px 0 0; padding: 10px 0; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete);
+  flex-wrap: wrap; justify-content: center; gap: 6px 22px; }
+body.atelier-citricos .cit-nav a{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .24em; color: var(--primary); white-space: nowrap; }
 
 /* Foto en arco con la rama montada encima (excepción de radio nombrada: arco) */
 body.atelier-citricos .mat{ position: relative; align-self: center; width: min(300px, 78vw); margin: 8px auto 40px; padding: 0; background: none; box-shadow: none; transform: none; }
@@ -1761,7 +1867,7 @@ body.atelier-citricos .mat-photo{ border-radius: 999px 999px 0 0; aspect-ratio: 
 body.atelier-citricos .mat-photo::after{ display: none; }
 body.atelier-citricos .mat-inner::after{ content: ''; position: absolute; top: -48px; right: -86px; width: 240px; aspect-ratio: 900 / 741;
   background: url(img/atelier/limones.webp) center / contain no-repeat; transform: rotate(18deg); pointer-events: none; }
-body.atelier-citricos .mat-caption{ background: none; border-radius: 0; box-shadow: none; padding: 0; font-family: var(--sans); font-style: italic; font-size: 17px; color: #55513F; margin-top: 14px; }
+body.atelier-citricos .mat-caption{ background: none; border-radius: 0; box-shadow: none; padding: 0; font-family: var(--sans); font-style: italic; font-size: 16px; color: #55513F; margin-top: 14px; }
 
 /* Carta en banda salvia con festón arriba y abajo (excepción de forma: festón) */
 body.atelier-citricos .letter{ position: relative; margin: 30px 0; padding: 60px 32px 56px; background: var(--salvia); text-align: center; }
@@ -1769,10 +1875,10 @@ body.atelier-citricos .letter::before, body.atelier-citricos .letter::after{ con
   background: radial-gradient(circle at 10px 10px, var(--salvia) 9.5px, transparent 10px) 0 0 / 20px 20px repeat-x; }
 body.atelier-citricos .letter::before{ top: -10px; }
 body.atelier-citricos .letter::after{ bottom: -10px; background-image: radial-gradient(circle at 10px 0, var(--salvia) 9.5px, transparent 10px); }
-body.atelier-citricos .letter .section-title{ font-size: 50px; }
+body.atelier-citricos .letter .section-title{ font-size: 46px; }
 body.atelier-citricos .letter .mini-rule{ display: none; }
 body.atelier-citricos .letter p{ max-width: 26rem; margin: 0 auto 14px; font-family: var(--sans); font-size: 19px; font-weight: 400; line-height: 1.55; color: var(--tinta); }
-body.atelier-citricos .letter p.big{ font-size: 21px; font-style: italic; color: var(--tinta); }
+body.atelier-citricos .letter p.big{ font-size: 19px; font-style: italic; color: var(--tinta); }
 body.atelier-citricos .pildora-vest{ border-radius: var(--pill); border: 1px solid var(--primary); background: transparent; }
 
 /* Guardad la fecha: cuenta atrás con filetes verticales, calendario del mes */
@@ -1782,17 +1888,18 @@ body.atelier-citricos .save-card h2{ font-family: var(--nombres); font-weight: 4
 body.atelier-citricos .save-date-text{ font-family: var(--sans); font-size: 19px; font-style: italic; color: #55513F; }
 body.atelier-citricos .countdown{ margin: 10px 0 30px; }
 body.atelier-citricos .countdown-item{ padding: 6px 0; }
-body.atelier-citricos .countdown-item b{ font-family: var(--serif); font-size: 40px; font-weight: 300; line-height: 1.1; color: var(--tinta); }
-body.atelier-citricos .countdown-item span{ font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); }
-body.atelier-citricos .cit-cal{ width: 100%; max-width: 300px; margin: 8px auto 26px; border-collapse: collapse; font-family: var(--sans); font-size: 17px; color: var(--tinta); }
-body.atelier-citricos .cit-cal caption{ padding-bottom: 14px; font-family: var(--nombres); font-size: 44px; color: var(--primary); }
-body.atelier-citricos .cit-cal caption span{ font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); vertical-align: middle; }
-body.atelier-citricos .cit-cal th{ padding-bottom: 8px; border-bottom: 1px solid var(--filete); font-size: 11px; font-weight: 500; letter-spacing: .2em; color: var(--secondary); }
+body.atelier-citricos .countdown-item b{ font-family: var(--serif); font-size: 30px; font-weight: 300; line-height: 1.1; color: var(--tinta); }
+body.atelier-citricos .countdown-item span{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); }
+body.atelier-citricos .cit-cal{ width: 100%; max-width: 300px; margin: 8px auto 26px; border-collapse: collapse; font-family: var(--sans); font-size: 16px; color: var(--tinta); }
+body.atelier-citricos .cit-cal caption{ padding-bottom: 14px; font-family: var(--nombres); font-size: 46px; color: var(--primary); }
+body.atelier-citricos .cit-cal caption span{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); vertical-align: middle; }
+body.atelier-citricos .cit-cal th{ padding-bottom: 8px; border-bottom: 1px solid var(--filete); font-size: 12px; font-weight: 500; letter-spacing: .2em; color: var(--secondary); }
 body.atelier-citricos .cit-cal abbr{ text-decoration: none; }
 body.atelier-citricos .cit-cal td{ position: relative; height: 38px; text-align: center; font-weight: 400; }
 body.atelier-citricos .cit-cal tbody tr:first-child td{ padding-top: 6px; }
 body.atelier-citricos .cit-boda{ color: var(--at-terracota); font-weight: 500; }
-body.atelier-citricos .cit-corazon{ position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; transform: translate(-50%, -50%); fill: none; stroke: var(--at-terracota); stroke-width: 1.4; stroke-linecap: round; pointer-events: none; }
+/* 54 px y 2 px más arriba (S2b): con 46 la hendidura del corazón cruzaba por detrás de la cifra y le quitaba contraste */
+body.atelier-citricos .cit-corazon{ position: absolute; left: 50%; top: calc(50% - 2px); width: 54px; height: 54px; transform: translate(-50%, -50%); fill: none; stroke: var(--at-terracota); stroke-width: 1.4; stroke-linecap: round; pointer-events: none; }
 body.atelier-citricos .cit-sr{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 body.atelier-citricos .cal-btn{ background: transparent; color: var(--accent); box-shadow: none; border: 1px solid var(--accent); font-size: 12px; letter-spacing: .18em; white-space: nowrap; }
 body.atelier-citricos .cal-btn:hover{ background: var(--salvia); }
@@ -1801,7 +1908,7 @@ body.atelier-citricos .cal-options a{ border-radius: 0; background: var(--sage);
 
 /* Itinerario en curva: una fila por parada, tramo de curva alternando lado, icono en la curva */
 body.atelier-citricos .itinerary{ padding: 40px 0 24px; }
-body.atelier-citricos .itinerary-head .section-title{ font-size: 50px; }
+body.atelier-citricos .itinerary-head .section-title{ font-size: 46px; }
 body.atelier-citricos .cit-curva{ width: 100%; max-width: 390px; margin: 8px 0 0; padding: 0; list-style: none; }
 body.atelier-citricos .cit-paso{ position: relative; padding: 46px 0; min-height: 150px; }
 body.atelier-citricos .cit-tramo{ position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
@@ -1814,21 +1921,21 @@ body.atelier-citricos .cit-ico svg{ width: 24px; height: 24px; fill: none; strok
 body.atelier-citricos .cit-txt{ position: relative; }
 body.atelier-citricos .cit-izq .cit-txt{ margin-left: 33%; padding-right: 20px; text-align: left; }
 body.atelier-citricos .cit-der .cit-txt{ margin-right: 33%; padding-left: 20px; text-align: right; }
-body.atelier-citricos .cit-h{ display: block; font-family: var(--serif); font-size: 32px; font-weight: 300; line-height: 1; color: var(--tinta); }
-body.atelier-citricos .cit-txt h3{ margin: 6px 0 2px; font-family: var(--sans); font-size: 13px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); }
-body.atelier-citricos .cit-l, body.atelier-citricos .cit-d, body.atelier-citricos .cit-n{ margin: 0; font-family: var(--sans); font-size: 17px; font-style: italic; line-height: 1.35; color: #55513F; }
-body.atelier-citricos .cit-d{ font-style: normal; font-size: 15px; }
-body.atelier-citricos .cit-n{ font-size: 15px; margin-top: 4px; }
+body.atelier-citricos .cit-h{ display: block; font-family: var(--serif); font-size: 30px; font-weight: 300; line-height: 1; color: var(--tinta); }
+body.atelier-citricos .cit-txt h3{ margin: 6px 0 2px; font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: var(--primary); }
+body.atelier-citricos .cit-l, body.atelier-citricos .cit-d, body.atelier-citricos .cit-n{ margin: 0; font-family: var(--sans); font-size: 16px; font-style: italic; line-height: 1.35; color: #55513F; }
+body.atelier-citricos .cit-d{ font-style: normal; }
+body.atelier-citricos .cit-n{ margin-top: 4px; }
 body.atelier-citricos .cit-mapa{ display: inline-block; margin-top: 8px; padding-bottom: 2px; border-bottom: 1px solid var(--oro);
-  font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--primary); }
+  font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: var(--primary); }
 body.atelier-citricos .mapa{ width: 100%; max-width: none; margin: 30px 0 0; border-radius: 0; box-shadow: none; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete); }
 body.atelier-citricos .mapa img, body.atelier-citricos .mapa-lienzo{ border-radius: 0; }
 
 /* Filas de información en vez de tarjetas (la estructura, en «Accesos en filetes», arriba) */
 body.atelier-citricos .quick{ padding: 24px 28px 40px; }
 body.atelier-citricos .quick-grid{ max-width: 520px; }
-body.atelier-citricos .q-card h3{ font-family: var(--nombres); font-weight: 400; font-size: 36px; line-height: 1.15; color: var(--primary); }
-body.atelier-citricos .q-card p{ font-family: var(--sans); font-size: 17px; font-weight: 400; line-height: 1.5; color: #55513F; }
+body.atelier-citricos .q-card h3{ font-family: var(--nombres); font-weight: 400; font-size: 30px; line-height: 1.15; color: var(--primary); }
+body.atelier-citricos .q-card p{ font-family: var(--sans); font-size: 16px; font-weight: 400; line-height: 1.5; color: #55513F; }
 body.atelier-citricos .q-label{ color: var(--primary); }
 body.atelier-citricos .link-arrow{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .24em; color: var(--primary); }
 body.atelier-citricos .q-rsvp{ padding: 40px 26px; margin: 0 -28px; }
@@ -1842,16 +1949,16 @@ body.atelier-citricos .atelier-pie{ display: flex; justify-content: center; heig
 body.atelier-citricos .atelier-pie .sello-circular{ width: 180px; height: 180px; margin: 0 auto; color: var(--primary); }
 body.atelier-citricos .sello-txt{ font-family: var(--sans); font-size: 9.5px; font-weight: 500; letter-spacing: .16em; fill: var(--primary); }
 body.atelier-citricos .site-footer{ background: var(--sage); box-shadow: none; }
-body.atelier-citricos .footer-thanks{ font-family: var(--nombres); font-style: normal; font-size: 54px; color: var(--primary); }
+body.atelier-citricos .footer-thanks{ font-family: var(--nombres); font-style: normal; font-size: 46px; color: var(--primary); }
 body.atelier-citricos .footer-mono span:not(.rule){ font-family: var(--sans); font-weight: 400; letter-spacing: .2em; }
 
 /* Páginas interiores: misma piel, campos con filete inferior y opciones en pastilla */
 body.atelier-citricos.page-inner{ background: var(--sage); }
 body.atelier-citricos main > .wrap{ background: none; box-shadow: none; border-radius: 0; filter: none; padding-top: 24px; }
-body.atelier-citricos .section h1{ font-family: var(--nombres); font-weight: 400; font-style: normal; font-size: 48px; line-height: 1.1; color: var(--primary); }
+body.atelier-citricos .section h1{ font-family: var(--nombres); font-weight: 400; font-style: normal; font-size: 46px; line-height: 1.1; color: var(--primary); }
 body.atelier-citricos .divider{ height: 1px; width: 120px; background: var(--filete); border: 0; border-radius: 0; }
 body.atelier-citricos .lede{ font-family: var(--sans); font-size: 19px; color: var(--tinta); }
-body.atelier-citricos .field-label{ font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: var(--primary); }
+body.atelier-citricos .field-label{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; color: var(--primary); }
 body.atelier-citricos input[type="text"], body.atelier-citricos input[type="email"], body.atelier-citricos input[type="tel"], body.atelier-citricos textarea, body.atelier-citricos select{
   border: 0; border-bottom: 1px solid #B9AE85; border-radius: 0; background: transparent; box-shadow: none; font-family: var(--sans); font-size: 19px; color: var(--tinta); }
 body.atelier-citricos input:focus-visible, body.atelier-citricos textarea:focus-visible, body.atelier-citricos select:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -1864,7 +1971,9 @@ body.atelier-citricos .galeria-foto:nth-child(3n+2){ transform: rotate(1.5deg); 
 @media (min-width: 901px){
   body.atelier-citricos .hero{ display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; padding: 0 max(32px, calc(50vw - 480px)); }
   body.atelier-citricos .hero-left{ min-height: 760px; padding: 170px 24px 140px; }
-  body.atelier-citricos .esq{ width: clamp(262px, 22vw, 340px); }
+  body.atelier-citricos .hero-left{ position: static; }
+  body.atelier-citricos .hero-text, body.atelier-citricos .cit-fecha, body.atelier-citricos .cit-lugar, body.atelier-citricos .cit-nav{ z-index: 1; }
+  body.atelier-citricos .esq{ width: clamp(220px, 16vw, 280px); }
   body.atelier-citricos .cit-racimo{ width: clamp(330px, 26vw, 420px); }
   body.atelier-citricos .hero-names{ font-size: 84px; }
   body.atelier-citricos .mat{ width: 360px; margin: 0 auto; }

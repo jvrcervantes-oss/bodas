@@ -419,7 +419,7 @@ async function estructura(page, ancho) {
     // Tallas distintas en la portada (solo informativo: la escala la mira el ojo, no un umbral)
     const tallas = new Set();
     for (const el of document.querySelectorAll('body *')) {
-      if (el.closest('#entrada, svg, [aria-hidden="true"]') || !el.getClientRects().length) continue;
+      if (el.closest('#entrada, svg, [aria-hidden="true"]') || !el.getClientRects().length || getComputedStyle(el).visibility === 'hidden') continue;
       if (![...el.childNodes].some((t) => t.nodeType === 3 && t.textContent.trim())) continue;
       tallas.add(Math.round(parseFloat(getComputedStyle(el).fontSize) * 2) / 2);
     }
