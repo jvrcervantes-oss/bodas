@@ -3,7 +3,8 @@
 // Atelier de assets/boda.css ningún hex ni font-family repite un valor de su ATELIER[<clave>] (app/schema.php).
 // Esos valores llegan como variables por tema_css()/fuente_css() de render.php; un literal que los repite no sigue a
 // la paleta ni a las letras del diseño, y una palanca del editor no lo movería. Se escribe var(--…) en su lugar.
-// Si un valor coincide pero no es ese rol, se usa la variable igual y se anota (las sobrecargas, en la bitácora).
+// Si un valor coincide pero no es ese rol, se usa la variable igual y se anota: las sobrecargas de S2 (lino de Lacre
+// en --on-dark-soft, papel de tarjeta en --on-dark…) están en la bitácora del encargo, para S2b/S3.
 // Uso: php tests/atelier_tokens_test.php  (sale con 1 si algo falla). Sin red.
 
 declare(strict_types=1);
