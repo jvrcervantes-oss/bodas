@@ -1142,10 +1142,13 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 @media (min-width: 901px){ .atelier-lacre .hero-names, .atelier-atardecer .hero-names{ font-size: 76px; line-height: 88px; } }
 
 /* Cerámica & azulejo Talavera: patio andaluz, pliego con cenefa de azulejo, marco barroco */
+/* Defectos con rol propio (encargo 20261009_bodas_editor_disenos_atelier, S2b; serán palancas en S3). Antes eran
+   --on-dark (texto sobre oscuro) y --on-dark-soft: mover esos roles movía el papel de la tarjeta y el filete azul. */
+body.atelier-ceramica{ --at-papel-tarjeta: #FDFCFA; --at-filete-azul: #A9C2D8; }
 .atelier-ceramica .hero{ align-self: stretch; width: 100%; max-width: none; padding: 28px 12px 32px;
   background: linear-gradient(rgb(24 59 117 / .18), rgb(24 59 117 / .28)), url(img/atelier/patio.webp) center / cover no-repeat; }
-.atelier-ceramica .hero-left{ border: 22px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 22px round; background: var(--on-dark) padding-box; padding: 22px 16px 22px;
-  box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 5px var(--on-dark), inset 0 0 0 6px var(--on-dark-soft), 0 22px 44px -18px rgb(24 59 117 / .5); }
+.atelier-ceramica .hero-left{ border: 22px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 22px round; background: var(--at-papel-tarjeta) padding-box; padding: 22px 16px 22px;
+  box-shadow: inset 0 0 0 2px var(--gold), inset 0 0 0 5px var(--at-papel-tarjeta), inset 0 0 0 6px var(--at-filete-azul), 0 22px 44px -18px rgb(24 59 117 / .5); }
 .tal-mono{ display: flex; align-items: center; justify-content: center; gap: 4px; margin: 0 auto 4px; }
 .tal-olivo{ display: block; height: 58px; width: auto; }
 .tal-mono span{ font-family: 'Cinzel Decorative', Georgia, serif; font-size: 19px; letter-spacing: .14em; color: var(--nombres-color); white-space: nowrap; }
@@ -1155,19 +1158,18 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .tal-lugar{ margin: 0 0 14px; font-family: var(--sans); font-style: italic; font-size: 17px; color: var(--tinta); }
 .tal-nav{ display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .tal-btn{ position: relative; flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 12px; white-space: nowrap;
-  background: var(--accent) radial-gradient(circle at 8px 8px, var(--gold) 2px, transparent 2.6px) no-repeat, var(--accent);
-  border: 1.6px solid var(--gold); border-radius: 4px; outline: 1px dashed var(--on-dark-soft); outline-offset: -6px; box-shadow: 0 4px 8px rgb(24 59 117 / .25);
+  background: var(--accent);
+  border: 1.6px solid var(--gold); border-radius: 4px; outline: 1px dashed var(--at-filete-azul); outline-offset: -6px; box-shadow: 0 4px 8px rgb(24 59 117 / .25);
   color: #fff; font-family: var(--serif); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; transition: transform .25s var(--ease-out); }
 .tal-btn::before, .tal-btn::after{ content: ''; position: absolute; top: 5px; bottom: 5px; width: 5px; background: radial-gradient(circle, var(--gold) 2px, transparent 2.6px) center top / 5px 5px no-repeat, radial-gradient(circle, var(--gold) 2px, transparent 2.6px) center bottom / 5px 5px no-repeat; }
 .tal-btn::before{ left: 5px; } .tal-btn::after{ right: 5px; }
-.tal-btn{ background: var(--accent); }
 .tal-btn:hover{ transform: scale(1.04); } .tal-btn:active{ transform: scale(.97); }
 .atelier-ceramica .mat{ background: none; box-shadow: none; padding: 0; width: 100%; max-width: 440px; margin: 18px auto 0; }
 .atelier-ceramica .mat-inner{ position: relative; aspect-ratio: 900 / 705; padding: 0; background: none; box-shadow: none; }
 .atelier-ceramica .mat-inner::before{ content: ''; position: absolute; inset: 0; z-index: 2; pointer-events: none; background: url(img/atelier/talavera-marco.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 10px 16px rgb(24 59 117 / .3)); }
 .atelier-ceramica .mat-photo{ position: absolute; left: 17.6%; right: 17.7%; top: 22.8%; bottom: 22.6%; aspect-ratio: auto; border-radius: 0; z-index: 1; }
 .atelier-ceramica .mat-caption{ display: none; }
-.atelier-ceramica main > .wrap{ border: 18px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 18px round; border-radius: 0; box-shadow: inset 0 0 0 2px var(--gold); background: var(--on-dark) padding-box; }
+.atelier-ceramica main > .wrap{ border: 18px solid transparent; border-image: url(img/atelier/pliego-ceramica.svg) 40 / 18px round; border-radius: 0; box-shadow: inset 0 0 0 2px var(--gold); background: var(--at-papel-tarjeta) padding-box; }
 .atelier-ceramica .divider, .atelier-ceramica .mini-rule{ height: 16px; width: 180px; border-radius: 0; background: url(img/atelier/flor-talavera.svg) center / contain no-repeat; }
 .atelier-ceramica .lede, .atelier-ceramica .letter p{ color: var(--tinta); font-size: 18px; }
 .atelier-ceramica .icon-dot{ width: 46px; height: 46px; background: center / contain no-repeat; }
@@ -1183,7 +1185,9 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 }
 
 /* Sello de cera & caligrafía poética: lino, papel de algodón rasgado, sello bronce */
-.atelier-lacre{ background: url(img/atelier/lino.webp) center top / 100% auto no-repeat; background-color: var(--on-dark-soft); }
+/* Defectos con rol propio (S2b; palancas en S3): papel de la tarjeta y lino, antes --on-dark y --on-dark-soft */
+body.atelier-lacre{ --at-papel-tarjeta: #FAF8F5; --at-lino: #E5DED4; }
+.atelier-lacre{ background: url(img/atelier/lino.webp) center top / 100% auto no-repeat; background-color: var(--at-lino); }
 .atelier-lacre .hero-left{ padding: 46px 30px 42px; background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; filter: drop-shadow(0 14px 22px rgb(45 41 38 / .2)); }
 .atelier-lacre .hero-text .kicker{ font-family: 'Cinzel', Georgia, serif; letter-spacing: .22em; color: var(--secondary); }
 .sello-bronce{ position: relative; display: block; width: 124px; margin: 16px auto 8px; container-type: inline-size; }
@@ -1195,7 +1199,7 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .lac-sello{ animation: aparece 1.4s var(--ease-out) both, respira 4s ease-in-out 1.4s infinite; }
 @keyframes respira{ 0%, 100%{ transform: none; filter: drop-shadow(0 4px 6px rgb(60 35 20 / .25)); } 50%{ transform: scale(1.03); filter: drop-shadow(0 8px 14px rgb(156 105 78 / .35)); } }
 .lac-lugar{ margin: 0 0 16px; font-family: var(--sans); font-style: italic; font-size: 17px; color: var(--secondary); }
-.lac-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 22px; background: var(--on-dark); border: 1.2px solid var(--primary); border-radius: 2px;
+.lac-btn{ display: inline-flex; align-items: center; justify-content: center; min-height: 46px; min-width: 220px; padding: 0 22px; background: var(--at-papel-tarjeta); border: 1.2px solid var(--primary); border-radius: 2px;
   outline: .75px dashed rgb(197 160 89 / .8); outline-offset: -5px; box-shadow: 0 3px 8px rgb(45 40 36 / .08); color: var(--primary);
   font-family: 'Cinzel', Georgia, serif; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; transition: transform .25s var(--ease-out), background .25s; }
 .lac-btn:hover{ transform: scale(1.02); background: #fff; } .lac-btn:active{ transform: scale(.98); }
@@ -1204,18 +1208,20 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .lac-nav i{ font-style: normal; color: var(--accent); }
 .atelier-lacre .lede, .atelier-lacre .letter p{ color: var(--tinta); font-size: 18px; }
 .atelier-lacre .divider, .atelier-lacre .mini-rule{ background: var(--accent); }
-.atelier-lacre main > .wrap{ background: var(--on-dark); border-radius: 2px; box-shadow: 0 16px 34px -16px rgb(45 41 38 / .3); }
+.atelier-lacre main > .wrap{ background: var(--at-papel-tarjeta); border-radius: 2px; box-shadow: 0 16px 34px -16px rgb(45 41 38 / .3); }
 .atelier-lacre main > .wrap::before{ content: ''; display: block; width: 62px; height: 62px; margin: -4px auto 10px; background: url(img/atelier/sello-bronce.webp) center / contain no-repeat; }
 @media (min-width: 901px){
-  .atelier-lacre{ background: url(img/atelier/lino.webp) center / cover fixed no-repeat; background-color: var(--on-dark-soft); }
+  .atelier-lacre{ background: url(img/atelier/lino.webp) center / cover fixed no-repeat; background-color: var(--at-lino); }
   .atelier-lacre .hero{ align-self: stretch; width: 100%; max-width: none; padding: 64px max(24px, calc(50vw - 570px)) 56px; }
   .atelier-lacre .hero-left{ max-width: 470px; }
 }
 
 /* Acuarela atardecer & calas: acuarela con polvo de oro, tarjeta flotante, aro dorado, mapa */
+/* Defecto con rol propio (S2b; palanca en S3): papel de la tarjeta, antes --on-dark (que sigue siendo el texto del botón) */
+body.atelier-atardecer{ --at-papel-tarjeta: #FDFBF7; }
 .atelier-atardecer{ background: url(img/atelier/acuarela.webp) center top / 100% auto no-repeat; background-color: var(--sage); }
 .atelier-atardecer .hero{ background: none; }
-.atelier-atardecer .hero-left{ padding: 36px 24px 28px; background: var(--on-dark); border: 1px solid rgb(197 160 89 / .45); border-radius: 3px; box-shadow: 0 22px 44px -22px rgb(140 74 50 / .4); }
+.atelier-atardecer .hero-left{ padding: 36px 24px 28px; background: var(--at-papel-tarjeta); border: 1px solid rgb(197 160 89 / .45); border-radius: 3px; box-shadow: 0 22px 44px -22px rgb(140 74 50 / .4); }
 .atelier-atardecer .hero-text .kicker{ font-family: var(--serif); font-style: italic; letter-spacing: .12em; text-transform: none; font-size: 15px; color: var(--primary); }
 .atelier-atardecer .hero-date .kicker{ font-family: var(--sans); font-style: normal; font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--secondary); }
 .atd-lugar{ margin: 14px 0 18px; font-family: var(--sans); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--secondary); }
@@ -1233,7 +1239,7 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 .atelier-atardecer .mat-photo{ aspect-ratio: 1; border-radius: 50%; box-shadow: 0 10px 26px rgb(140 74 50 / .25); }
 .atelier-atardecer .mat-caption{ display: none; }
 .atelier-atardecer .lede, .atelier-atardecer .letter p{ color: var(--tinta); }
-.atelier-atardecer main > .wrap{ overflow: hidden; background: var(--on-dark); border: 1px solid rgb(197 160 89 / .4); border-radius: 3px; box-shadow: 0 20px 40px -22px rgb(140 74 50 / .35); }
+.atelier-atardecer main > .wrap{ overflow: hidden; background: var(--at-papel-tarjeta); border: 1px solid rgb(197 160 89 / .4); border-radius: 3px; box-shadow: 0 20px 40px -22px rgb(140 74 50 / .35); }
 .atelier-atardecer main > .wrap::before{ content: ''; display: block; height: 90px; margin: calc(-1 * var(--s-lg)) calc(-1 * var(--s-lg)) 12px; background: url(img/atelier/acuarela.webp) center 30% / cover; animation: deriva 30s linear infinite alternate; }
 @media (min-width: 901px){
   .atelier-atardecer{ background: url(img/atelier/acuarela.webp) center / cover fixed no-repeat; background-color: var(--sage); }
@@ -1307,15 +1313,15 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 .entrada.sale{ animation: so-funde .9s ease forwards; pointer-events: none; }
 
 /* Pieles */
-.entrada-ceramica{ --so-papel: var(--on-dark); --so-forro: var(--sage) url(img/atelier/pliego-ceramica.svg) 0 0 / 40px 40px; --so-sello: var(--accent); --so-pista: #fff; }
+.entrada-ceramica{ --so-papel: var(--at-papel-tarjeta); --so-forro: var(--sage) url(img/atelier/pliego-ceramica.svg) 0 0 / 40px 40px; --so-sello: var(--accent); --so-pista: #fff; }
 .entrada-ceramica .en-papel{ background: linear-gradient(rgb(24 59 117 / .3), rgb(24 59 117 / .45)), url(img/atelier/patio.webp) center / cover; }
 .en-sello-ceramica{ border: 2px solid var(--gold); }
 .en-sello-ceramica b{ font-family: 'Cinzel Decorative', Georgia, serif; font-size: clamp(12px, 3.4vw, 16px); letter-spacing: .06em; color: #E6CF98; }
-.entrada-ceramica .en-tarjeta{ box-shadow: inset 0 0 0 3px var(--on-dark), inset 0 0 0 4px var(--gold), 0 2px 12px rgb(0 0 0 / .14); }
+.entrada-ceramica .en-tarjeta{ box-shadow: inset 0 0 0 3px var(--at-papel-tarjeta), inset 0 0 0 4px var(--gold), 0 2px 12px rgb(0 0 0 / .14); }
 .en-tarjeta .tal-mono{ display: flex; margin-bottom: 2%; }
 .entrada-ceramica .tal-olivo{ height: 40px; } .entrada-ceramica .tal-mono span{ font-size: 15px; }
-.entrada-lacre{ --so-papel: var(--on-dark); --so-forro: var(--on-dark-soft) url(img/atelier/lino.webp) center / cover; --so-t: .6s; }
-.entrada-lacre .en-papel{ background: url(img/atelier/lino.webp) center / cover; background-color: var(--on-dark-soft); }
+.entrada-lacre{ --so-papel: var(--at-papel-tarjeta); --so-forro: var(--at-lino) url(img/atelier/lino.webp) center / cover; --so-t: .6s; }
+.entrada-lacre .en-papel{ background: url(img/atelier/lino.webp) center / cover; background-color: var(--at-lino); }
 .en-sello-lacre{ width: 32%; background: none; box-shadow: none; container-type: inline-size; }
 .en-sello-lacre::before{ display: none; }
 .en-sello-lacre img{ position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 5px 8px rgb(60 35 20 / .35)); }
@@ -1324,7 +1330,7 @@ body.revelando > :not(.entrada){ transition: transform 1.3s var(--ease-out), fil
 @keyframes so-rompe{ 25%{ scale: 1.18; rotate: -7deg; } 100%{ scale: .4; rotate: 20deg; opacity: 0; filter: blur(4px); } }
 .en-poema{ font-family: var(--nombres); font-size: clamp(18px, 5vw, 24px); color: var(--accent); }
 .entrada-lacre .en-tarjeta{ background: url(img/atelier/papel-rasgado.webp) center / 100% 100% no-repeat; box-shadow: none; filter: drop-shadow(0 3px 8px rgb(45 41 38 / .18)); }
-.entrada-atardecer{ --so-papel: var(--on-dark); --so-forro: var(--sage-2) url(img/atelier/acuarela.webp) center / cover; --so-sello: var(--accent); }
+.entrada-atardecer{ --so-papel: var(--at-papel-tarjeta); --so-forro: var(--sage-2) url(img/atelier/acuarela.webp) center / cover; --so-sello: var(--accent); }
 .entrada-atardecer .en-papel{ background: url(img/atelier/acuarela.webp) center / cover; animation: deriva 30s linear infinite alternate; }
 .en-aro{ position: relative; width: 30%; max-width: none; aspect-ratio: 1; border-radius: 50%; background: url(img/atelier/acuarela.webp) center / cover; }
 .en-aro::after{ content: ''; position: absolute; inset: -6%; background: url(img/atelier/aro-oro.svg) center / 100% 100% no-repeat; animation: gira 20s linear infinite; }
@@ -1675,6 +1681,8 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
    Cormorant 300 solo en cifras grandes y nada por encima de 500. Radio 0 o pastilla, con tres
    excepciones de forma de marca: el arco de la foto, el festón y el sello.
    ============================================================ */
+/* Defecto con rol propio (S2b; palanca en S3): la terracota del día de la boda, antes en la ranura --gold */
+body.atelier-citricos{ --at-terracota: #A6634B; }
 body.atelier-citricos{
   --canvas: var(--sage); --surface: var(--sage); --card: transparent; --line: #E2D9B8;
   --ink: var(--tinta); --ink-soft: #55513F; --ink-muted: var(--secondary); --on-sage: var(--tinta);
@@ -1753,8 +1761,8 @@ body.atelier-citricos .cit-cal th{ padding-bottom: 8px; border-bottom: 1px solid
 body.atelier-citricos .cit-cal abbr{ text-decoration: none; }
 body.atelier-citricos .cit-cal td{ position: relative; height: 38px; text-align: center; font-weight: 400; }
 body.atelier-citricos .cit-cal tbody tr:first-child td{ padding-top: 6px; }
-body.atelier-citricos .cit-boda{ color: var(--gold); font-weight: 500; }
-body.atelier-citricos .cit-corazon{ position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; transform: translate(-50%, -50%); fill: none; stroke: var(--gold); stroke-width: 1.4; stroke-linecap: round; pointer-events: none; }
+body.atelier-citricos .cit-boda{ color: var(--at-terracota); font-weight: 500; }
+body.atelier-citricos .cit-corazon{ position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; transform: translate(-50%, -50%); fill: none; stroke: var(--at-terracota); stroke-width: 1.4; stroke-linecap: round; pointer-events: none; }
 body.atelier-citricos .cit-sr{ position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 body.atelier-citricos .cal-btn{ background: transparent; color: var(--accent); box-shadow: none; border: 1px solid var(--accent); font-size: 12px; letter-spacing: .18em; white-space: nowrap; }
 body.atelier-citricos .cal-btn:hover{ background: var(--salvia); }

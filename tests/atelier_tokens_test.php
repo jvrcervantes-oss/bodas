@@ -5,6 +5,11 @@
 // la paleta ni a las letras del diseño, y una palanca del editor no lo movería. Se escribe var(--…) en su lugar.
 // Si un valor coincide pero no es ese rol, se usa la variable igual y se anota: las sobrecargas de S2 (lino de Lacre
 // en --on-dark-soft, papel de tarjeta en --on-dark…) están en la bitácora del encargo, para S2b/S3.
+// S2b las separó en variables con su propio rol, --at-* (los defectos de las palancas de S3). Su valor vive en UN
+// bloque de defectos por diseño, `body.atelier-<clave>{ --at-x: …; }`, que solo define --at-* (la opción B decidida en
+// la revisión previa: el render emitirá solo lo que cambie). Ese bloque es el único sitio donde un hex puede coincidir
+// con un token de ATELIER, porque es una definición, no un uso. A cambio: cada var(--at-x) de un diseño está definida
+// en su bloque y cada --at-x definida se usa.
 // Uso: php tests/atelier_tokens_test.php  (sale con 1 si algo falla). Sin red.
 
 declare(strict_types=1);
@@ -61,14 +66,32 @@ $css = (string) preg_replace('~/\*.*?\*/~s', '', (string) file_get_contents($rai
 $reglas = reglas_css($css);
 ok(count($reglas) > 500, 'boda.css se lee y se trocea en reglas (' . count($reglas) . ')');
 
+/** Bloque de defectos del diseño: selector exacto body.atelier-<clave> y solo declaraciones --at-*. */
+function es_bloque_defectos(string $sel, string $decl, string $k): bool {
+    if (trim($sel) !== 'body.atelier-' . $k) return false;
+    $partes = array_filter(array_map('trim', explode(';', $decl)), 'strlen');
+    foreach ($partes as $p) if (!preg_match('~^--at-[a-z0-9-]+\s*:~', $p)) return false;
+    return (bool) $partes;
+}
+
 $vistas = array_fill_keys(array_keys(ATELIER), 0);
 foreach (ATELIER as $k => $a) {
     $hex = array_map('strtolower', array_merge($a['colores'], isset($a['nombres_color']) ? [$a['nombres_color'], $a['tinta']] : []));
     $fuentes = array_slice($a['fuentes'], 0, 3);
     $malos = [];
+    $definidas = [];
+    $usadas = [];
     foreach ($reglas as [$sel, $decl]) {
         if (!in_array($k, disenos_de($sel), true)) continue;
         $vistas[$k]++;
+        if (es_bloque_defectos($sel, $decl, $k)) {
+            preg_match_all('~(--at-[a-z0-9-]+)\s*:~', $decl, $dm);
+            foreach ($dm[1] as $v) $definidas[$v] = true;
+            continue;
+        }
+        preg_match_all('~var\(\s*(--at-[a-z0-9-]+)~', $decl, $um);
+        foreach ($um[1] as $v) $usadas[$v] = true;
+        if (preg_match('~--at-[a-z0-9-]+\s*:~', $decl)) $malos[] = 'una --at-* definida fuera del bloque de defectos en «' . substr(preg_replace('~\s+~', ' ', $sel), 0, 60) . '»';
         preg_match_all('~#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\b~', $decl, $hm);
         foreach ($hm[0] as $h) {
             $h6 = strlen($h) === 4 ? '#' . $h[1] . $h[1] . $h[2] . $h[2] . $h[3] . $h[3] : $h;
@@ -78,9 +101,16 @@ foreach (ATELIER as $k => $a) {
         foreach ($fm[1] as $f) if (in_array(trim($f), $fuentes, true)) $malos[] = trim($f) . ' en «' . substr(preg_replace('~\s+~', ' ', $sel), 0, 60) . '»';
     }
     ok($vistas[$k] > 0, "hay reglas de «{$k}» en boda.css");
+    $sinDefinir = array_keys(array_diff_key($usadas, $definidas));
+    $sinUso = array_keys(array_diff_key($definidas, $usadas));
+    ok(!$sinDefinir, "«{$k}»: cada var(--at-*) está en su bloque de defectos (" . implode(', ', $sinDefinir) . ')');
+    ok(!$sinUso, "«{$k}»: cada --at-* del bloque de defectos se usa (" . implode(', ', $sinUso) . ')');
     ok(!$malos, "«{$k}»: ningún literal repite un token de ATELIER (" . count($malos) . ': ' . implode(' | ', array_slice($malos, 0, 4)) . ')');
 }
 
+// Control del propio test: el bloque de defectos se reconoce solo si es exacto y solo define --at-*.
+ok(es_bloque_defectos('body.atelier-lacre', ' --at-lino: #E5DED4; ', 'lacre') && !es_bloque_defectos('body.atelier-lacre', ' --at-lino: #E5DED4; color: #2D2926; ', 'lacre')
+    && !es_bloque_defectos('body.atelier-lacre .x', ' --at-lino: #E5DED4; ', 'lacre'), 'el bloque de defectos solo admite --at-* y su selector exacto');
 // Control del propio test: un literal con el valor de un token, en una regla del diseño, se ve.
 $sonda = reglas_css('body.atelier-lacre .x{ color: ' . ATELIER['lacre']['colores'][1] . '; } .tal-y{ font-family: ' . ATELIER['ceramica']['fuentes'][0] . '; }');
 ok(disenos_de($sonda[0][0]) === ['lacre'] && disenos_de($sonda[1][0]) === ['ceramica'], 'el test atribuye las reglas de prueba a su diseño');
