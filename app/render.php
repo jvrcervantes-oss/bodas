@@ -598,10 +598,6 @@ function resumen(string $t, int $max = 140): string {
 }
 
 /**
- * Programa del día: la línea de tiempo de la jornada. Junta la ceremonia y el convite (los que tienen hora) con los momentos
- * extra de la pareja, por hora; las tarjetas de arriba no cambian. Solo la ceremonia lleva el acento.
- */
-/**
  * Paradas del día ordenadas por hora: ceremonia, convite y los momentos de `programa`.
  * Sin $completa (programa del Esencial) solo entran las que tienen hora. Con $completa (curva de Cítricos)
  * la ceremonia sin hora va la primera y el convite sin hora justo detrás (encargo Limonar, revisión previa #231).
@@ -638,6 +634,7 @@ function curva_itinerario(array $c): string {
             . '<div class="cit-txt">' . ($m['hora'] !== '' ? '<span class="cit-h">' . h($m['hora']) . '</span>' : '')
             . '<h3>' . h($m['titulo']) . '</h3>'
             . ($m['lugar'] !== '' ? '<p class="cit-l">' . h($m['lugar']) . '</p>' : '')
+            . ($m['tipo'] !== 'momento' && $c[$m['tipo']]['direccion'] !== '' ? '<p class="cit-d">' . h($c[$m['tipo']]['direccion']) . '</p>' : '')
             . ($m['nota'] !== '' ? '<p class="cit-n">' . h($m['nota']) . '</p>' : '')
             . ($m['tipo'] !== 'momento' && $m['lugar'] !== '' ? '<a class="cit-mapa" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($c[$m['tipo']]))) . '" target="_blank" rel="noopener noreferrer">Cómo llegar</a>' : '')
             . '</div></li>';
@@ -666,6 +663,10 @@ function calendario_mes(string $ymd): string {
     return $o . str_repeat('<td></td>', $resto) . '</tr></tbody></table>';
 }
 
+/**
+ * Programa del día: la línea de tiempo de la jornada. Junta la ceremonia y el convite (los que tienen hora) con los momentos
+ * extra de la pareja, por hora; las tarjetas de arriba no cambian. Solo la ceremonia lleva el acento.
+ */
 function bloque_programa(array $c): string {
     $ev = paradas_dia($c);
     $o = '<div class="prog rv"><span class="kicker prog-kicker">El programa del día</span><ol class="prog-lista">';

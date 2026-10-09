@@ -285,14 +285,14 @@ function norm_programa($lista): array {
     usort($out, fn($a, $b) => [$a['hora'], $a['_i']] <=> [$b['hora'], $b['_i']]);   // estable: misma hora, el orden en que se escribieron
     return array_map(function ($m) { unset($m['_i']); return $m; }, $out);
 }
+/** ¿Es un color #rrggbb? Una sola expresión para normalizar, avisar y pintar (D: «$» no deja pasar un salto de línea final). */
+function es_color_hex($v): bool { return is_string($v) && preg_match('/^#[0-9a-f]{6}$/iD', $v) === 1; }
 /**
  * Colores del dress code (8-oct-2026, encargo Limonar): lista de hasta MAX_COLORES hex #rrggbb en minúsculas.
  * Expresión cerrada porque el valor acaba en un atributo style: lo que no case se descarta (datos_descartados() lo avisa).
  * Los repetidos se quitan EN SILENCIO: avisarlos bloquearía publicar (faltan() → 422) por un duplicado inocuo.
  * Solo una LISTA: un objeto ({"a": "#fff000"}) o un escalar no son colores y se quedan en [].
  */
-/** ¿Es un color #rrggbb? Una sola expresión para normalizar, avisar y pintar (D: «$» no deja pasar un salto de línea final). */
-function es_color_hex($v): bool { return is_string($v) && preg_match('/^#[0-9a-f]{6}$/iD', $v) === 1; }
 function norm_colores($lista): array {
     if (!is_array($lista) || array_values($lista) !== $lista) return [];   // lista y no objeto (sin array_is_list: es de PHP 8.1)
     $out = [];

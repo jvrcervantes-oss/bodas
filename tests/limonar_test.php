@@ -77,7 +77,11 @@ foreach ([0, 2, 5, 6] as $k) {
     ok(substr_count($h, '<li class="cit-paso') === $esperado, "curva con $esperado paradas");
     ok(substr_count($h, 'cit-izq') === intdiv($esperado + 1, 2) && substr_count($h, 'cit-der') === intdiv($esperado, 2), "lados alternos con $esperado");
 }
+$ocho = curva_itinerario(normaliza_config(crudo(['atelier' => 'citricos', 'convite' => ['lugar' => 'Finca', 'hora' => '14:00'], 'programa' => momentos(6)])));
+ok(substr_count($ocho, '<li class="cit-paso') === 8, 'curva con 8 paradas (ceremonia, convite y 6 momentos)');
 ok(curva_itinerario(normaliza_config(crudo(['atelier' => 'citricos', 'ceremonia' => ['lugar' => '', 'hora' => '']]))) === '', 'sin paradas, sin curva');
+$dir = curva_itinerario(normaliza_config(crudo(['atelier' => 'citricos', 'ceremonia' => ['direccion' => 'Plaza Mayor 1'], 'convite' => ['lugar' => 'Finca', 'direccion' => 'Camino Viejo s/n', 'hora' => '14:00']])));
+ok(substr_count($dir, 'class="cit-d"') === 2 && hay($dir, 'Plaza Mayor 1') && hay($dir, 'Camino Viejo s/n'), 'la dirección de ceremonia y convite se ve en la curva');
 $x = curva_itinerario(normaliza_config(crudo(['atelier' => 'citricos', 'programa' => [['hora' => '13:00', 'titulo' => '<b>Brindis</b>', 'lugar' => 'Patio "A"', 'nota' => '']]])));
 ok(hay($x, '&lt;b&gt;Brindis&lt;/b&gt;') && !hay($x, '<b>Brindis'), 'la curva escapa el texto');
 
@@ -97,6 +101,8 @@ $cit = (string) render_pagina(normaliza_config(crudo(['atelier' => 'citricos', '
 ok(hay($cit, 'class="cit-curva"') && hay($cit, 'class="cit-cal"') && hay($cit, 'class="cit-fecha"') && hay($cit, '<i>&amp;</i>'), 'Cítricos: curva, calendario, fecha y «&» aparte');
 ok(hay($cit, 'id="countdown"') && hay($cit, 'id="calBtn"') && hay($cit, 'id="calOptions"'), 'Cítricos conserva los enganches de boda.js');
 ok(!hay($cit, 'class="event-list"'), 'Cítricos con paradas no pinta las tarjetas de siempre');
+$largo = (string) render_pagina(normaliza_config(crudo(['atelier' => 'citricos', 'pareja' => ['nombre1' => 'María del Carmen', 'nombre2' => 'José Antonio']])), '', $ctx);
+ok(hay($largo, 'María del Carmen <i>&amp;</i> José Antonio'), 'nombres largos: el «&» va aparte y los nombres enteros');
 foreach (['lacre', 'herbario', ''] as $otro) {
     $h = (string) render_pagina(normaliza_config(crudo(['atelier' => $otro, 'programa' => momentos(2)])), '', $ctx);
     ok(!hay($h, 'cit-curva') && !hay($h, 'cit-cal') && !hay($h, '<i>&amp;</i>'), 'el diseño «' . ($otro ?: 'Esencial') . '» no lleva piezas de Limonar');

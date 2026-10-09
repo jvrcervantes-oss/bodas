@@ -1089,13 +1089,12 @@ form.stack{ max-width: 460px; margin: 0 auto; display: flex; flex-direction: col
 
 /* Cítricos */
 .esq{ position: absolute; top: 3.5%; width: 34%; pointer-events: none; }
-.esq-i{ left: 4%; } .esq-d{ right: 4%; }
-.div-olivo{ display: block; width: 86%; margin: 4px auto; }
+.esq-i{ left: 4%; }
 .cit-nav{ display: flex; justify-content: space-around; gap: 6px; width: 100%; margin: 6px 0 10px; padding: 10px 0; border-top: 1px solid rgb(var(--primary-rgb) / .2); border-bottom: 1px solid rgb(var(--primary-rgb) / .2); }
-.cit-nav a{ font-family: 'Playfair Display', Georgia, serif; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--primary); transition: color .3s; }
+.cit-nav a{ text-transform: uppercase; color: var(--primary); transition: color .3s; }
 .cit-nav a:hover{ color: var(--nombres-color); }
 .sello-circular{ display: block; width: 138px; height: 138px; margin: 12px auto 0; color: var(--primary); }
-.sello-txt{ font-family: 'Playfair Display', Georgia, serif; font-size: 8.4px; letter-spacing: .12em; fill: var(--primary); }
+.sello-txt{ fill: var(--primary); }
 
 /* Herbario */
 .banda-herbario{ display: block; width: 100%; height: 124px; object-fit: cover; object-position: center top; margin-bottom: 10px; }
@@ -1670,7 +1669,7 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 
 /* ============================================================
    Cítricos y azahar · piel «Limonar» (owner, 8-oct-2026; encargo 20261008_bodas_citricos_limonar).
-   Todo bajo body.atelier-citricos: ninguna regla de aquí toca otro diseño (tests/limonar_css_test.php).
+   Todo bajo body.atelier-citricos: ninguna regla de aquí toca otro diseño (tests/limonar_test.php).
    Leyes: sin sombras ni drop-shadow en main y en la barra; un acento de acción (oliva); el oro solo en
    filetes, nunca en texto (2,4:1 sobre papel); la terracota solo en el corazón del calendario;
    Cormorant 300 solo en cifras grandes y nada por encima de 500. Radio 0 o pastilla, con tres
@@ -1694,7 +1693,7 @@ body.atelier-citricos .nav-bar{ border-bottom: 1px solid var(--filete); }
 body.atelier-citricos .tab-bar{ border-top: 1px solid var(--filete); }
 body.atelier-citricos .nav-names{ font-family: 'Pinyon Script', cursive; font-style: normal; font-size: 30px; color: #4F5E45; }
 body.atelier-citricos .nav-sub{ font-family: 'Cormorant', Georgia, serif; font-weight: 500; letter-spacing: .3em; color: #4F5E45; }
-body.atelier-citricos .nav-drawer{ box-shadow: none; border-bottom: 1px solid var(--filete); }
+body.atelier-citricos .nav-drawer{ background: #FBF8F0; box-shadow: none; border-bottom: 1px solid var(--filete); }
 
 /* Portada: papel con la rama arriba a la izquierda y el racimo abajo a la derecha */
 body.atelier-citricos .hero{ position: relative; align-self: stretch; width: 100%; max-width: none; padding: 0; background: #FBF8F0; overflow: hidden; }
@@ -1705,7 +1704,7 @@ body.atelier-citricos .cit-racimo{ position: absolute; right: -126px; bottom: -7
 body.atelier-citricos .hero-text{ position: relative; margin: 0; text-align: center; }
 body.atelier-citricos .hero-text > .kicker{ display: block; padding: 0; margin-bottom: 18px; }
 body.atelier-citricos .hero-names{ font-family: 'Pinyon Script', cursive; font-style: normal; font-weight: 400; font-size: 64px; line-height: 1.05; letter-spacing: 0; color: #4F5E45; overflow-wrap: anywhere; }
-body.atelier-citricos .hero-names i{ display: block; margin: 2px 0 6px; font-family: 'Cormorant', Georgia, serif; font-style: italic; font-weight: 300; font-size: 38px; line-height: 1; color: #7A6A32; }
+body.atelier-citricos .hero-names i{ display: block; margin: 2px 0 6px; font-family: 'Cormorant', Georgia, serif; font-style: italic; font-weight: 300; font-size: 38px; line-height: 1; color: #4F5E45; }
 body.atelier-citricos .hero-date{ display: none; }
 body.atelier-citricos .hero-hashtag{ font-family: 'Cormorant', Georgia, serif; font-weight: 500; letter-spacing: .2em; color: #5A6650; }
 body.atelier-citricos .cit-fecha{ position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; width: 100%; max-width: 330px; margin: 26px 0 18px; }
@@ -1779,7 +1778,8 @@ body.atelier-citricos .cit-izq .cit-txt{ margin-left: 33%; padding-right: 20px; 
 body.atelier-citricos .cit-der .cit-txt{ margin-right: 33%; padding-left: 20px; text-align: right; }
 body.atelier-citricos .cit-h{ display: block; font-family: 'Cormorant', Georgia, serif; font-size: 32px; font-weight: 300; line-height: 1; color: #3B3A30; }
 body.atelier-citricos .cit-txt h3{ margin: 6px 0 2px; font-family: 'Cormorant', Georgia, serif; font-size: 13px; font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: #4F5E45; }
-body.atelier-citricos .cit-l, body.atelier-citricos .cit-n{ margin: 0; font-family: 'Cormorant', Georgia, serif; font-size: 17px; font-style: italic; line-height: 1.35; color: #55513F; }
+body.atelier-citricos .cit-l, body.atelier-citricos .cit-d, body.atelier-citricos .cit-n{ margin: 0; font-family: 'Cormorant', Georgia, serif; font-size: 17px; font-style: italic; line-height: 1.35; color: #55513F; }
+body.atelier-citricos .cit-d{ font-style: normal; font-size: 15px; }
 body.atelier-citricos .cit-n{ font-size: 15px; margin-top: 4px; }
 body.atelier-citricos .cit-mapa{ display: inline-block; margin-top: 8px; padding-bottom: 2px; border-bottom: 1px solid var(--oro);
   font-family: 'Cormorant', Georgia, serif; font-size: 11px; font-weight: 500; letter-spacing: .24em; text-transform: uppercase; color: #4F5E45; }
