@@ -278,7 +278,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
 <style><?= tema_css($c) ?><?= fuente_autor_css($c, $ctx) ?></style>
 </head>
-<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>">
+<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>"<?= $c['atelier'] !== '' ? ' data-accesos="filetes"' : '' /* S2b: accesos en filetes, fábrica de los Atelier; la palanca de S3 elegirá tarjetas o filetes */ ?>>
 <?php if ($ctx['modo'] === 'preview' && empty($ctx['firma_slug'])): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep). En el panel (firma_slug: la web ya está pagada y publicada) no sale (owner, 1-oct) ?>
 <div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(marca()) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
 <?php endif; ?>

@@ -1674,6 +1674,37 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 /* ALBUM-FIN */
 
 /* ============================================================
+   Accesos en filetes (encargo 20261009_bodas_editor_disenos_atelier, S2b). Era el tratamiento de Limonar
+   (Cítricos) y es la fábrica de los seis Atelier: los accesos, el itinerario y «Guardad la fecha» dejan de
+   ser tarjetas blancas con sombra y radio 32 (la «misma página con otro color» del anexo S1) y pasan a filas
+   sobre el papel separadas por un filete de 1 px; la confirmación va en un bloque de papel-2. Solo la
+   estructura: la letra y los colores de cada diseño se quedan en el suyo. body[data-accesos] lo pone
+   render.php (layout) en los Atelier; la palanca «Accesos: tarjetas | filetes» de S3 lo cambiará.
+   --filete y --papel-2: aquí los de los cinco; Limonar define los suyos en su bloque (va después y manda).
+   El filete es el oro donde el diseño tiene oro (la ley «el oro solo en filetes, nunca en texto»).
+   ============================================================ */
+body.atelier{ --filete: rgb(var(--primary-rgb) / .22); --papel-2: var(--sage-2); }
+body.atelier-ceramica, body.atelier-lacre, body.atelier-atardecer{ --filete: var(--gold); }
+body[data-accesos="filetes"] .quick-grid{ display: flex; flex-direction: column; gap: 0; }
+body[data-accesos="filetes"] .quick-grid > .q-card{ grid-column: auto; width: auto; }
+body[data-accesos="filetes"] .q-card{ background: none; box-shadow: none; border-radius: 0; padding: 26px 0; border-bottom: 1px solid var(--filete); }
+body[data-accesos="filetes"] .q-rsvp{ background: var(--papel-2); color: var(--tinta); box-shadow: none; border-bottom: 0; text-align: center; }
+body[data-accesos="filetes"] .q-rsvp::before, body[data-accesos="filetes"] .q-rsvp::after{ display: none; }
+body[data-accesos="filetes"] .q-rsvp .q-label{ justify-content: center; }
+body[data-accesos="filetes"] .save-band{ background: none; }
+body[data-accesos="filetes"] .save-card{ background: none; box-shadow: none; border-radius: 0; }
+body[data-accesos="filetes"] .countdown{ gap: 0; }
+body[data-accesos="filetes"] .countdown-item{ background: none; border-radius: 0; border-left: 1px solid var(--filete); }
+body[data-accesos="filetes"] .countdown-item:first-child{ border-left: 0; }
+body[data-accesos="filetes"] .event-list{ gap: 0; }
+body[data-accesos="filetes"] .event-card{ background: none; box-shadow: none; border-radius: 0; padding: 24px 0; border-bottom: 1px solid var(--filete); }
+body[data-accesos="filetes"] .event-list > .event-card:first-child{ border-top: 1px solid var(--filete); }
+@media (min-width: 901px){
+  body[data-accesos="filetes"] .event-list{ column-gap: 48px; }
+  body[data-accesos="filetes"] .event-list > .event-card{ border-top: 1px solid var(--filete); }
+}
+
+/* ============================================================
    Cítricos y azahar · piel «Limonar» (owner, 8-oct-2026; encargo 20261008_bodas_citricos_limonar).
    Todo bajo body.atelier-citricos: ninguna regla de aquí toca otro diseño (tests/limonar_test.php).
    Leyes: sin sombras ni drop-shadow en main y en la barra; un acento de acción (oliva); el oro solo en
@@ -1745,13 +1776,12 @@ body.atelier-citricos .letter p.big{ font-size: 21px; font-style: italic; color:
 body.atelier-citricos .pildora-vest{ border-radius: var(--pill); border: 1px solid var(--primary); background: transparent; }
 
 /* Guardad la fecha: cuenta atrás con filetes verticales, calendario del mes */
-body.atelier-citricos .save-band{ background: none; padding: 56px 28px 40px; }
-body.atelier-citricos .save-card{ max-width: 360px; padding: 0; background: none; box-shadow: none; border-radius: 0; }
+body.atelier-citricos .save-band{ padding: 56px 28px 40px; }
+body.atelier-citricos .save-card{ max-width: 360px; padding: 0; }
 body.atelier-citricos .save-card h2{ font-family: var(--nombres); font-weight: 400; font-size: 46px; line-height: 1.1; color: var(--primary); }
 body.atelier-citricos .save-date-text{ font-family: var(--sans); font-size: 19px; font-style: italic; color: #55513F; }
-body.atelier-citricos .countdown{ gap: 0; margin: 10px 0 30px; }
-body.atelier-citricos .countdown-item{ background: none; border-radius: 0; padding: 6px 0; border-left: 1px solid var(--filete); }
-body.atelier-citricos .countdown-item:first-child{ border-left: 0; }
+body.atelier-citricos .countdown{ margin: 10px 0 30px; }
+body.atelier-citricos .countdown-item{ padding: 6px 0; }
 body.atelier-citricos .countdown-item b{ font-family: var(--serif); font-size: 40px; font-weight: 300; line-height: 1.1; color: var(--tinta); }
 body.atelier-citricos .countdown-item span{ font-family: var(--sans); font-size: 11px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); }
 body.atelier-citricos .cit-cal{ width: 100%; max-width: 300px; margin: 8px auto 26px; border-collapse: collapse; font-family: var(--sans); font-size: 17px; color: var(--tinta); }
@@ -1794,18 +1824,14 @@ body.atelier-citricos .cit-mapa{ display: inline-block; margin-top: 8px; padding
 body.atelier-citricos .mapa{ width: 100%; max-width: none; margin: 30px 0 0; border-radius: 0; box-shadow: none; border-top: 1px solid var(--filete); border-bottom: 1px solid var(--filete); }
 body.atelier-citricos .mapa img, body.atelier-citricos .mapa-lienzo{ border-radius: 0; }
 
-/* Filas de información en vez de tarjetas */
+/* Filas de información en vez de tarjetas (la estructura, en «Accesos en filetes», arriba) */
 body.atelier-citricos .quick{ padding: 24px 28px 40px; }
-body.atelier-citricos .quick-grid{ display: flex; flex-direction: column; max-width: 520px; gap: 0; }
-body.atelier-citricos .quick-grid > .q-card{ grid-column: auto; width: auto; }
-body.atelier-citricos .q-card{ background: none; box-shadow: none; border-radius: 0; padding: 26px 0; border-bottom: 1px solid var(--filete); }
+body.atelier-citricos .quick-grid{ max-width: 520px; }
 body.atelier-citricos .q-card h3{ font-family: var(--nombres); font-weight: 400; font-size: 36px; line-height: 1.15; color: var(--primary); }
 body.atelier-citricos .q-card p{ font-family: var(--sans); font-size: 17px; font-weight: 400; line-height: 1.5; color: #55513F; }
 body.atelier-citricos .q-label{ color: var(--primary); }
 body.atelier-citricos .link-arrow{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .24em; color: var(--primary); }
-body.atelier-citricos .q-rsvp{ background: var(--papel-2); color: var(--tinta); box-shadow: none; padding: 40px 26px; margin: 0 -28px; border-bottom: 0; text-align: center; }
-body.atelier-citricos .q-rsvp::before, body.atelier-citricos .q-rsvp::after{ display: none; }
-body.atelier-citricos .q-rsvp .q-label{ justify-content: center; }
+body.atelier-citricos .q-rsvp{ padding: 40px 26px; margin: 0 -28px; }
 body.atelier-citricos .q-rsvp h3{ font-size: 46px; color: var(--primary); }
 body.atelier-citricos .q-rsvp p{ color: #55513F; }
 body.atelier-citricos .q-rsvp .btn-light{ margin-top: 20px; background: var(--accent); color: var(--on-dark); }
