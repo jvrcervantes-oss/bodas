@@ -5,8 +5,9 @@
 //    instantánea); sus .html se generaron con el código ANTERIOR al paquete del 30-sep-2026.
 //  · ejemplo_<diseño>: la boda de ejemplo de cada diseño Atelier, con todo relleno (programa de 4 paradas, historia,
 //    hashtag, vestimenta, colores del dress code). Misma base para los seis; solo cambia `atelier`. Sus .html son la
-//    foto del código del 9-oct-2026 (b4bd0ff), red del encargo 20261009_bodas_editor_disenos_atelier (S0): al
-//    parametrizar el CSS Atelier el HTML no cambia. Su pareja en estilos computados es tests/estilos_atelier.js.
+//    foto del código del 9-oct-2026, red del encargo 20261009_bodas_editor_disenos_atelier (S0): al parametrizar el
+//    CSS Atelier el HTML no cambia. Regrabados a propósito (y snap_atelier_lacre con ellos) con la base corregida de
+//    S2b (d64bfc0): la decisión del owner fue aplicarla también a las bodas Atelier ya publicadas. Su pareja en estilos computados es tests/estilos_atelier.js.
 
 declare(strict_types=1);
 
