@@ -31,9 +31,9 @@
      · cajas concretas del anexo S1: la rama de Cítricos no toca ningún texto y su borde izquierdo no se ve (1440);
        los nombres de Herbario guardan ≥ 40 px hasta el borde del pliego y el contenido de su tarjeta va centrado.
        Cabecera, cajas y «&» se miden con tres parejas: la del fixture, «Lucía & Marcos» (la de S1) y los largos.
-   Alcance: la web. La entrada (el sobre, #entrada) no entra en sombras ni radios: es una pieza ilustrada en 3D con
-   su propia profundidad (decisión de S2b, la misma para los seis); sí entran sus textos en el suelo de 12 px, que
-   se miden aparte con la entrada cerrada. Lo que no se puede medir (una línea tapada en todas las posiciones) se
+   Alcance: la web. La entrada (el sobre, #entrada) no se ve con «reducir movimiento», así que aquí solo se miden sus
+   textos en el suelo de 12 px, aparte y con la entrada cerrada; sus sombras las vigila tests/atelier_tokens_test.php
+   leyendo el CSS (S2b también le quitó sombras y radios sueltos). Lo que no se puede medir (una línea tapada en todas las posiciones) se
    lista como «no medible»: nunca se salta en silencio.
 
    Uso (no va en el gate: necesita Edge y playwright-core; tools/test.py solo corre *_test.php):
@@ -490,7 +490,12 @@ async function mide(browser, clave, datos, nombresAlt) {
         const peor = await contrastes(page, inv, inv.alto);
         for (const t of inv.textos) {
           const p = peor.get(t.id);
-          if (!p) { r.noMedible.push(pre(t.sel + ' «' + t.texto + '»')); continue; }
+          if (!p) {
+            // Los nombres y la cabecera no pueden quedarse sin medir: es lo primero que se lee (revisor, S2b)
+            if (/hero-names|nav-names/.test(t.sel)) r.contraste.push(pre(t.sel + ' «' + t.texto + '» no medible: algo pisa la línea'));
+            else r.noMedible.push(pre(t.sel + ' «' + t.texto + '»'));
+            continue;
+          }
           r.minContraste = Math.min(r.minContraste, p.c);
           if (p.c < 4.5) r.contraste.push(pre(t.sel + ' «' + t.texto + '» ' + r2(p.c) + ' (mediana ' + r2(p.med) + ', ' + t.tam + ' px)'));
           if (ancho < 900) {

@@ -117,13 +117,46 @@ $sondaHover = reglas_css('.atelier .q-card:hover, .atelier .event-card:hover{ tr
 foreach (array_merge($sondaHover, $reglas) as [$sel, $decl]) {
     if (strpos($sel, ':hover') === false) continue;
     if (!disenos_de($sel) && strpos($sel, '.atelier') === false && strpos($sel, '[data-accesos') === false) continue;
-    if (preg_match('~translate(Y|3d)?\s*\(|(^|;)\s*translate\s*:~i', $decl) || preg_match('~box-shadow\s*:\s*(?!none)~i', $decl)) {
+    if (preg_match('~translate(Y|3d)?\s*\(|(^|;)\s*translate\s*:~i', $decl) || preg_match('~box-shadow\s*:\s*+(?!none)~i', $decl)) {
         $hoverMalos[] = substr(preg_replace('~\s+~', ' ', $sel), 0, 70);
     }
 }
 ok(($hoverMalos[0] ?? '') === '.atelier .q-card:hover, .atelier .event-card:hover', 'el test ve el hover que levantaba las tarjetas (la regla de antes de S2b)');
 array_shift($hoverMalos);
 ok(!$hoverMalos, 'ningún :hover Atelier con translate ni sombra (' . implode(' | ', array_slice($hoverMalos, 0, 4)) . ')');
+
+// S2b (ley 1): ninguna regla de los Atelier pone sombra, ni box-shadow ni filter: drop-shadow. Incluye la entrada (el
+// sobre: .entrada-*, .en-*), que el script de medida no puede ver porque mide con «reducir movimiento».
+$sombras = [];
+$sondaSombra = reglas_css('.en-x{ box-shadow: 0 1px 2px #000; } .atelier .y{ background: none; box-shadow: none; padding: 0; }');
+foreach (array_merge($sondaSombra, $reglas) as [$sel, $decl]) {
+    $atelier = disenos_de($sel) || strpos($sel, '.atelier') !== false || strpos($sel, '[data-accesos') !== false || preg_match('~\.(en-|entrada)~', $sel);
+    if (!$atelier) continue;
+    if (preg_match('~box-shadow\s*:\s*+(?!none\s*(;|$))~i', $decl) || stripos($decl, 'drop-shadow(') !== false) $sombras[] = substr(preg_replace('~\s+~', ' ', $sel), 0, 70);
+}
+ok(($sombras[0] ?? '') === '.en-x' && ($sombras[1] ?? '') !== '.atelier .y', 'el test ve una sombra de la entrada y no confunde box-shadow: none con una sombra');
+array_shift($sombras);
+ok(!$sombras, 'ninguna regla Atelier ni de la entrada con sombra (' . count($sombras) . ': ' . implode(' | ', array_slice($sombras, 0, 4)) . ')');
+
+// S2b: los tokens de cada diseño pasan el gate que tendrá «Publicar» (S5): texto/papel y blanco/acento >= 4,5,
+// acento/papel >= 3. Antes solo lo veía el navegador (tests/fabrica_atelier.js, fuera del gate); varios están ajustados
+// al mínimo (Atardecer, Cítricos) y una edición de ATELIER los podía bajar sin que nada saltara.
+function lum(string $hex): float {
+    $c = array_map(fn($x) => hexdec($x) / 255, str_split(ltrim($hex, '#'), 2));
+    $c = array_map(fn($v) => $v <= 0.04045 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4, $c);
+    return 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2];
+}
+function contraste(string $a, string $b): float { $x = lum($a); $y = lum($b); return (max($x, $y) + 0.05) / (min($x, $y) + 0.05); }
+ok(round(contraste('#FFFFFF', '#777777'), 2) === 4.48, 'la fórmula de contraste es la de WCAG (#777 sobre blanco = 4,48)');
+foreach (ATELIER as $k => $a) {
+    [$primary, $accent, , $secondary, $papel] = $a['colores'];
+    $tinta = $a['tinta'] ?? $primary;
+    foreach (['tinta' => $tinta, 'títulos' => $primary, 'rótulos' => $secondary, 'nombres' => $a['nombres_color'] ?? $primary] as $rol => $c) {
+        ok(contraste($c, $papel) >= 4.5, "«{$k}»: {$rol} sobre el papel >= 4,5 (" . round(contraste($c, $papel), 2) . ')');
+    }
+    ok(contraste('#FFFFFF', $accent) >= 4.5, "«{$k}»: blanco sobre el acento >= 4,5 (" . round(contraste('#FFFFFF', $accent), 2) . ')');
+    ok(contraste($accent, $papel) >= 3, "«{$k}»: acento sobre el papel >= 3 (" . round(contraste($accent, $papel), 2) . ')');
+}
 
 // Control del propio test: el bloque de defectos se reconoce solo si es exacto y solo define --at-*.
 ok(es_bloque_defectos('body.atelier-lacre', ' --at-lino: #E5DED4; ', 'lacre') && !es_bloque_defectos('body.atelier-lacre', ' --at-lino: #E5DED4; color: #2D2926; ', 'lacre')
