@@ -55,13 +55,14 @@ $ctxP = ['modo' => 'preview', 'assets' => '/assets/', 'foto' => '', 'mapa' => nu
 ok(hay(pag(crudo(), '', $ctxP), 'class="marca-previa"'), 'la vista previa del creador lleva marca de agua');
 ok(!hay(pag(crudo(), '', $ctxP + ['firma_slug' => 'prueba']), 'class="marca-previa"'), 'la vista previa del panel no lleva marca de agua');
 
-// ============================================================ 0. Webs antiguas: HTML idéntico, byte a byte
+// ============================================================ 0. Webs antiguas y bodas de ejemplo Atelier: HTML idéntico, byte a byte
 foreach (SNAP_CONFIGS as $nom) {
     $c = normaliza_config(json_decode((string) file_get_contents(__DIR__ . "/fixtures/config_$nom.json"), true));
     $esperado = (string) file_get_contents(__DIR__ . "/fixtures/snap_$nom.html");
     $actual = snap_render($c);
     $dif = $actual === $esperado ? -1 : strspn($actual ^ $esperado, "\0");
-    ok($actual === $esperado, "web antigua «{$nom}»: todas las páginas (live y zip), .ics y barra inferior idénticas byte a byte" . ($dif >= 0 ? " (difieren en el byte $dif: …" . substr($actual, max(0, $dif - 60), 140) . '…)' : ''));
+    $familia = strpos($nom, 'ejemplo_') === 0 ? 'boda de ejemplo' : 'web antigua';   // las dos familias de tests/fixtures/snap_lib.php
+    ok($actual === $esperado, "$familia «{$nom}»: todas las páginas (live y zip), .ics y barra inferior idénticas byte a byte" . ($dif >= 0 ? " (difieren en el byte $dif: …" . substr($actual, max(0, $dif - 60), 140) . '…)' : ''));
 }
 $antigua = normaliza_config(json_decode((string) file_get_contents(__DIR__ . '/fixtures/config_esencial.json'), true));
 $h = sec($antigua, 'historia');
