@@ -208,7 +208,11 @@ function objetivosEnPagina() {
   const recoge = (lista) => { for (const r of lista) { if (r.cssRules && !r.selectorText) recoge(r.cssRules); if (r.selectorText) reglas.push(r.selectorText); } };
   for (const h of document.styleSheets) { try { recoge(h.cssRules); } catch (e) { /* MUDO A PROPOSITO: hoja de otro origen; aquí no hay ninguna (todo sale de /assets) */ } }
   const porElemento = new Map();
+  const sinMedir = [];   // lo que este arnés no sabe forzar: se avisa, nunca se calla (sería cobertura perdida a ciegas)
   for (const texto of reglas) {
+    ESTADO.lastIndex = 0;
+    if (!ESTADO.test(texto)) continue;
+    if (/\([^)]*,/.test(texto)) { sinMedir.push(texto); continue; }   // :is(a, b) y similares: partir por comas los rompe
     for (const s of texto.split(',')) {
       ESTADO.lastIndex = 0;
       const m = ESTADO.exec(s);
@@ -221,7 +225,7 @@ function objetivosEnPagina() {
       let el = null;
       // Un «:focus-visible{…}» suelto vale para cualquier cosa enfocable: se prueba en la primera
       const sel = base === '' || base === '*' ? 'a[href], button, input, select, textarea' : base;
-      try { el = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length); } catch (e) { continue; }   // selector que querySelectorAll no admite: no aplica
+      try { el = [...document.querySelectorAll(sel)].find((e) => e.getClientRects().length); } catch (e) { sinMedir.push(s.trim()); continue; }
       if (!el) continue;
       const prev = porElemento.get(el) || new Set();
       for (const e of estados) prev.add(e);
@@ -230,12 +234,12 @@ function objetivosEnPagina() {
   }
   // Un id estable por elemento para encontrarlo desde fuera, en orden del documento
   const todos = [...porElemento.keys()].sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1));
-  return todos.map((el, i) => {
+  return { sinMedir, objetivos: todos.map((el, i) => {
     el.setAttribute('data-estilos-objetivo', String(i));
-    const est = [...porElemento.get(el)].sort();
-    return { i, estados: est };
-  });
+    return { i, estados: [...porElemento.get(el)].sort() };
+  }) };
 }
+const SIN_MEDIR = new Set();
 
 // Líneas de un subárbol → [camino desde su raíz, propiedades]
 function conCamino(lineas) {
@@ -251,7 +255,8 @@ function conCamino(lineas) {
 }
 
 async function estadosForzados(page, cdp, donde, salida) {
-  const objetivos = await page.evaluate(objetivosEnPagina);
+  const { objetivos, sinMedir } = await page.evaluate(objetivosEnPagina);
+  for (const x of sinMedir) SIN_MEDIR.add(x);
   const { root } = await cdp.send('DOM.getDocument', { depth: 0 });
   // Grupos: :hover por un lado, :focus/:focus-visible/:focus-within por otro (son interacciones distintas)
   for (const o of objetivos) {
@@ -411,6 +416,7 @@ function difiere(antes, ahora, max) {
   } finally {
     await browser.close();
   }
+  if (SIN_MEDIR.size) console.error('AVISO: ' + SIN_MEDIR.size + ' selector(es) :hover/:focus que el arnés no sabe forzar (no medidos): ' + [...SIN_MEDIR].join(' | '));
   console.log((fallos ? 'ROJO: ' + fallos + ' diseño(s) difieren' : 'VERDE') + ' · ' + claves.length + ' diseño(s) · ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s');
   process.exit(fallos ? 1 : 0);
 })().catch((e) => {
