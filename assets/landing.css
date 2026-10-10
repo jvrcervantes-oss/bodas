@@ -272,24 +272,46 @@
 .l-tique .l-tique-pago b { color: var(--rose-btn-2); }
 .l-tique-iva { font-size: 11.5px; color: var(--ink-3); }
 
-/* Colección Atelier */
-/* una destacada a la izquierda y, a la derecha, su texto y los seis en miniatura para cambiarla (owner, 29-sep-2026) */
-.l-at-caja { display: grid; grid-template-columns: 300px minmax(0, 1fr); grid-template-areas: "foto info" "foto minis"; column-gap: 40px; row-gap: 12px; align-items: center;
-  padding: 24px; border-radius: var(--r-xl); background: var(--paper); border: 1px solid rgba(222, 213, 203, .6); box-shadow: var(--e1); }
+/* Colección Atelier: «Mesa del atelier» (owner, 10-oct-2026, artifact «Atelier papelería BodaEnlace»). A la izquierda, la
+   invitación del diseño elegido sobre una mesa de lino y su web en un móvil que asoma por abajo; a la derecha, su texto, su
+   paleta, los nombres con su letra y los seis como tarjetas de papel para cambiarlo. Las tarjetas y las pantallas son capturas
+   de la plantilla real (tests/tarjetas_atelier.js); aquí solo se colocan. Una destacada y las seis, como el 29-sep */
+/* Solo la letra de los nombres de cada diseño, para la muestra «Lucía & Marcos»: el panel oculto no la descarga */
+@font-face { font-family: 'Pinyon Script'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/PinyonScript.woff2) format('woff2'); }
+@font-face { font-family: 'Newsreader'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/Newsreader-italic.woff2) format('woff2'); }
+@font-face { font-family: 'EB Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/EBGaramond-italic.woff2) format('woff2'); }
+.l-at-caja { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); grid-template-areas: "mesa info" "mesa minis"; column-gap: 56px; align-items: center; }
 .l-at-panel { display: contents; }
 .l-at-panel[hidden] { display: none; }
-.l-at-foto { grid-area: foto; position: relative; border-radius: var(--r-lg); overflow: hidden; background: var(--surface-c); }
-.l-at-foto img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; }
-.l-at-foto .l-ejemplo { right: 10px; bottom: 10px; }
-.l-at-info { grid-area: info; align-self: end; display: grid; gap: 10px; min-width: 0; }
-.l-at-info h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.05; }
-.l-at-info p { margin: 0; max-width: 44ch; font-size: 14px; color: var(--ink-2); }
+/* La mesa: tarjeta y móvil se colocan desde el centro, así valen igual a 600 px que a todo el ancho de la tableta */
+.l-at-mesa { grid-area: mesa; position: relative; height: 480px; border-radius: var(--r-xl); overflow: hidden;
+  background: #d9cfc1 url(img/atelier/lino.webp) center / cover; box-shadow: inset 0 0 90px rgba(70, 52, 34, .1); }
+.l-at-carta { position: absolute; z-index: 2; left: calc(50% - 222px); top: 50%; width: 248px; height: auto; translate: 0 -50%; rotate: -3deg;
+  filter: drop-shadow(0 18px 22px rgba(48, 36, 24, .2)) drop-shadow(0 2px 3px rgba(48, 36, 24, .16)); animation: l-at-posa .7s var(--out) both; }
+.l-at-tel { position: absolute; z-index: 1; left: calc(50% + 74px); bottom: -136px; width: 168px; padding: 8px; border-radius: 30px; background: #221d1b; rotate: 7deg;
+  box-shadow: 0 26px 40px rgba(40, 28, 20, .32), inset 0 0 0 1px rgba(255, 255, 255, .08); }
+.l-at-tel::before { content: ''; position: absolute; z-index: 1; left: 50%; top: 14px; width: 46px; height: 13px; margin-left: -23px; border-radius: var(--pill); background: #221d1b; }
+.l-at-tel img { display: block; width: 100%; height: auto; aspect-ratio: 9 / 18.5; border-radius: 23px; background: #fbf8f4; animation: l-at-posa .7s var(--out) .08s both; }
+@keyframes l-at-posa { from { opacity: 0; transform: translateY(16px) rotate(-2deg) scale(.97); } to { opacity: 1; transform: none; } }
+.l-at-mesa .l-ejemplo { z-index: 3; left: 16px; right: auto; bottom: 16px; }
+.l-at-info { grid-area: info; align-self: end; display: grid; gap: 12px; min-width: 0; }
+.l-at-info h3 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: 40px; line-height: 1.05; }
+.l-at-info p { margin: 0; max-width: 42ch; font-size: 15px; color: var(--ink-2); }
+.l-at-rasgos { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 10px 0 12px; margin-bottom: 4px; border-bottom: 1px solid var(--line-soft); }
+.l-at-paleta { display: flex; }
+.l-at-paleta i { width: 18px; height: 18px; margin-left: -4px; border-radius: 50%; box-shadow: 0 0 0 2px var(--surface), inset 0 0 0 1px rgba(0, 0, 0, .08); }
+.l-at-paleta i:first-child { margin-left: 0; }
+.l-at-letra { font-size: 26px; line-height: 1.2; white-space: nowrap; }
 .l-at-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
-.l-at-minis { grid-area: minis; align-self: start; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
-.l-at-mini { padding: 0; border: 2px solid transparent; border-radius: 10px; overflow: hidden; background: none; cursor: pointer; transition: border-color .2s, transform .2s; }
-.l-at-mini img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; object-position: top; }
-.l-at-mini:hover { transform: translateY(-2px); }
-.l-at-mini[aria-pressed="true"] { border-color: var(--rose); transform: translateY(-3px); }
+/* Los seis, como tarjetas de papel: cada una en su caja 4:5 apoyada abajo (las invitaciones no miden lo mismo) */
+.l-at-minis { grid-area: minis; align-self: start; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+.l-at-mini { padding: 0; border: 0; background: none; cursor: pointer; rotate: -2deg; filter: drop-shadow(0 6px 8px rgba(48, 36, 24, .14));
+  transition: translate .35s var(--out), rotate .35s var(--out); }
+.l-at-mini:nth-child(even) { rotate: 1.5deg; }
+.l-at-mini img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: contain; object-position: bottom; }
+.l-at-mini:hover { translate: 0 -4px; rotate: 0deg; }
+.l-at-mini[aria-pressed="true"] { translate: 0 -6px; rotate: 0deg; }
+.l-at-mini[aria-pressed="true"]::after { content: ''; display: block; width: 26px; height: 2px; margin: 9px auto 0; border-radius: 2px; background: var(--rose); }
 .l-atelier-precio { font-family: var(--serif); font-size: 18px; }
 .l-atelier-precio small { font-family: var(--sans); font-size: 11px; color: var(--ink-3); }
 .l-atelier-btn { min-height: 44px; font-size: 14px; border-radius: var(--r); }
@@ -385,9 +407,9 @@
 
 /* ---------- responsive ---------- */
 @media (max-width: 1080px) {
-  .l-at-caja { grid-template-columns: 1fr; grid-template-areas: "foto" "info" "minis"; row-gap: 18px; padding: 14px; }
-  .l-at-foto img { aspect-ratio: 4 / 3.4; }
+  .l-at-caja { grid-template-columns: 1fr; grid-template-areas: "mesa" "info" "minis"; row-gap: 24px; }
   .l-at-info { align-self: start; }
+  .l-at-minis { max-width: 600px; margin-top: 0; }
   .l-nav { display: none; }
   .l-hamb:not([hidden]) { display: grid; }
   /* Bento a 2 columnas: confirmación, plano y catering a todo el ancho (escena a un lado y texto al otro); cuenta atrás y galería, a mitad.
@@ -446,8 +468,18 @@
   .l-hero .l-ctas { order: 4; }
   .l-pie nav { gap: 8px 10px; font-size: 13px; }   /* «Privacidad y cookies» cabe con los otros dos en una línea a 390 px */
   .l-datos { order: 5; }
-  .l-at-minis { gap: 6px; margin-top: 0; }
-  .l-at-info h3 { font-size: 28px; }
+  /* La mesa del atelier, en pequeño: tarjeta de 172 px y móvil de 118 px */
+  .l-at-caja { row-gap: 20px; }
+  .l-at-info { gap: 10px; }
+  .l-at-mesa { height: 330px; }
+  .l-at-carta { left: calc(50% - 153px); width: 172px; }
+  .l-at-tel { left: calc(50% + 43px); bottom: -104px; width: 118px; padding: 6px; border-radius: 22px; }
+  .l-at-tel::before { top: 11px; width: 34px; height: 10px; margin-left: -17px; }
+  .l-at-tel img { border-radius: 17px; }
+  .l-at-info h3 { font-size: 30px; }
+  .l-at-rasgos { padding: 4px 0 10px; }
+  .l-at-letra { font-size: 22px; }
+  .l-at-minis { gap: 8px; }
   .l-wrap, .l-top-in { padding: 0 16px; }
   .l-top-in { height: 64px; }
   .l-logo { font-size: 21px; }   /* el mismo tamaño que en el ordenador: a 18 px se veía pequeño (owner, 30-sep) */

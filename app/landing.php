@@ -410,25 +410,39 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
         </div>
         <p><?= count(ATELIER) ?> diseños, cada uno con su paleta, sus letras y su ilustración. La invitación llega en un sobre animado.</p>
       </div>
-      <?php // Una destacada y los seis en miniatura para cambiarla (owner, 29-sep-2026, artifact «Atelier compacta BodaEnlace»,
-            // https://claude.ai/artifact/KEgNUz1PvjUb8s7VZafhCC): la rejilla de seis tarjetas grandes medía ~1.600 px en ordenador
-            // y ~4.400 en el móvil. Los seis paneles van en el HTML (el que no se ve, con hidden); landing.js solo cambia cuál ?>
-<?php $atDef = isset(ATELIER['lacre']) ? 'lacre' : array_key_first(ATELIER); ?>
+      <?php // Mesa del atelier (owner, 10-oct-2026, artifact «Atelier papelería BodaEnlace», https://claude.ai/artifact/DtFXcxyAqmVUyGDiTgd56m):
+            // la invitación de cada diseño como tarjeta de papel sobre lino y, al lado, su web en un móvil. Tarjeta y pantalla son
+            // capturas de la plantilla real con la boda de muestra (tests/tarjetas_atelier.js): si un diseño cambia, se regraban.
+            // Sigue la estructura del 29-sep (artifact «Atelier compacta BodaEnlace»): una destacada y los seis para cambiarla.
+            // Los seis paneles van en el HTML (el que no se ve, con hidden); landing.js solo cambia cuál ?>
+<?php $atDef = isset(ATELIER['lacre']) ? 'lacre' : array_key_first(ATELIER);
+$atImg = BASE_PATH . '/assets/img/atelier/';
+$atTam = function (string $k): array { $t = @getimagesize(__DIR__ . '/../assets/img/atelier/tarjeta-' . $k . '.webp'); return $t ? [$t[0], $t[1]] : [520, 650]; };
+// Cinco tintas de su paleta, sin repetir: principal, botón, secundario, oro y los fondos
+$atPaleta = function (array $col): array { $o = []; foreach ([0, 2, 3, 7, 5, 1, 6, 4] as $i) if (count($o) < 5 && isset($col[$i]) && !in_array($col[$i], $o, true)) $o[] = $col[$i]; return $o; }; ?>
       <div class="l-at-caja" data-atelier-caja>
-<?php foreach (ATELIER as $k => $a): ?>
+<?php foreach (ATELIER as $k => $a): [$tw, $th] = $atTam($k); ?>
         <div class="l-at-panel" id="atelier-<?= h($k) ?>" data-atelier-panel="<?= h($k) ?>"<?= $k === $atDef ? '' : ' hidden' ?>>
-          <div class="l-at-foto"><img src="<?= BASE_PATH ?>/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="Ejemplo del diseño <?= h($a['nombre']) ?>" width="330" height="440" loading="lazy"><span class="l-ejemplo">Ejemplo</span></div>
+          <div class="l-at-mesa">
+            <img class="l-at-carta" src="<?= $atImg ?>tarjeta-<?= h($k) ?>.webp" alt="Invitación de ejemplo del diseño <?= h($a['nombre']) ?>" width="<?= $tw ?>" height="<?= $th ?>" loading="lazy" decoding="async">
+            <div class="l-at-tel"><img src="<?= $atImg ?>movil-<?= h($k) ?>.webp" alt="La web de ejemplo del diseño <?= h($a['nombre']) ?> en el móvil" width="360" height="740" loading="lazy" decoding="async"></div>
+            <span class="l-ejemplo">Ejemplo</span>
+          </div>
           <div class="l-at-info">
             <span class="overline overline-bronze"><?= h($a['categoria']) ?></span>
             <h3><?= h($a['nombre']) ?></h3>
             <p><?= h($a['desc']) ?></p>
+            <div class="l-at-rasgos">
+              <span class="l-at-paleta" role="img" aria-label="Su paleta"><?php foreach ($atPaleta($a['colores']) as $col): ?><i style="background:<?= h($col) ?>"></i><?php endforeach; ?></span>
+              <span class="l-at-letra" style="font-family:<?= h($a['fuentes'][2]) ?>;font-style:<?= h($a['fuentes'][3]) ?>;color:<?= h($a['colores'][0]) ?>">Lucía &amp; Marcos</span>
+            </div>
             <div class="l-at-fila"><span class="l-atelier-precio"><?= h($totalAtelier) ?> <small>IVA incl.</small></span><a class="b-btn b-dark l-atelier-btn" href="<?= BASE_PATH ?>/crear?atelier=<?= h($k) ?>">Empezar con este diseño</a></div>
           </div>
         </div>
 <?php endforeach; ?>
         <div class="l-at-minis" role="group" aria-label="Diseños de la Colección Atelier">
-<?php foreach (ATELIER as $k => $a): ?>
-          <button type="button" class="l-at-mini" data-atelier="<?= h($k) ?>" aria-controls="atelier-<?= h($k) ?>" aria-pressed="<?= $k === $atDef ? 'true' : 'false' ?>" aria-label="<?= h($a['nombre']) ?>"><img src="<?= BASE_PATH ?>/assets/img/atelier/muestra-<?= h($k) ?>.webp" alt="" width="330" height="440" loading="lazy"></button>
+<?php foreach (ATELIER as $k => $a): [$tw, $th] = $atTam($k); ?>
+          <button type="button" class="l-at-mini" data-atelier="<?= h($k) ?>" aria-controls="atelier-<?= h($k) ?>" aria-pressed="<?= $k === $atDef ? 'true' : 'false' ?>" aria-label="<?= h($a['nombre']) ?>"><img src="<?= $atImg ?>tarjeta-<?= h($k) ?>.webp" alt="" width="<?= $tw ?>" height="<?= $th ?>" loading="lazy" decoding="async"></button>
 <?php endforeach; ?>
         </div>
       </div>
