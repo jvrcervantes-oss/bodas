@@ -7,6 +7,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/schema.php';
+require_once __DIR__ . '/disenos.php';
 
 /**
  * $ctx:
@@ -17,6 +18,8 @@ require_once __DIR__ . '/schema.php';
  */
 function render_pagina(array $c, string $ruta, array $ctx): ?string {
     $ctx += ['modo' => 'live', 'assets' => '/assets/', 'foto' => '', 'slug' => ''];
+    // Ajustes de diseño (S3): los pone SOLO quien llama desde código del estudio; nunca salen del config de la pareja ni de la petición
+    $ctx['ajustes_diseno'] = ($c['atelier'] ?? '') !== '' && is_array($ctx['ajustes_diseno'] ?? null) ? normaliza_diseno($c['atelier'], $ctx['ajustes_diseno']) : [];
     if ($ruta === '' || $ruta === 'inicio') {
         $titulo = nombres($c) ?: 'Nuestra boda';
         $cuerpo = pagina_inicio($c, $ctx);
@@ -77,9 +80,10 @@ const ICONOS = [
     'calendario' => 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4M9 15l2 2 4-4',
 ];
 
-function tema_css(array $c): string {
+function tema_css(array $c, array $aj = []): string {
     $t = TEMAS[$c['tema']] ?? TEMAS['eucalipto'];
-    if (($c['atelier'] ?? '') !== '') $t = array_merge([ATELIER[$c['atelier']]['nombre']], ATELIER[$c['atelier']]['colores']);
+    $at = ($c['atelier'] ?? '') !== '' ? diseno_paleta($c['atelier'], $aj) : null; // S3: la paleta con los ajustes del estudio (sin ajustes, ATELIER tal cual)
+    if ($at) $t = array_merge([$at['nombre']], $at['colores']);
     $rgb = function (string $hex): string {
         return implode(' ', array_map('hexdec', str_split(ltrim($hex, '#'), 2)));
     };
@@ -89,7 +93,7 @@ function tema_css(array $c): string {
         . ';--primary-rgb:' . $rgb($t[1]) . ';--accent-rgb:' . $rgb($t[2]) . ';--on-dark-rgb:' . $rgb($t[9])
         . ';--sage-2-rgb:' . $rgb($t[6]) . ';--sage-rgb:' . $rgb($t[5])
         . ';' . fuente_css($c)
-        . (($c['atelier'] ?? '') !== '' && isset(ATELIER[$c['atelier']]['nombres_color']) ? ';--nombres-color:' . ATELIER[$c['atelier']]['nombres_color'] . ';--tinta:' . ATELIER[$c['atelier']]['tinta'] : '')
+        . ($at && isset($at['nombres_color']) ? ';--nombres-color:' . $at['nombres_color'] . ';--tinta:' . $at['tinta'] : '')
         . '}';
 }
 
@@ -295,9 +299,9 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <?php if ($ctx['modo'] === 'preview'): ?><base href="<?= h($A) ?>">
 <style>body{visibility:hidden;animation:vp-ver 0s 3s forwards}@keyframes vp-ver{to{visibility:visible}}</style><?php /* vista-previa.js lo muestra al tener las fuentes: sin esto, cada cambio de letra enseña un instante la de reserva */ endif; ?>
 <link rel="stylesheet" href="<?= h($ctx['modo'] === 'preview' ? '' : $A) ?>boda.css?v=<?= h(ASSETS_V) ?>">
-<style><?= tema_css($c) ?><?= fuente_autor_css($c, $ctx) ?></style>
+<style><?= tema_css($c, $ctx['ajustes_diseno'] ?? []) ?><?= fuente_autor_css($c, $ctx) ?><?= $c['atelier'] !== '' ? diseno_css($c['atelier'], $ctx['ajustes_diseno'] ?? []) : '' ?></style>
 </head>
-<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>"<?= $c['atelier'] !== '' ? ' data-accesos="filetes"' : '' /* S2b: accesos en filetes, fábrica de los Atelier; la palanca de S3 elegirá tarjetas o filetes */ ?>>
+<body class="<?= $ruta === '' ? 'page-home' : 'page-inner' ?><?= $c['atelier'] !== '' ? ' atelier atelier-' . h($c['atelier']) : ' deco-' . h($c['decoracion']) . ' fuente-' . h($c['fuente']) ?><?= $ctx['modo'] === 'preview' ? ' is-preview' : '' ?>"<?php if ($c['atelier'] !== '') foreach (diseno_atributos($c['atelier'], $ctx['ajustes_diseno'] ?? []) as $an => $av) echo ' ' . $an . '="' . h($av) . '"'; /* S3: lo de fábrica (accesos en filetes) o lo que el estudio ha ajustado */ ?>>
 <?php if ($ctx['modo'] === 'preview' && empty($ctx['firma_slug'])): // marca de agua: viaja con el HTML si alguien copia la vista previa (owner, 25-sep). En el panel (firma_slug: la web ya está pagada y publicada) no sale (owner, 1-oct) ?>
 <div class="marca-previa" aria-hidden="true"><span>Vista previa · <?= h(marca()) ?></span><span>Publicad vuestra web para quitar esta marca</span></div>
 <?php endif; ?>

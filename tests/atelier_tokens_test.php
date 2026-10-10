@@ -75,6 +75,11 @@ function es_bloque_defectos(string $sel, string $decl, string $k): bool {
     return (bool) $partes;
 }
 
+// S3: los defectos de las palancas comunes (tamaño de nombres…) viven en UN bloque `body.atelier{ --at-x: … }` para los seis;
+// cuentan como definidos en todos y no se exige que cada diseño los use (tests/disenos_test.php (d) comprueba su defecto).
+$comunes = [];
+foreach ($reglas as [$sel, $decl]) if (trim($sel) === 'body.atelier') { preg_match_all('~(--at-[a-z0-9-]+)\s*:~', $decl, $cm); foreach ($cm[1] as $v) $comunes[$v] = true; }
+
 $vistas = array_fill_keys(array_keys(ATELIER), 0);
 foreach (ATELIER as $k => $a) {
     $hex = array_map('strtolower', array_merge($a['colores'], isset($a['nombres_color']) ? [$a['nombres_color'], $a['tinta']] : []));
@@ -102,7 +107,7 @@ foreach (ATELIER as $k => $a) {
         foreach ($fm[1] as $f) if (in_array(trim($f), $fuentes, true)) $malos[] = trim($f) . ' en «' . substr(preg_replace('~\s+~', ' ', $sel), 0, 60) . '»';
     }
     ok($vistas[$k] > 0, "hay reglas de «{$k}» en boda.css");
-    $sinDefinir = array_keys(array_diff_key($usadas, $definidas));
+    $sinDefinir = array_keys(array_diff_key($usadas, $definidas, $comunes));
     $sinUso = array_keys(array_diff_key($definidas, $usadas));
     ok(!$sinDefinir, "«{$k}»: cada var(--at-*) está en su bloque de defectos (" . implode(', ', $sinDefinir) . ')');
     ok(!$sinUso, "«{$k}»: cada --at-* del bloque de defectos se usa (" . implode(', ', $sinUso) . ')');
