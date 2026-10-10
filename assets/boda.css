@@ -1915,15 +1915,23 @@ body.atelier-citricos .letter p{ max-width: 26rem; margin: 0 auto 14px; font-fam
 body.atelier-citricos .letter p.big{ font-size: 19px; font-style: italic; color: var(--tinta); }
 body.atelier-citricos .pildora-vest{ border-radius: var(--pill); border: 1px solid var(--primary); background: transparent; }
 
-/* Guardad la fecha: cuenta atrás con filetes verticales, calendario del mes */
+/* Cuenta atrás «Fichas de papel» (owner, 10-oct-2026, la de la propuesta): cinco fichas blancas a caballo entre la
+   portada y el festón de la carta. Rótulos en minúscula y casi sin espaciado: «semanas» en versalitas a .3em no cabe
+   en 66 px (cinco fichas a 390 px) y la escala no baja de 12. La carta se sube media ficha y gana ese alto arriba. */
+body.atelier-citricos .cit-cuenta{ position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; padding: 0 16px; }
+body.atelier-citricos .cit-cuenta [hidden], body.atelier-citricos .cit-cuenta[hidden]{ display: none; }
+body.atelier-citricos .cit-cuenta .countdown{ grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; width: 100%; max-width: 400px; margin: 0; }
+body.atelier-citricos .cit-cuenta .countdown-item{ padding: 12px 2px 10px; background: #FFFEFA; border: 1px solid var(--filete); border-radius: 0; }
+body.atelier-citricos .cit-cuenta .countdown-item b{ font-family: var(--serif); font-size: 30px; font-weight: 300; line-height: 1; color: var(--tinta); font-variant-numeric: lining-nums tabular-nums; }
+body.atelier-citricos .cit-cuenta .countdown-item span{ margin-top: 6px; font-family: var(--sans); font-size: 12px; font-weight: 500; line-height: 1.2; letter-spacing: .04em; text-transform: none; color: var(--secondary); }
+body.atelier-citricos .cit-hoy{ margin: 0; padding: 10px 32px 12px; background: #FFFEFA; border: 1px solid var(--filete); font-family: var(--nombres); font-size: 46px; line-height: 1.1; color: var(--primary); }
+body.atelier-citricos .cit-cuenta + .letter{ margin-top: -38px; padding-top: 98px; }
+
+/* Guardad la fecha: fecha larga y calendario del mes (la cuenta atrás está sobre la portada) */
 body.atelier-citricos .save-band{ padding: 56px 28px 40px; }
 body.atelier-citricos .save-card{ max-width: 360px; padding: 0; }
 body.atelier-citricos .save-card h2{ font-family: var(--nombres); font-weight: 400; font-size: 46px; line-height: 1.1; color: var(--primary); }
 body.atelier-citricos .save-date-text{ font-family: var(--sans); font-size: 19px; font-style: italic; color: #55513F; }
-body.atelier-citricos .countdown{ margin: 10px 0 30px; }
-body.atelier-citricos .countdown-item{ padding: 6px 0; }
-body.atelier-citricos .countdown-item b{ font-family: var(--serif); font-size: 30px; font-weight: 300; line-height: 1.1; color: var(--tinta); }
-body.atelier-citricos .countdown-item span{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); }
 body.atelier-citricos .cit-cal{ width: 100%; max-width: 300px; margin: 8px auto 26px; border-collapse: collapse; font-family: var(--sans); font-size: 16px; color: var(--tinta); }
 body.atelier-citricos .cit-cal caption{ padding-bottom: 14px; font-family: var(--nombres); font-size: 46px; color: var(--primary); }
 body.atelier-citricos .cit-cal caption span{ font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .3em; color: var(--secondary); vertical-align: middle; }
@@ -2013,10 +2021,12 @@ body.atelier-citricos .galeria-foto:nth-child(3n+2){ transform: rotate(1.5deg); 
   body.atelier-citricos .hero-names{ font-size: calc(84px * var(--at-nombres-escala)); }
   body.atelier-citricos .mat{ width: 360px; margin: 0 auto; }
   body.atelier-citricos .letter{ padding: 80px max(32px, calc(50vw - 480px)); }
+  body.atelier-citricos .cit-cuenta + .letter{ padding-top: 118px; }
+  body.atelier-citricos .cit-cuenta .countdown{ max-width: 440px; gap: 8px; }
   body.atelier-citricos .save-band{ padding: 80px 32px 56px; }
   body.atelier-citricos .save-card{ max-width: 640px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; align-items: start; }
   body.atelier-citricos .save-card > .kicker, body.atelier-citricos .save-card > h2, body.atelier-citricos .save-card > .save-date-text,
-  body.atelier-citricos .save-card > .countdown, body.atelier-citricos .save-card > .cal-btn, body.atelier-citricos .save-card > .cal-options{ grid-column: 1; }
+  body.atelier-citricos .save-card > .cal-btn, body.atelier-citricos .save-card > .cal-options{ grid-column: 1; }
   body.atelier-citricos .save-card > .cit-cal{ grid-column: 2; grid-row: 1 / span 6; margin: 0; }
   body.atelier-citricos .cit-curva{ max-width: 640px; }
   body.atelier-citricos .quick-grid{ max-width: 720px; }

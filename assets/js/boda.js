@@ -213,11 +213,23 @@
     var hours = root.querySelector('[data-c="hours"]');
     var mins = root.querySelector('[data-c="mins"]');
     var secs = root.querySelector('[data-c="secs"]');
+    // Solo si el diseño las pinta (hoy, Cítricos): semanas con los días sueltos, y el aviso del día de la boda
+    var weeks = root.querySelector('[data-c="weeks"]');
+    var hoy = document.querySelector('[data-c-hoy]');
 
     function tick() {
       var diff = target - Date.now();
       if (diff <= 0) {
-        days.textContent = hours.textContent = mins.textContent = secs.textContent = '0';
+        [weeks, days, hours, mins, secs].forEach(function (e) { if (e) e.textContent = '0'; });
+        if (hoy) {
+          // Desde la hora de la ceremonia hasta medianoche, «¡Hoy es el día!»; pasado ese día, la cuenta atrás se va
+          var t = new Date(target), n = new Date();
+          var esHoy = t.getFullYear() === n.getFullYear() && t.getMonth() === n.getMonth() && t.getDate() === n.getDate();
+          root.hidden = true;
+          hoy.hidden = !esHoy;
+          hoy.parentNode.hidden = !esHoy;
+          if (esHoy) return;   // sigue mirando: a medianoche el aviso también se va
+        }
         clearInterval(timer);
         return;
       }
@@ -226,15 +238,18 @@
       var m = Math.floor((diff % 3600000) / 60000);
       var s = Math.floor((diff % 60000) / 1000);
       function two(n) { return n < 10 ? '0' + n : String(n); }
+      var cifras = [[days, two(d)], [hours, two(h)], [mins, two(m)], [secs, two(s)]];
+      if (weeks) { cifras.unshift([weeks, two(Math.floor(d / 7))]); cifras[1][1] = two(d % 7); }
       // Cada número que cambia da un pequeño salto (solo se nota en los diseños Atelier)
-      [[days, two(d)], [hours, two(h)], [mins, two(m)], [secs, two(s)]].forEach(function (p) {
+      cifras.forEach(function (p) {
         if (p[0].textContent === p[1]) return;
         p[0].textContent = p[1];
         p[0].classList.remove('tic'); void p[0].offsetWidth; p[0].classList.add('tic');
       });
     }
-    tick();
+    // El intervalo antes del primer tick: si la boda ya pasó, ese tick lo puede parar (antes quedaba vivo)
     var timer = setInterval(tick, 1000);
+    tick();
   }
 
   // ---------- Pestañas (Información) ----------

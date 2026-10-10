@@ -478,6 +478,18 @@ function pagina_inicio(array $c, array $ctx): string {
     </div>
 <?php endif; ?>
   </section>
+<?php if ($c['atelier'] === 'citricos' && $objetivo !== ''): // «Fichas de papel» (owner, 10-oct-2026): la cuenta atrás de Cítricos va sobre el borde de la portada, con semanas; misma #countdown y data-c para boda.js ?>
+  <div class="cit-cuenta">
+    <div class="countdown" id="countdown" data-objetivo="<?= h($objetivo) ?>" aria-label="Cuenta atrás para la boda">
+      <div class="countdown-item"><b data-c="weeks">0</b><span>semanas</span></div>
+      <div class="countdown-item"><b data-c="days">0</b><span>días</span></div>
+      <div class="countdown-item"><b data-c="hours">0</b><span>horas</span></div>
+      <div class="countdown-item"><b data-c="mins">0</b><span>min</span></div>
+      <div class="countdown-item"><b data-c="secs">0</b><span>seg</span></div>
+    </div>
+    <p class="cit-hoy" data-c-hoy hidden>¡Hoy es el día!</p>
+  </div>
+<?php endif; ?>
 <?php if ($fe === 'fundida' && in_array($c['decoracion'], ['flores', 'eucalipto'], true)): ?>
   <div class="deco-entre" aria-hidden="true"><img src="<?= h($A) ?>img/deco/<?= $c['decoracion'] === 'flores' ? 'flores-portada-movil.webp" width="520" height="250' : 'eucalipto-portada-movil.webp" width="520" height="190' ?>" alt=""></div>
 <?php endif; ?>
@@ -500,12 +512,14 @@ function pagina_inicio(array $c, array $ctx): string {
       <span class="kicker"><?= h(frase_web($c, 'fecha_kicker', 'Guardad el momento')) ?></span>
       <h2><?= h(frase_web($c, 'fecha_titulo', 'Anotad la fecha')) ?></h2>
       <p class="save-date-text"><?= h(ucfirst(fecha_larga($c['fecha']))) ?></p>
+<?php if ($c['atelier'] !== 'citricos'): // en Cítricos va sobre la portada: un solo #countdown por página ?>
       <div class="countdown" id="countdown" data-objetivo="<?= h($objetivo) ?>" aria-label="Cuenta atrás para la boda">
         <div class="countdown-item"><b data-c="days">0</b><span>Días</span></div>
         <div class="countdown-item"><b data-c="hours">0</b><span>Horas</span></div>
         <div class="countdown-item"><b data-c="mins">0</b><span>Min</span></div>
         <div class="countdown-item"><b data-c="secs">0</b><span>Seg</span></div>
       </div>
+<?php endif; ?>
 <?php if ($c['atelier'] === 'citricos'): ?>      <?= calendario_mes($c['fecha']) ?>
 <?php endif; ?>
       <button class="btn cal-btn" type="button" id="calBtn" aria-expanded="false" aria-controls="calOptions"><?= ico(ICONOS['calendario'], 'ico ico-sm') ?>Añadir a mi calendario</button>

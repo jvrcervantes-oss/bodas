@@ -1,6 +1,7 @@
 <?php
 // Piel «Limonar» de Cítricos y azahar (9-oct-2026, encargo 20261008_bodas_citricos_limonar): la piel no toca otro
 // diseño, curva del itinerario con 0-8 paradas, calendario del mes y paradas del día. Sin red.
+// Cuenta atrás «Fichas de papel» (10-oct-2026): bloque 6.
 // Uso: php tests/limonar_test.php  (sale con 1 si algo falla). Datos inventados.
 
 declare(strict_types=1);
@@ -106,7 +107,22 @@ ok(hay($largo, 'María del Carmen <i>&amp;</i> José Antonio'), 'nombres largos:
 foreach (['lacre', 'herbario', ''] as $otro) {
     $h = (string) render_pagina(normaliza_config(crudo(['atelier' => $otro, 'programa' => momentos(2)])), '', $ctx);
     ok(!hay($h, 'cit-curva') && !hay($h, 'cit-cal') && !hay($h, '<i>&amp;</i>'), 'el diseño «' . ($otro ?: 'Esencial') . '» no lleva piezas de Limonar');
+    ok(!hay($h, 'cit-cuenta') && !hay($h, 'data-c="weeks"') && !hay($h, 'data-c-hoy'), 'el diseño «' . ($otro ?: 'Esencial') . '» no lleva las fichas de Cítricos');
+    $ib = (int) strpos($h, 'class="save-band"');
+    ok(substr_count($h, 'id="countdown"') === 1 && $ib > 0 && (int) strpos($h, 'id="countdown"') > $ib, 'el diseño «' . ($otro ?: 'Esencial') . '» sigue con la cuenta atrás en «Guardad la fecha»');
 }
+
+// 6. Cuenta atrás «Fichas de papel» (owner, 10-oct-2026): sobre el borde de la portada, con semanas, una sola por página
+$fin = (int) strpos($cit, '</section>', (int) strpos($cit, '<section class="hero'));
+$ic = (int) strpos($cit, 'id="countdown"');
+ok(substr_count($cit, 'id="countdown"') === 1, 'Cítricos: un solo #countdown (getElementById coge el primero)');
+ok($ic > $fin && $ic < (int) strpos($cit, 'class="save-band"') && hay($cit, '<div class="cit-cuenta">'), 'Cítricos: la cuenta atrás va tras la portada y antes de «Guardad la fecha»');
+ok(hay($cit, 'data-c="weeks"') && hay($cit, 'data-c="days"') && hay($cit, 'data-c="secs"') && hay($cit, 'data-objetivo="2027-06-12T12:00:00"'), 'Cítricos: cinco cifras con semanas, a la hora de la ceremonia');
+ok(hay($cit, '<p class="cit-hoy" data-c-hoy hidden>'), 'Cítricos: el aviso del día de la boda sale oculto');
+$sinFecha = (string) render_pagina(normaliza_config(crudo(['atelier' => 'citricos', 'fecha' => ''])), '', $ctx);
+ok(!hay($sinFecha, 'cit-cuenta') && !hay($sinFecha, 'id="countdown"'), 'Cítricos sin fecha: sin cuenta atrás');
+$js = (string) file_get_contents($raiz . '/assets/js/boda.js');
+ok(hay($js, "querySelector('[data-c=\"weeks\"]')") && hay($js, "querySelector('[data-c-hoy]')"), 'boda.js lee las semanas y el aviso solo si existen');
 
 @array_map('unlink', glob($tmp . '/*') ?: []);
 @rmdir($tmp);
