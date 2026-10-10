@@ -1,7 +1,8 @@
 <?php
 // Piel «Limonar» de Cítricos y azahar (9-oct-2026, encargo 20261008_bodas_citricos_limonar): la piel no toca otro
 // diseño, curva del itinerario con 0-8 paradas, calendario del mes y paradas del día. Sin red.
-// Cuenta atrás «Fichas de papel» (10-oct-2026): bloque 6.
+// Cuenta atrás «Fichas de papel» (10-oct-2026): bloque 6; su lógica con el reloj y su maquetación en cada momento
+// (antes, el día, el día siguiente) las mide tests/cuenta_atras.js, fuera del gate porque necesita Edge.
 // Uso: php tests/limonar_test.php  (sale con 1 si algo falla). Datos inventados.
 
 declare(strict_types=1);
