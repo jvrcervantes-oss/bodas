@@ -31,6 +31,24 @@ const DISENO_PALANCAS = [
     'nombres_color' => ['tipo' => 'enum', 'grupo' => 'Color', 'etiqueta' => 'Color de los nombres', 'solo' => null, 'defecto' => 'diseno',
         'opciones' => ['diseno' => ['Como el diseño', null], 'tinta' => ['Tinta', 'tinta'], 'acento' => ['Acento', 'acento']],
         'vars' => ['--nombres-color']],
+    // Letra (S3): solo familias ALOJADAS (assets/fonts, OFL) con á é í ó ú ü ñ ¿ ¡ « » — comprobado con fontTools el 10-oct-2026
+    // (tests/disenos_test.php vuelve a comprobar que el fichero existe). Cada diseño ofrece la suya y dos más; 'diseno' = la de fábrica.
+    'letra_titulos' => ['tipo' => 'enum', 'grupo' => 'Letra', 'etiqueta' => 'Tipografía de los títulos', 'solo' => null, 'defecto' => 'diseno',
+        'opciones' => ['diseno' => ['Como el diseño', null], 'cormorant' => ['Cormorant', "'Cormorant', Georgia, serif"], 'garamond' => ['Cormorant Garamond', "'Cormorant Garamond', Georgia, serif"],
+            'ebgaramond' => ['EB Garamond', "'EB Garamond', Georgia, serif"], 'playfair' => ['Playfair Display', "'Playfair Display', Georgia, serif"],
+            'bodoni' => ['Bodoni Moda', "'Bodoni Moda', Georgia, serif"], 'newsreader' => ['Newsreader', "'Newsreader', Georgia, serif"], 'prata' => ['Prata', "'Prata', Georgia, serif"]],
+        'por_diseno' => ['citricos' => ['diseno', 'garamond', 'newsreader'], 'ceramica' => ['diseno', 'playfair', 'cormorant'], 'herbario' => ['diseno', 'playfair', 'garamond'],
+            'lacre' => ['diseno', 'bodoni', 'cormorant'], 'masia' => ['diseno', 'ebgaramond', 'garamond'], 'atardecer' => ['diseno', 'cormorant', 'prata']],
+        'vars' => ['--serif']],
+    // valor = [pila, estilo]: una caligrafía va en normal y una serif en cursiva (--nombres-estilo)
+    'letra_nombres' => ['tipo' => 'enum', 'grupo' => 'Letra', 'etiqueta' => 'Tipografía de los nombres', 'solo' => null, 'defecto' => 'diseno',
+        'opciones' => ['diseno' => ['Como el diseño', null], 'pinyon' => ['Pinyon Script', ["'Pinyon Script', cursive", 'normal']], 'greatvibes' => ['Great Vibes', ["'Great Vibes', cursive", 'normal']],
+            'alexbrush' => ['Alex Brush', ["'Alex Brush', cursive", 'normal']], 'sacramento' => ['Sacramento', ["'Sacramento', cursive", 'normal']],
+            'cormorantit' => ['Cormorant cursiva', ["'Cormorant', Georgia, serif", 'italic']], 'playfairit' => ['Playfair cursiva', ["'Playfair Display', Georgia, serif", 'italic']],
+            'newsreaderit' => ['Newsreader cursiva', ["'Newsreader', Georgia, serif", 'italic']]],
+        'por_diseno' => ['citricos' => ['diseno', 'greatvibes', 'alexbrush'], 'ceramica' => ['diseno', 'greatvibes', 'alexbrush'], 'herbario' => ['diseno', 'cormorantit', 'playfairit'],
+            'lacre' => ['diseno', 'greatvibes', 'sacramento'], 'masia' => ['diseno', 'cormorantit', 'playfairit'], 'atardecer' => ['diseno', 'greatvibes', 'alexbrush']],
+        'vars' => ['--nombres', '--nombres-estilo']],
     'nombres_tam' => ['tipo' => 'enum', 'grupo' => 'Letra', 'etiqueta' => 'Tamaño de los nombres', 'solo' => null, 'defecto' => 'M',
         'opciones' => ['S' => ['Pequeño', '0.85'], 'M' => ['Medio', '1'], 'L' => ['Grande', '1.2'], 'XL' => ['Muy grande', '1.4']],
         'css' => '--at-nombres-escala', 'vars' => ['--at-nombres-escala']],
@@ -88,6 +106,12 @@ function dis_contraste(string $a, string $b): float {
 
 // ---------- Normalización ----------
 
+/** Opciones de una palanca enum permitidas en un diseño (algunas, como la letra, ofrecen un subconjunto por diseño). */
+function dis_opciones(array $p, string $clave): array {
+    $o = $p['opciones'];
+    return isset($p['por_diseno']) ? array_intersect_key($o, array_flip($p['por_diseno'][$clave] ?? [])) : $o;
+}
+
 /** ¿La palanca $k aplica al diseño $clave? */
 function dis_aplica(array $p, string $clave): bool {
     return $p['solo'] === null || in_array($clave, $p['solo'], true);
@@ -107,7 +131,7 @@ function normaliza_diseno($clave, $in): array {
         if (!dis_aplica($p, $clave) || !array_key_exists($k, $in)) continue;
         $v = $in[$k];
         if ($p['tipo'] === 'color') $v = dis_hex($v);
-        else $v = (is_string($v) && isset($p['opciones'][$v])) ? $v : null;
+        else $v = (is_string($v) && isset(dis_opciones($p, $clave)[$v])) ? $v : null;
         if ($v === null || $v === ($fab[$k] ?? null)) continue;
         $o[$k] = $v;
     }
@@ -168,6 +192,9 @@ function diseno_paleta(string $clave, array $aj): array {
         if ($sigue === 'tinta') $col[0] = $T;
         if ($clave === 'citricos') $d['body']['--ink-soft'] = dis_mezcla($T, $P, 0.12);
     }
+    // Letra: la elegida sustituye la de fábrica (títulos = fuentes[0], nombres = fuentes[2] y su estilo = fuentes[3])
+    if (isset($aj['letra_titulos'])) $d['fuentes'][0] = DISENO_PALANCAS['letra_titulos']['opciones'][$aj['letra_titulos']][1];
+    if (isset($aj['letra_nombres'])) [$d['fuentes'][2], $d['fuentes'][3]] = DISENO_PALANCAS['letra_nombres']['opciones'][$aj['letra_nombres']][1];
     // Color de los nombres: por defecto sigue a lo que ya seguía (el primary o la tinta del diseño); si no, el valor elegido
     $nc = $aj['nombres_color'] ?? 'diseno';
     if ($nc === 'tinta') $d['nombres_color'] = $T;

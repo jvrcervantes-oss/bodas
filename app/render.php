@@ -92,14 +92,14 @@ function tema_css(array $c, array $aj = []): string {
         . ';--on-dark:' . $t[9] . ';--on-dark-soft:' . $t[10]
         . ';--primary-rgb:' . $rgb($t[1]) . ';--accent-rgb:' . $rgb($t[2]) . ';--on-dark-rgb:' . $rgb($t[9])
         . ';--sage-2-rgb:' . $rgb($t[6]) . ';--sage-rgb:' . $rgb($t[5])
-        . ';' . fuente_css($c)
+        . ';' . fuente_css($c, $at)
         . ($at && isset($at['nombres_color']) ? ';--nombres-color:' . $at['nombres_color'] . ';--tinta:' . $at['tinta'] : '')
         . '}';
 }
 
-function fuente_css(array $c): string {
+function fuente_css(array $c, ?array $at = null): string {
     $f = FUENTES[$c['fuente'] ?? 'clasica'] ?? FUENTES['clasica'];
-    if (($c['atelier'] ?? '') !== '') $f = array_merge([ATELIER[$c['atelier']]['nombre']], ATELIER[$c['atelier']]['fuentes']);
+    if (($c['atelier'] ?? '') !== '') { $a = $at ?? ATELIER[$c['atelier']]; $f = array_merge([$a['nombre']], $a['fuentes']); }
     if (($a = FUENTES_AUTOR[$c['fuente_autor'] ?? ''] ?? null) && ($c['atelier'] ?? '') !== '') $f = [$a['nombre'], $a['titulos'], $a['textos'], $a['nombres'], $a['estilo']];
     return '--serif:' . $f[1] . ';--sans:' . $f[2] . ';--nombres:' . $f[3] . ';--nombres-estilo:' . $f[4];
 }

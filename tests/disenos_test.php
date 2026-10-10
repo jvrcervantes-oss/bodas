@@ -32,8 +32,9 @@ function pagina(array $c, array $ctxExtra = []): string {
     return str_replace(chr(13), '', (string) render_pagina($c, '', ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'prueba', 'foto' => '', 'mapa' => null] + $ctxExtra));
 }
 
-$css = (string) file_get_contents($raiz . '/assets/boda.css');
 $claves = array_keys(ATELIER);
+
+$css = (string) file_get_contents($raiz . '/assets/boda.css');
 
 // 0. El catálogo es coherente consigo mismo
 foreach (DISENO_PALANCAS as $k => $p) {
@@ -41,7 +42,21 @@ foreach (DISENO_PALANCAS as $k => $p) {
     if ($p['tipo'] === 'enum') {
         ok(isset($p['opciones'][$p['defecto']]), "$k: el defecto es una de sus opciones");
         foreach ($p['opciones'] as $ok_ => $o) ok((bool) preg_match('/^[A-Za-z][A-Za-z0-9_]*$/', (string) $ok_), "$k/$ok_: clave de opción solo letras y cifras");
-        foreach ($p['opciones'] as $ok_ => $o) ok($o[1] === null || (bool) preg_match('/^[a-z0-9.]+$/', (string) $o[1]), "$k/$ok_: el valor emitido es literal inocuo");
+        foreach ($p['opciones'] as $ok_ => $o) {
+            if (is_array($o[1])) { // letra: [pila, estilo]; la familia tiene que estar alojada y con sus ñ y tildes
+                ok((bool) preg_match("/^'[A-Za-z ]+', [A-Za-z, ]+$/", $o[1][0]) && in_array($o[1][1], ['normal', 'italic'], true), "$k/$ok_: pila de letra inocua");
+                $fam = preg_match("/^'([^']+)'/", $o[1][0], $fm) ? $fm[1] : '';
+                ok(strpos($css, "font-family: '$fam'") !== false, "$k/$ok_: «{$fam}» está declarada con @font-face en boda.css");
+            } elseif (isset($p['por_diseno'])) {
+                ok($o[1] === null || (bool) preg_match("/^'[A-Za-z ]+', [A-Za-z, ]+$/", (string) $o[1]), "$k/$ok_: pila de letra inocua");
+                $fam = preg_match("/^'([^']+)'/", (string) $o[1], $fm) ? $fm[1] : '';
+                ok($o[1] === null || strpos($css, "font-family: '$fam'") !== false, "$k/$ok_: «{$fam}» está declarada con @font-face en boda.css");
+            } else ok($o[1] === null || (bool) preg_match('/^[a-z0-9.]+$/', (string) $o[1]), "$k/$ok_: el valor emitido es literal inocuo");
+        }
+        foreach ($p['por_diseno'] ?? [] as $dk => $lista) {
+            ok(isset(ATELIER[$dk]) && in_array($p['defecto'], $lista, true) && !array_diff($lista, array_keys($p['opciones'])), "$k/$dk: opciones por diseño del catálogo y con la de fábrica");
+            ok(count($lista) === 3, "$k/$dk: tres opciones (la de fábrica y dos más)");
+        }
     }
 }
 ok(array_keys(DISENO_PRIMARY_SIGUE) === array_keys(ATELIER) || (array_diff(array_keys(ATELIER), array_keys(DISENO_PRIMARY_SIGUE)) === []), 'DISENO_PRIMARY_SIGUE cubre los seis');
@@ -140,6 +155,16 @@ foreach ($claves as $k) {
     ok(substr_count($h, '<style>') === 1, "$k: un solo <style> inline");
     foreach (diseno_atributos($k, $aj) as $an => $av) ok(preg_match('/^[a-z-]+$/', $an) === 1 && preg_match('/^[a-z]+$/', $av) === 1, "$k: atributo $an inocuo");
 }
+
+// Letra: solo las del diseño; lo de otro diseño o inventado no pasa; la emisión lleva la pila del catálogo
+ok(normaliza_diseno('ceramica', ['letra_nombres' => 'sacramento']) === [], 'Sacramento no es opción de Cerámica');
+ok(normaliza_diseno('lacre', ['letra_nombres' => 'sacramento']) === ['letra_nombres' => 'sacramento'], 'Sacramento sí lo es de Lacre');
+ok(normaliza_diseno('lacre', ['letra_titulos' => 'diseno']) === [], 'la opción «como el diseño» no se guarda');
+ok(normaliza_diseno('lacre', ['letra_titulos' => "bodoni'}</style>"]) === [], 'una clave de letra con inyección cae');
+$h = pagina(web('lacre'), ['ajustes_diseno' => ['letra_titulos' => 'bodoni', 'letra_nombres' => 'sacramento']]);
+ok(strpos($h, "--serif:'Bodoni Moda', Georgia, serif") !== false && strpos($h, "--nombres:'Sacramento', cursive;--nombres-estilo:normal") !== false, 'lacre: las letras elegidas llegan a --serif / --nombres');
+$h = pagina(web('masia'), ['ajustes_diseno' => ['letra_nombres' => 'playfairit']]);
+ok(strpos($h, "--nombres:'Playfair Display', Georgia, serif;--nombres-estilo:italic") !== false, 'masia: letra de nombres en cursiva');
 
 // Color: contrastes y mezclas conocidas
 ok(abs(dis_contraste('#000000', '#ffffff') - 21.0) < 0.01, 'contraste negro/blanco = 21');

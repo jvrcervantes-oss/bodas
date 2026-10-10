@@ -41,6 +41,7 @@
        [--capturas <dir>]   además, capturas de página entera (PNG): <diseño>_390, <diseño>_1440, <diseño>_390_largo
                             con «Lucía & Marcos» / «María de los Ángeles & Juan Francisco», y las dos webs Esencial de
                             control (control_esencial_390…) para comprobar que no cambian ni un píxel.
+   [--ajustes '<json>'] mide con palancas movidas (app/disenos.php), p. ej. '{"papel":"#101010","nombres_tam":"XL"}': es la medida del gate de «Publicar».
    Salida: 0 = todo en regla · 1 = hay incumplimientos (listados) · 2 = no ha podido medir. */
 'use strict';
 const { chromium } = require('playwright-core');
@@ -134,7 +135,8 @@ async function cargado(page, donde) {
   }
   throw new NoMira(donde + ': fuentes o imágenes sin cargar');
 }
-const genera = (extra) => JSON.parse(execFileSync(PHP, [path.join(__dirname, 'estilos_paginas.php'), ...extra], { cwd: RAIZ, maxBuffer: 64 << 20 }).toString('utf8'));
+const AJUSTES = arg('--ajustes', null); // S3: JSON de ajustes de diseño (palancas movidas) que se pasa a todos los diseños
+const genera = (extra) => JSON.parse(execFileSync(PHP, [path.join(__dirname, 'estilos_paginas.php'), ...extra, ...(AJUSTES ? ['--ajustes', AJUSTES] : [])], { cwd: RAIZ, maxBuffer: 64 << 20 }).toString('utf8'));
 
 /* ---------- en la página ---------- */
 // Marca cada elemento con texto propio (data-fab) y devuelve lo que se mide sin píxeles.

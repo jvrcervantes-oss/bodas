@@ -6,13 +6,14 @@
 // Uso: php tests/estilos_paginas.php   (el .htaccess devuelve 404 a tests/: nunca se sirve)
 // Opciones (las usa tests/fabrica_atelier.js; sin ellas la salida es la de siempre, que es la que mide el arnés):
 //   --nombres "Uno|Dos"  cambia los nombres de la pareja (la previa de nombres largos y las capturas)
+//   --ajustes '<json>'   ajustes de diseño (S3, app/disenos.php) pasados por ctx a todos los diseños: mide el arnés con las palancas movidas
 //   --control            añade las dos webs Esencial de los snapshots (esencial, foto_papel), con su nombre como clave:
 //                        sirven de control de que un cambio Atelier no toca el Esencial
 
 declare(strict_types=1);
 
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
-$opt = getopt('', ['nombres:', 'control']);
+$opt = getopt('', ['nombres:', 'control', 'ajustes:']);
 $nombres = isset($opt['nombres']) ? explode('|', (string) $opt['nombres'], 2) + [1 => ''] : null;
 $tmp = sys_get_temp_dir() . '/bodas_estilos_' . bin2hex(random_bytes(4));
 mkdir($tmp, 0700, true);
@@ -37,6 +38,7 @@ foreach (SNAP_CONFIGS as $nom) {
     if ($nombres) { $c['pareja']['nombre1'] = $nombres[0]; $c['pareja']['nombre2'] = $nombres[1]; }
     $c = normaliza_config($c);
     $ctx = ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'prueba-snap', 'foto' => !empty($c['foto']) ? '/foto?v=1' : '', 'mapa' => null];
+    if (isset($opt['ajustes']) && !$control) $ctx['ajustes_diseno'] = json_decode((string) $opt['ajustes'], true) ?: [];
     $rutas = ['', 'privacidad'];
     foreach ($c['secciones'] as $s) if ($s['on']) $rutas[] = $s['ruta'];
     $paginas = [];
