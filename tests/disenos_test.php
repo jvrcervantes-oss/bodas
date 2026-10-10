@@ -51,7 +51,7 @@ foreach (DISENO_PALANCAS as $k => $p) {
                 ok($o[1] === null || (bool) preg_match("/^'[A-Za-z ]+', [A-Za-z, ]+$/", (string) $o[1]), "$k/$ok_: pila de letra inocua");
                 $fam = preg_match("/^'([^']+)'/", (string) $o[1], $fm) ? $fm[1] : '';
                 ok($o[1] === null || strpos($css, "font-family: '$fam'") !== false, "$k/$ok_: «{$fam}» está declarada con @font-face en boda.css");
-            } else ok($o[1] === null || (bool) preg_match('/^[a-z0-9.]+$/', (string) $o[1]), "$k/$ok_: el valor emitido es literal inocuo");
+            } else ok($o[1] === null || (bool) preg_match('/^-?[a-z0-9.]+$/', (string) $o[1]), "$k/$ok_: el valor emitido es literal inocuo");
         }
         foreach ($p['por_diseno'] ?? [] as $dk => $lista) {
             ok(isset(ATELIER[$dk]) && in_array($p['defecto'], $lista, true) && !array_diff($lista, array_keys($p['opciones'])), "$k/$dk: opciones por diseño del catálogo y con la de fábrica");
@@ -102,7 +102,7 @@ foreach ($claves as $k) {
     $c = web($k);
     $base = pagina($c);
     ok(pagina($c, ['ajustes_diseno' => []]) === $base, "$k: ajustes vacíos = fábrica");
-    ok(pagina($c, ['ajustes_diseno' => ['papel' => ATELIER[$k]['colores'][4], 'nombres_tam' => 'M', 'accesos' => 'filetes', 'nombres_color' => 'diseno']]) === $base, "$k: ajustes iguales a la fábrica = fábrica");
+    ok(pagina($c, ['ajustes_diseno' => ['papel' => ATELIER[$k]['colores'][4], 'nombres_tam' => 'M', 'accesos' => 'filetes', 'nombres_color' => 'diseno', 'ritmo' => 'M', 'ancho_texto' => 'normal', 'arte_escala' => 'e100', 'arte_x' => 'c0', 'arte_y' => 'c0', 'rotulos' => 'versalitas', 'hero_botones' => 'todos', 'letra_titulos' => 'diseno', 'letra_nombres' => 'diseno']]) === $base, "$k: ajustes iguales a la fábrica = fábrica");
     ok(diseno_css($k, []) === '', "$k: sin ajustes no se emite ni un bloque vacío");
     ok(strpos($base, 'atelier-' . $k . '{') === false && strpos($base, 'body.atelier.atelier-') === false, "$k: la fábrica no lleva el bloque de ajustes");
 }
@@ -165,6 +165,22 @@ $h = pagina(web('lacre'), ['ajustes_diseno' => ['letra_titulos' => 'bodoni', 'le
 ok(strpos($h, "--serif:'Bodoni Moda', Georgia, serif") !== false && strpos($h, "--nombres:'Sacramento', cursive;--nombres-estilo:normal") !== false, 'lacre: las letras elegidas llegan a --serif / --nombres');
 $h = pagina(web('masia'), ['ajustes_diseno' => ['letra_nombres' => 'playfairit']]);
 ok(strpos($h, "--nombres:'Playfair Display', Georgia, serif;--nombres-estilo:italic") !== false, 'masia: letra de nombres en cursiva');
+
+// Botones del hero = uno: solo el de confirmar; donde el hero ya lleva su CTA, ninguno más. Herbario y Masía no tienen la palanca
+$uno = ['hero_botones' => 'uno'];
+$h = pagina(web('ceramica'), ['ajustes_diseno' => $uno]);
+ok(substr_count($h, 'class="tal-btn') === 1 && strpos($h, 'tal-btn tal-rsvp') !== false, 'ceramica: un solo acceso en el hero y es el de confirmar');
+ok(substr_count(pagina(web('ceramica')), 'class="tal-btn') === 3, 'ceramica: de fábrica sigue con tres');
+$h = pagina(web('citricos'), ['ajustes_diseno' => $uno]);
+ok(preg_match('~<nav class="cit-nav"[^>]*>(.*?)</nav>~s', $h, $nm) === 1 && substr_count($nm[1], '<a ') === 1 && strpos($nm[1], 'Confirmar') !== false, 'citricos: un solo acceso, Confirmar');
+ok(strpos(pagina(web('lacre'), ['ajustes_diseno' => $uno]), 'class="lac-nav"') === false && strpos(pagina(web('lacre'), ['ajustes_diseno' => $uno]), 'lac-btn') !== false, 'lacre: sin la fila de accesos, con su CTA');
+ok(strpos(pagina(web('atardecer'), ['ajustes_diseno' => $uno]), 'class="atd-nav"') === false && strpos(pagina(web('atardecer'), ['ajustes_diseno' => $uno]), 'atd-btn') !== false, 'atardecer: sin la fila de accesos, con su CTA');
+ok(normaliza_diseno('masia', $uno) === [] && normaliza_diseno('herbario', $uno) === [], 'masia y herbario no tienen la palanca (ya llevan solo uno)');
+// Atributos: rotulos y arte solo salen si se mueven; los valores son los del catálogo
+ok(diseno_atributos('lacre', []) === ['data-accesos' => 'filetes'], 'sin ajustes el único atributo es el de fábrica');
+ok(diseno_atributos('lacre', ['rotulos' => 'normal', 'arte_escala' => 'e80']) === ['data-accesos' => 'filetes', 'data-rotulos' => 'normal', 'data-arte' => 'si'], 'rotulos y arte activan sus atributos');
+$bl = diseno_css('lacre', ['arte_escala' => 'e80', 'arte_x' => 'm16', 'ritmo' => 'L', 'ancho_texto' => 'ancho']);
+ok($bl === 'body.atelier.atelier-lacre{--at-ritmo:1.4;--at-ancho-texto:900px;--at-arte-escala:0.8;--at-arte-x:-16px;}', 'el bloque lleva solo lo movido, en el orden del catálogo (' . $bl . ')');
 
 // Color: contrastes y mezclas conocidas
 ok(abs(dis_contraste('#000000', '#ffffff') - 21.0) < 0.01, 'contraste negro/blanco = 21');

@@ -54,7 +54,27 @@ const DISENO_PALANCAS = [
         'css' => '--at-nombres-escala', 'vars' => ['--at-nombres-escala']],
     'accesos' => ['tipo' => 'enum', 'grupo' => 'Composición', 'etiqueta' => 'Accesos', 'solo' => null, 'defecto' => 'filetes',
         'opciones' => ['filetes' => ['Filetes', 'filetes'], 'tarjetas' => ['Tarjetas', 'tarjetas']],
-        'attr' => 'data-accesos', 'vars' => []],
+        'attr' => 'data-accesos', 'siempre' => true, 'vars' => []],
+    'ritmo' => ['tipo' => 'enum', 'grupo' => 'Composición', 'etiqueta' => 'Ritmo vertical entre secciones', 'solo' => null, 'defecto' => 'M',
+        'opciones' => ['S' => ['Compacto', '0.85'], 'M' => ['Normal', '1'], 'L' => ['Amplio', '1.4']], 'css' => '--at-ritmo', 'vars' => ['--at-ritmo']],
+    'ancho_texto' => ['tipo' => 'enum', 'grupo' => 'Composición', 'etiqueta' => 'Ancho del texto', 'solo' => null, 'defecto' => 'normal',
+        'opciones' => ['estrecho' => ['Estrecho', '680px'], 'normal' => ['Normal', '780px'], 'ancho' => ['Ancho', '900px']], 'css' => '--at-ancho-texto', 'vars' => ['--at-ancho-texto']],
+    // Los accesos del hero: «todos» = los de fábrica; «uno» = solo el de confirmar (donde hay otra CTA rellena, ninguno más). Herbario y Masía ya llevan solo uno
+    'hero_botones' => ['tipo' => 'enum', 'grupo' => 'Hero', 'etiqueta' => 'Botones del hero', 'solo' => ['citricos', 'ceramica', 'lacre', 'atardecer'], 'defecto' => 'todos',
+        'opciones' => ['todos' => ['Todos', 'todos'], 'uno' => ['Solo confirmar', 'uno']], 'vars' => []],
+    'rotulos' => ['tipo' => 'enum', 'grupo' => 'Letra', 'etiqueta' => 'Rótulos', 'solo' => null, 'defecto' => 'versalitas',
+        'opciones' => ['versalitas' => ['En versalitas', 'versalitas'], 'normal' => ['En minúsculas', 'normal']], 'attr' => 'data-rotulos', 'vars' => []],
+    // Pieza principal de cada diseño (la rama de Cítricos, el marco de Cerámica, la banda de Herbario, el sello de Lacre, el grabado de Masía,
+    // el aro de Atardecer): escala 60-120 % y desplazamiento ±24 px, en pasos. data-arte las activa solo si alguna se mueve.
+    'arte_escala' => ['tipo' => 'enum', 'grupo' => 'Arte', 'etiqueta' => 'Tamaño de la pieza principal', 'solo' => null, 'defecto' => 'e100',
+        'opciones' => ['e60' => ['60 %', '0.6'], 'e70' => ['70 %', '0.7'], 'e80' => ['80 %', '0.8'], 'e90' => ['90 %', '0.9'], 'e100' => ['100 %', '1'], 'e110' => ['110 %', '1.1'], 'e120' => ['120 %', '1.2']],
+        'css' => '--at-arte-escala', 'vars' => ['--at-arte-escala']],
+    'arte_x' => ['tipo' => 'enum', 'grupo' => 'Arte', 'etiqueta' => 'Posición horizontal de la pieza', 'solo' => null, 'defecto' => 'c0',
+        'opciones' => ['m24' => ['-24 px', '-24px'], 'm16' => ['-16 px', '-16px'], 'm8' => ['-8 px', '-8px'], 'c0' => ['Centrada', '0px'], 'p8' => ['+8 px', '8px'], 'p16' => ['+16 px', '16px'], 'p24' => ['+24 px', '24px']],
+        'css' => '--at-arte-x', 'vars' => ['--at-arte-x']],
+    'arte_y' => ['tipo' => 'enum', 'grupo' => 'Arte', 'etiqueta' => 'Posición vertical de la pieza', 'solo' => null, 'defecto' => 'c0',
+        'opciones' => ['m24' => ['-24 px', '-24px'], 'm16' => ['-16 px', '-16px'], 'm8' => ['-8 px', '-8px'], 'c0' => ['Centrada', '0px'], 'p8' => ['+8 px', '8px'], 'p16' => ['+16 px', '16px'], 'p24' => ['+24 px', '24px']],
+        'css' => '--at-arte-y', 'vars' => ['--at-arte-y']],
 ];
 
 // Variables `--at-*` que NO mueve ninguna palanca, con el porqué. (tests/disenos_test.php (d): toda `--at-*` de boda.css
@@ -228,13 +248,21 @@ function diseno_css(string $clave, array $aj): string {
     return preg_match('/[<>\\\\]/', $o) ? '' : $o;
 }
 
-/** Atributos del <body> que mueven las palancas (hoy solo «accesos»). Siempre trae el de fábrica. @return array<string,string> */
+/** Atributos del <body> que mueven las palancas. «accesos» sale siempre (fábrica = filetes); los demás solo si se mueven, para que sin
+ *  ajustes el HTML sea el de siempre. @return array<string,string> */
 function diseno_atributos(string $clave, array $aj): array {
     $aj = normaliza_diseno($clave, $aj);
     $o = [];
     foreach (DISENO_PALANCAS as $k => $p) {
         if (!isset($p['attr'])) continue;
+        if (!isset($aj[$k]) && empty($p['siempre'])) continue;
         $o[$p['attr']] = $p['opciones'][$aj[$k] ?? $p['defecto']][1];
     }
+    if (isset($aj['arte_escala']) || isset($aj['arte_x']) || isset($aj['arte_y'])) $o['data-arte'] = 'si';
     return $o;
+}
+
+/** ¿Solo el acceso de confirmar en el hero? (palanca hero_botones; lo lee render.php) */
+function diseno_hero_uno(string $clave, array $aj): bool {
+    return (normaliza_diseno($clave, $aj)['hero_botones'] ?? '') === 'uno';
 }

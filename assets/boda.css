@@ -1717,7 +1717,7 @@ body[data-accesos="filetes"] .event-list > .event-card:first-child{ border-top: 
    en vez de cortarlos. Lo mide tests/fabrica_atelier.js en el navegador. Va antes del bloque de Limonar: donde
    Limonar dice otra cosa con la misma especificidad, manda Limonar.
    ============================================================ */
-body.atelier{ --at-nombres-escala: 1; --r: 0; --r-lg: 0; --shadow: none; --shadow-lg: none; --shadow-btn: none; --card: var(--sage);
+body.atelier{ --at-nombres-escala: 1; --at-ritmo: 1; --at-ancho-texto: 780px; --at-arte-escala: 1; --at-arte-x: 0px; --at-arte-y: 0px; --r: 0; --r-lg: 0; --shadow: none; --shadow-lg: none; --shadow-btn: none; --card: var(--sage);
   --ink: var(--tinta, var(--primary)); --ink-soft: var(--tinta, var(--primary)); --ink-muted: var(--secondary);
   font-size: 16px; font-weight: 400; }
 body.atelier .hero-names{ letter-spacing: 0; }
@@ -1822,6 +1822,23 @@ body.atelier-lacre main.home > :not(.hero), body.atelier-atardecer main.home > :
   body.atelier-lacre .site-footer, body.atelier-atardecer .site-footer{ width: min(1080px, 100% - 48px); margin-left: auto; margin-right: auto; }
   body.atelier-lacre .site-footer, body.atelier-atardecer .site-footer{ margin-top: 0; margin-bottom: 56px; }
 }
+
+/* ============================================================
+   Palancas del editor de diseños (encargo 20261009_bodas_editor_disenos_atelier, S3; app/disenos.php).
+   Sus defectos viven en `body.atelier{ --at-* }` (arriba) y el render solo emite lo que el estudio mueve. Con el defecto,
+   cada regla da el mismo valor de siempre (las que no, solo existen con el atributo del <body> que pone la palanca).
+   ============================================================ */
+/* Ritmo vertical: el hueco entre secciones (56 px de fábrica) por un factor. :not(:last-child) conserva el cero de la última */
+body.atelier .section:not(:last-child){ padding-bottom: calc(var(--s-xl) * var(--at-ritmo)); }
+/* Ancho del texto de las páginas interiores (780 px de fábrica) */
+body.atelier main > .wrap{ width: min(var(--at-ancho-texto), 100% - 2 * var(--gutter)); }
+/* Rótulos en versalitas: solo si el estudio los quiere en minúsculas (data-rotulos="normal") */
+body.atelier[data-rotulos="normal"] .kicker{ text-transform: none; letter-spacing: .04em; font-size: 16px; }
+/* Pieza principal de cada diseño: escala y desplazamiento. Solo con data-arte (individual transform properties: se suman al transform y a las animaciones de la pieza) */
+body[data-arte].atelier-citricos .esq, body[data-arte].atelier-citricos .cit-racimo, body[data-arte].atelier-herbario .banda-herbario,
+body[data-arte].atelier-masia .arte-masia, body[data-arte].atelier-lacre .lac-sello,
+body[data-arte].atelier-ceramica .mat-inner::before, body[data-arte].atelier-atardecer .mat-inner::before{
+  scale: var(--at-arte-escala); translate: var(--at-arte-x) var(--at-arte-y); }
 
 /* ============================================================
    Cítricos y azahar · piel «Limonar» (owner, 8-oct-2026; encargo 20261008_bodas_citricos_limonar).

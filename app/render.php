@@ -20,6 +20,7 @@ function render_pagina(array $c, string $ruta, array $ctx): ?string {
     $ctx += ['modo' => 'live', 'assets' => '/assets/', 'foto' => '', 'slug' => ''];
     // Ajustes de diseño (S3): los pone SOLO quien llama desde código del estudio; nunca salen del config de la pareja ni de la petición
     $ctx['ajustes_diseno'] = ($c['atelier'] ?? '') !== '' && is_array($ctx['ajustes_diseno'] ?? null) ? normaliza_diseno($c['atelier'], $ctx['ajustes_diseno']) : [];
+    $ctx['hero_uno'] = ($c['atelier'] ?? '') !== '' && diseno_hero_uno($c['atelier'], $ctx['ajustes_diseno']);
     if ($ruta === '' || $ruta === 'inicio') {
         $titulo = nombres($c) ?: 'Nuestra boda';
         $cuerpo = pagina_inicio($c, $ctx);
@@ -123,14 +124,16 @@ function monograma(array $c): string { return str_replace(' ', '', iniciales($c)
 
 /** Hasta $n accesos a secciones de la web, en el orden en que la pareja las tiene. $claseRsvp: la clase del de
  *  confirmar, si la lleva distinta (Cerámica: solo ese va relleno, S2b). */
-function accesos(array $c, array $ctx, int $n, string $clase = '', string $claseRsvp = ''): array {
+function accesos(array $c, array $ctx, int $n, string $clase = '', string $claseRsvp = '', bool $soloCta = false): array {
     $links = [];
     foreach (['informacion', 'rsvp', 'regalos', 'musica', 'historia', 'galeria'] as $t) {
         $s = seccion_tipo($c, $t);
         $cl = ($t === 'rsvp' && $claseRsvp !== '') ? $claseRsvp : $clase;
-        if ($s && count($links) < $n) $links[] = a_interno($s['ruta'], $ctx, $cl !== '' ? 'class="' . $cl . '"' : '') . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
+        if ($s && count($links) < $n) $links[$t] = a_interno($s['ruta'], $ctx, $cl !== '' ? 'class="' . $cl . '"' : '') . h($t === 'rsvp' ? 'Confirmar' : $s['titulo']) . '</a>';
     }
-    return $links;
+    // Palanca «botones del hero = uno» (S3): solo el de confirmar (o el primero si no hay confirmar). Donde el hero ya lleva su CTA, $soloCta: ninguno
+    if ($links && ($ctx['hero_uno'] ?? false)) $links = $soloCta ? [] : [$links['rsvp'] ?? reset($links)];
+    return array_values($links);
 }
 
 /** Nombres del hero Atelier (S2b): el conector («&» o «y») y el segundo nombre van juntos en una caja en línea
@@ -192,7 +195,7 @@ function atelier_tras_texto(array $c, array $ctx): string {
                 . ($lugar !== '' ? '<p class="tal-lugar">' . h($lugar) . '</p>' : '')
                 . ($links ? '<nav class="tal-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
         case 'lacre':
-            $links = accesos($c, $ctx, 4);
+            $links = accesos($c, $ctx, 4, '', '', true);
             return sello_bronce($c, $A, 'sello-bronce lac-sello')
                 . ($lugar !== '' ? '<p class="lac-lugar">' . h($lugar) . '</p>' : '')
                 . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="lac-btn"') . h($rsvp['titulo']) . '</a>' : '')
@@ -202,7 +205,7 @@ function atelier_tras_texto(array $c, array $ctx): string {
             return ($lugar !== '' ? '<p class="mas-lugar">' . h($lugar) . '</p>' : '')
                 . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="btn mas-btn"') . h($rsvp['titulo']) . '</a>' : '');
         case 'atardecer':
-            $links = accesos($c, $ctx, 3);
+            $links = accesos($c, $ctx, 3, '', '', true);
             return ($lugar !== '' ? '<p class="atd-lugar">' . h($lugar) . '</p>' : '')
                 . ($rsvp ? a_interno($rsvp['ruta'], $ctx, 'class="atd-btn"') . h($rsvp['titulo']) . '</a>' : '')
                 . ($links ? '<nav class="atd-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
