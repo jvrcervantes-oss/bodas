@@ -17,7 +17,15 @@
      · movil-<k>.webp: la pantalla de un móvil de 390 × 802 (9:18,5) al abrir la web, con su cabecera y su barra. Sin
        foto de la pareja (no hay una de verdad que enseñar, y la de los arneses es una captura de la web): portada sola.
    Las muestra-*.webp no se tocan: las usan el constructor (crear.js) y los arneses como foto fija.
-   Comprueba que en la tarjeta no queda ningún enlace ni botón visible: si un diseño cambia el nombre de los suyos, para.
+   Para (sale con 2, sin escribir) si en la tarjeta queda un enlace o botón visible (un diseño renombró los suyos), si en
+   lo que se ve de la tarjeta o del móvil hay un dato del fixture de pruebas («Prueba», «Calle Falsa», example.com, Alfa,
+   Beta, 2031), o si la letra con la que la portada pinta los nombres no es la de ATELIER (la landing la escribe al lado).
+
+   Manifiesto (revisor, 10-oct-2026: la copia guarda con qué compararla): al escribir en assets/img/atelier deja en
+   tests/fixtures/tarjetas_atelier.json, por diseño, de qué salieron sus imágenes: su ATELIER (colores y fuentes de
+   app/schema.php), la huella de su línea base de estilos (tests/fixtures/estilos/<k>.txt.gz, que se regraba cuando su
+   aspecto cambia a propósito), la letra de los nombres y el tamaño de cada imagen. tests/landing_atelier_test.php (en el
+   gate) lo compara con lo de ahora: si un diseño cambió, pide volver a correr esto.
 
    Uso (no va en el gate: necesita Edge y playwright-core; tools/test.py solo corre *_test.php):
      NODE_PATH=<carpeta con playwright-core> node tests/tarjetas_atelier.js [--diseno <clave>] [--salida <dir>]
@@ -51,6 +59,9 @@ const MUESTRA_CITRICOS = { fecha: '2027-06-12', ciudad: 'Valencia', ceremonia: {
 // Cómo se recorta cada tarjeta (ver cabecera)
 const MODO = { lacre: ['alfa', 1440], ceramica: ['alfa', 1440], herbario: ['alfa', 1440], masia: ['alfa', 1440], atardecer: ['acuarela', 1440],
   citricos: ['papel', 390] };
+const MANIFIESTO = path.join(RAIZ, 'tests/fixtures/tarjetas_atelier.json');
+// Datos del fixture de pruebas (tests/fixtures/config_ejemplo_*.json) que no pueden salir en la landing
+const DE_PRUEBA = /Prueba|PRUEBA|Falsa|example\.com|\bAlfa|\bBeta\b|2031/;
 const ANCHO_TARJETA = 520;   // px del webp: la tarjeta se ve a 248 px CSS como mucho (2x)
 const ANCHO_MOVIL = 360;     // px del webp: la pantalla se ve a 152 px CSS como mucho
 // Lo que en la portada es web y no invitación: botones, enlaces, la etiqueta de Herbario y la cuenta atrás de Cítricos
@@ -60,6 +71,23 @@ const SOLO_TARJETA = `html, body { background: transparent !important; }
   body :not(.hero-left):not(.hero-left *) { visibility: hidden !important; }
   .hero-left { visibility: visible !important; }`;
 
+const primera = (familia) => familia.split(',')[0].trim().replace(/^['"]|['"]$/g, '');
+const lineaBase = (k) => require('crypto').createHash('sha256')
+  .update(require('zlib').gunzipSync(fs.readFileSync(path.join(__dirname, 'fixtures/estilos', k + '.txt.gz')))).digest('hex');
+// El texto que se ve dentro de un rectángulo de la página (coordenadas de página)
+function textoEn({ x, y, width, height }) {
+  const out = [];
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let t = tw.nextNode(); t; t = tw.nextNode()) {
+    if (!t.textContent.trim() || getComputedStyle(t.parentElement).visibility === 'hidden') continue;
+    const rg = document.createRange(); rg.selectNodeContents(t);
+    for (const r of rg.getClientRects()) {
+      const rx = r.x + scrollX, ry = r.y + scrollY;
+      if (r.width && r.height && rx < x + width && rx + r.width > x && ry < y + height && ry + r.height > y) { out.push(t.textContent.trim()); break; }
+    }
+  }
+  return out.join(' · ');
+}
 const genera = (datos) => JSON.parse(execFileSync(PHP, [path.join(__dirname, 'estilos_paginas.php'), '--nombres', 'Lucía|Marcos', '--datos', JSON.stringify(datos)],
   { cwd: RAIZ, maxBuffer: 64 << 20 }).toString('utf8'));
 
@@ -113,18 +141,18 @@ async function webp(browser, png, ancho, calidad) {
   const ctx = await browser.newContext();
   try {
     const page = await ctx.newPage();
-    const b64 = await page.evaluate(async ({ src, ancho, calidad }) => {
+    const [b64, alto] = await page.evaluate(async ({ src, ancho, calidad }) => {
       const im = new Image(); im.src = src; await im.decode();
       const alto = Math.round(im.naturalHeight * ancho / im.naturalWidth);
       const c = document.createElement('canvas'); c.width = ancho; c.height = alto;
       const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(im, 0, 0, ancho, alto);
-      return c.toDataURL('image/webp', calidad).split(',')[1];
+      return [c.toDataURL('image/webp', calidad).split(',')[1], alto];
     }, { src: 'data:image/png;base64,' + png.toString('base64'), ancho, calidad });
-    return Buffer.from(b64, 'base64');
+    return { buf: Buffer.from(b64, 'base64'), tam: [ancho, alto] };
   } finally { await ctx.close(); }
 }
 
-async function tarjeta(browser, clave, paginas) {
+async function tarjeta(browser, clave, paginas, atelier) {
   if (!MODO[clave]) throw new NoPuedo(clave + ': diseño sin modo de recorte en MODO');
   const [modo, ancho] = MODO[clave];
   const { ctx, page } = await abre(browser, paginas, ancho, ancho > 900 ? 900 : 844, SIN_WEB + (modo === 'alfa' ? SOLO_TARJETA : ''));
@@ -147,20 +175,28 @@ async function tarjeta(browser, clave, paginas) {
       : { x: m.x, y: m.y, width: m.w, height: m.fin + 48 - m.y };
     clip.x = Math.max(0, clip.x); clip.y = Math.max(0, clip.y);
     clip.width = Math.min(clip.width, ancho - clip.x);
+    const texto = await page.evaluate(textoEn, clip);
+    if (DE_PRUEBA.test(texto)) throw new NoPuedo(clave + ': la tarjeta enseña datos del fixture de pruebas: ' + texto);
+    const [fam, est] = [primera(atelier.fuentes[2]), atelier.fuentes[3]];
+    if (primera(m.nombres.familia) !== fam || m.nombres.estilo !== est) {
+      throw new NoPuedo(clave + ': la portada pinta los nombres en ' + m.nombres.familia + ' ' + m.nombres.estilo + ' y ATELIER dice ' + fam + ' ' + est);
+    }
     const png = await page.screenshot({ type: 'png', clip, fullPage: true, omitBackground: modo === 'alfa' });
-    const out = await webp(browser, png, ANCHO_TARJETA, 0.86);
+    const { buf: out, tam } = await webp(browser, png, ANCHO_TARJETA, 0.86);
     fs.writeFileSync(path.join(SALIDA, 'tarjeta-' + clave + '.webp'), out);
-    return { clip: [clip.width, clip.height].map(Math.round).join('×'), bytes: out.length, nombres: m.nombres };
+    return { clip: [clip.width, clip.height].map(Math.round).join('×'), bytes: out.length, nombres: { familia: fam, estilo: est }, tam };
   } finally { await ctx.close(); }
 }
 
 async function movil(browser, clave, paginas) {
   const { ctx, page } = await abre(browser, paginas, 390, 802, '');
   try {
+    const texto = await page.evaluate(textoEn, { x: 0, y: 0, width: 390, height: 802 });
+    if (DE_PRUEBA.test(texto)) throw new NoPuedo(clave + ': el móvil enseña datos del fixture de pruebas: ' + texto);
     const png = await page.screenshot({ type: 'png' });
-    const out = await webp(browser, png, ANCHO_MOVIL, 0.82);
+    const { buf: out, tam } = await webp(browser, png, ANCHO_MOVIL, 0.82);
     fs.writeFileSync(path.join(SALIDA, 'movil-' + clave + '.webp'), out);
-    return { bytes: out.length };
+    return { bytes: out.length, tam };
   } finally { await ctx.close(); }
 }
 
@@ -173,16 +209,29 @@ async function movil(browser, clave, paginas) {
   catch (e) { throw new NoPuedo('tests/estilos_paginas.php ha fallado: ' + (e.stderr || e.message)); }
   const claves = Object.keys(gen.disenos).filter((k) => !SOLO || k === SOLO);
   if (!claves.length) throw new NoPuedo('no hay diseño ' + SOLO);
+  let ATELIER;
+  try { ATELIER = JSON.parse(execFileSync(PHP, ['-r', 'require "app/schema.php"; echo json_encode(ATELIER, JSON_UNESCAPED_UNICODE);'], { cwd: RAIZ }).toString('utf8')); }
+  catch (e) { throw new NoPuedo('no he podido leer ATELIER de app/schema.php: ' + (e.stderr || e.message)); }
+  const enAssets = SALIDA === path.join(RAIZ, 'assets/img/atelier');
+  const manifiesto = enAssets && fs.existsSync(MANIFIESTO) ? JSON.parse(fs.readFileSync(MANIFIESTO, 'utf8')) : { disenos: {} };
   fs.mkdirSync(SALIDA, { recursive: true });
   const browser = await chromium.launch({ executablePath: EDGE, headless: true, args: ['--font-render-hinting=none', '--disable-lcd-text', '--hide-scrollbars'] });
   try {
     for (const k of claves) {
-      const t = await tarjeta(browser, k, (k === 'citricos' ? genCit : gen).disenos[k].paginas);
+      if (!ATELIER[k]) throw new NoPuedo(k + ': no está en ATELIER');
+      const t = await tarjeta(browser, k, (k === 'citricos' ? genCit : gen).disenos[k].paginas, ATELIER[k]);
       const mv = await movil(browser, k, (k === 'citricos' ? genMovilCit : genMovil).disenos[k].paginas);
       console.log(k.padEnd(10) + ' tarjeta ' + t.clip + ' → ' + (t.bytes / 1024).toFixed(1) + ' KB · móvil ' + (mv.bytes / 1024).toFixed(1)
-        + ' KB · nombres: ' + t.nombres.familia + ' ' + t.nombres.estilo + ' ' + t.nombres.color);
+        + ' KB · nombres: ' + t.nombres.familia + ' ' + t.nombres.estilo);
+      manifiesto.disenos[k] = { atelier: { colores: ATELIER[k].colores, fuentes: ATELIER[k].fuentes }, linea_base: lineaBase(k),
+        nombres: t.nombres, tarjeta: t.tam, movil: mv.tam };
     }
   } finally { await browser.close(); }
+  if (enAssets) {
+    manifiesto.generado_por = 'tests/tarjetas_atelier.js';
+    fs.writeFileSync(MANIFIESTO, JSON.stringify(manifiesto, null, 1) + '\n');
+    console.log('manifiesto: ' + path.relative(RAIZ, MANIFIESTO).replace(/\\/g, '/'));
+  }
   console.log('escritas en ' + path.relative(RAIZ, SALIDA).replace(/\\/g, '/'));
 })().catch((e) => {
   console.error((e instanceof NoPuedo ? 'NO HE PODIDO: ' : 'ERROR: ') + (e.stack || e.message || e));

@@ -1,0 +1,215 @@
+{
+ "disenos": {
+  "citricos": {
+   "atelier": {
+    "colores": [
+     "#4F5E45",
+     "#4F5E45",
+     "#3F4B37",
+     "#5A6650",
+     "#FBF8F0",
+     "#E4E8D5",
+     "#D9DFC6",
+     "#B9A86A",
+     "#FBF8F0",
+     "#E4E8D5"
+    ],
+    "fuentes": [
+     "'Cormorant', Georgia, serif",
+     "'Cormorant', Georgia, serif",
+     "'Pinyon Script', cursive",
+     "normal"
+    ]
+   },
+   "linea_base": "68e19e59858992314f82e61eaa8a484322ed1218a9b0880ff32507265d5e2461",
+   "nombres": {
+    "familia": "Pinyon Script",
+    "estilo": "normal"
+   },
+   "tarjeta": [
+    520,
+    827
+   ],
+   "movil": [
+    360,
+    740
+   ]
+  },
+  "ceramica": {
+   "atelier": {
+    "colores": [
+     "#183B75",
+     "#183B75",
+     "#2C5EA8",
+     "#5E6B7C",
+     "#F5F3ED",
+     "#E6ECF3",
+     "#D8E2EC",
+     "#C6A664",
+     "#FDFCFA",
+     "#A9C2D8"
+    ],
+    "fuentes": [
+     "'Cinzel', Georgia, serif",
+     "'Cormorant Garamond', Georgia, serif",
+     "'Pinyon Script', cursive",
+     "normal"
+    ]
+   },
+   "linea_base": "6cb389b96a388dea32c2a370178a984bffe733db03deb311fad54cac2d808e99",
+   "nombres": {
+    "familia": "Pinyon Script",
+    "estilo": "normal"
+   },
+   "tarjeta": [
+    520,
+    519
+   ],
+   "movil": [
+    360,
+    740
+   ]
+  },
+  "herbario": {
+   "atelier": {
+    "colores": [
+     "#645166",
+     "#645166",
+     "#54445A",
+     "#58654D",
+     "#EFE9DD",
+     "#E4DCCB",
+     "#DCD2BE",
+     "#5A674E",
+     "#EDE3EE",
+     "#D2C4D4"
+    ],
+    "fuentes": [
+     "'Bodoni Moda', Georgia, serif",
+     "'Cormorant Garamond', Georgia, serif",
+     "'Newsreader', Georgia, serif",
+     "italic"
+    ]
+   },
+   "linea_base": "a5c0800ac6565d0b8a00809c0f2e11d0266d5af3f47979185601a2b31346d0b3",
+   "nombres": {
+    "familia": "Newsreader",
+    "estilo": "italic"
+   },
+   "tarjeta": [
+    520,
+    581
+   ],
+   "movil": [
+    360,
+    740
+   ]
+  },
+  "lacre": {
+   "atelier": {
+    "colores": [
+     "#2D2926",
+     "#9C694E",
+     "#85573F",
+     "#6B635B",
+     "#F3EFE8",
+     "#E8E2D8",
+     "#DDD5C8",
+     "#C5A059",
+     "#FAF8F5",
+     "#E5DED4"
+    ],
+    "fuentes": [
+     "'Playfair Display', Georgia, serif",
+     "'Cormorant Garamond', Georgia, serif",
+     "'Pinyon Script', cursive",
+     "normal"
+    ]
+   },
+   "linea_base": "53d022694327cccc22a9a65415a72473b3ea6e9ea693e84e1db5e94f24e57aa7",
+   "nombres": {
+    "familia": "Pinyon Script",
+    "estilo": "normal"
+   },
+   "tarjeta": [
+    520,
+    567
+   ],
+   "movil": [
+    360,
+    740
+   ]
+  },
+  "masia": {
+   "atelier": {
+    "colores": [
+     "#38312B",
+     "#A6634B",
+     "#8E533E",
+     "#4A5844",
+     "#F8F4EC",
+     "#EADFCD",
+     "#E1D4BE",
+     "#A6634B",
+     "#F3E2D6",
+     "#DDC3B3"
+    ],
+    "fuentes": [
+     "'Cinzel', Georgia, serif",
+     "'EB Garamond', Georgia, serif",
+     "'EB Garamond', Georgia, serif",
+     "italic"
+    ]
+   },
+   "linea_base": "b7c6adc464fe39bdbe49b692175d5cf1f9d68636b8d74f7d7de49f82155494b6",
+   "nombres": {
+    "familia": "EB Garamond",
+    "estilo": "italic"
+   },
+   "tarjeta": [
+    520,
+    667
+   ],
+   "movil": [
+    360,
+    740
+   ]
+  },
+  "atardecer": {
+   "atelier": {
+    "colores": [
+     "#A95B3E",
+     "#A95B3E",
+     "#964D33",
+     "#7A6E65",
+     "#F9F5EE",
+     "#F3D2C1",
+     "#EDC3AE",
+     "#C5A059",
+     "#FDFBF7",
+     "#F3D2C1"
+    ],
+    "fuentes": [
+     "'Playfair Display', Georgia, serif",
+     "'Montserrat', system-ui, sans-serif",
+     "'Pinyon Script', cursive",
+     "normal"
+    ]
+   },
+   "linea_base": "c6ba52f489f2b03fb3bac5f9d6368b9571cd3c1e0ab5d64328c0ec91f8afd781",
+   "nombres": {
+    "familia": "Pinyon Script",
+    "estilo": "normal"
+   },
+   "tarjeta": [
+    520,
+    579
+   ],
+   "movil": [
+    360,
+    740
+   ]
+  }
+ },
+ "generado_por": "tests/tarjetas_atelier.js"
+}

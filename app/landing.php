@@ -417,11 +417,13 @@ $secciones = ['incluye' => 'Qué incluye', 'pasos' => 'Cómo funciona', 'constru
             // Los seis paneles van en el HTML (el que no se ve, con hidden); landing.js solo cambia cuál ?>
 <?php $atDef = isset(ATELIER['lacre']) ? 'lacre' : array_key_first(ATELIER);
 $atImg = BASE_PATH . '/assets/img/atelier/';
-$atTam = function (string $k): array { $t = @getimagesize(__DIR__ . '/../assets/img/atelier/tarjeta-' . $k . '.webp'); return $t ? [$t[0], $t[1]] : [520, 650]; };
+// width/height de cada tarjeta (miden distinto); que existan todas lo vigila tests/landing_atelier_test.php
+$atTam = [];
+foreach (ATELIER as $k => $a) { $t = @getimagesize(__DIR__ . '/../assets/img/atelier/tarjeta-' . $k . '.webp'); $atTam[$k] = $t ? [$t[0], $t[1]] : [520, 650]; }
 // Cinco tintas de su paleta, sin repetir: principal, botón, secundario, oro y los fondos
 $atPaleta = function (array $col): array { $o = []; foreach ([0, 2, 3, 7, 5, 1, 6, 4] as $i) if (count($o) < 5 && isset($col[$i]) && !in_array($col[$i], $o, true)) $o[] = $col[$i]; return $o; }; ?>
       <div class="l-at-caja" data-atelier-caja>
-<?php foreach (ATELIER as $k => $a): [$tw, $th] = $atTam($k); ?>
+<?php foreach (ATELIER as $k => $a): [$tw, $th] = $atTam[$k]; ?>
         <div class="l-at-panel" id="atelier-<?= h($k) ?>" data-atelier-panel="<?= h($k) ?>"<?= $k === $atDef ? '' : ' hidden' ?>>
           <div class="l-at-mesa">
             <img class="l-at-carta" src="<?= $atImg ?>tarjeta-<?= h($k) ?>.webp" alt="Invitación de ejemplo del diseño <?= h($a['nombre']) ?>" width="<?= $tw ?>" height="<?= $th ?>" loading="lazy" decoding="async">
@@ -441,7 +443,7 @@ $atPaleta = function (array $col): array { $o = []; foreach ([0, 2, 3, 7, 5, 1, 
         </div>
 <?php endforeach; ?>
         <div class="l-at-minis" role="group" aria-label="Diseños de la Colección Atelier">
-<?php foreach (ATELIER as $k => $a): [$tw, $th] = $atTam($k); ?>
+<?php foreach (ATELIER as $k => $a): [$tw, $th] = $atTam[$k]; ?>
           <button type="button" class="l-at-mini" data-atelier="<?= h($k) ?>" aria-controls="atelier-<?= h($k) ?>" aria-pressed="<?= $k === $atDef ? 'true' : 'false' ?>" aria-label="<?= h($a['nombre']) ?>"><img src="<?= $atImg ?>tarjeta-<?= h($k) ?>.webp" alt="" width="<?= $tw ?>" height="<?= $th ?>" loading="lazy" decoding="async"></button>
 <?php endforeach; ?>
         </div>

@@ -16,6 +16,9 @@ declare(strict_types=1);
 
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $opt = getopt('', ['nombres:', 'control', 'ajustes:', 'datos:']);
+// --datos mal formado sale con 2: si se ignorara, las tarjetas de la landing se regrabarían con los datos del fixture («Prueba»)
+$datos = isset($opt['datos']) ? json_decode((string) $opt['datos'], true) : null;
+if (isset($opt['datos']) && !is_array($datos)) { fwrite(STDERR, "--datos no es un objeto JSON válido" . PHP_EOL); exit(2); }
 $nombres = isset($opt['nombres']) ? explode('|', (string) $opt['nombres'], 2) + [1 => ''] : null;
 $tmp = sys_get_temp_dir() . '/bodas_estilos_' . bin2hex(random_bytes(4));
 mkdir($tmp, 0700, true);
@@ -38,7 +41,7 @@ foreach (SNAP_CONFIGS as $nom) {
     if (strpos($nom, 'ejemplo_') !== 0 && !($control && isset($opt['control']))) continue;
     $c = json_decode((string) file_get_contents(__DIR__ . "/fixtures/config_$nom.json"), true);
     if ($nombres) { $c['pareja']['nombre1'] = $nombres[0]; $c['pareja']['nombre2'] = $nombres[1]; }
-    if (isset($opt['datos'])) $c = array_replace_recursive($c, json_decode((string) $opt['datos'], true) ?: []);
+    if ($datos) $c = array_replace_recursive($c, $datos);
     $c = normaliza_config($c);
     $ctx = ['modo' => 'live', 'assets' => '/assets/', 'slug' => 'prueba-snap', 'foto' => !empty($c['foto']) ? '/foto?v=1' : '', 'mapa' => null];
     if (isset($opt['ajustes']) && !$control) $ctx['ajustes_diseno'] = json_decode((string) $opt['ajustes'], true) ?: [];
