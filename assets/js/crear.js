@@ -632,14 +632,16 @@
     pinta();
     return caja;
   }
-  // Código de acceso a galería y libro: uno por boda, compartido por las dos secciones
+  // Código de acceso a galería y libro: uno por boda, compartido por las dos secciones.
+  // Se sincroniza por data-codigo-invitados, nunca por la clase .c-codigo: el código de regalo de «Publicar» (#codigo)
+  // comparte esa clase de estilo y se machacaba con el de la galería (11-oct-2026).
   function campoCodigo() {
-    var inp = el('input', { maxlength: 20, placeholder: 'Ej.: 1205 o LUCIAYMARCOS', autocomplete: 'off', spellcheck: 'false' });
+    var inp = el('input', { maxlength: 20, placeholder: 'Ej.: 1205 o LUCIAYMARCOS', autocomplete: 'off', spellcheck: 'false', 'data-codigo-invitados': '' });
     inp.value = st.codigo || '';
     inp.addEventListener('input', function () {
       inp.value = inp.value.replace(/[^A-Za-z0-9-]/g, '');
       st.codigo = inp.value;
-      document.querySelectorAll('.c-codigo input').forEach(function (o) { if (o !== inp) o.value = inp.value; });
+      document.querySelectorAll('[data-codigo-invitados]').forEach(function (o) { if (o !== inp) o.value = inp.value; });
       cambio();
     });
     return el('label', { class: 'c-campo c-codigo' }, [el('span', { text: 'Código para los invitados' }), inp,
