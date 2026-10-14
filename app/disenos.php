@@ -37,7 +37,7 @@ const DISENO_PALANCAS = [
         'opciones' => ['diseno' => ['Como el diseño', null], 'cormorant' => ['Cormorant', "'Cormorant', Georgia, serif"], 'garamond' => ['Cormorant Garamond', "'Cormorant Garamond', Georgia, serif"],
             'ebgaramond' => ['EB Garamond', "'EB Garamond', Georgia, serif"], 'playfair' => ['Playfair Display', "'Playfair Display', Georgia, serif"],
             'bodoni' => ['Bodoni Moda', "'Bodoni Moda', Georgia, serif"], 'newsreader' => ['Newsreader', "'Newsreader', Georgia, serif"], 'prata' => ['Prata', "'Prata', Georgia, serif"]],
-        'por_diseno' => ['citricos' => ['diseno', 'garamond', 'newsreader'], 'ceramica' => ['diseno', 'playfair', 'cormorant'], 'herbario' => ['diseno', 'playfair', 'garamond'],
+        'por_diseno' => ['citricos' => ['diseno', 'cormorant', 'newsreader'], 'ceramica' => ['diseno', 'playfair', 'cormorant'], 'herbario' => ['diseno', 'playfair', 'garamond'],
             'lacre' => ['diseno', 'bodoni', 'cormorant'], 'masia' => ['diseno', 'ebgaramond', 'garamond'], 'atardecer' => ['diseno', 'cormorant', 'prata']],
         'vars' => ['--serif']],
     // valor = [pila, estilo]: una caligrafía va en normal y una serif en cursiva (--nombres-estilo)
@@ -46,7 +46,7 @@ const DISENO_PALANCAS = [
             'alexbrush' => ['Alex Brush', ["'Alex Brush', cursive", 'normal']], 'sacramento' => ['Sacramento', ["'Sacramento', cursive", 'normal']],
             'cormorantit' => ['Cormorant cursiva', ["'Cormorant', Georgia, serif", 'italic']], 'playfairit' => ['Playfair cursiva', ["'Playfair Display', Georgia, serif", 'italic']],
             'newsreaderit' => ['Newsreader cursiva', ["'Newsreader', Georgia, serif", 'italic']]],
-        'por_diseno' => ['citricos' => ['diseno', 'greatvibes', 'alexbrush'], 'ceramica' => ['diseno', 'greatvibes', 'alexbrush'], 'herbario' => ['diseno', 'cormorantit', 'playfairit'],
+        'por_diseno' => ['citricos' => ['diseno', 'pinyon', 'alexbrush'], 'ceramica' => ['diseno', 'greatvibes', 'alexbrush'], 'herbario' => ['diseno', 'cormorantit', 'playfairit'],
             'lacre' => ['diseno', 'greatvibes', 'sacramento'], 'masia' => ['diseno', 'cormorantit', 'playfairit'], 'atardecer' => ['diseno', 'greatvibes', 'alexbrush']],
         'vars' => ['--nombres', '--nombres-estilo']],
     'nombres_tam' => ['tipo' => 'enum', 'grupo' => 'Letra', 'etiqueta' => 'Tamaño de los nombres', 'solo' => null, 'defecto' => 'M',
@@ -80,7 +80,8 @@ const DISENO_PALANCAS = [
 // Variables `--at-*` que NO mueve ninguna palanca, con el porqué. (tests/disenos_test.php (d): toda `--at-*` de boda.css
 // o la mueve una palanca o está aquí; ninguna está en las dos.)
 const DISENO_FIJOS = [
-    '--at-terracota' => 'la terracota del corazón del calendario de Limonar: un segundo color a propósito, no sigue al acento',
+    '--at-bronce' => 'el bronce del «&» de los nombres y de las iniciales del monograma de Cítricos: el oro de la referencia hecho texto legible (4,8:1; el oro no pasa de 2,4), no sigue al acento',
+    '--at-limon' => 'el papel limón de la ficha del dress code de Cítricos: un fondo propio de la composición, no sigue al papel',
 ];
 
 // Qué rol arrastra al `--primary` (títulos y enlaces) en cada diseño: en cinco coincide con el acento (un solo

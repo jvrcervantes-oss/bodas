@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 560" preserveAspectRatio="xMidYMax slice">
+  <!-- Cítricos y azahar: terraza sobre el mar con mesa puesta (dibujo propio, 14-oct-2026). Borde inferior rasgado:
+       por debajo es transparente y se ve el papel de la página, sea del color que sea (palanca «papel»). -->
+  <defs>
+    <linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D5E5EA"/>
+      <stop offset=".3" stop-color="#E8EFEC"/>
+      <stop offset=".48" stop-color="#F6F1E3"/>
+      <stop offset="1" stop-color="#F6F1E3"/>
+    </linearGradient>
+    <linearGradient id="mar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#AFCFD4"/>
+      <stop offset=".6" stop-color="#C9DEDC"/>
+      <stop offset="1" stop-color="#E0E9DF"/>
+    </linearGradient>
+    <linearGradient id="suelo" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#EDE2CC"/>
+      <stop offset="1" stop-color="#F6EFE1"/>
+    </linearGradient>
+    <radialGradient id="limon" cx=".36" cy=".32" r=".78">
+      <stop offset="0" stop-color="#FFF3A8"/>
+      <stop offset=".5" stop-color="#F2D153"/>
+      <stop offset="1" stop-color="#D8A92B"/>
+    </radialGradient>
+    <filter id="acuarela" x="-5%" y="-20%" width="110%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency=".025" numOctaves="3" seed="3" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="12" xChannelSelector="R" yChannelSelector="G" result="mancha"/>
+      <feGaussianBlur in="mancha" stdDeviation=".9"/>
+    </filter>
+    <filter id="niebla" x="-20%" y="-200%" width="140%" height="500%">
+      <feGaussianBlur stdDeviation="7"/>
+    </filter>
+    <clipPath id="rasgado">
+      <path d="M0,0 L660,0 L660.0,534.0 L657.4,535.1 L646.0,531.6 L640.3,534.2 L632.6,535.4 L627.0,534.2 L620.4,532.7 L613.9,533.9 L606.6,534.8 L595.7,529.4 L587.4,533.2 L579.9,530.9 L570.0,530.2 L559.5,530.2 L553.3,532.4 L543.4,530.9 L536.4,532.6 L525.4,537.0 L515.9,534.4 L510.3,530.9 L500.6,532.1 L493.8,533.8 L486.5,534.8 L475.7,532.0 L467.8,534.8 L460.9,532.4 L449.6,528.7 L439.3,527.8 L430.8,529.2 L420.9,530.9 L415.2,532.4 L403.6,533.2 L393.0,535.6 L386.4,530.1 L377.5,532.7 L366.7,536.9 L355.9,535.4 L345.3,533.0 L336.6,537.2 L325.2,537.2 L313.4,537.7 L303.5,534.9 L297.6,537.9 L289.4,536.3 L280.4,534.1 L268.4,536.6 L261.1,539.0 L251.7,536.6 L243.7,537.5 L235.7,534.8 L227.9,533.5 L218.9,536.3 L210.9,534.1 L202.6,533.6 L196.6,531.4 L189.7,530.0 L182.6,532.8 L176.1,531.9 L169.4,533.0 L164.2,529.9 L155.0,533.6 L143.4,537.8 L132.2,533.5 L125.3,535.9 L119.3,531.3 L113.6,531.9 L107.7,534.1 L99.3,533.7 L90.1,536.7 L82.1,533.1 L77.0,535.0 L71.4,536.1 L63.2,535.2 L53.2,535.6 L42.1,538.4 L32.4,539.6 L27.1,537.8 L19.8,533.9 L11.5,534.3 L0.0,534.0 Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#rasgado)">
+    <rect width="660" height="560" fill="url(#cielo)"/>
+    <g filter="url(#niebla)" opacity=".8" fill="#FFFFFF">
+      <ellipse cx="420" cy="64" rx="120" ry="13"/>
+      <ellipse cx="580" cy="104" rx="80" ry="10"/>
+      <ellipse cx="270" cy="118" rx="70" ry="9"/>
+    </g>
+    <!-- montañas lejanas -->
+    <path filter="url(#acuarela)" opacity=".75" fill="#B7C7CE" d="M0,238 C48,222 98,206 150,210 C204,214 236,184 290,172 C338,162 374,186 420,182 C478,178 520,146 574,142 C612,139 640,148 660,156 L660,290 L0,290 Z"/>
+    <path filter="url(#acuarela)" opacity=".55" fill="#A3B8C0" d="M90,268 C150,250 210,242 262,238 C318,234 352,214 404,212 C446,210 476,226 520,222 C560,218 600,226 660,236 L660,290 L90,290 Z"/>
+    <!-- mar -->
+    <rect y="262" width="660" height="150" fill="url(#mar)"/>
+    <g stroke="#FFFFFF" stroke-linecap="round" opacity=".6">
+      <path stroke-width="1.4" d="M40,288 L150,288"/>
+      <path stroke-width="1.2" d="M190,300 L330,300"/>
+      <path stroke-width="1.2" d="M70,318 L200,318"/>
+      <path stroke-width="1" d="M250,322 L340,322"/>
+    </g>
+    <!-- costa con el pueblo -->
+    <path filter="url(#acuarela)" opacity=".92" fill="#B3BEA3" d="M356,336 C384,306 404,272 440,248 C470,228 496,220 526,206 C556,192 598,182 632,186 C646,188 656,192 660,195 L660,346 L356,346 Z"/>
+    <path filter="url(#acuarela)" opacity=".75" fill="#9AA88A" d="M392,340 C430,312 468,292 520,280 C572,268 622,262 660,264 L660,350 L392,350 Z"/>
+    <g opacity=".9">
+      <ellipse cx="452" cy="262" rx="18" ry="8" fill="#8D9D75"/>
+      <ellipse cx="508" cy="250" rx="14" ry="6" fill="#8D9D75"/>
+      <ellipse cx="600" cy="254" rx="20" ry="7" fill="#8A9A72"/>
+      <ellipse cx="642" cy="246" rx="16" ry="7" fill="#8D9D75"/>
+    </g>
+    <g>
+      <rect x="466" y="240" width="20" height="15" fill="#F5EBD8"/><rect x="464" y="236" width="24" height="5" fill="#D9A889"/>
+      <rect x="492" y="226" width="24" height="17" fill="#EFDFC4"/><rect x="490" y="222" width="28" height="5" fill="#CF9A78"/>
+      <rect x="522" y="212" width="18" height="16" fill="#F7EFDF"/><rect x="520" y="208" width="22" height="5" fill="#D6A27F"/>
+      <rect x="548" y="186" width="10" height="34" fill="#F1E4CC"/><path d="M546,186 L553,173 L560,186 Z" fill="#C9906E"/>
+      <rect x="564" y="204" width="26" height="16" fill="#F4E8D2"/><rect x="562" y="200" width="30" height="5" fill="#D8A585"/>
+      <rect x="598" y="196" width="20" height="18" fill="#EEDCC0"/><rect x="596" y="192" width="24" height="5" fill="#CE9876"/>
+      <rect x="624" y="194" width="26" height="15" fill="#F6EDDD"/><rect x="622" y="190" width="30" height="5" fill="#D5A07C"/>
+      <rect x="480" y="262" width="26" height="15" fill="#F3E6CF"/><rect x="478" y="258" width="30" height="5" fill="#D29C79"/>
+      <rect x="516" y="250" width="20" height="14" fill="#F8F0E2"/><rect x="514" y="246" width="24" height="5" fill="#D8A686"/>
+      <rect x="546" y="240" width="28" height="16" fill="#EFE0C6"/><rect x="544" y="236" width="32" height="5" fill="#CC9673"/>
+      <rect x="586" y="232" width="22" height="15" fill="#F5EAD6"/><rect x="584" y="228" width="26" height="5" fill="#D5A280"/>
+      <rect x="620" y="226" width="30" height="16" fill="#F1E3CA"/><rect x="618" y="222" width="34" height="5" fill="#CF9A77"/>
+    </g>
+    <g fill="#A3ADAE" opacity=".75">
+      <rect x="471" y="246" width="3" height="4"/><rect x="479" y="246" width="3" height="4"/>
+      <rect x="497" y="232" width="3" height="4"/><rect x="507" y="232" width="3" height="4"/>
+      <rect x="528" y="218" width="3" height="4"/><rect x="551" y="194" width="4" height="5"/>
+      <rect x="570" y="210" width="3" height="4"/><rect x="580" y="210" width="3" height="4"/>
+      <rect x="604" y="203" width="3" height="4"/><rect x="630" y="200" width="3" height="4"/>
+      <rect x="640" y="200" width="3" height="4"/><rect x="486" y="268" width="3" height="4"/>
+      <rect x="496" y="268" width="3" height="4"/><rect x="552" y="246" width="3" height="4"/>
+      <rect x="562" y="246" width="3" height="4"/><rect x="592" y="238" width="3" height="4"/>
+      <rect x="628" y="232" width="3" height="4"/><rect x="640" y="232" width="3" height="4"/>
+    </g>
+    <g fill="#5D6C4C">
+      <ellipse cx="460" cy="244" rx="4.5" ry="20"/>
+      <ellipse cx="540" cy="226" rx="4" ry="17"/>
+      <ellipse cx="614" cy="238" rx="4.5" ry="19"/>
+    </g>
+    <!-- suelo y balaustrada -->
+    <rect y="412" width="660" height="148" fill="url(#suelo)"/>
+    <rect x="140" y="330" width="520" height="13" rx="2" fill="#F1E8D6"/>
+    <rect x="140" y="342" width="520" height="3" fill="#DACDB2"/>
+    <g fill="#F3EBDB" stroke="#D7CAAE" stroke-width=".8">
+      <path id="balaustre" transform="translate(158 345)" d="M-6,0 L6,0 L5,5 C10,14 10,26 4,34 C9,42 10,55 5,62 L6,66 L-6,66 L-5,62 C-10,55 -9,42 -4,34 C-10,26 -10,14 -5,5 Z"/>
+      <use href="#balaustre" x="24"/><use href="#balaustre" x="48"/><use href="#balaustre" x="72"/><use href="#balaustre" x="96"/>
+      <use href="#balaustre" x="120"/><use href="#balaustre" x="144"/><use href="#balaustre" x="168"/><use href="#balaustre" x="192"/>
+      <use href="#balaustre" x="240"/><use href="#balaustre" x="264"/><use href="#balaustre" x="288"/><use href="#balaustre" x="312"/>
+      <use href="#balaustre" x="336"/><use href="#balaustre" x="360"/><use href="#balaustre" x="384"/><use href="#balaustre" x="408"/>
+      <use href="#balaustre" x="432"/><use href="#balaustre" x="456"/>
+    </g>
+    <rect x="140" y="410" width="520" height="10" fill="#E9DFC9"/>
+    <rect x="140" y="419" width="520" height="3" fill="#D8CCB1"/>
+    <rect x="140" y="422" width="520" height="9" fill="#E2D6BD" opacity=".55"/>
+    <g fill="#F3EBDC" stroke="#D8CCB1" stroke-width=".8">
+      <rect x="360" y="324" width="28" height="98"/>
+      <rect x="355" y="318" width="38" height="8"/>
+      <rect x="628" y="324" width="32" height="98"/>
+      <rect x="623" y="318" width="40" height="8"/>
+    </g>
+    <!-- mesa con mantel -->
+    <path fill="#FDFBF6" stroke="#E6DDC9" d="M112,474 C112,450 226,436 360,436 C494,436 608,450 608,474 L620,560 L100,560 Z"/>
+    <ellipse cx="360" cy="474" rx="248" ry="36" fill="#FFFEFA" stroke="#E8DFCC"/>
+    <g fill="none" stroke="#EEE6D5" stroke-width="1.2">
+      <path d="M150,500 C146,520 140,540 136,560"/>
+      <path d="M250,508 C249,526 247,544 246,560"/>
+      <path d="M470,508 C472,526 474,544 476,560"/>
+      <path d="M570,500 C574,520 580,540 584,560"/>
+    </g>
+    <!-- jarrón con flores -->
+    <g fill="none" stroke="#7E8F5E" stroke-width="1.2" stroke-linecap="round">
+      <path d="M228,446 C224,430 218,416 214,402"/>
+      <path d="M233,446 C236,428 242,410 246,394"/>
+      <path d="M237,446 C246,432 254,420 262,410"/>
+    </g>
+    <g fill="#8EA273">
+      <path transform="translate(220 422) rotate(-150) scale(1.3)" d="M0,0 C3,-3.4 9,-4 13,0 C9,4 3,3.4 0,0 Z"/>
+      <path transform="translate(244 418) rotate(-30) scale(1.3)" d="M0,0 C3,-3.4 9,-4 13,0 C9,4 3,3.4 0,0 Z"/>
+      <path transform="translate(236 402) rotate(-100) scale(1.1)" d="M0,0 C3,-3.4 9,-4 13,0 C9,4 3,3.4 0,0 Z"/>
+    </g>
+    <circle cx="214" cy="402" r="7" fill="#F2D263"/><circle cx="214" cy="402" r="2.4" fill="#D29F33"/>
+    <circle cx="246" cy="394" r="8" fill="#F4D96F"/><circle cx="246" cy="394" r="2.6" fill="#D29F33"/>
+    <circle cx="262" cy="410" r="6.5" fill="#F2D263"/><circle cx="262" cy="410" r="2.2" fill="#D29F33"/>
+    <circle cx="230" cy="388" r="6" fill="#F6E08A"/><circle cx="230" cy="388" r="2" fill="#D29F33"/>
+    <g fill="#FFFFFF" stroke="#DCD3BD" stroke-width=".5">
+      <g transform="translate(226 410) scale(.9)">
+        <ellipse cy="-5.2" rx="3.2" ry="5.2"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(72)"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(144)"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(216)"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(288)"/>
+        <circle r="2.1" fill="#E5BF4A" stroke="none"/>
+      </g>
+      <g transform="translate(254 380) scale(.8)">
+        <ellipse cy="-5.2" rx="3.2" ry="5.2"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(72)"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(144)"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(216)"/>
+        <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(288)"/>
+        <circle r="2.1" fill="#E5BF4A" stroke="none"/>
+      </g>
+    </g>
+    <path fill="#EAF2EE" fill-opacity=".7" stroke="#BFCFC8" d="M220,430 L244,430 L243,440 C252,446 256,456 254,466 C252,476 244,480 232,480 C220,480 212,476 210,466 C208,456 212,446 221,440 Z"/>
+    <path fill="#CFE2DC" fill-opacity=".6" d="M211,458 C220,461 244,461 253,458 C254,468 248,478 232,478 C216,478 210,468 211,458 Z"/>
+    <!-- copas -->
+    <g stroke="#C7CFC9">
+      <path fill="#FFFFFF" fill-opacity=".55" d="M290,420 C290,436 294,444 300,444 C306,444 310,436 310,420 Z"/>
+      <path fill="#F4E7B0" fill-opacity=".75" stroke="none" d="M291,430 C292,438 295,443 300,443 C305,443 308,438 309,430 Z"/>
+      <path stroke-width="1.2" d="M300,444 L300,462"/>
+      <ellipse cx="300" cy="463" rx="8" ry="2.2" fill="#FFFFFF" stroke-width=".8"/>
+      <path fill="#FFFFFF" fill-opacity=".55" d="M316,416 C316,432 320,440 326,440 C332,440 336,432 336,416 Z"/>
+      <path fill="#F4E7B0" fill-opacity=".75" stroke="none" d="M317,426 C318,434 321,439 326,439 C331,439 334,434 335,426 Z"/>
+      <path stroke-width="1.2" d="M326,440 L326,458"/>
+      <ellipse cx="326" cy="459" rx="8" ry="2.2" fill="#FFFFFF" stroke-width=".8"/>
+    </g>
+    <!-- plato con limones -->
+    <ellipse cx="430" cy="468" rx="60" ry="16" fill="#FFFFFF" stroke="#DED4BE"/>
+    <ellipse cx="430" cy="467" rx="46" ry="11" fill="none" stroke="#EEE6D4"/>
+    <path transform="translate(412 458) rotate(-10) scale(.5)" fill="url(#limon)" stroke="#D0A232" stroke-width="1.2" d="M-36,0 C-34,-2.5 -30,-6 -28,-9 C-23,-19.5 -10,-21 0,-21 C10,-21 23,-19.5 28,-9 C30,-6 34,-2.5 36,0 C34,2.5 30,6 28,9 C23,19.5 10,21 0,21 C-10,21 -23,19.5 -28,9 C-30,6 -34,2.5 -36,0 Z"/>
+    <path transform="translate(446 455) rotate(9) scale(.48)" fill="url(#limon)" stroke="#D0A232" stroke-width="1.2" d="M-36,0 C-34,-2.5 -30,-6 -28,-9 C-23,-19.5 -10,-21 0,-21 C10,-21 23,-19.5 28,-9 C30,-6 34,-2.5 36,0 C34,2.5 30,6 28,9 C23,19.5 10,21 0,21 C-10,21 -23,19.5 -28,9 C-30,6 -34,2.5 -36,0 Z"/>
+    <path transform="translate(430 466) rotate(-3) scale(.54)" fill="url(#limon)" stroke="#D0A232" stroke-width="1.2" d="M-36,0 C-34,-2.5 -30,-6 -28,-9 C-23,-19.5 -10,-21 0,-21 C10,-21 23,-19.5 28,-9 C30,-6 34,-2.5 36,0 C34,2.5 30,6 28,9 C23,19.5 10,21 0,21 C-10,21 -23,19.5 -28,9 C-30,6 -34,2.5 -36,0 Z"/>
+    <g stroke="#CDC3AD" stroke-width="1.8" stroke-linecap="round">
+      <path d="M502,476 L524,463"/>
+      <path d="M510,480 L532,467"/>
+    </g>
+  </g>
+  <!-- la fibra del papel donde se rasga -->
+  <path fill="none" stroke="#8C7A52" stroke-opacity=".22" stroke-width="1.1" stroke-linejoin="round" d="M0.0,532.7 L11.5,533.0 L19.8,532.6 L27.1,536.5 L32.4,538.3 L42.1,537.1 L53.2,534.3 L63.2,533.9 L71.4,534.8 L77.0,533.7 L82.1,531.8 L90.1,535.4 L99.3,532.4 L107.7,532.8 L113.6,530.6 L119.3,530.0 L125.3,534.6 L132.2,532.2 L143.4,536.5 L155.0,532.3 L164.2,528.6 L169.4,531.7 L176.1,530.6 L182.6,531.5 L189.7,528.7 L196.6,530.1 L202.6,532.3 L210.9,532.8 L218.9,535.0 L227.9,532.2 L235.7,533.5 L243.7,536.2 L251.7,535.3 L261.1,537.7 L268.4,535.3 L280.4,532.8 L289.4,535.0 L297.6,536.6 L303.5,533.6 L313.4,536.4 L325.2,535.9 L336.6,535.9 L345.3,531.7 L355.9,534.1 L366.7,535.6 L377.5,531.4 L386.4,528.8 L393.0,534.3 L403.6,531.9 L415.2,531.1 L420.9,529.6 L430.8,527.9 L439.3,526.5 L449.6,527.4 L460.9,531.1 L467.8,533.5 L475.7,530.7 L486.5,533.5 L493.8,532.5 L500.6,530.8 L510.3,529.6 L515.9,533.1 L525.4,535.7 L536.4,531.3 L543.4,529.6 L553.3,531.1 L559.5,528.9 L570.0,528.9 L579.9,529.6 L587.4,531.9 L595.7,528.1 L606.6,533.5 L613.9,532.6 L620.4,531.4 L627.0,532.9 L632.6,534.1 L640.3,532.9 L646.0,530.3 L657.4,533.8 L660.0,532.7"/>
+</svg>

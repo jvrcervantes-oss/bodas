@@ -278,6 +278,7 @@
    de la plantilla real (tests/tarjetas_atelier.js); aquí solo se colocan. Una destacada y las seis, como el 29-sep */
 /* Solo la letra de los nombres de cada diseño, para la muestra «Lucía & Marcos»: el panel oculto no la descarga */
 @font-face { font-family: 'Pinyon Script'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/PinyonScript.woff2) format('woff2'); }
+@font-face { font-family: 'Great Vibes'; font-style: normal; font-weight: 400; font-display: swap; src: url(fonts/GreatVibes.woff2) format('woff2'); }
 @font-face { font-family: 'Newsreader'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/Newsreader-italic.woff2) format('woff2'); }
 @font-face { font-family: 'EB Garamond'; font-style: italic; font-weight: 400; font-display: swap; src: url(fonts/EBGaramond-italic.woff2) format('woff2'); }
 .l-at-caja { display: grid; grid-template-columns: minmax(0, 600px) minmax(0, 1fr); grid-template-areas: "mesa info" "mesa minis"; column-gap: 56px; align-items: center; }

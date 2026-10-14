@@ -23,10 +23,11 @@ $n = 0;
 function ok(bool $c, string $que): void { global $fallos, $n; $n++; if (!$c) { $fallos++; echo "FALLA: $que\n"; } }
 
 // Qué reglas son de cada diseño: las que nombran su clase de body o de entrada, o una pieza que solo pinta ese diseño
-// (render.php: arte_atelier, atelier_tras_texto, entrada_atelier, sello_circular). Prefijo con «-» = empieza por.
-// S2b añadió sello-fondo (Cítricos), mas- (el lugar y la CTA del hero de Masía) y tal-rsvp (cubierto por tal-).
+// (render.php: arte_atelier, atelier_tras_texto, entrada_atelier, inicio_citricos). Prefijo con «-» = empieza por.
+// S2b añadió mas- (el lugar y la CTA del hero de Masía) y tal-rsvp (cubierto por tal-). La piel «Terraza» de Cítricos
+// (14-oct-2026) se fue con el sello circular de Limonar (sello-circular, sello-txt, sello-fondo): lo suyo es todo cit-.
 const DUENO_ATELIER = [
-    'citricos' => ['atelier-citricos', 'entrada-citricos', 'en-sello-citricos', 'cit-', 'esq', 'sello-circular', 'sello-txt', 'sello-fondo', 'en-petalos', 'en-esq', 'en-sello-disco'],
+    'citricos' => ['atelier-citricos', 'entrada-citricos', 'en-sello-citricos', 'cit-', 'esq', 'en-petalos', 'en-esq', 'en-sello-disco'],
     'herbario' => ['atelier-herbario', 'entrada-herbario', 'en-sello-herbario', 'herb-', 'ramita', 'banda-herbario', 'arte-herbario', 'en-arte-banda'],
     'ceramica' => ['atelier-ceramica', 'entrada-ceramica', 'en-sello-ceramica', 'tal-'],
     'lacre' => ['atelier-lacre', 'entrada-lacre', 'en-sello-lacre', 'lac-', 'sello-bronce', 'en-poema'],

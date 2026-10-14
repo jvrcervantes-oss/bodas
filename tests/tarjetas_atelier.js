@@ -12,8 +12,9 @@
        tarjeta sale vertical; a 390 caben en una y sale apaisada), a 2x, sin botones, enlaces ni cuenta atrás (son de la
        web, no de la invitación). Lacre, Cerámica, Herbario y Masía con transparencia (el borde rasgado necesita el alfa);
        Atardecer con 16 px de su acuarela alrededor (la acuarela es el fondo de la página, no de la tarjeta); Cítricos,
-       que no tiene tarjeta, a 390 px (en el ordenador los limones quedan lejos del texto), con su papel y la rama de
-       limones, de la portada hasta 48 px por debajo del último texto.
+       que no tiene tarjeta, la portada entera a 600 px: los nombres sobre el papel con las dos ramas de limonero y,
+       debajo, la terraza sobre el mar con su borde rasgado (piel «Terraza», 14-oct-2026; a 390 px la tarjeta saldría
+       más alta que la mesa de la landing, 480 px, y desde 901 px la portada va a dos columnas).
      · movil-<k>.webp: la pantalla de un móvil de 390 × 802 (9:18,5) al abrir la web, con su cabecera y su barra. Sin
        foto de la pareja (no hay una de verdad que enseñar, y la de los arneses es una captura de la web): portada sola.
    Las muestra-*.webp no se tocan: las usan el constructor (crear.js) y los arneses como foto fija.
@@ -58,14 +59,14 @@ const MUESTRA = { fecha: '2027-06-12', ciudad: 'Sevilla', ceremonia: { lugar: 'I
 const MUESTRA_CITRICOS = { fecha: '2027-06-12', ciudad: 'Valencia', ceremonia: { lugar: 'Iglesia de Santa Ana' }, portada: { hashtag: '', invitacion: 'Nos casamos' } };
 // Cómo se recorta cada tarjeta (ver cabecera)
 const MODO = { lacre: ['alfa', 1440], ceramica: ['alfa', 1440], herbario: ['alfa', 1440], masia: ['alfa', 1440], atardecer: ['acuarela', 1440],
-  citricos: ['papel', 390] };
+  citricos: ['portada', 600] };
 const MANIFIESTO = path.join(RAIZ, 'tests/fixtures/tarjetas_atelier.json');
 // Datos del fixture de pruebas (tests/fixtures/config_ejemplo_*.json) que no pueden salir en la landing
 const DE_PRUEBA = /Prueba|PRUEBA|Falsa|example\.com|\bAlfa|\bBeta\b|2031/;
 const ANCHO_TARJETA = 520;   // px del webp: la tarjeta se ve a 248 px CSS como mucho (2x)
 const ANCHO_MOVIL = 360;     // px del webp: la pantalla se ve a 152 px CSS como mucho
-// Lo que en la portada es web y no invitación: botones, enlaces, la etiqueta de Herbario y la cuenta atrás de Cítricos
-const SIN_WEB = `.cit-nav, .tal-nav, .herb-label, .herb-btn, .lac-btn, .lac-nav, .mas-btn, .atd-btn, .atd-nav, .cit-cuenta { display: none !important; }
+// Lo que en la portada es web y no invitación: botones, enlaces y la etiqueta de Herbario
+const SIN_WEB = `.cit-nav, .tal-nav, .herb-label, .herb-btn, .lac-btn, .lac-nav, .mas-btn, .atd-btn, .atd-nav { display: none !important; }
   .site-nav, .tab-bar { visibility: hidden !important; }`;
 const SOLO_TARJETA = `html, body { background: transparent !important; }
   body :not(.hero-left):not(.hero-left *) { visibility: hidden !important; }
@@ -157,22 +158,23 @@ async function tarjeta(browser, clave, paginas, atelier) {
   const [modo, ancho] = MODO[clave];
   const { ctx, page } = await abre(browser, paginas, ancho, ancho > 900 ? 900 : 844, SIN_WEB + (modo === 'alfa' ? SOLO_TARJETA : ''));
   try {
-    const m = await page.evaluate(() => {
+    const m = await page.evaluate((modo) => {
       const hl = document.querySelector('.hero-left');
       if (!hl) return null;
       const se = (e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden';
       const r = hl.getBoundingClientRect();
-      const textos = [...hl.children].filter((e) => se(e) && !e.classList.contains('atelier-arte')).map((e) => e.getBoundingClientRect().bottom);
+      const he = document.querySelector('.hero').getBoundingClientRect();
       const n = getComputedStyle(document.querySelector('.hero-names'));
-      return { x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height, fin: Math.max(...textos) + scrollY,
-        web: [...hl.querySelectorAll('a, button, input, select')].filter(se).map((e) => e.outerHTML.slice(0, 90)),
+      return { x: r.x + scrollX, y: r.y + scrollY, w: r.width, h: r.height,
+        hero: { x: he.x + scrollX, y: he.y + scrollY, width: he.width, height: he.height },
+        web: [...(modo === 'portada' ? document.querySelector('.hero') : hl).querySelectorAll('a, button, input, select')].filter(se).map((e) => e.outerHTML.slice(0, 90)),
         nombres: { familia: n.fontFamily, estilo: n.fontStyle, color: n.color } };
-    });
+    }, modo);
     if (!m) throw new NoPuedo(clave + ': la portada no tiene .hero-left');
     if (m.web.length) throw new NoPuedo(clave + ': quedan enlaces o botones en la tarjeta (¿clase nueva? añádela a SIN_WEB): ' + m.web.join(' | '));
     const clip = modo === 'alfa' ? { x: m.x - 8, y: m.y - 8, width: m.w + 16, height: m.h + 16 }
       : modo === 'acuarela' ? { x: m.x - 16, y: m.y - 16, width: m.w + 32, height: m.h + 32 }
-      : { x: m.x, y: m.y, width: m.w, height: m.fin + 48 - m.y };
+      : { ...m.hero };   // portada: la sección entera
     clip.x = Math.max(0, clip.x); clip.y = Math.max(0, clip.y);
     clip.width = Math.min(clip.width, ancho - clip.x);
     const texto = await page.evaluate(textoEn, clip);

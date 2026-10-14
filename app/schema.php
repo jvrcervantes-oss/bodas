@@ -64,13 +64,14 @@ function fuentes_autor(): array {
 // colores: mismo orden que TEMAS (primary, accent, accent-hover, secondary, sage, sage-2, sage-2-hover, gold, on-dark, on-dark-soft)
 // fuentes: títulos, textos, nombres, estilo de los nombres
 const ATELIER = [
-    // Piel «Limonar» (owner, 8-oct-2026, encargo 20261008_bodas_citricos_limonar): papel de algodón, salvia, oliva
-    // como único acento de acción, oro solo en filetes (assets/boda.css) y terracota solo en el corazón del calendario.
-    // Cormorant (variable 300-700, alojada) porque el 300 de cifras no existe en el CormorantGaramond local.
-    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Papel de algodón, festones salvia, limones y azahar en acuarela.',
-        'colores' => ['#4F5E45', '#4F5E45', '#3F4B37', '#5A6650', '#FBF8F0', '#E4E8D5', '#D9DFC6', '#B9A86A', '#FBF8F0', '#E4E8D5'],
-        'fuentes' => ["'Cormorant', Georgia, serif", "'Cormorant', Georgia, serif", "'Pinyon Script', cursive", 'normal'],
-        'nombres_color' => '#4F5E45', 'tinta' => '#3B3A30'],
+    // Piel «Terraza» (owner, 14-oct-2026; sustituye a «Limonar»): terraza sobre el mar en acuarela, ramas de limonero y
+    // azahar; salvia como único acento de acción, oro solo en filetes, corazones e iconos (nunca en texto: el «&» va en
+    // bronce, --at-bronce de assets/boda.css). Cormorant Garamond en títulos y cifras, Montserrat en el texto y Great
+    // Vibes en los nombres, las tres alojadas. Salvia y títulos a 5,7:1 sobre el papel (la de la referencia, más clara, no llega a 4,5).
+    'citricos' => ['nombre' => 'Cítricos y azahar', 'categoria' => 'Mediterráneo', 'desc' => 'Terraza sobre el mar en acuarela, ramas de limonero, azahar y salvia.',
+        'colores' => ['#5B6846', '#5B6846', '#4B573A', '#6B6858', '#FDFAF1', '#EFEEDC', '#E5E5CF', '#C9A24E', '#FDFAF1', '#EFEEDC'],
+        'fuentes' => ["'Cormorant Garamond', Georgia, serif", "'Montserrat', system-ui, sans-serif", "'Great Vibes', cursive", 'normal'],
+        'nombres_color' => '#5B6846', 'tinta' => '#46443A'],
     // Tokens de «Cerámica & Azulejo Talavera» (especificación del owner, 25-sep-2026)
     'ceramica' => ['nombre' => 'Cerámica y azulejo', 'categoria' => 'Talavera', 'desc' => 'Cenefa de azulejo cobalto, marco barroco para vuestra foto y patio andaluz.',
         'colores' => ['#183B75', '#183B75', '#2C5EA8', '#5E6B7C', '#F5F3ED', '#E6ECF3', '#D8E2EC', '#C6A664', '#FDFCFA', '#A9C2D8'],

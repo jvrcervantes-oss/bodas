@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 290">
+  <!-- Cítricos y azahar: jarrón de cristal con una rama de limonero y limones sobre la mesa (dibujo propio, 14-oct-2026) -->
+  <defs>
+    <radialGradient id="limon" cx=".36" cy=".32" r=".78">
+      <stop offset="0" stop-color="#FFF3A8"/>
+      <stop offset=".5" stop-color="#F2D153"/>
+      <stop offset="1" stop-color="#D6A72C"/>
+    </radialGradient>
+    <path id="hoja" d="M0,0 C3,-3.4 9,-4 13,0 C9,4 3,3.4 0,0 Z"/>
+    <path id="fruto" d="M-36,0 C-34,-2.5 -30,-6 -28,-9 C-23,-19.5 -10,-21 0,-21 C10,-21 23,-19.5 28,-9 C30,-6 34,-2.5 36,0 C34,2.5 30,6 28,9 C23,19.5 10,21 0,21 C-10,21 -23,19.5 -28,9 C-30,6 -34,2.5 -36,0 Z"/>
+    <g id="flor" fill="#FFFFFF" stroke="#DCD3BD" stroke-width=".5">
+      <ellipse cy="-5.2" rx="3.2" ry="5.2"/>
+      <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(72)"/>
+      <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(144)"/>
+      <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(216)"/>
+      <ellipse cy="-5.2" rx="3.2" ry="5.2" transform="rotate(288)"/>
+      <circle r="2.1" fill="#E5BF4A" stroke="none"/>
+    </g>
+  </defs>
+  <ellipse cx="146" cy="277" rx="116" ry="8" fill="#EDE4CF" opacity=".7"/>
+  <g fill="none" stroke="#7B8C5C" stroke-width="1.7" stroke-linecap="round">
+    <path d="M174,240 C171,196 163,148 150,86"/>
+    <path d="M178,240 C186,190 202,142 224,100"/>
+    <path d="M167,186 C152,166 136,150 116,140"/>
+  </g>
+  <g fill="#8EA273">
+    <use href="#hoja" transform="translate(150 88) rotate(-118) scale(2.2)"/>
+    <use href="#hoja" transform="translate(154 112) rotate(-28) scale(2.1)"/>
+    <use href="#hoja" transform="translate(159 136) rotate(-152) scale(2)"/>
+    <use href="#hoja" transform="translate(212 118) rotate(-62) scale(2.1)"/>
+    <use href="#hoja" transform="translate(196 148) rotate(12) scale(2)"/>
+    <use href="#hoja" transform="translate(224 100) rotate(-78) scale(1.9)"/>
+    <use href="#hoja" transform="translate(134 148) rotate(-168) scale(1.9)"/>
+    <use href="#hoja" transform="translate(118 141) rotate(150) scale(1.8)"/>
+  </g>
+  <use href="#fruto" transform="translate(205 166) rotate(78) scale(.6)" fill="url(#limon)" stroke="#CFA132" stroke-width="1.4"/>
+  <use href="#fruto" transform="translate(136 168) rotate(100) scale(.55)" fill="url(#limon)" stroke="#CFA132" stroke-width="1.4"/>
+  <use href="#flor" transform="translate(150 84)"/>
+  <use href="#flor" transform="translate(224 98) scale(.9)"/>
+  <use href="#flor" transform="translate(116 138) scale(.8)"/>
+  <use href="#flor" transform="translate(160 124) scale(.75)"/>
+  <!-- jarrón de cristal -->
+  <path fill="#EAF2EE" fill-opacity=".5" stroke="#B7C9C1" stroke-width="1.2" d="M164,178 L188,178 L187,194 C204,202 212,218 212,238 C212,262 198,276 176,276 C154,276 140,262 140,238 C140,218 148,202 165,194 Z"/>
+  <path fill="#C6DDD5" fill-opacity=".55" d="M141,228 C155,233 197,233 211,228 C212,232 212,235 212,238 C212,262 198,274 176,274 C154,274 140,262 140,238 C140,235 140,232 141,228 Z"/>
+  <path fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" opacity=".85" d="M151,214 C146,228 146,246 153,260"/>
+  <ellipse cx="176" cy="178" rx="12" ry="2.4" fill="none" stroke="#B7C9C1" stroke-width="1.1"/>
+  <!-- limón entero y medio limón -->
+  <g transform="translate(100 254) rotate(-12)">
+    <use href="#fruto" fill="url(#limon)" stroke="#CFA132"/>
+    <ellipse cx="-9" cy="-9" rx="10" ry="4.5" transform="rotate(-14)" fill="#FFFFFF" opacity=".35"/>
+  </g>
+  <g transform="translate(42 266)">
+    <ellipse rx="28" ry="17" fill="#E3B735"/>
+    <ellipse cy="-1.5" rx="24.5" ry="14.5" fill="#FFF6CF"/>
+    <ellipse cy="-1.5" rx="21.5" ry="12.5" fill="#F6DD6E"/>
+    <g stroke="#FFF6CF" stroke-width="1.3" stroke-linecap="round">
+      <path d="M0,-1.5 L0,-13.5"/><path d="M0,-1.5 L15,-10"/><path d="M0,-1.5 L21,-1.5"/><path d="M0,-1.5 L15,7"/>
+      <path d="M0,-1.5 L0,10.5"/><path d="M0,-1.5 L-15,7"/><path d="M0,-1.5 L-21,-1.5"/><path d="M0,-1.5 L-15,-10"/>
+    </g>
+    <circle cy="-1.5" r="2.2" fill="#FFF6CF"/>
+  </g>
+</svg>

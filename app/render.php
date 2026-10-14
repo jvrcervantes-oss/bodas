@@ -138,7 +138,7 @@ function accesos(array $c, array $ctx, int $n, string $clase = '', string $clase
 
 /** Nombres del hero Atelier (S2b): el conector («&» o «y») y el segundo nombre van juntos en una caja en línea
  *  (.hero-n2): si no caben tras el primero bajan enteros a la línea siguiente, así el conector nunca queda colgado
- *  del primer nombre. Cítricos lo pone en su propia línea (<i>, en pagina_inicio). */
+ *  del primer nombre. Cítricos los pone siempre en dos líneas, con el conector en <i> (nombres_citricos). */
 function nombres_hero(array $c): string {
     $a = $c['pareja']['nombre1'];
     $b = $c['pareja']['nombre2'];
@@ -156,7 +156,8 @@ function lugar_linea(array $c): string {
 function arte_atelier(array $c, string $A): string {
     $img = fn($f, $cls) => '<img class="atelier-arte ' . $cls . '" src="' . h($A) . 'img/atelier/' . $f . '" alt="" aria-hidden="true">';
     switch ($c['atelier']) {
-        case 'citricos': return $img('esquina-1.webp', 'esq esq-i') . $img('limones.webp', 'cit-racimo');
+        // Las dos ramas de limonero de las esquinas de arriba: la izquierda junto a los nombres, la derecha sobre la terraza
+        case 'citricos': return $img('esquina-1.webp', 'esq esq-i') . $img('esquina-2.webp', 'cit-rama');
         case 'herbario': return $img('herbario-banda.webp', 'banda-herbario');
         case 'masia': return $img('masia.webp', 'arte-masia');
         // Monograma entre las dos ramas de olivo de azulejo
@@ -178,12 +179,14 @@ function atelier_tras_texto(array $c, array $ctx): string {
     $lugar = lugar_linea($c);
     switch ($c['atelier']) {
         case 'citricos':
+            // La frase de la invitación entre filetes («¡Nos casamos!»), la fecha en cifras con el día de la semana, el
+            // lugar, el hashtag y los accesos (el de confirmar es la CTA del hero)
             $links = accesos($c, $ctx, 3);
             $d = $c['fecha'] !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $c['fecha']) : false;
-            $fecha = $d ? '<p class="cit-fecha"><span>' . h(DIAS[(int) $d->format('w')]) . '</span><b>' . (int) $d->format('j') . '</b><span>'
-                . h(MESES[(int) $d->format('n') - 1]) . '</span></p>' : '';
-            $pie = trim(($d ? $d->format('Y') : '') . ' · ' . $c['ciudad'], ' ·');
-            return $fecha . '<p class="cit-lugar">' . h($pie !== '' ? $pie : 'La fecha') . '</p>'
+            return ($c['portada']['invitacion'] !== '' ? '<p class="cit-dicho"><span>' . h($c['portada']['invitacion']) . '</span></p>' : '')
+                . ($d ? '<p class="cit-fecha"><time datetime="' . $d->format('Y-m-d') . '">' . $d->format('d.m.Y') . '</time><span>' . h(DIAS[(int) $d->format('w')]) . '</span></p>' : '')
+                . ($lugar !== '' ? '<p class="cit-lugar">' . h($lugar) . '</p>' : '')
+                . ($c['portada']['hashtag'] !== '' ? '<p class="hero-hashtag">#' . h($c['portada']['hashtag']) . '</p>' : '')
                 . ($links ? '<nav class="cit-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
         case 'herbario':
             return '<img class="ramita" src="' . h($A) . 'img/atelier/ramita.svg" alt="" aria-hidden="true">'
@@ -211,19 +214,6 @@ function atelier_tras_texto(array $c, array $ctx): string {
                 . ($links ? '<nav class="atd-nav" aria-label="Accesos">' . implode('', $links) . '</nav>' : '');
     }
     return '';
-}
-
-/** Sello de papel con limones y los datos de ESTA pareja escritos en círculo (el original traía texto ajeno). */
-function sello_circular(array $c, string $A): string {
-    $txt = mb_strtoupper(implode(' · ', array_filter([nombres($c), fecha_puntos($c['fecha']), $c['ciudad']])) . ' · ', 'UTF-8');
-    if (trim($txt, ' ·') === '') $txt = 'NUESTRA BODA · NUESTRA BODA · ';
-    return '<svg class="sello-circular" viewBox="0 0 160 160" aria-hidden="true">'
-        . '<defs><path id="anillo" d="M80,80 m-61,0 a61,61 0 1,1 122,0 a61,61 0 1,1 -122,0"/><clipPath id="disco"><circle cx="80" cy="80" r="44"/></clipPath></defs>'
-        . '<circle class="sello-fondo" cx="80" cy="80" r="76" stroke="currentColor" stroke-opacity=".55" stroke-width="1.2"/>'
-        . '<circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" stroke-opacity=".3" stroke-width=".6" stroke-dasharray="2 3"/>'
-        . '<image href="' . h($A) . 'img/atelier/sello-limon.webp" x="36" y="36" width="88" height="88" clip-path="url(#disco)"/>'
-        . '<circle cx="80" cy="80" r="44" fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width=".8"/>'
-        . '<text class="sello-txt"><textPath href="#anillo" textLength="380" lengthAdjust="spacing">' . h($txt) . '</textPath></text></svg>';
 }
 
 /**
@@ -312,7 +302,7 @@ function layout(array $c, string $ruta, string $titulo, string $cuerpo, array $c
 <nav class="site-nav" aria-label="Navegación principal">
   <div class="nav-bar">
     <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteMenu" aria-label="Abrir menú"><?= ico('M4 7h16M4 12h16M4 17h16') ?><span class="nav-toggle-txt">Menú</span></button>
-    <?= a_interno('', $ctx, 'class="nav-brand"') ?><span class="nav-names"><?= h($nom ?: 'Vuestros nombres') ?></span><span class="nav-sub">Nuestra boda</span></a>
+    <?= a_interno('', $ctx, 'class="nav-brand"' . ($c['atelier'] === 'citricos' ? ' aria-label="' . h(($nom ?: 'Nuestra boda') . ', inicio') . '"' : '')) ?><?= $c['atelier'] === 'citricos' ? '<span class="cit-mono" aria-hidden="true">' . mono_citricos($c) . '</span>' : '' /* Cítricos: monograma en laurel (piel «Terraza») */ ?><span class="nav-names"><?= h($nom ?: 'Vuestros nombres') ?></span><span class="nav-sub">Nuestra boda</span></a>
 <?php if ($rsvp): ?>
     <?= a_interno($rsvp['ruta'], $ctx, 'class="btn nav-cta"') ?><?= h($rsvp['titulo']) ?></a>
     <?= a_interno($rsvp['ruta'], $ctx, 'class="nav-heart" aria-label="' . h($rsvp['titulo']) . '"') ?><?= ico(ICONOS['corazon']) ?></a>
@@ -418,6 +408,7 @@ function ramos_foto(array $c, string $fe, string $A, string $capa, bool $nombres
 }
 
 function pagina_inicio(array $c, array $ctx): string {
+    if ($c['atelier'] === 'citricos') return inicio_citricos($c, $ctx);   // composición propia (piel «Terraza», 14-oct-2026)
     $A = $ctx['assets'];
     $nom = nombres($c);
     $po = $c['portada'];
@@ -451,7 +442,7 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endif; ?><?php if ($c['atelier'] === '' && $c['decoracion'] === 'sobre'): ?>        <span class="deco-solapa" aria-hidden="true"></span><span class="deco-lacre" aria-hidden="true"><?= h(iniciales($c) ?: '♥') ?></span>
 <?php endif; ?>
 <?php if ($po['invitacion'] !== ''): ?>        <span class="kicker"><?= h($po['invitacion']) ?></span><?php endif; ?>
-        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= $c['atelier'] === 'citricos' ? str_replace(' &amp; ', ' <i>&amp;</i> ', h($nom ?: 'Vuestros nombres')) : ($c['atelier'] !== '' ? nombres_hero($c) : h($nom ?: 'Vuestros nombres')) ?></h1>
+        <h1 class="hero-names" style="--nl:<?= mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') ?>"><?= $c['atelier'] !== '' ? nombres_hero($c) : h($nom ?: 'Vuestros nombres') ?></h1>
         <div class="hero-date">
           <span class="rule" aria-hidden="true"></span><span class="star" aria-hidden="true">✦</span>
           <span class="kicker"><?= h(linea_fecha($c) ?: 'La fecha') ?></span>
@@ -478,18 +469,6 @@ function pagina_inicio(array $c, array $ctx): string {
     </div>
 <?php endif; ?>
   </section>
-<?php if ($c['atelier'] === 'citricos' && $objetivo !== ''): // «Fichas de papel» (owner, 10-oct-2026): la cuenta atrás de Cítricos va sobre el borde de la portada, con semanas; misma #countdown y data-c para boda.js ?>
-  <div class="cit-cuenta">
-    <div class="countdown" id="countdown" data-objetivo="<?= h($objetivo) ?>" aria-label="Cuenta atrás para la boda">
-      <div class="countdown-item"><b data-c="weeks">0</b><span>semanas</span></div>
-      <div class="countdown-item"><b data-c="days">0</b><span>días</span></div>
-      <div class="countdown-item"><b data-c="hours">0</b><span>horas</span></div>
-      <div class="countdown-item"><b data-c="mins">0</b><span>min</span></div>
-      <div class="countdown-item"><b data-c="secs">0</b><span>seg</span></div>
-    </div>
-    <p class="cit-hoy" data-c-hoy hidden>¡Hoy es el día!</p>
-  </div>
-<?php endif; ?>
 <?php if ($fe === 'fundida' && in_array($c['decoracion'], ['flores', 'eucalipto'], true)): ?>
   <div class="deco-entre" aria-hidden="true"><img src="<?= h($A) ?>img/deco/<?= $c['decoracion'] === 'flores' ? 'flores-portada-movil.webp" width="520" height="250' : 'eucalipto-portada-movil.webp" width="520" height="190' ?>" alt=""></div>
 <?php endif; ?>
@@ -512,16 +491,12 @@ function pagina_inicio(array $c, array $ctx): string {
       <span class="kicker"><?= h(frase_web($c, 'fecha_kicker', 'Guardad el momento')) ?></span>
       <h2><?= h(frase_web($c, 'fecha_titulo', 'Anotad la fecha')) ?></h2>
       <p class="save-date-text"><?= h(ucfirst(fecha_larga($c['fecha']))) ?></p>
-<?php if ($c['atelier'] !== 'citricos'): // en Cítricos va sobre la portada: un solo #countdown por página ?>
       <div class="countdown" id="countdown" data-objetivo="<?= h($objetivo) ?>" aria-label="Cuenta atrás para la boda">
         <div class="countdown-item"><b data-c="days">0</b><span>Días</span></div>
         <div class="countdown-item"><b data-c="hours">0</b><span>Horas</span></div>
         <div class="countdown-item"><b data-c="mins">0</b><span>Min</span></div>
         <div class="countdown-item"><b data-c="secs">0</b><span>Seg</span></div>
       </div>
-<?php endif; ?>
-<?php if ($c['atelier'] === 'citricos'): ?>      <?= calendario_mes($c['fecha']) ?>
-<?php endif; ?>
       <button class="btn cal-btn" type="button" id="calBtn" aria-expanded="false" aria-controls="calOptions"><?= ico(ICONOS['calendario'], 'ico ico-sm') ?>Añadir a mi calendario</button>
       <div class="cal-options" id="calOptions" hidden>
         <span class="kicker">Elige tu calendario</span>
@@ -537,10 +512,6 @@ function pagina_inicio(array $c, array $ctx): string {
       <span class="kicker">Itinerario</span>
       <h2 class="section-title"><?= $c['convite']['lugar'] !== '' ? 'Ceremonia y convite' : 'Ceremonia' ?></h2>
     </div>
-<?php $curva = $c['atelier'] === 'citricos' ? curva_itinerario($c) : ''; ?>
-<?php if ($curva !== ''): ?>    <?= $curva ?>
-    <?= bloque_mapa($c, $ctx) ?>
-<?php else: ?>
     <?= bloque_mapa($c, $ctx) ?>
     <div class="event-list">
 <?php foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot):
@@ -562,7 +533,6 @@ function pagina_inicio(array $c, array $ctx): string {
 <?php endforeach; ?>
     </div>
 <?php if ($c['programa']): ?><?= bloque_programa($c) ?><?php endif; ?>
-<?php endif; ?>
   </section>
 
   <section class="quick">
@@ -605,7 +575,7 @@ function pagina_inicio(array $c, array $ctx): string {
   </section>
 
 <?php if ($c['atelier'] !== ''): ?>
-  <div class="atelier-pie" aria-hidden="true"><?= $c['atelier'] === 'citricos' ? sello_circular($c, $A) : '' ?></div>
+  <div class="atelier-pie" aria-hidden="true"></div>
 <?php elseif ($c['decoracion'] === 'eucalipto'): ?>
   <div class="deco-pie" aria-hidden="true"><img src="<?= h($A) ?>img/deco/eucalipto-pie.webp" alt="" width="900" height="170"></div>
 <?php elseif ($c['decoracion'] === 'flores'): ?>
@@ -639,8 +609,9 @@ function resumen(string $t, int $max = 140): string {
 
 /**
  * Paradas del día ordenadas por hora: ceremonia, convite y los momentos de `programa`.
- * Sin $completa (programa del Esencial) solo entran las que tienen hora. Con $completa (curva de Cítricos)
- * la ceremonia sin hora va la primera y el convite sin hora justo detrás (encargo Limonar, revisión previa #231).
+ * Sin $completa (programa del Esencial) solo entran las que tienen hora. Con $completa (programa del día de Cítricos;
+ * nació con la curva de «Limonar», revisión previa #231) la ceremonia sin hora va la primera y el convite sin hora
+ * justo detrás.
  */
 function paradas_dia(array $c, bool $completa = false): array {
     $ev = [];
@@ -658,49 +629,186 @@ function paradas_dia(array $c, bool $completa = false): array {
     return $ev;
 }
 
-/** Itinerario de Cítricos: una fila por parada con su tramo de curva, alternando lado; el alto lo da el texto. */
-function curva_itinerario(array $c): string {
-    $ev = paradas_dia($c, true);
-    if (!$ev) return '';
-    $ico = ['ceremonia' => '<circle cx="9.5" cy="14" r="5"/><circle cx="14.5" cy="14" r="5"/><path d="m10 6 2-3 2 3"/>',
-        'convite' => '<path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 8V6"/>',
-        'momento' => '<circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3 6.3 17.7"/>'];
-    $o = '<ol class="cit-curva">';
-    foreach ($ev as $i => $m) {
-        $x = $i % 2 ? 80 : 20;
-        $o .= '<li class="cit-paso ' . ($i % 2 ? 'cit-der' : 'cit-izq') . ' rv">'
-            . '<svg class="cit-tramo" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M50 0C50 12 ' . $x . ' 10 ' . $x . ' 22L' . $x . ' 78C' . $x . ' 90 50 88 50 100" vector-effect="non-scaling-stroke"/></svg>'
-            . '<span class="cit-ico" aria-hidden="true"><svg viewBox="0 0 24 24">' . $ico[$m['tipo']] . '</svg></span>'
-            . '<div class="cit-txt">' . ($m['hora'] !== '' ? '<span class="cit-h">' . h($m['hora']) . '</span>' : '')
-            . '<h3>' . h($m['titulo']) . '</h3>'
-            . ($m['lugar'] !== '' ? '<p class="cit-l">' . h($m['lugar']) . '</p>' : '')
-            . ($m['tipo'] !== 'momento' && $c[$m['tipo']]['direccion'] !== '' ? '<p class="cit-d">' . h($c[$m['tipo']]['direccion']) . '</p>' : '')
-            . ($m['nota'] !== '' ? '<p class="cit-n">' . h($m['nota']) . '</p>' : '')
-            . ($m['tipo'] !== 'momento' && $m['lugar'] !== '' ? '<a class="cit-mapa" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($c[$m['tipo']]))) . '" target="_blank" rel="noopener noreferrer">Cómo llegar</a>' : '')
-            . '</div></li>';
+// ============================================================ Cítricos y azahar · piel «Terraza» (owner, 14-oct-2026)
+// Sustituye a «Limonar» (curva del itinerario, calendario del mes, fichas de papel y sello circular). Calcada de la
+// referencia que eligió el owner y pasada por las leyes de la fábrica Atelier (sin sombras, radio 0 o pastilla, peso
+// hasta 500, el oro nunca como texto, contraste 4,5). Ningún otro diseño pasa por estas funciones.
+
+/** Iconos de línea del programa del día y de los lugares, en una caja de 40: boda.css los pinta en el oro (son dibujo,
+ *  no texto). Un momento del programa lleva el que dice su título (hito_icono). */
+const HITOS_CITRICOS = [
+    'anillos' => '<circle cx="15" cy="24" r="8.5"/><circle cx="25" cy="24" r="8.5"/><path d="M25 9.5l3 3-3 3-3-3z"/>',
+    'campana' => '<path d="M8.5 27c0-7.5 5.1-12.5 11.5-12.5S31.5 19.5 31.5 27M5.5 27.5h29M9 31h22M13 22c1-2.5 3-4 5.5-4.6"/><circle cx="20" cy="12.3" r="1.8"/>',
+    'camara' => '<rect x="6.5" y="13" width="27" height="18" rx="3"/><path d="M14 13l2.2-3.5h7.6L26 13M28.5 17H30"/><circle cx="20" cy="22" r="5.5"/><circle cx="20" cy="22" r="2.4"/>',
+    'tarta' => '<path d="M9 25h22v8H9zM12 18h16v7H12zM15 12.5h10V18H15zM9 28.5c2.75 2 5.25 2 8 0s5.25-2 8 0c2 1.4 4 1.4 6 0M20 12.5V9M20 9c-1-1-1-2.4 0-3.4 1 1 1 2.4 0 3.4z"/>',
+    'musica' => '<path d="M15 28.5v-17l14-3v17M15 15l14-3"/><ellipse class="cit-lleno" cx="12" cy="28.5" rx="3.4" ry="2.6" transform="rotate(-20 12 28.5)"/><ellipse class="cit-lleno" cx="26" cy="25.5" rx="3.4" ry="2.6" transform="rotate(-20 26 25.5)"/>',
+    'copas' => '<path d="M11 8h7c0 7-1.5 10-3.5 10S11 15 11 8zM14.5 18v12M10.5 30h8M22 8h7c0 7-1.5 10-3.5 10S22 15 22 8zM25.5 18v12M21.5 30h8"/>',
+    'corazon' => '<path d="M20 31s-10-6.5-10-14a5.5 5.5 0 0 1 10-3.2A5.5 5.5 0 0 1 30 17c0 7.5-10 14-10 14z"/>',
+];
+
+/** Qué icono lleva una parada del día: la ceremonia, los anillos; el convite, la campana; un momento, el de su título
+ *  (fotos, tarta, baile, aperitivo, cena) y, si no dice nada de eso, un corazón. */
+function hito_icono(array $m): string {
+    if ($m['tipo'] === 'ceremonia') return 'anillos';
+    if ($m['tipo'] === 'convite') return 'campana';
+    $t = mb_strtolower($m['titulo'], 'UTF-8');
+    foreach (['camara' => '~foto|sesi[oó]n|retrato~u', 'tarta' => '~tarta|pastel|postre~u', 'musica' => '~bail|fiesta|m[uú]sica|\bdj\b|concierto|barra libre~u',
+        'copas' => '~aperitivo|c[oó]ctel|cocktail|brindis|vino|copa~u', 'campana' => '~cena|comida|banquete|almuerzo|men[uú]~u'] as $k => $re) {
+        if (preg_match($re, $t)) return $k;
     }
-    return $o . '</ol>';
+    return 'corazon';
+}
+function svg_hito(string $k): string {
+    return '<svg class="cit-ico" viewBox="0 0 40 40" aria-hidden="true">' . HITOS_CITRICOS[$k] . '</svg>';
 }
 
-/** Calendario del mes de la boda (Cítricos): semana en lunes, el día rodeado por un corazón. Solo sale de `fecha`. */
-function calendario_mes(string $ymd): string {
-    $d = $ymd !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $ymd) : false;
-    if (!$d) return '';
-    $uno = $d->modify('first day of this month');
-    $hueco = (int) $uno->format('N') - 1;
-    $dias = (int) $d->format('t');
-    $boda = (int) $d->format('j');
-    $corazon = '<svg class="cit-corazon" viewBox="0 0 46 46" aria-hidden="true"><path d="M23 39C10 31 4 22 6 14c2-7 10-9 15-3 1 1 2 3 2 4 1-4 6-9 12-7 7 3 6 13-1 21-3 3-7 6-11 9"/></svg>';
-    $o = '<table class="cit-cal"><caption>' . h(ucfirst(MESES[(int) $d->format('n') - 1])) . ' <span>' . $d->format('Y') . '</span></caption><thead><tr>';
-    foreach (['L' => 'lunes', 'M' => 'martes', 'X' => 'miércoles', 'J' => 'jueves', 'V' => 'viernes', 'S' => 'sábado', 'D' => 'domingo'] as $l => $n)
-        $o .= '<th scope="col"><abbr title="' . h($n) . '">' . $l . '</abbr></th>';
-    $o .= '</tr></thead><tbody><tr>' . str_repeat('<td></td>', $hueco);
-    for ($i = 1, $col = $hueco; $i <= $dias; $i++, $col++) {
-        if ($col && $col % 7 === 0) $o .= '</tr><tr>';
-        $o .= $i === $boda ? '<td class="cit-boda">' . $i . $corazon . '<span class="cit-sr">, día de la boda</span></td>' : '<td>' . $i . '</td>';
+/** Iniciales del monograma de la cabecera (dentro de la corona de laurel): una por nombre; «♥» si no hay ninguno. */
+function mono_citricos(array $c): string {
+    $o = '';
+    foreach ([$c['pareja']['nombre1'], $c['pareja']['nombre2']] as $n) {
+        if ($n !== '') $o .= '<b>' . h(mb_strtoupper(mb_substr($n, 0, 1, 'UTF-8'), 'UTF-8')) . '</b>';
     }
-    $resto = (7 - $col % 7) % 7;
-    return $o . str_repeat('<td></td>', $resto) . '</tr></tbody></table>';
+    return $o !== '' ? $o : '<b>♥</b>';
+}
+
+/** Nombres de la portada: el primero en su línea y el conector con el segundo en la siguiente («& Marcos»), con el
+ *  conector en <i> (el bronce). Así el «&» nunca comparte línea con el primer nombre. Sin los dos nombres, como el resto. */
+function nombres_citricos(array $c): string {
+    $a = $c['pareja']['nombre1'];
+    $b = $c['pareja']['nombre2'];
+    $nom = nombres($c);
+    if ($a === '' || $b === '') return h($nom ?: 'Vuestros nombres');
+    $sep = trim(substr($nom, strlen($a), strlen($nom) - strlen($a) - strlen($b)));
+    return h($a) . ' <span class="hero-n2"><i>' . h($sep) . '</i> ' . h($b) . '</span>';
+}
+
+/**
+ * Portada de Cítricos: cabecera con monograma en laurel (layout), portada a dos columnas con la terraza sobre el mar y
+ * el borde rasgado, programa del día con iconos, ceremonia y convite, la carta con la foto en instantánea, la cuenta
+ * atrás, el dress code y los detalles en fichas, y la banda de confirmar con la rama de limonero. Mismos datos y mismos
+ * enganches que la portada común (#countdown, #calBtn, #calOptions, img[data-foto], .rv, data-ir).
+ */
+function inicio_citricos(array $c, array $ctx): string {
+    $A = h($ctx['assets']);
+    $nom = nombres($c);
+    $po = $c['portada'];
+    $rsvp = seccion_tipo($c, 'rsvp');
+    $dc = seccion_tipo($c, 'dresscode');
+    $hayFoto = $c['foto'] && ($ctx['foto'] !== '' || $ctx['modo'] === 'preview');
+    $fecha = $c['fecha'] !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $c['fecha']) : false;
+    $verMas = fn(array $s): string => a_interno($s['ruta'], $ctx, 'class="link-arrow"') . 'Ver ' . h(mb_strtolower($s['titulo'], 'UTF-8')) . ' ' . ico(ICONOS['flecha'], 'ico ico-sm') . '</a>';
+
+    // 1. Portada: los nombres y la fecha a la izquierda, la terraza a la derecha (debajo, en el móvil)
+    $o = "<main class=\"home\">\n  <section class=\"hero\">\n"
+        . '    <div class="hero-left">' . arte_atelier($c, $ctx['assets'])
+        . '<div class="hero-text"><h1 class="hero-names" style="--nl:' . mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') . '">' . nombres_citricos($c) . '</h1></div>'
+        . atelier_tras_texto($c, $ctx) . "</div>\n"
+        . '    <div class="cit-escena" aria-hidden="true"><img class="cit-terraza" src="' . $A . 'img/atelier/terraza-citricos.svg" alt=""></div>' . "\n"
+        . "  </section>\n";
+
+    // 2. Programa del día: ceremonia, convite y los momentos de la pareja, por hora, cada uno con su icono
+    $ev = paradas_dia($c, true);
+    if ($ev) {
+        $o .= '  <section class="cit-dia" aria-labelledby="cit-dia-t"><h2 class="cit-titulo" id="cit-dia-t">Programa del día</h2><ol class="cit-hitos">';
+        foreach ($ev as $m) {
+            $o .= '<li class="cit-hito rv">' . svg_hito(hito_icono($m))
+                . ($m['hora'] !== '' ? '<span class="cit-h">' . h($m['hora']) . '</span>' : '')
+                . '<h3>' . h($m['titulo']) . '</h3>'
+                . ($m['lugar'] !== '' ? '<p class="cit-l">' . h($m['lugar']) . '</p>' : '')
+                . ($m['nota'] !== '' ? '<p class="cit-n">' . h($m['nota']) . '</p>' : '')
+                . '</li>';
+        }
+        $o .= "</ol></section>\n";
+    }
+
+    // 3. Ceremonia y convite: dónde, la dirección y cómo llegar; entre los dos, el sello de limones. Debajo, el mapa
+    $sitios = [];
+    foreach (['ceremonia' => 'Ceremonia', 'convite' => 'Convite'] as $k => $rot) {
+        $e = $c[$k];
+        if ($k === 'convite' && $e['lugar'] === '') continue;
+        $sitios[] = '<article class="cit-sitio rv"><span class="cit-sitio-ico">' . svg_hito($k === 'ceremonia' ? 'anillos' : 'campana') . '</span>'
+            . '<h3>' . $rot . '</h3>'
+            . ($e['hora'] !== '' ? '<p class="cit-h">' . h($e['hora']) . '</p>' : '')
+            . '<p class="cit-sitio-l">' . h($e['lugar'] ?: 'Lugar de la ' . strtolower($rot)) . '</p>'
+            . ($e['direccion'] !== '' ? '<p class="cit-sitio-d">' . h($e['direccion']) . '</p>' : '')
+            . ($e['lugar'] !== '' ? '<a class="cit-mapa" href="https://maps.google.com/?q=' . h(rawurlencode(mapa_q($e))) . '" target="_blank" rel="noopener noreferrer">Cómo llegar</a>' : '')
+            . '</article>';
+    }
+    $o .= '  <section class="cit-lugares" aria-labelledby="cit-lugares-t"><h2 class="cit-titulo" id="cit-lugares-t">' . (count($sitios) > 1 ? 'Ceremonia y convite' : 'Ceremonia') . '</h2>'
+        . '<div class="cit-sitios">' . implode(count($sitios) > 1 ? '<img class="cit-sello" src="' . $A . 'img/atelier/sello-limon.webp" alt="" aria-hidden="true">' : '', $sitios) . '</div>'
+        . bloque_mapa($c, $ctx) . "</section>\n";
+
+    // 4. La carta: la foto de la pareja en instantánea con su cinta y su ramita de azahar, y la bienvenida al lado.
+    //    Con la ficha del dress code, la vestimenta va allí (no se duplica)
+    $vest = $po['vestimenta'] !== '' && !$dc;
+    if ($hayFoto || $po['titulo'] !== '' || $po['frase'] !== '' || $po['texto'] !== '' || $vest) {
+        $o .= '  <section class="cit-carta rv">'
+            . ($hayFoto ? '<figure class="cit-instantanea"><div class="cit-foto"><img data-foto src="' . h($ctx['foto']) . '" alt="' . h($nom) . '" width="960" height="1280" loading="eager"></div>'
+                . '<img class="cit-azahar" src="' . $A . 'img/atelier/azahar-citricos.svg" alt="" aria-hidden="true"></figure>' : '')
+            . '<div class="cit-carta-txt">'
+            . ($po['titulo'] !== '' ? '<h2 class="cit-guion">' . h($po['titulo']) . '</h2>' : '')
+            . ($po['frase'] !== '' ? '<p class="big">' . h($po['frase']) . '</p>' : '')
+            . parrafos($po['texto'])
+            . ($vest ? '<p class="pildora-vest"><span class="pildora-vest-rot">Vestimenta</span><span class="pildora-vest-txt">' . h($po['vestimenta']) . '</span></p>' : '')
+            . "</div></section>\n";
+    }
+
+    // 5. Guardad la fecha: cuenta atrás en fichas con corazones entre las cifras, y el calendario
+    if ($fecha) {
+        $o .= "  <section class=\"save-band\">\n    <div class=\"save-card rv\">"
+            . '<span class="kicker">' . h(frase_web($c, 'fecha_kicker', 'Guardad el momento')) . '</span>'
+            . '<h2 class="cit-titulo">' . h(frase_web($c, 'fecha_titulo', 'Anotad la fecha')) . '</h2>'
+            . '<p class="save-date-text">' . h(ucfirst(fecha_larga($c['fecha']))) . '</p>'
+            . '<div class="countdown" id="countdown" data-objetivo="' . h($c['fecha'] . 'T' . ($c['ceremonia']['hora'] ?: '12:00') . ':00') . '" aria-label="Cuenta atrás para la boda">'
+            . '<div class="countdown-item"><b data-c="days">0</b><span>Días</span></div><div class="countdown-item"><b data-c="hours">0</b><span>Horas</span></div>'
+            . '<div class="countdown-item"><b data-c="mins">0</b><span>Min</span></div><div class="countdown-item"><b data-c="secs">0</b><span>Seg</span></div></div>'
+            . '<button class="btn cal-btn" type="button" id="calBtn" aria-expanded="false" aria-controls="calOptions">' . ico(ICONOS['calendario'], 'ico ico-sm') . 'Añadir a mi calendario</button>'
+            . '<div class="cal-options" id="calOptions" hidden><span class="kicker">Elige tu calendario</span>'
+            . '<a href="' . h(url_google_calendar($c)) . '" target="_blank" rel="noopener noreferrer"><span>' . ico(ICONOS['calendario']) . 'Google Calendar</span>' . ico(ICONOS['flecha'], 'ico ico-sm') . '</a>'
+            . '<a href="' . h($ctx['modo'] === 'zip' ? 'boda.ics' : ($ctx['modo'] === 'preview' ? '#' : '/boda.ics')) . '" download><span>' . ico('M6 2h12v20H6zM11 18h2') . 'Apple / Outlook (.ics)</span>' . ico('M12 4v11M7 10l5 5 5-5M5 20h14', 'ico ico-sm') . '</a>'
+            . "</div></div>\n  </section>\n";
+    }
+
+    // 6. Fichas: el dress code en papel limón, con el bodegón de limones al pie, y en «Detalles» el resto de secciones
+    //    en filas con filete (los accesos de los seis Atelier). La confirmación tiene su banda propia, debajo
+    $bodegon = '<img class="cit-bodegon" src="' . $A . 'img/atelier/bodegon-citricos.svg" alt="" aria-hidden="true">';
+    $vestir = '';
+    if ($dc) {
+        $txt = mb_strimwidth(trim((string) preg_replace('/\s+/', ' ', $dc['datos']['texto'] ?? '')), 0, 240, '…', 'UTF-8');
+        $vestir = '<div class="cit-vestir rv"><h2 class="cit-titulo">' . h($dc['titulo']) . '</h2>'
+            . ($po['vestimenta'] !== '' ? '<p class="cit-vestir-dicho">' . h($po['vestimenta']) . '</p>' : '')
+            . ($txt !== '' ? '<p>' . h($txt) . '</p>' : '')
+            . muestras_color($dc['datos']['colores'] ?? [], 'cit-muestras') . $verMas($dc) . $bodegon . '</div>';
+    }
+    $filas = '';
+    foreach ($c['secciones'] as $s) {
+        if (!$s['on'] || in_array($s['tipo'], ['rsvp', 'informacion', 'dresscode'], true)) continue;
+        $resumen = resumen($s['datos']['texto'] ?? '');
+        if ($resumen === '' && $s['tipo'] === 'transporte' && $s['datos']['trayectos']) {
+            $t0 = $s['datos']['trayectos'][0];
+            $resumen = resumen('Autobús' . ($t0['hora'] !== '' ? ' a las ' . $t0['hora'] : '') . ' desde ' . $t0['salida'] . '.');
+        }
+        $kicker = $s['tipo'] === 'musica' ? frase_web($c, 'cancion_kicker', '¿Qué canción no puede faltar?')
+            : (['hoteles' => 'Alojamiento', 'transporte' => 'Desplazamiento', 'regalos' => 'Detalle con nosotros'][$s['tipo']] ?? 'Más información');
+        $filas .= '<div class="q-card rv"><div class="q-label">' . ico(ICONOS[$s['tipo']]) . '<span class="kicker">' . h($kicker) . '</span></div>'
+            . '<h3>' . h($s['titulo']) . '</h3>' . ($resumen !== '' ? '<p>' . h($resumen) . '</p>' : '') . $verMas($s) . '</div>';
+    }
+    if ($vestir !== '' || $filas !== '') {
+        $o .= '  <section class="quick cit-fichas">' . $vestir
+            . ($filas !== '' ? '<div class="cit-detalles"><h2 class="cit-titulo">Detalles</h2><div class="quick-grid">' . $filas . '</div>'
+                . ($vestir === '' ? $bodegon : '') . '</div>' : '')
+            . "</section>\n";
+    }
+
+    // 7. Confirmar: banda de salvia con colinas en acuarela y la rama de limonero en la esquina
+    if ($rsvp) {
+        $dr = $rsvp['datos'];
+        $txt = $dr['fecha_limite'] !== '' ? 'Por favor, confirmad antes del ' . fecha_larga($dr['fecha_limite'], false) . '.' : (resumen($dr['texto'] ?? '') ?: 'Contadnos si venís y qué menú preferís.');
+        $o .= '  <section class="cit-rsvp" aria-labelledby="cit-rsvp-t"><img class="cit-rama-pie" src="' . $A . 'img/atelier/limones.webp" alt="" aria-hidden="true">'
+            . '<div class="cit-rsvp-in rv"><h2 class="cit-titulo" id="cit-rsvp-t">' . h($rsvp['titulo']) . '</h2><p>' . h($txt) . '</p>'
+            . a_interno($rsvp['ruta'], $ctx, 'class="btn"') . "Confirmar</a></div></section>\n";
+    }
+    return $o . "</main>\n";
 }
 
 /**

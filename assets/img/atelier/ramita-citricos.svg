@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 22">
+  <!-- Cítricos y azahar: ramita junto a los títulos. Se usa como máscara (mask-image): el color lo pone boda.css -->
+  <defs><path id="hoja" d="M0,0 C3,-3.4 9,-4 13,0 C9,4 3,3.4 0,0 Z"/></defs>
+  <path d="M47,13 C37,13 24,12 11,9.5" fill="none" stroke="#000" stroke-width="1.1" stroke-linecap="round"/>
+  <use href="#hoja" transform="translate(40 12.8) rotate(212) scale(.8)"/>
+  <use href="#hoja" transform="translate(35 12.5) rotate(148) scale(.8)"/>
+  <use href="#hoja" transform="translate(29 12) rotate(210) scale(.85)"/>
+  <use href="#hoja" transform="translate(24 11.4) rotate(150) scale(.85)"/>
+  <use href="#hoja" transform="translate(18 10.6) rotate(206) scale(.8)"/>
+  <use href="#hoja" transform="translate(11 9.5) rotate(186) scale(.8)"/>
+</svg>
