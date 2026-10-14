@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" preserveAspectRatio="none">
+  <!-- Cítricos y azahar: colinas en acuarela al pie de la banda de confirmar (dibujo propio, 14-oct-2026).
+       Solo las manchas, con transparencia: el color de la banda lo pone boda.css con los tokens del diseño.
+       Las manchas pasan del borde del dibujo para que el filtro no deje a la vista un canto deshilachado. -->
+  <defs>
+    <filter id="acuarela" x="-5%" y="-30%" width="110%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency=".018" numOctaves="3" seed="9" result="ruido"/>
+      <feDisplacementMap in="SourceGraphic" in2="ruido" scale="18" xChannelSelector="R" yChannelSelector="G" result="mancha"/>
+      <feGaussianBlur in="mancha" stdDeviation="1.8"/>
+    </filter>
+  </defs>
+  <g filter="url(#acuarela)">
+    <path fill="#C5D0AE" fill-opacity=".42" d="M-40,262 C110,232 220,252 330,240 C460,226 560,262 690,250 C820,236 900,212 1010,224 C1100,232 1160,216 1240,208 L1240,480 L-40,480 Z"/>
+    <path fill="#B3C19B" fill-opacity=".3" d="M-40,330 C160,300 300,326 470,312 C640,298 760,326 930,306 C1040,294 1130,306 1240,294 L1240,480 L-40,480 Z"/>
+    <path fill="#A9B98F" fill-opacity=".18" d="M560,480 L560,420 C640,368 760,350 880,356 C990,362 1100,340 1240,318 L1240,480 Z"/>
+  </g>
+</svg>

@@ -3,32 +3,32 @@
   "citricos": {
    "atelier": {
     "colores": [
-     "#4F5E45",
-     "#4F5E45",
-     "#3F4B37",
-     "#5A6650",
-     "#FBF8F0",
-     "#E4E8D5",
-     "#D9DFC6",
-     "#B9A86A",
-     "#FBF8F0",
-     "#E4E8D5"
+     "#5B6846",
+     "#5B6846",
+     "#4B573A",
+     "#6B6858",
+     "#FDFAF1",
+     "#EFEEDC",
+     "#E5E5CF",
+     "#C9A24E",
+     "#FDFAF1",
+     "#EFEEDC"
     ],
     "fuentes": [
-     "'Cormorant', Georgia, serif",
-     "'Cormorant', Georgia, serif",
-     "'Pinyon Script', cursive",
+     "'Cormorant Garamond', Georgia, serif",
+     "'Montserrat', system-ui, sans-serif",
+     "'Great Vibes', cursive",
      "normal"
     ]
    },
-   "linea_base": "68e19e59858992314f82e61eaa8a484322ed1218a9b0880ff32507265d5e2461",
+   "linea_base": "96a136237f0630d17bad34b89a93da0a1bbaee13b21cf444aee4ddd751b0dfd5",
    "nombres": {
-    "familia": "Pinyon Script",
+    "familia": "Great Vibes",
     "estilo": "normal"
    },
    "tarjeta": [
     520,
-    827
+    644
    ],
    "movil": [
     360,
