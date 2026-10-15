@@ -1917,8 +1917,17 @@ body.atelier-citricos .cit-nav a{ display: inline-flex; align-items: center; min
 body.atelier-citricos .cit-nav a:hover{ color: var(--accent-hover); }
 /* La terraza: dibujo propio con el borde de abajo rasgado (transparente: se ve el papel) y fundido arriba con la cabecera */
 body.atelier-citricos .cit-escena{ position: relative; height: 300px; }
-body.atelier-citricos .cit-terraza{ position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none;
+body.atelier-citricos .cit-terraza, body.atelier-citricos .cit-foto-escena{ position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none;
   -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%); mask-image: linear-gradient(to bottom, transparent, #000 22%); }
+/* La foto de la pareja en lugar de la terraza (ESCENAS_CITRICOS, 15-oct-2026): el mismo fundido y el mismo borde rasgado
+   (clip-path en línea), las ramas de las esquinas encima. Más alta en el móvil: las fotos suelen venir en vertical.
+   Un pelo más grande que su caja para que el desenfoque del filtro no deje un filo claro en los bordes. Mientras la
+   foto no llega (la vista previa la pone después), el hueco es papel salvia y no el icono de imagen rota */
+body.atelier-citricos .cit-escena-foto{ height: 400px; }
+body.atelier-citricos .cit-foto-escena{ overflow: hidden; background: var(--salvia); }
+body.atelier-citricos .cit-foto-escena img{ display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 50% 30%; transform: scale(1.03); }
+body.atelier-citricos .cit-foto-escena img[src=""]{ visibility: hidden; }
+body.atelier-citricos .cit-defs{ position: absolute; width: 0; height: 0; overflow: hidden; }
 
 /* Programa del día: una fila por parada en el móvil (icono, hora y qué); en el ordenador, en línea con filetes verticales.
    Entre parada y parada, un corazón sobre el filete */
@@ -2085,7 +2094,8 @@ body.atelier-citricos .song-card, body.atelier-citricos .libro-entrada{ border-r
   body.atelier-citricos .hero-names{ font-size: calc(104px * var(--at-nombres-escala)); line-height: 1; }
   body.atelier-citricos .cit-fecha time{ font-size: 46px; }
   body.atelier-citricos .cit-escena{ grid-column: 2; grid-row: 1; height: auto; }
-  body.atelier-citricos .cit-terraza{ -webkit-mask-image: linear-gradient(to right, transparent, #000 24%), linear-gradient(to bottom, transparent, #000 10%); -webkit-mask-composite: source-in;
+  body.atelier-citricos .cit-escena-foto{ height: auto; }
+  body.atelier-citricos .cit-terraza, body.atelier-citricos .cit-foto-escena{ -webkit-mask-image: linear-gradient(to right, transparent, #000 24%), linear-gradient(to bottom, transparent, #000 10%); -webkit-mask-composite: source-in;
     mask-image: linear-gradient(to right, transparent, #000 24%), linear-gradient(to bottom, transparent, #000 10%); mask-composite: intersect; }
   body.atelier-citricos .cit-titulo{ gap: 18px; font-size: 24px; letter-spacing: .2em; }
   body.atelier-citricos .cit-titulo::before, body.atelier-citricos .cit-titulo::after{ width: 46px; height: 21px; }

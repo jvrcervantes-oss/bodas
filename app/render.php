@@ -662,6 +662,65 @@ function svg_hito(string $k): string {
     return '<svg class="cit-ico" viewBox="0 0 40 40" aria-hidden="true">' . HITOS_CITRICOS[$k] . '</svg>';
 }
 
+/** Canales 0-1 de un #rrggbb, para las tablas de los filtros. */
+function canales_hex(string $hex): array {
+    return array_map(fn($i) => hexdec(substr($hex, $i, 2)) / 255, [1, 3, 5]);
+}
+
+/**
+ * Filtro SVG de un acabado de la foto de la portada de Cítricos (ESCENAS_CITRICOS). Las tintas salen de la paleta de
+ * fábrica del diseño (ATELIER['citricos']: papel, salvia, su banda y la tinta), nunca escritas aquí, para que el filtro
+ * no se quede atrás si la paleta cambia. «natural» no lleva filtro. Lo usan la portada (solo el acabado elegido) y el
+ * creador (todos, para las miniaturas): una sola fuente.
+ */
+function filtro_escena(string $k): string {
+    $A = ATELIER['citricos'];
+    [$papel, $salvia, $banda, $tinta] = [canales_hex($A['colores'][4]), canales_hex($A['colores'][1]), canales_hex($A['colores'][6]), canales_hex($A['tinta'])];
+    $mezcla = fn(array $x, array $y, float $t): array => array_map(fn($a, $b) => $a + ($b - $a) * $t, $x, $y);
+    // Una tabla por canal con esas tintas, en el orden de oscuro a claro
+    $tabla = function (string $tipo, array ...$tintas): string {
+        $o = '';
+        foreach (['R', 'G', 'B'] as $i => $ch) {
+            $o .= '<feFunc' . $ch . ' type="' . $tipo . '" tableValues="' . implode(' ', array_map(fn($t) => round($t[$i], 3), $tintas)) . '"/>';
+        }
+        return $o;
+    };
+    $gris = 'type="matrix" values=".3 .59 .11 0 0  .3 .59 .11 0 0  .3 .59 .11 0 0  0 0 0 1 0"';
+    $cuerpo = match ($k) {
+        // Acuarela: suavizada, en siete escalones, apagada y llevada de la tinta al papel (las sombras nunca a negro)
+        'acuarela' => '<feGaussianBlur stdDeviation="1.4" result="b"/><feComponentTransfer in="b" result="p">'
+            . implode('', array_map(fn($ch) => '<feFunc' . $ch . ' type="discrete" tableValues="0 .22 .42 .6 .76 .9 1"/>', ['R', 'G', 'B']))
+            . '</feComponentTransfer><feColorMatrix in="p" type="saturate" values=".7" result="s"/><feComponentTransfer in="s">' . $tabla('table', $tinta, $papel) . '</feComponentTransfer>',
+        // Tinta salvia: en grises suavizados y a cinco tintas planas de la paleta (el aspecto de ilustración vectorial)
+        'salvia' => '<feGaussianBlur stdDeviation="2.2" result="b"/><feColorMatrix in="b" ' . $gris . ' result="g"/><feComponentTransfer in="g">'
+            . $tabla('discrete', $tinta, $salvia, $mezcla($salvia, $banda, .5), $banda, $papel) . '</feComponentTransfer>',
+        default => '',
+    };
+    return $cuerpo === '' ? '' : '<filter id="cit-ef-' . $k . '" color-interpolation-filters="sRGB">' . $cuerpo . '</filter>';
+}
+
+/** El borde rasgado de la terraza (assets/img/atelier/terraza-citricos.svg, clipPath «rasgado») pasado a la caja de la foto
+ *  (objectBoundingBox): la foto se rasga por el mismo sitio que el dibujo. Se lee del propio SVG: una sola fuente. */
+function rasgado_escena(): string {
+    static $d = null;
+    if ($d !== null) return $d;
+    $svg = (string) @file_get_contents(__DIR__ . '/../assets/img/atelier/terraza-citricos.svg');
+    if (!preg_match('~<clipPath id="rasgado">\s*<path d="([^"]+)"~', $svg, $m) || !preg_match('~viewBox="0 0 ([\d.]+) ([\d.]+)"~', $svg, $v)) {
+        return $d = 'M0,0 H1 V1 H0 Z';   // sin el dibujo, la foto va entera (nunca sin foto)
+    }
+    preg_match_all('~([ML])\s*([\d.]+),([\d.]+)~', $m[1], $pt, PREG_SET_ORDER);
+    $o = '';
+    foreach ($pt as [, $cmd, $x, $y]) $o .= $cmd . round((float) $x / (float) $v[1], 4) . ',' . round((float) $y / (float) $v[2], 4) . ' ';
+    return $d = trim($o) . ' Z';
+}
+
+/** El SVG oculto con lo que la foto de la portada necesita: el borde rasgado y el filtro de cada acabado pedido. */
+function svg_escena(array $claves): string {
+    $f = implode('', array_map('filtro_escena', $claves));
+    return '<svg class="cit-defs" width="0" height="0" aria-hidden="true" focusable="false"><clipPath id="cit-rasgado" clipPathUnits="objectBoundingBox"><path d="'
+        . h(rasgado_escena()) . '"/></clipPath>' . $f . '</svg>';
+}
+
 /** Iniciales del monograma de la cabecera (dentro de la corona de laurel): una por nombre; «♥» si no hay ninguno. */
 function mono_citricos(array $c): string {
     $o = '';
@@ -695,6 +754,8 @@ function inicio_citricos(array $c, array $ctx): string {
     $rsvp = seccion_tipo($c, 'rsvp');
     $dc = seccion_tipo($c, 'dresscode');
     $hayFoto = $c['foto'] && ($ctx['foto'] !== '' || $ctx['modo'] === 'preview');
+    // Arriba, la terraza dibujada o la foto de la pareja con su acabado (ESCENAS_CITRICOS); sin foto, siempre la terraza
+    $escena = $hayFoto && ($c['escena'] ?? 'terraza') !== 'terraza' ? $c['escena'] : '';
     $fecha = $c['fecha'] !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $c['fecha']) : false;
     $verMas = fn(array $s): string => a_interno($s['ruta'], $ctx, 'class="link-arrow"') . 'Ver ' . h(mb_strtolower($s['titulo'], 'UTF-8')) . ' ' . ico(ICONOS['flecha'], 'ico ico-sm') . '</a>';
 
@@ -703,7 +764,13 @@ function inicio_citricos(array $c, array $ctx): string {
         . '    <div class="hero-left">' . arte_atelier($c, $ctx['assets'])
         . '<div class="hero-text"><h1 class="hero-names" style="--nl:' . mb_strlen($nom ?: 'Vuestros nombres', 'UTF-8') . '">' . nombres_citricos($c) . '</h1></div>'
         . atelier_tras_texto($c, $ctx) . "</div>\n"
-        . '    <div class="cit-escena" aria-hidden="true"><img class="cit-terraza" src="' . $A . 'img/atelier/terraza-citricos.svg" alt=""></div>' . "\n"
+        . ($escena !== ''
+            // La foto se rasga y se funde como el dibujo. El filtro y el recorte van en línea (no en boda.css) para que
+            // url(#…) apunte siempre a este documento. Es la imagen grande de la portada: carga ya y con prioridad
+            ? '    <div class="cit-escena cit-escena-foto">' . svg_escena([$escena]) . '<div class="cit-foto-escena" style="clip-path:url(#cit-rasgado)">'
+                . '<img data-foto src="' . h($ctx['foto']) . '" alt="' . h($nom !== '' ? 'Foto de ' . $nom : 'Foto de la pareja') . '" width="960" height="1280" loading="eager" fetchpriority="high"'
+                . ($escena !== 'natural' ? ' style="filter:url(#cit-ef-' . $escena . ')"' : '') . "></div></div>\n"
+            : '    <div class="cit-escena" aria-hidden="true"><img class="cit-terraza" src="' . $A . 'img/atelier/terraza-citricos.svg" alt=""></div>' . "\n")
         . "  </section>\n";
 
     // 2. Programa del día: ceremonia, convite y los momentos de la pareja, por hora, cada uno con su icono
@@ -739,8 +806,9 @@ function inicio_citricos(array $c, array $ctx): string {
         . bloque_mapa($c, $ctx) . "</section>\n";
 
     // 4. La carta: la foto de la pareja en instantánea con su cinta y su ramita de azahar, y la bienvenida al lado.
-    //    Con la ficha del dress code, la vestimenta va allí (no se duplica)
+    //    Con la ficha del dress code, la vestimenta va allí (no se duplica). Con la foto arriba, la carta no la repite
     $vest = $po['vestimenta'] !== '' && !$dc;
+    $hayFoto = $hayFoto && $escena === '';
     if ($hayFoto || $po['titulo'] !== '' || $po['frase'] !== '' || $po['texto'] !== '' || $vest) {
         $o .= '  <section class="cit-carta rv">'
             . ($hayFoto ? '<figure class="cit-instantanea"><div class="cit-foto"><img data-foto src="' . h($ctx['foto']) . '" alt="' . h($nom) . '" width="960" height="1280" loading="eager"></div>'

@@ -165,6 +165,44 @@ ok(hay($rsvp, '<a href="/confirmar-asistencia" class="btn">Confirmar</a>') && su
 $fichas = seccion($inicio(['atelier' => 'citricos', 'portada' => ['vestimenta' => 'Formal de verano']]), 'quick cit-fichas');
 ok(hay($fichas, '<div class="cit-vestir rv">') && hay($fichas, '<p class="cit-vestir-dicho">Formal de verano</p>') && substr_count($fichas, 'cit-bodegon') === 1, 'el dress code en su ficha de papel limón, con el bodegón');
 
+// 6b. Arriba de la portada, la foto de la pareja con su acabado (ESCENAS_CITRICOS, aviso de usuario 15-oct-2026)
+ok(normaliza_config(crudo())['escena'] === 'terraza', 'de fábrica, la terraza');
+ok(normaliza_config(crudo(['escena' => 'lapiz']))['escena'] === 'terraza' && normaliza_config(crudo(['escena' => '<x>']))['escena'] === 'terraza',
+    'un acabado que no está en la lista vuelve a la terraza');
+ok(hay($foto, 'class="cit-terraza"') && !hay($foto, 'cit-escena-foto') && !hay($foto, '<svg class="cit-defs"'), 'con foto y la terraza elegida, como siempre: el dibujo arriba y la foto en la carta');
+$sinF = $inicio(['atelier' => 'citricos', 'escena' => 'salvia']);
+ok(hay($sinF, 'class="cit-terraza"') && !hay($sinF, 'cit-escena-foto'), 'sin foto, la terraza aunque se haya elegido un acabado');
+foreach (array_keys(ESCENAS_CITRICOS) as $k) {
+    if ($k === 'terraza') continue;
+    $h = $inicio(['atelier' => 'citricos', 'foto' => true, 'escena' => $k], ['foto' => '/foto?v=1']);
+    $ie = strpos($h, '<div class="cit-escena cit-escena-foto">');
+    $esc = $ie === false ? '' : substr($h, $ie, (int) strpos($h, '</div></div>', $ie) - $ie);
+    ok($esc !== '' && !hay($h, 'cit-terraza') && !hay($esc, 'aria-hidden="true"><div'), "«{$k}»: la foto en lugar de la terraza, sin esconderla a los lectores de pantalla");
+    ok(hay($esc, '<img data-foto src="/foto?v=1" alt="Foto de Ana &amp; Luis" width="960" height="1280" loading="eager" fetchpriority="high"'), "«{$k}»: data-foto (vista previa), texto alternativo y carga con prioridad");
+    ok(hay($esc, 'style="clip-path:url(#cit-rasgado)"') && substr_count($h, '<clipPath id="cit-rasgado"') === 1, "«{$k}»: el borde rasgado, una vez");
+    ok(substr_count($h, '<filter id="cit-ef-') === ($k === 'natural' ? 0 : 1) && ($k === 'natural' || hay($esc, 'style="filter:url(#cit-ef-' . $k . ')"')),
+        "«{$k}»: solo el filtro del acabado elegido");
+    ok(!hay($h, '<figure class="cit-instantanea">'), "«{$k}»: la carta no repite la foto");
+}
+// El filtro no lleva sombras ni nada que Safari recalcule en cada frame de scroll (medido el 15-oct: 65 de 239 frames lentos)
+$defs = svg_escena(array_keys(ESCENAS_CITRICOS));
+foreach (['feDropShadow', 'feTurbulence', 'feDisplacementMap', 'feConvolveMatrix', 'arithmetic', 'feMorphology', 'feImage', 'mode="'] as $prohibido) {
+    ok(!hay($defs, $prohibido), "los acabados no usan $prohibido");
+}
+// Las tintas salen de la paleta del diseño: el papel y la tinta de ATELIER, no hex sueltos
+$P = canales_hex(ATELIER['citricos']['colores'][4]);
+ok(hay(filtro_escena('salvia'), 'tableValues="' . implode(' ', [round(canales_hex(ATELIER['citricos']['tinta'])[0], 3), round(canales_hex(ATELIER['citricos']['colores'][1])[0], 3)])) && hay(filtro_escena('salvia'), ' ' . round($P[0], 3) . '"'),
+    'la tinta salvia va de la tinta al papel pasando por la salvia del diseño');
+// El rasgado es el de la terraza, pasado a la caja (0-1) y cerrado
+$r = rasgado_escena();
+preg_match_all('~[ML]([\d.]+),([\d.]+)~', $r, $pr);
+ok(count($pr[1]) > 20 && max(array_map('floatval', $pr[1])) <= 1 && max(array_map('floatval', $pr[2])) <= 1 && min(array_map('floatval', $pr[2])) === 0.0 && str_ends_with($r, 'Z'),
+    'el borde rasgado sale del dibujo de la terraza, en la caja de la foto');
+$zipF = $inicio(['atelier' => 'citricos', 'foto' => true, 'escena' => 'acuarela'], ['modo' => 'zip', 'assets' => 'assets/', 'foto' => 'foto.webp']);
+ok(hay($zipF, '<img data-foto src="foto.webp"') && hay($zipF, '<filter id="cit-ef-acuarela"'), 'en el ZIP, la foto en relativo y el filtro dentro de la página (sin conexión)');
+$prev = $inicio(['atelier' => 'citricos', 'foto' => true, 'escena' => 'salvia'], ['modo' => 'preview']);
+ok(hay($prev, '<img data-foto src="" alt="Foto de Ana &amp; Luis"'), 'en la vista previa, el hueco que rellena vista-previa.js');
+
 // 7. Los otros diseños no llevan nada de esto y siguen con la cuenta atrás en «Guardad la fecha»
 foreach (['lacre', 'herbario', 'atardecer', ''] as $otro) {
     $h = $inicio(['atelier' => $otro, 'programa' => momentos(2)]);

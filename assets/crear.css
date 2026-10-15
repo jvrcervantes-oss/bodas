@@ -194,6 +194,12 @@
 .c-deco-sobre { background: var(--surface-c); }
 /* Estilo de la foto: miniatura de la forma, con un degradado cálido que hace de foto */
 .c-deco-muestra.c-fe { display: grid; place-items: center; background: var(--surface-c); }
+/* Cítricos: arriba de la portada, la terraza o vuestra foto con su acabado (15-oct-2026). La miniatura es la foto real con el filtro de la web */
+.c-escena-muestra { height: 96px; background: #EFEEDC; }
+.c-escena-muestra img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+.c-escena-muestra img:not([src]) { visibility: hidden; }
+.c-escena.c-off { opacity: .45; cursor: not-allowed; }
+
 .c-fe i { display: block; width: 36px; height: 48px; background: linear-gradient(160deg, #f3d3b0, #cf947f 55%, #836c60); }
 .c-fe-arco i { border-radius: 999px 999px 4px 4px; }
 /* Sello: troquelado de sello en un borde blanco; Acuarela: mancha de contorno irregular */

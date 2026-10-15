@@ -118,6 +118,7 @@
     propioEl.hidden = !!st.atelier;
     var feb = document.getElementById('fotoEstiloBloque'); if (feb) feb.hidden = !!st.atelier;
     pintaAutor();
+    pintaEscenas();
     var t = document.getElementById('precioTotal');
     if (t) {
       t.textContent = st.atelier ? D.precio.totalAtelier : D.precio.total;
@@ -306,6 +307,40 @@
       el('span', { class: 'c-deco-txt' }, [el('b', { text: fe.nombre }), el('small', { text: fe.desc })])]));
   });
 
+  // ------------------------------------------------------------ Cítricos: arriba de la portada, la terraza o vuestra foto con un acabado
+  // Cada miniatura es SU foto con el filtro de la web (los <filter> los imprime el servidor, app/render.php svg_escena:
+  // aquí solo se enlaza por id). Sin foto, solo la terraza; mientras la foto guardada llega (panel), «Cargando».
+  var escenasEl = document.getElementById('escenas');
+  var escenaMuestras = [];
+  Object.keys(D.escenas || {}).forEach(function (k) {
+    var es = D.escenas[k];
+    var r = el('input', { type: 'radio', name: 'escena', value: k });
+    r.addEventListener('change', function () { st.escena = k; cambio(); });
+    var img = el('img', { alt: '', src: k === 'terraza' ? BASE + '/assets/img/atelier/terraza-citricos.svg' : '', style: k === 'terraza' || k === 'natural' ? null : 'filter:url(#cit-ef-' + k + ')' });
+    escenaMuestras.push({ k: k, r: r, img: img });
+    escenasEl.appendChild(el('label', { class: 'c-deco c-escena' }, [r, el('span', { class: 'c-deco-muestra c-escena-muestra' }, [img]),
+      el('span', { class: 'c-deco-txt' }, [el('b', { text: es.nombre }), el('small', { text: es.desc })])]));
+  });
+  var fotoCargando = false;
+  function pintaEscenas() {
+    var b = document.getElementById('escenaBloque');
+    if (!b || !escenaMuestras) return;   // pintaAtelier() corre antes de montar las miniaturas
+    b.hidden = st.atelier !== 'citricos';
+    var hay = !!foto.src;
+    var aviso = document.getElementById('escenaSinFoto');
+    aviso.hidden = hay;
+    aviso.textContent = fotoCargando ? 'Cargando vuestra foto…' : 'Subid primero vuestra foto (aquí arriba) para elegir un acabado.';
+    escenaMuestras.forEach(function (m) {
+      var usable = m.k === 'terraza' || hay;
+      m.r.disabled = !usable;
+      m.r.parentNode.classList.toggle('c-off', !usable);
+      if (m.k !== 'terraza') { if (hay) m.img.src = foto.src; else m.img.removeAttribute('src'); }
+      // Sin foto se ve la terraza, elijan lo que elijan (lo mismo que pinta el servidor)
+      m.r.checked = (hay ? (st.escena || 'terraza') : 'terraza') === m.k;
+    });
+  }
+  pintaEscenas();
+
   // ------------------------------------------------------------ foto
   var fotoInput = document.getElementById('fotoInput');
   var fotoImg = document.getElementById('fotoImg');
@@ -324,6 +359,7 @@
     if (hay) fotoImg.src = foto.src;
     document.getElementById('fotoNom').textContent = hay ? 'Foto de portada elegida' : 'Sin foto';
     st.foto = hay;
+    pintaEscenas();
   }
   // Se reduce y convierte a WebP aquí (norma del estudio) antes de subirla; el
   // servidor la vuelve a comprobar y recodificar igualmente.
@@ -354,12 +390,15 @@
   fotoQuitar.addEventListener('click', function () { foto = { blob: null, src: '', quitar: true }; pintaFoto(); cambio(); });
 
   if (MODO === 'editar' && D.fotoUrl && !(recuperado && (foto.src || foto.quitar))) {
+    fotoCargando = true; pintaEscenas();
+    var finCarga = function () { fotoCargando = false; pintaEscenas(); };
     fetch(D.fotoUrl).then(function (r) { return r.ok ? r.blob() : null; }).then(function (b) {
-      if (!b) return;
+      if (!b) return finCarga();
       var fr = new FileReader();
-      fr.onload = function () { foto.src = fr.result; pintaFoto(); enviaFoto(); };
+      fr.onload = function () { foto.src = fr.result; fotoCargando = false; pintaFoto(); enviaFoto(); };
+      fr.onerror = finCarga;
       fr.readAsDataURL(b);
-    }).catch(function () { /* MUDO A PROPOSITO: la foto guardada solo se precarga para verla en el editor; si no llega, el hueco queda vacío y se puede volver a subir */ });
+    }).catch(function () { /* MUDO A PROPOSITO: la foto guardada solo se precarga para verla en el editor; si no llega, el hueco queda vacío y se puede volver a subir */ finCarga(); });
   }
 
   // ------------------------------------------------------------ secciones

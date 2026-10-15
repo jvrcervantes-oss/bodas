@@ -18,6 +18,7 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
         'fuentesAutor' => array_map(fn($f) => ['nombre' => $f['nombre'], 'nota' => $f['nota']], fuentes_autor()),
         'decoraciones' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], DECORACIONES),
         'fotoEstilos' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], FOTO_ESTILOS),
+        'escenas' => array_map(fn($d) => ['nombre' => $d[0], 'desc' => $d[1]], ESCENAS_CITRICOS),
         'maxGaleria' => MAX_GALERIA, 'checkGaleria' => $L['check_galeria_pareja'] ?? '',
         'maxMenus' => MAX_MENUS, 'maxBanquete' => MAX_BANQUETE, 'maxTrayectos' => MAX_TRAYECTOS, 'secciones' => array_map(fn($s) => ['titulo' => $s[0], 'unica' => $s[2]], SECCIONES),
         'maxLibres' => MAX_LIBRES, 'dominio' => BASE_DOMAIN,
@@ -194,6 +195,14 @@ function vista_constructor(string $modo, array $c, string $slug, string $csrf = 
               <button type="button" class="c-link c-link-mal" id="fotoQuitar" hidden>Quitar</button>
             </span>
           </div>
+        </div>
+        <div id="escenaBloque" hidden>
+          <hr class="c-hr">
+          <span class="overline overline-bronze">Arriba, en la portada</span>
+          <p class="c-ayuda">Cítricos y azahar abre con el dibujo de una terraza. Podéis poner vuestra foto en su lugar, con uno de estos acabados; se rasga y se funde con el papel igual que el dibujo.</p>
+          <p class="c-ayuda" id="escenaSinFoto">Subid primero vuestra foto (aquí arriba) para elegir un acabado.</p>
+          <div class="c-decos c-escenas" id="escenas" role="radiogroup" aria-label="Arriba, en la portada"></div>
+          <?= svg_escena(array_keys(ESCENAS_CITRICOS)) /* los mismos filtros que la web: las miniaturas los usan */ ?>
         </div>
         <hr class="c-hr">
         <span class="overline overline-bronze">Textos de la portada</span>

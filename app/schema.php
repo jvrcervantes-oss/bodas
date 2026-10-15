@@ -121,6 +121,17 @@ const FOTO_ESTILOS = [
     'acuarela' => ['Acuarela', 'Recortada como una mancha de acuarela'],
 ];
 
+// Arriba de la portada de Cítricos y azahar (aviso de usuario, 15-oct-2026): el dibujo de la terraza o la foto de la pareja
+// con un acabado. Los acabados son filtros SVG en línea hechos con la paleta del diseño (render.php, filtro_escena); solo
+// primitivas que Safari no recalcula en cada frame de scroll: un lápiz o un trazo de bordes (feComposite aritmético,
+// feConvolveMatrix) daba 65 de 239 frames lentos en WebKit a 390 px, y la acuarela con feTurbulence también (medido).
+const ESCENAS_CITRICOS = [
+    'terraza'  => ['Dibujo de la terraza', 'La ilustración del diseño'],
+    'natural'  => ['Vuestra foto', 'Tal cual, con el borde rasgado'],
+    'acuarela' => ['Acuarela', 'Colores lavados, como pintada a mano'],
+    'salvia'   => ['Tinta salvia', 'Tintas planas en los verdes del diseño'],
+];
+
 /** Ramos de esquina junto a la foto de portada en ordenador (owner, 30-sep-2026, artifact «Ramos junto a la foto»; recolocados y
  *  en parte rediseñados por el owner el 1-oct-2026 en el «Editor de ramos», https://claude.ai/artifact/SqnGcjz5vtcEWEVWancrvu).
  *  Cada ramo son dos imagenes: «atras» (tallos, detras del marco) y «delante» (flores y hojas). x,y = donde nace (% del marco);
@@ -221,6 +232,7 @@ function config_inicial(): array {
         'tema' => 'rosa',
         'decoracion' => 'flores',
         'foto_estilo' => 'arco',
+        'escena' => 'terraza',
         'fuente' => 'clasica',
         'atelier' => '',
         'fuente_autor' => '',
@@ -432,6 +444,7 @@ function normaliza_config($in): array {
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
     $fe = ['papel' => 'sello', 'instantanea' => 'album'][$in['foto_estilo'] ?? ''] ?? ($in['foto_estilo'] ?? '');   // retirados el 1-oct-2026: Papel pasa a Sello e Instantánea a Álbum
     $c['foto_estilo'] = isset(FOTO_ESTILOS[$fe]) ? $fe : 'arco';
+    $c['escena'] = isset(ESCENAS_CITRICOS[$in['escena'] ?? '']) ? $in['escena'] : 'terraza';   // solo la mira Cítricos, y solo con foto
     $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
     $c['atelier'] = isset(ATELIER[$in['atelier'] ?? '']) ? $in['atelier'] : '';
     // Solo con un diseño Atelier: sin él se descarta (el panel ya rechaza Atelier no comprado)
