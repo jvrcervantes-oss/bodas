@@ -1958,7 +1958,8 @@ body.atelier-citricos .cit-instantanea::before{ content: ''; position: absolute;
   clip-path: polygon(4% 0, 96% 0, 100% 18%, 96% 36%, 100% 54%, 96% 72%, 100% 90%, 96% 100%, 4% 100%, 0 82%, 4% 64%, 0 46%, 4% 28%, 0 10%); }
 body.atelier-citricos .cit-foto{ aspect-ratio: 4 / 5; overflow: hidden; background: var(--salvia); }
 body.atelier-citricos .cit-foto img{ width: 100%; height: 100%; object-fit: cover; object-position: center 40%; }
-body.atelier-citricos .cit-azahar{ position: absolute; right: -46px; bottom: -32px; width: 128px; pointer-events: none; }
+/* Por debajo de 390 px se recoge hacia dentro: a 320 y 360 asomaba fuera de la pantalla y daba scroll lateral (15-oct-2026) */
+body.atelier-citricos .cit-azahar{ position: absolute; right: max(-46px, calc(344px - 100vw)); bottom: -32px; width: 128px; pointer-events: none; }
 body.atelier-citricos .cit-carta-txt{ flex: 1 1 320px; max-width: 480px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 body.atelier-citricos .cit-guion{ margin: 0 0 16px; padding-bottom: 26px; font-family: var(--nombres); font-style: var(--nombres-estilo); font-weight: 400; font-size: 46px; line-height: 1.1; color: var(--primary);
   background: url(img/atelier/corazon-citricos.svg) center bottom / 11px 11px no-repeat; }
@@ -1981,6 +1982,12 @@ body.atelier-citricos .countdown-item + .countdown-item::before{ content: ''; po
   background: url(img/atelier/corazon-citricos.svg) center / contain no-repeat; }
 body.atelier-citricos .countdown-item b{ font-family: var(--serif); font-size: 30px; font-weight: 500; line-height: 1; color: var(--tinta); font-variant-numeric: lining-nums tabular-nums; }
 body.atelier-citricos .countdown-item span{ margin-top: 6px; font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--secondary); }
+/* A 320 px las cuatro fichas no caben con 14 px entre ellas (2 px de scroll lateral, 15-oct-2026) */
+@media (max-width: 359px){
+  body.atelier-citricos .countdown{ gap: 10px; }
+  body.atelier-citricos .countdown-item, body.atelier-citricos .countdown-item:first-child{ min-width: 62px; }
+  body.atelier-citricos .countdown-item + .countdown-item::before{ left: -10.5px; }
+}
 body.atelier-citricos .cal-btn{ width: auto; padding: 0 26px; background: transparent; color: var(--primary); border: 1px solid var(--accent); }
 body.atelier-citricos .cal-btn:hover{ background: var(--papel-2); }
 body.atelier-citricos .cal-options{ max-width: 420px; margin: 14px auto 0; background: var(--papel-2); border-radius: 0; }
@@ -2009,13 +2016,15 @@ body.atelier-citricos .cit-vestir .cit-bodegon{ padding-top: 18px; }
 
 /* Confirmar: banda de salvia con colinas en acuarela abajo y la rama de limonero en la esquina; el texto, arriba, sobre
    salvia lisa (las colinas no llegan a él). La única CTA rellena de la pantalla */
-body.atelier-citricos .cit-rsvp{ position: relative; overflow: hidden; margin-top: 8px; padding: 56px 20px 200px; text-align: center;
+body.atelier-citricos .cit-rsvp{ position: relative; overflow: hidden; margin-top: 8px; padding: 56px 20px 250px; text-align: center;
   background: linear-gradient(to bottom, transparent 80%, var(--sage)), url(img/atelier/colinas-citricos.svg) center bottom / 100% 230px no-repeat,
     linear-gradient(to bottom, var(--sage), var(--salvia) 22%, var(--salvia) 72%, var(--sage)); }
 body.atelier-citricos .cit-rsvp-in{ position: relative; z-index: 1; max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
 body.atelier-citricos .cit-rsvp .cit-titulo{ margin-bottom: 16px; }
 body.atelier-citricos .cit-rsvp p{ margin: 0 0 26px; font-family: var(--sans); font-size: 16px; line-height: 1.7; color: var(--tinta); }
-body.atelier-citricos .cit-rama-pie{ position: absolute; z-index: 0; left: -64px; bottom: -8px; width: min(270px, 70vw); transform: rotate(-24deg) scaleX(-1); pointer-events: none; }
+/* La rama entera dentro de la banda (aviso de usuario, 15-oct-2026): con -24° y el pie en negativo, el overflow de la banda
+   le cortaba los limones (53 px en el móvil, 106 en el ordenador). Giro menor y el pie por encima del borde */
+body.atelier-citricos .cit-rama-pie{ position: absolute; z-index: 0; left: -14px; bottom: 30px; width: min(230px, 60vw); transform: rotate(-14deg) scaleX(-1); pointer-events: none; }
 
 /* Pie: la frase de la pareja en la letra de los nombres, con un corazón */
 body.atelier-citricos .site-footer{ background: var(--sage); box-shadow: none; }
@@ -2103,6 +2112,6 @@ body.atelier-citricos .song-card, body.atelier-citricos .libro-entrada{ border-r
   body.atelier-citricos .cit-vestir{ position: relative; justify-content: center; padding-bottom: 200px; }
   body.atelier-citricos .cit-vestir .cit-bodegon{ position: absolute; right: -46px; bottom: -30px; width: 236px; margin: 0; padding: 0; }
   body.atelier-citricos .cit-detalles .link-arrow{ letter-spacing: .12em; }
-  body.atelier-citricos .cit-rsvp{ padding: 64px 24px 150px; background-size: auto, 100% 260px, auto; }
-  body.atelier-citricos .cit-rama-pie{ left: -40px; bottom: -46px; width: 360px; }
+  body.atelier-citricos .cit-rsvp{ padding: 64px 24px 190px; background-size: auto, 100% 260px, auto; }
+  body.atelier-citricos .cit-rama-pie{ left: -30px; bottom: 44px; width: 340px; }
 }
