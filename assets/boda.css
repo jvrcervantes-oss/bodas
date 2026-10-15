@@ -1561,7 +1561,7 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
 .hero--mf-fundida{ padding-top: 0; }
 .hero--mf-fundida .hero-left{ position: relative; z-index: 3; }
 .mf-fundida{ order: -1; width: calc(100% + 2 * var(--gutter)); max-width: none; margin: 0 calc(-1 * var(--gutter)) -64px; }
-.mf-fundida .mat-photo{ aspect-ratio: 4 / 5; border-radius: 0;
+.mf-fundida .mat-photo{ aspect-ratio: var(--ar, 4 / 5); border-radius: 0;   /* --ar: proporción real de la foto (render.php y boda.js) */
   -webkit-mask-image: linear-gradient(#000 58%, transparent 96%); mask-image: linear-gradient(#000 58%, transparent 96%); }
 .mf-fundida .mf-g-top{ left: 0; width: 100%; top: -4%; }
 
@@ -1593,13 +1593,19 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
   .mf-arco{ max-width: 380px; margin-top: 70px; }
   .mf-medallon{ max-width: 360px; margin-top: 70px; }
   /* Fundida en el ordenador (owner, 30-sep-2026): la foto ocupa la pantalla desde el borde derecho, de arriba abajo, hasta su
-     fundido hacia el texto; ya no queda encajada en la columna de 1140 px, que la cortaba */
-  .hero--mf-fundida{ position: relative; display: flex; flex-direction: row; justify-content: flex-start; align-items: center; max-width: none; margin: 0; padding: 0; min-height: max(560px, calc(100vh - 76px)); overflow: hidden; }
+     fundido hacia el texto; ya no queda encajada en la columna de 1140 px, que la cortaba.
+     A su proporción (aviso de usuario, 15-oct-2026: se cortaba): la caja mide lo que la foto (--ar = ancho/alto), con el alto de la
+     pantalla y como mucho el 62 % del ancho; una apaisada baja la portada en vez de recortarse y, si aun así no llena el alto
+     mínimo, queda centrada; el fundido suave de arriba y abajo va siempre. Sin --ar, el tamaño de antes. */
+  .hero--mf-fundida{ --hf: max(560px, min(calc(100vh - 76px), calc(62vw / var(--ar, .01))));
+    position: relative; display: flex; flex-direction: row; justify-content: flex-start; align-items: center; max-width: none; margin: 0; padding: 0; min-height: var(--hf); overflow: hidden; }
   .hero--mf-fundida .hero-left{ width: 46%; padding: 48px 24px 48px max(24px, calc(50vw - 570px)); }
-  .mf-fundida{ position: absolute; top: 0; right: 0; bottom: 0; order: 0; width: 62%; max-width: none; margin: 0; }
+  .mf-fundida{ position: absolute; top: 0; right: 0; bottom: 0; order: 0; width: min(62%, calc(var(--hf) * var(--ar, 100))); height: min(100%, calc(62vw / var(--ar, .01))); max-width: none; margin: auto 0; }
   .mf-fundida .mat-inner, .mf-fundida .mf-marco{ height: 100%; }
   .mf-fundida .mat-photo{ height: 100%; aspect-ratio: auto;
-    -webkit-mask-image: linear-gradient(90deg, transparent, #000 32%); mask-image: linear-gradient(90deg, transparent, #000 32%); }
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 32%), linear-gradient(transparent, #000 7%, #000 93%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 32%), linear-gradient(transparent, #000 7%, #000 93%, transparent);
+    -webkit-mask-composite: source-in; mask-composite: intersect; }
   .mf-fundida .mat-photo img{ width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
   .mf-fundida .mf-g-top{ left: 36%; width: 60%; top: 0; }
 }

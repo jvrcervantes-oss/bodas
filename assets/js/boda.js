@@ -458,7 +458,23 @@
     });
   }
 
+  // ---------- Foto «Fundida» a su proporción ----------
+  // La caja de la foto toma la proporción real (acotada a 0,66–2, como foto_ar() en boda.php) para no recortarla.
+  // Se mide en cada carga: en la vista previa la foto llega por postMessage y cambia de src sin recargar.
+  function initFotoFundida() {
+    document.querySelectorAll('.hero--mf-fundida img[data-foto]').forEach(function (img) {
+      var hero = img.closest('.hero');
+      function mide() {
+        if (!img.naturalWidth || !img.naturalHeight) return;
+        hero.style.setProperty('--ar', Math.min(2, Math.max(0.66, img.naturalWidth / img.naturalHeight)).toFixed(4));
+      }
+      img.addEventListener('load', mide);
+      if (img.complete) mide();
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
+    initFotoFundida();
     initNav();
     initCalendar();
     initGuests();

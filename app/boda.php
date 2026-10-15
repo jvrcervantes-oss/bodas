@@ -19,10 +19,17 @@ const MAX_BYTES_RSVP = 3 * 1024 * 1024;
 const MAX_BYTES_CANCIONES = 512 * 1024;
 const MAX_INVITADOS = 15;
 
+/** Proporción ancho/alto de la foto de portada, acotada a 0,66–2 (la usa «Fundida» para no recortarla); '' si no se puede leer.
+ *  boda.js la vuelve a medir al cargar: aquí solo evita el salto del primer pintado. */
+function foto_ar(string $f): string {
+    $d = is_file($f) ? @getimagesize($f) : false;
+    return ($d && $d[0] > 0 && $d[1] > 0) ? sprintf('%.4F', min(2, max(0.66, $d[0] / $d[1]))) : '';
+}
+
 function ctx_live(string $slug): array {
     $f = dir_boda($slug) . '/foto.webp';
     $m = mapa_de($slug);
-    return ['modo' => 'live', 'assets' => '/assets/', 'slug' => $slug, 'foto' => is_file($f) ? '/foto?v=' . filemtime($f) : '',
+    return ['modo' => 'live', 'assets' => '/assets/', 'slug' => $slug, 'foto' => is_file($f) ? '/foto?v=' . filemtime($f) : '', 'foto_ar' => foto_ar($f),
         'mapa' => $m ? ['src' => '/mapa.webp?v=' . substr($m['id'], 0, 8), 'pines' => $m['pines']] : null];
 }
 
@@ -581,7 +588,7 @@ function panel_zip(string $slug, array $c): void {
     $z->open($tmp, ZipArchive::OVERWRITE);
     $foto = dir_boda($slug) . '/foto.webp';
     $mapa = mapa_de($slug);
-    $ctx = ['modo' => 'zip', 'assets' => 'assets/', 'slug' => $slug, 'foto' => is_file($foto) ? 'foto.webp' : '',
+    $ctx = ['modo' => 'zip', 'assets' => 'assets/', 'slug' => $slug, 'foto' => is_file($foto) ? 'foto.webp' : '', 'foto_ar' => foto_ar($foto),
         'mapa' => $mapa ? ['src' => 'mapa.webp', 'pines' => $mapa['pines']] : null];
     if ($mapa) {
         $z->addFile(dir_datos('mapas', $mapa['id'] . '.webp'), 'mapa.webp');

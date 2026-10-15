@@ -427,7 +427,7 @@ function pagina_inicio(array $c, array $ctx): string {
     $objetivo = $c['fecha'] !== '' ? $c['fecha'] . 'T' . ($c['ceremonia']['hora'] ?: '12:00') . ':00' : '';
     ob_start(); ?>
 <main class="home">
-  <section class="hero<?= $hayFoto ? '' : ' hero--solo' ?><?= $fe !== '' ? ' hero--mf-' . h($fe) : '' ?>">
+  <section class="hero<?= $hayFoto ? '' : ' hero--solo' ?><?= $fe !== '' ? ' hero--mf-' . h($fe) : '' ?>"<?= $fe === 'fundida' && ($ctx['foto_ar'] ?? '') !== '' ? ' style="--ar:' . h($ctx['foto_ar']) . '"' : '' ?>>
     <div class="hero-left">
 <?php if ($c['atelier'] !== ''): ?>
       <?= arte_atelier($c, $A) ?>
