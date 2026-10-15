@@ -89,7 +89,9 @@ function api_vista_previa(string $metodo, string $assets, string $firmaSlug = ''
     $pagina = clean_str($in['pagina'] ?? '', 40);
     // Mapa: en el panel se ve el último guardado; en el creador anónimo, solo el hueco (no se generan mapas sin sesión)
     $mapa = $firmaSlug !== '' ? mapa_de($firmaSlug) : null;
-    $ctx = ['modo' => 'preview', 'assets' => $assets, 'foto' => '', 'firma_slug' => $firmaSlug, 'intro' => !empty($in['intro']),
+    // Proporción de la foto que mide el creador (Fundida): solo decide el tamaño de una caja en la vista previa; se acota igual que foto_ar()
+    $ar = is_numeric($in['foto_ar'] ?? null) ? (float) $in['foto_ar'] : 0.0;
+    $ctx = ['modo' => 'preview', 'assets' => $assets, 'foto' => '', 'foto_ar' => $ar > 0 ? sprintf('%.4F', min(2, max(0.66, $ar))) : '', 'firma_slug' => $firmaSlug, 'intro' => !empty($in['intro']),
         'mapa' => $mapa ? ['src' => '/mapa.webp?v=' . substr($mapa['id'], 0, 8), 'pines' => $mapa['pines']] : null,
         'libro' => $firmaSlug !== '' ? libro_entradas($firmaSlug) : []];
     $html = render_pagina($c, $pagina === 'inicio' ? '' : $pagina, $ctx);

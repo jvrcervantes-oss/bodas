@@ -311,6 +311,11 @@
   var fotoImg = document.getElementById('fotoImg');
   var fotoVacia = document.getElementById('fotoVacia');
   var fotoQuitar = document.getElementById('fotoQuitar');
+  // Proporción de la foto para la vista previa (Fundida): va en la petición para que el iframe pinte ya la caja a su
+  // tamaño, sin el salto de medirla al cargar (revisor, 15-oct-2026). El servidor la acota; aquí solo se mide.
+  var arEnviada = 0;
+  function arFoto() { return foto.src && fotoImg.naturalWidth && fotoImg.naturalHeight ? fotoImg.naturalWidth / fotoImg.naturalHeight : 0; }
+  fotoImg.addEventListener('load', function () { if (st.foto_estilo === 'fundida' && arFoto() !== arEnviada) previa(); });
   function pintaFoto() {
     var hay = !!foto.src;
     fotoImg.hidden = !hay;
@@ -773,7 +778,8 @@
   function previa() {
     var n = ++pideN;
     var intro = conEntrada; conEntrada = false;
-    fetch(URL_PREVIA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: st, pagina: pagina, intro: intro }) })
+    arEnviada = arFoto();
+    fetch(URL_PREVIA, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ config: st, pagina: pagina, intro: intro, foto_ar: arEnviada }) })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         // Sesión cerrada mientras editan: se avisa ya, no al guardar (Guardar aparta lo editado y pide entrar)

@@ -1598,9 +1598,10 @@ a.inv-btn{ text-decoration: none; display: inline-block; }
      pantalla y como mucho el 62 % del ancho; una apaisada baja la portada en vez de recortarse y, si aun así no llena el alto
      mínimo, queda centrada; el fundido suave de arriba y abajo va siempre. Sin --ar, el tamaño de antes. */
   .hero--mf-fundida{ --hf: max(560px, min(calc(100vh - 76px), calc(62vw / var(--ar, .01))));
-    position: relative; display: flex; flex-direction: row; justify-content: flex-start; align-items: center; max-width: none; margin: 0; padding: 0; min-height: var(--hf); overflow: hidden; }
+    position: relative; display: flex; flex-direction: row; justify-content: flex-start; align-items: center; max-width: none; margin: 0; padding: 0; min-height: var(--hf); overflow: hidden;
+    container-type: inline-size; }   /* 62cqw = 62 % del hero sin la barra de scroll: alto y ancho de la foto con la misma medida */
   .hero--mf-fundida .hero-left{ width: 46%; padding: 48px 24px 48px max(24px, calc(50vw - 570px)); }
-  .mf-fundida{ position: absolute; top: 0; right: 0; bottom: 0; order: 0; width: min(62%, calc(var(--hf) * var(--ar, 100))); height: min(100%, calc(62vw / var(--ar, .01))); max-width: none; margin: auto 0; }
+  .mf-fundida{ position: absolute; top: 0; right: 0; bottom: 0; order: 0; width: min(62%, calc(var(--hf) * var(--ar, 100))); height: min(100%, calc(62cqw / var(--ar, .01))); max-width: none; margin: auto 0; }
   .mf-fundida .mat-inner, .mf-fundida .mf-marco{ height: 100%; }
   .mf-fundida .mat-photo{ height: 100%; aspect-ratio: auto;
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 32%), linear-gradient(transparent, #000 7%, #000 93%, transparent);
