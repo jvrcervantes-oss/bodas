@@ -311,7 +311,7 @@
   // Cada miniatura es SU foto con el filtro de la web (los <filter> los imprime el servidor, app/render.php svg_escena:
   // aquí solo se enlaza por id). Sin foto, solo la terraza; mientras la foto guardada llega (panel), «Cargando».
   var escenasEl = document.getElementById('escenas');
-  var escenaMuestras = [];
+  var escenaMuestras = [], escenasListas = false;
   Object.keys(D.escenas || {}).forEach(function (k) {
     var es = D.escenas[k];
     var r = el('input', { type: 'radio', name: 'escena', value: k });
@@ -324,7 +324,7 @@
   var fotoCargando = false;
   function pintaEscenas() {
     var b = document.getElementById('escenaBloque');
-    if (!b || !escenaMuestras) return;   // pintaAtelier() corre antes de montar las miniaturas
+    if (!b || !escenasListas) return;   // pintaAtelier() corre antes de montar las miniaturas
     b.hidden = st.atelier !== 'citricos';
     var hay = !!foto.src;
     var aviso = document.getElementById('escenaSinFoto');
@@ -339,6 +339,7 @@
       m.r.checked = (hay ? (st.escena || 'terraza') : 'terraza') === m.k;
     });
   }
+  escenasListas = true;
   pintaEscenas();
 
   // ------------------------------------------------------------ foto

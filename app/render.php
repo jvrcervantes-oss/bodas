@@ -755,7 +755,8 @@ function inicio_citricos(array $c, array $ctx): string {
     $dc = seccion_tipo($c, 'dresscode');
     $hayFoto = $c['foto'] && ($ctx['foto'] !== '' || $ctx['modo'] === 'preview');
     // Arriba, la terraza dibujada o la foto de la pareja con su acabado (ESCENAS_CITRICOS); sin foto, siempre la terraza
-    $escena = $hayFoto && ($c['escena'] ?? 'terraza') !== 'terraza' ? $c['escena'] : '';
+    // (la lista se vuelve a mirar aquí: el id del filtro va a un atributo y no depende de que quien llame haya normalizado)
+    $escena = $hayFoto && is_string($c['escena'] ?? null) && $c['escena'] !== 'terraza' && isset(ESCENAS_CITRICOS[$c['escena']]) ? $c['escena'] : '';
     $fecha = $c['fecha'] !== '' ? DateTimeImmutable::createFromFormat('!Y-m-d', $c['fecha']) : false;
     $verMas = fn(array $s): string => a_interno($s['ruta'], $ctx, 'class="link-arrow"') . 'Ver ' . h(mb_strtolower($s['titulo'], 'UTF-8')) . ' ' . ico(ICONOS['flecha'], 'ico ico-sm') . '</a>';
 

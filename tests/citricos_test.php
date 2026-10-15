@@ -169,6 +169,11 @@ ok(hay($fichas, '<div class="cit-vestir rv">') && hay($fichas, '<p class="cit-ve
 ok(normaliza_config(crudo())['escena'] === 'terraza', 'de fábrica, la terraza');
 ok(normaliza_config(crudo(['escena' => 'lapiz']))['escena'] === 'terraza' && normaliza_config(crudo(['escena' => '<x>']))['escena'] === 'terraza',
     'un acabado que no está en la lista vuelve a la terraza');
+ok(normaliza_config(crudo(['escena' => ['acuarela']]))['escena'] === 'terraza', 'un array en lugar del acabado no rompe: terraza');
+$crudoMalo = normaliza_config(crudo(['atelier' => 'citricos', 'foto' => true]));
+$crudoMalo['escena'] = '"><b>x';   // como si alguien pintara sin normalizar
+$hm = (string) render_pagina($crudoMalo, '', ['foto' => '/foto?v=1'] + $ctx);
+ok(!hay($hm, '<b>x') && !hay($hm, 'cit-escena-foto') && hay($hm, 'class="cit-terraza"'), 'al pintar, un acabado fuera de la lista no llega al HTML: terraza');
 ok(hay($foto, 'class="cit-terraza"') && !hay($foto, 'cit-escena-foto') && !hay($foto, '<svg class="cit-defs"'), 'con foto y la terraza elegida, como siempre: el dibujo arriba y la foto en la carta');
 $sinF = $inicio(['atelier' => 'citricos', 'escena' => 'salvia']);
 ok(hay($sinF, 'class="cit-terraza"') && !hay($sinF, 'cit-escena-foto'), 'sin foto, la terraza aunque se haya elegido un acabado');

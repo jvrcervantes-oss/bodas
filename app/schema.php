@@ -444,7 +444,7 @@ function normaliza_config($in): array {
     $c['decoracion'] = isset(DECORACIONES[$in['decoracion'] ?? '']) ? $in['decoracion'] : 'eucalipto';
     $fe = ['papel' => 'sello', 'instantanea' => 'album'][$in['foto_estilo'] ?? ''] ?? ($in['foto_estilo'] ?? '');   // retirados el 1-oct-2026: Papel pasa a Sello e Instantánea a Álbum
     $c['foto_estilo'] = isset(FOTO_ESTILOS[$fe]) ? $fe : 'arco';
-    $c['escena'] = isset(ESCENAS_CITRICOS[$in['escena'] ?? '']) ? $in['escena'] : 'terraza';   // solo la mira Cítricos, y solo con foto
+    $c['escena'] = is_string($in['escena'] ?? null) && isset(ESCENAS_CITRICOS[$in['escena']]) ? $in['escena'] : 'terraza';   // solo la mira Cítricos, y solo con foto
     $c['fuente'] = isset(FUENTES[$in['fuente'] ?? '']) ? $in['fuente'] : 'clasica';
     $c['atelier'] = isset(ATELIER[$in['atelier'] ?? '']) ? $in['atelier'] : '';
     // Solo con un diseño Atelier: sin él se descarta (el panel ya rechaza Atelier no comprado)
