@@ -208,6 +208,24 @@ ok(hay($zipF, '<img data-foto src="foto.webp"') && hay($zipF, '<filter id="cit-e
 $prev = $inicio(['atelier' => 'citricos', 'foto' => true, 'escena' => 'salvia'], ['modo' => 'preview']);
 ok(hay($prev, '<img data-foto src="" alt="Foto de Ana &amp; Luis"'), 'en la vista previa, el hueco que rellena vista-previa.js');
 
+// 6c. Las máscaras de Cítricos van en línea (data:), no como fichero: una máscara de fichero se pide en modo CORS y la
+//     vista previa (iframe sin origen) la bloqueaba (verificador, 15-oct-2026). Y la copia en línea es el mismo dibujo
+//     que el .svg del repo (que sigue yendo en el ZIP): si se retoca uno, este test obliga a retocar el otro.
+$css = (string) file_get_contents($raiz . '/assets/boda.css');
+preg_match_all('~body\.atelier-citricos[^{}]*\{[^}]*\}~', $css, $reglas);
+$mascarasFichero = array_filter($reglas[0], fn($r) => preg_match('~mask(-image)?:\s*url\((?!"data:)~', $r));
+ok(!$mascarasFichero, 'Cítricos no usa ninguna máscara de fichero: ' . implode(' | ', array_map(fn($r) => substr($r, 0, 60), $mascarasFichero)));
+$limpio = fn(string $s): string => trim((string) preg_replace('~\s+~', ' ', (string) preg_replace('~<!--.*?-->~s', '', $s)));
+foreach (['ramita-citricos.svg' => 2, 'laurel-citricos.svg' => 1] as $f => $reglasConElla) {
+    $svg = $limpio((string) file_get_contents($raiz . '/assets/img/atelier/' . $f));
+    $usos = 0;
+    foreach ($reglas[0] as $r) {
+        preg_match_all('~url\("data:image/svg\+xml,([^"]+)"\)~', $r, $du);
+        foreach ($du[1] as $d) if ($limpio(rawurldecode($d)) === $svg) $usos++;
+    }
+    ok($usos === 2 * $reglasConElla, "$f: la máscara en línea es el mismo dibujo que el fichero ($usos usos, -webkit-mask y mask)");
+}
+
 // 7. Los otros diseños no llevan nada de esto y siguen con la cuenta atrás en «Guardad la fecha»
 foreach (['lacre', 'herbario', 'atardecer', ''] as $otro) {
     $h = $inicio(['atelier' => $otro, 'programa' => momentos(2)]);
