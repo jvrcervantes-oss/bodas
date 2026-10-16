@@ -11,6 +11,8 @@ const CSP_CREADOR = "default-src 'self'; img-src 'self' data: blob:; style-src '
 function rutas_creador(string $ruta, string $metodo): void {
     // Panel del estudio (solo el owner): app/estudio.php
     if ($ruta === 'estudio' || strpos($ruta, 'estudio/') === 0) { rutas_estudio(trim(substr($ruta, 7), '/'), $metodo); return; }
+    // Escaparate del panel del AaaS (el owner con contraseña; la subida, el PC con su llave): app/agents.php
+    if ($ruta === 'agents' || strpos($ruta, 'agents/') === 0) { require_once APP_DIR . '/agents.php'; rutas_agents(substr($ruta, 7), $metodo); return; }
     // El Padrino (CEO autónomo, servicio aparte): app/padrino.php, solo con token
     // Guías del Padrino: SOLO bajo guia/ (nunca en la raíz), así no pueden pisar ninguna ruta
     if ($ruta === 'guia' || strpos($ruta, 'guia/') === 0) {
