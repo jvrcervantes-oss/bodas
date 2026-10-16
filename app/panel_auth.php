@@ -97,16 +97,26 @@ function panel_csrf_ok(): bool {
  * no hay sesión ni token que comparar, y una web ajena podía hacer que el navegador de alguien mandase contraseñas malas
  * (bloqueo de 15 min del panel de esa boda) o pidiese enlaces de recuperación hasta agotar el límite de la hora (BOD-28,
  * 27-sep; arreglado el 16-oct-2026). Sin cookie nueva (la web de invitados no pone cookies, Legal #133): se mira lo que el
- * navegador declara y la página no puede falsificar. `Sec-Fetch-Site` distinto de same-origin/none = otra web; un `Origin`
- * presente y distinto del de la boda («null» incluido) = otra web. Sin ninguna de las dos (navegador muy viejo, curl) pasa,
- * como en el libro de firmas: el ataque necesita el navegador de la víctima, y ese manda al menos una.
+ * navegador declara y la página no puede falsificar. Si llega `Sec-Fetch-Site`, decide él: same-origin/none = la propia web,
+ * cualquier otro valor = otra web. Solo sin él (navegador sin Fetch Metadata) se mira el `Origin`: presente y distinto del de
+ * la boda («null» incluido) = otra web. Sin ninguna de las dos (curl) pasa, como en el libro de firmas.
+ * OJO (revisor, 16-oct-2026): con `Referrer-Policy: no-referrer` (cabeceras_privadas) el navegador manda `Origin: null` también
+ * en un POST a la misma web, y la versión anterior de esta función dejaba fuera a todas las parejas. Por eso estas tres páginas
+ * van con `same-origin` (panel_cabecera_acceso) y aquí manda Sec-Fetch-Site.
  */
 function panel_post_propio(string $slug): bool {
     $sitio = strtolower((string) ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
-    if ($sitio !== '' && !in_array($sitio, ['same-origin', 'none'], true)) return false;
+    if ($sitio !== '') return in_array($sitio, ['same-origin', 'none'], true);
     if (!isset($_SERVER['HTTP_ORIGIN'])) return true;
     return rtrim((string) $_SERVER['HTTP_ORIGIN'], '/') === rtrim(url_boda($slug), '/');
 }
+
+/**
+ * Las páginas de acceso cambian el `no-referrer` de cabeceras_privadas por `same-origin`: el navegador manda así su Origin real
+ * al enviar el formulario a la misma web (con no-referrer manda «null»), y el token de /panel/clave?t= sigue sin salir hacia
+ * enlaces de fuera, que es lo que protegía no-referrer.
+ */
+function panel_cabecera_acceso(): void { header('Referrer-Policy: same-origin'); }
 
 function panel_tiene_clave(string $slug): bool {
     return (string) ((lee_json(panel_fichero($slug)) ?? [])['hash'] ?? '') !== '';

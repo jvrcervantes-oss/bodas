@@ -168,6 +168,17 @@ ok($st === 200 && strpos($r, 'os acaba de llegar un enlace') !== false && count(
 [$st, $r] = pide_desde(['Origin: ' . rtrim(url_boda($slug), '/'), 'Sec-Fetch-Site: same-origin'], '/panel/entrar', ['clave' => 'mala-mala-mala']);
 ok($st === 200 && strpos($r, 'Contraseña incorrecta') !== false, 'entrar desde la propia web con contraseña mala: cuenta y avisa');
 escribe_json(panel_fichero($slug), ['hash' => password_hash('clave-de-prueba-1', PASSWORD_DEFAULT), 'gen' => 0]);   // ese intento malo no condiciona lo de abajo
+// Lo que manda un navegador de verdad si la página va con no-referrer: Origin «null» pero same-origin. Manda Sec-Fetch-Site
+// y la pareja entra (revisor, 16-oct-2026: la primera versión del arreglo la dejaba fuera con 403)
+[$st, $r] = pide_desde(['Origin: null', 'Sec-Fetch-Site: same-origin'], '/panel/entrar', ['clave' => 'clave-de-prueba-1']);
+ok($st === 302 && preg_match('/^Set-Cookie: bw_/mi', $r), 'entrar con Origin null + same-origin (navegador real): entra');
+[$st, $r] = pide_desde(['Origin: null', 'Sec-Fetch-Site: same-origin'], '/panel/recuperar', ['email' => 'pareja@example.com']);
+ok($st === 200 && strpos($r, 'os acaba de llegar un enlace') !== false, 'recuperar con Origin null + same-origin: 200');
+// Y las tres páginas de acceso van con Referrer-Policy same-origin, para que el navegador mande su Origin real
+foreach (['/panel/entrar', '/panel/recuperar', '/panel/clave?t=' . str_repeat('a', 48)] as $ruta) {
+    [, , $cab] = pide('GET', $ruta);
+    ok(preg_match('/^Referrer-Policy: same-origin\r?$/mi', $cab) === 1 && stripos($cab, 'Referrer-Policy: no-referrer') === false, "$ruta: Referrer-Policy same-origin");
+}
 
 [$st, $h] = pide('POST', '/panel/entrar', ['clave' => 'mala-mala-mala']);
 ok($st === 200 && strpos($h, 'class="error" role="alert"') !== false, 'contraseña mala: error visible');

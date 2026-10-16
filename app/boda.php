@@ -312,6 +312,7 @@ const CSP_CREADOR_PANEL = "default-src 'self'; img-src 'self' data: blob:; style
     . "form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
 function panel_entrar(string $slug, array $c, string $metodo): void {
+    panel_cabecera_acceso();
     $error = '';
     if ($metodo === 'POST' && !panel_post_propio($slug)) { http_response_code(403); $error = 'La página ha caducado. Vuelve a intentarlo.'; }
     elseif ($metodo === 'POST') {
@@ -330,6 +331,7 @@ function panel_entrar(string $slug, array $c, string $metodo): void {
 }
 
 function panel_clave(string $slug, array $c, string $metodo): void {
+    panel_cabecera_acceso();
     $tok = clean_str($_GET['t'] ?? $_POST['t'] ?? '', 60);
     $error = '';
     if ($metodo === 'POST' && !panel_post_propio($slug)) { http_response_code(403); $error = 'La página ha caducado. Vuelve a intentarlo.'; }
@@ -352,6 +354,7 @@ function panel_clave(string $slug, array $c, string $metodo): void {
 
 /** Siempre la misma respuesta, exista o no el email: no se confirma a nadie qué email tiene la pareja. */
 function panel_recuperar(string $slug, array $c, string $metodo): void {
+    panel_cabecera_acceso();
     $msg = '';
     $error = '';
     if ($metodo === 'POST' && !panel_post_propio($slug)) { http_response_code(403); $error = 'La página ha caducado. Vuelve a intentarlo.'; }
