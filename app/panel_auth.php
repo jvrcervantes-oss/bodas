@@ -92,6 +92,22 @@ function panel_csrf_ok(): bool {
     return $t !== '' && hash_equals(panel_csrf(), $t);
 }
 
+/**
+ * ¿El POST a una página de acceso (entrar, recuperar, elegir contraseña) sale de la propia web de la boda? Antes de entrar
+ * no hay sesión ni token que comparar, y una web ajena podía hacer que el navegador de alguien mandase contraseñas malas
+ * (bloqueo de 15 min del panel de esa boda) o pidiese enlaces de recuperación hasta agotar el límite de la hora (BOD-28,
+ * 27-sep; arreglado el 16-oct-2026). Sin cookie nueva (la web de invitados no pone cookies, Legal #133): se mira lo que el
+ * navegador declara y la página no puede falsificar. `Sec-Fetch-Site` distinto de same-origin/none = otra web; un `Origin`
+ * presente y distinto del de la boda («null» incluido) = otra web. Sin ninguna de las dos (navegador muy viejo, curl) pasa,
+ * como en el libro de firmas: el ataque necesita el navegador de la víctima, y ese manda al menos una.
+ */
+function panel_post_propio(string $slug): bool {
+    $sitio = strtolower((string) ($_SERVER['HTTP_SEC_FETCH_SITE'] ?? ''));
+    if ($sitio !== '' && !in_array($sitio, ['same-origin', 'none'], true)) return false;
+    if (!isset($_SERVER['HTTP_ORIGIN'])) return true;
+    return rtrim((string) $_SERVER['HTTP_ORIGIN'], '/') === rtrim(url_boda($slug), '/');
+}
+
 function panel_tiene_clave(string $slug): bool {
     return (string) ((lee_json(panel_fichero($slug)) ?? [])['hash'] ?? '') !== '';
 }
