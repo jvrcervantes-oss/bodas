@@ -159,17 +159,25 @@ $n = $m[1] ?? '';
 ok($n !== '' && substr_count($b, 'nonce="' . $n . '"') === 2, 'CSP con nonce, puesto en los 2 <script> en línea');
 ok(strpos($b, '<script src="https://cdn.example/x.js">') !== false && strpos($csp, 'cdn.example') === false, 'un <script src> no lleva nonce y la CSP no lo admite');
 ok(strpos($csp, "connect-src 'none'") !== false && strpos($csp, "default-src 'none'") !== false && strpos($csp, 'unsafe-eval') === false, "CSP: connect-src 'none', default-src 'none', sin unsafe-eval");
-ok(strpos($b, 'action="/agents/salir"') !== false, 'la página lleva el botón Salir');
+// Salir es un enlace, no un formulario: la plantilla real trae una meta CSP con form-action 'none' (Edge, 16-oct); y lleva
+// data-axw-fuera porque la plantilla anula el clic de cualquier enlace sin esa marca
+ok(preg_match('#<a data-axw-fuera href="/agents/salir\?csrf=([a-f0-9]+)"#', $b, $ms) === 1 && strpos($b, 'action="/agents/salir"') === false, 'la página lleva el enlace Salir con el token y la marca data-axw-fuera');
+$tok1 = $ms[1] ?? '';
 [$st, $h2, $b2] = pide('GET', '/agents/', ['cookie' => $ck1]);
 preg_match("/script-src 'nonce-([A-Za-z0-9_\\-]+)'/", cab($h2, 'Content-Security-Policy'), $m2);
 ok(($m2[1] ?? '') !== '' && ($m2[1] ?? '') !== $n, 'el nonce cambia en cada respuesta');
 
 // 6. Salir
-$tok1 = csrf($b);
-[$st] = pide('POST', '/agents/salir', ['cookie' => $ck1, 'form' => []]);
-ok($st === 403, "salir sin CSRF → 403 ($st)");
-[$st] = pide('POST', '/agents/salir', ['cookie' => $ck1, 'form' => ['csrf' => $tok1]]);
-ok($st === 303, "salir con CSRF → 303 ($st)");
+[$st] = pide('GET', '/agents/salir', ['cookie' => $ck1]);
+ok($st === 403, "salir sin token → 403 ($st)");
+[$st] = pide('GET', '/agents/salir?csrf=' . str_repeat('0', 32), ['cookie' => $ck1]);
+ok($st === 403, "salir con un token que no es el de la sesión → 403 ($st)");
+[$st] = pide('GET', '/agents/', ['cookie' => $ck1]);
+ok($st === 200, "tras los dos intentos sin token, la sesión sigue abierta ($st)");
+[$st] = pide('DELETE', '/agents/salir', ['cookie' => $ck1]);
+ok($st === 405, "salir con otro método → 405 ($st)");
+[$st, $h] = pide('GET', '/agents/salir?csrf=' . $tok1, ['cookie' => $ck1]);
+ok($st === 303 && cab($h, 'Location') === '/agents/', "salir con el token → 303 a /agents/ ($st)");
 [$st, , $b] = pide('GET', '/agents/', ['cookie' => $ck1]);
 ok($st === 401 && strpos($b, $MARCA) === false, "tras salir, la cookie ya no entra ($st)");
 

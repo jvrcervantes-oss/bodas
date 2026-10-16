@@ -7,7 +7,7 @@
 // Superficie (reducir la exposición, contexto/seguridad_2026.md §1.ter), cada pieza con su llamador:
 //   GET  /agents/          el owner, con sesión → la plantilla con la foto dentro; sin sesión → 401 con el formulario y NINGÚN dato
 //   POST /agents/          el formulario de entrada (contraseña + CSRF, freno de 5 fallos por IP cada 15 min)
-//   POST /agents/salir     el botón «Salir» que se mete en la página (CSRF)
+//   GET  /agents/salir     el enlace «Salir» que se mete en la página (token de la sesión en la URL; ver agents_salir)
 //   POST /agents/sube.php  erp/aaas_local/sube_web.py del PC, con su llave (Bearer). ÚNICO punto de escritura
 //   Todo lo demás bajo /agents/ es 404. No hay carpeta pública agents/: el .htaccess manda todo a index.php y el código vive
 //   en app/, que ya da 404 desde fuera (por eso no hay listado de directorio posible).
@@ -163,10 +163,16 @@ function agents_login(): void {
     agents_formulario(401, 'Contraseña incorrecta.');
 }
 
+/**
+ * Salir es un ENLACE (GET con el token en la URL), no un formulario: la plantilla del V2 trae su propia CSP en una <meta> con
+ * form-action 'none', y el navegador aplica las dos políticas a la vez, así que un formulario de salir quedaba bloqueado (medido en
+ * Edge el 16-oct). Sigue protegido: hace falta el token de la sesión, y la cookie es SameSite=Strict (otra web no la manda).
+ */
 function agents_salir(string $metodo): void {
-    if ($metodo !== 'POST') { header('Allow: POST'); agents_texto(405, 'Método no permitido.'); return; }
+    if ($metodo !== 'GET' && $metodo !== 'POST') { header('Allow: GET, POST'); agents_texto(405, 'Método no permitido.'); return; }
     agents_sesion();
-    if (!agents_csrf_ok()) { agents_formulario(403, 'La página ha caducado. Vuelve a intentarlo.'); return; }
+    $t = (string) ($_GET['csrf'] ?? $_POST['csrf'] ?? '');
+    if ($t === '' || !hash_equals((string) ($_SESSION['csrf'] ?? ''), $t)) { agents_formulario(403, 'La página ha caducado. Vuelve a intentarlo.'); return; }
     agents_log('salir');
     $_SESSION = [];
     session_destroy();
@@ -209,9 +215,11 @@ function agents_lee(): array {
 
 function agents_panel(): void {
     [$plantilla, $foto] = agents_lee();
-    $salir = '<form method="post" action="' . h(agents_url('salir')) . '" style="position:fixed;right:12px;bottom:12px;z-index:2147483647;margin:0">'
-        . '<input type="hidden" name="csrf" value="' . h($_SESSION['csrf'] ?? '') . '">'
-        . '<button type="submit" style="font:14px system-ui,sans-serif;padding:8px 14px;border:0;border-radius:999px;background:#1B1C1E;color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25)">Salir</button></form>';
+    // data-axw-fuera: la plantilla del V2 deja quietos todos los enlaces (es una sola página y los del menú irían a pantallas que aquí
+    // no existen) salvo los que llevan esta marca; sin ella el clic en Salir no hacía nada (medido en Edge el 16-oct).
+    $salir = '<a data-axw-fuera href="' . h(agents_url('salir') . '?csrf=' . rawurlencode((string) ($_SESSION['csrf'] ?? ''))) . '" '
+        . 'style="position:fixed;right:12px;bottom:12px;z-index:2147483647;font:14px system-ui,sans-serif;padding:8px 14px;border-radius:999px;'
+        . 'background:#1B1C1E;color:#fff;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,.25)">Salir</a>';
     $pos = $plantilla === null ? false : strpos($plantilla, AGENTS_HUECO);
     if ($plantilla === null || $foto === null || $pos === false) {
         http_response_code(503);
