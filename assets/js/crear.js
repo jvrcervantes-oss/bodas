@@ -1406,6 +1406,9 @@
     fd.append('slug', slugEl.value);
     fd.append('acepto_condiciones', 'si');
     if (conCodigo) fd.append('codigo', codigoEl.value.trim()); else fd.append('acepto_desistimiento', 'si');
+    // Casilla de NEGATIVA, opcional (LSSI 21.2): solo viaja si está marcada; el servidor guarda true/false
+    var op = document.getElementById('oposicionCom');
+    if (op && op.checked) fd.append('oposicion_comercial', 'si');
     if (foto.src) fd.append('foto', foto.blob || dataUrlABlob(foto.src), 'foto.webp');
     pagar.disabled = true;
     var txt = pagar.textContent;

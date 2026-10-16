@@ -6,7 +6,7 @@ declare(strict_types=1);
 // Sin argumento: corre los dos casos (secrets viejo con persona/NIF/domicilio, y secrets nuevo solo razón social + email).
 if (!isset($argv[1])) {
     $rc = 0;
-    foreach (['viejo', 'nuevo'] as $c) { passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' ' . $c, $r); $rc |= $r; }
+    foreach (['viejo', 'nuevo', 'conrep'] as $c) { passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__FILE__) . ' ' . $c, $r); $rc |= $r; }
     exit($rc);
 }
 
@@ -24,12 +24,15 @@ const DOM_F = 'Calle Inventada 99, 28001 Madrid';
 $empresas = [
     'viejo' => ['titular' => PERSONA, 'nif' => NIF_F, 'domicilio' => DOM_F, 'email' => 'hola@bodaenlace.com'],
     'nuevo' => ['razon_social' => 'PT Mahkota', 'email' => 'hola@bodaenlace.com'],
+    'conrep' => ['razon_social' => 'PT Mahkota', 'email' => 'hola@bodaenlace.com'],
 ];
+const REP_F = 'Representante Ficticio Uno';
+const REP_MAIL_F = 'rep-ficticio@example.test';
 $caso = $argv[1] ?? 'viejo';
 file_put_contents($tmp . '/secrets.php', '<?php return ' . var_export([
     'pasarela' => 'lemon', 'lemon_api_key' => 'x', 'lemon_webhook_secret' => 'y', 'lemon_tienda' => '1', 'lemon_variante' => '2',
     'lemon_producto' => '3', 'lemon_test' => false, 'empresa' => $empresas[$caso],
-], true) . ';');
+] + ($caso === 'conrep' ? ['representante_ue' => ['nombre' => REP_F, 'email' => REP_MAIL_F]] : []), true) . ';');
 $raiz = dirname(__DIR__);
 foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia', 'estudio', 'borrador', 'invitados', 'creador', 'landing', 'vista_constructor', 'boda', 'galeria', 'proxy'] as $m) require_once $raiz . '/app/' . $m . '.php';
 
@@ -50,6 +53,19 @@ foreach (['condiciones', 'privacidad', 'aviso-legal'] as $doc) {
     ok(!$malo($h), "[$caso] $doc sin persona, NIF ni domicilio");
     ok(strpos($h, 'PT Mahkota') !== false && strpos($h, 'hola@bodaenlace.com') !== false, "[$caso] $doc nombra a PT Mahkota y da el email");
     ok(!preg_match('~(NIF|Domicilio)\s*:\s*(</li>|<)~i', $h) && strpos($h, 'está en pruebas') === false, "[$caso] $doc sin campos vacíos ni «en pruebas»");
+}
+// Representante UE (art. 27): con él, nombre y contacto de secrets.php, nunca NIF ni domicilio; sin él, el párrafo no sale
+// (16-oct: nada de avisos «PENDIENTE» en una página pública; la falta vive en contexto/pendientes.md, BOD-32).
+$priv = documento_legal('privacidad', 'privacidad');
+ok(strpos($priv, 'PENDIENTE') === false, "[$caso] la política no enseña ningún «PENDIENTE»");
+// D1/D3 (16-oct) y la casilla de oposición, tal como la ve la pareja (texto de textos.php, no parafraseado)
+ok(strpos($priv, 'como mucho 24 meses desde el último mensaje') !== false && strpos($priv, 'lo que gasta la IA, 6 años') !== false, "[$caso] la política lleva D1 (buzón 24 meses) y D3 (consumo de la IA 6 años)");
+ok(strpos($priv, h(textos_legales()['check_oposicion_comercial'])) !== false, "[$caso] la política cita la casilla de oposición literal");
+ok(stripos($priv, 'en frío') === false && stripos($priv, 'fuentes de acceso público') === false, "[$caso] sin sección de correo en frío a empresas");
+if ($caso === 'conrep') {
+    ok(strpos($priv, REP_F) !== false && strpos($priv, REP_MAIL_F) !== false && strpos($priv, 'designado por escrito') !== false, '[conrep] la política nombra al representante y su contacto');
+} else {
+    ok(strpos($priv, REP_F) === false && strpos($priv, 'Representante en la Unión Europea') === false, "[$caso] sin representante no sale el párrafo ni ningún nombre");
 }
 $ls = correo_linea_servicio($ep);
 ok(!$malo($ls) && strpos($ls, 'PT Mahkota') !== false && strpos($ls, 'NIF') === false && strpos($ls, 'pruebas') === false, "[$caso] línea de servicio del correo: $ls");

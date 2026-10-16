@@ -56,6 +56,10 @@ foreach (glob(dir_datos('borradores', '*.json')) ?: [] as $f) {
 foreach (glob(dir_datos('estudio', 'log-*.jsonl')) ?: [] as $f) {
     if (preg_match('/log-(\d{4}-\d{2})\.jsonl$/', $f, $m) && $m[1] < date('Y-m', strtotime('-12 months'))) @unlink($f);
 }
+// El log de la app (registra(): IP y, en incidencias de pedido, email) también 12 meses: lo promete la política (Legal, 16-oct)
+foreach (glob(dir_datos('log', 'app-*.log')) ?: [] as $f) {
+    if (preg_match('/app-(\d{4}-\d{2})\.log$/', $f, $m) && $m[1] < date('Y-m', strtotime('-12 months'))) @unlink($f);
+}
 foreach (glob(dir_datos('estudio', 'sesiones', 'sess_*')) ?: [] as $f) {
     if (filemtime($f) < time() - 12 * 3600) @unlink($f);
 }

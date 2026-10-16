@@ -13,8 +13,9 @@ return [
     // 2026-09-27e: cambia el texto de las condiciones que acepta check_condiciones (§2 y §5 ter: el plano de mesas va
     // incluido en los packs). La versión que se guarda con cada aceptación es esta, así que sube con las condiciones.
     // 2026-09-29: §1 (servicio por invitación con códigos de regalo en pruebas), licencia del ZIP (§11) y anexo II también al canjear (Legal).
+    // 2026-10-16: anexo II.7 (transferencia a Indonesia, cláusulas tipo) (BOD-31, Legal; borrador del 2-oct publicado el 16-oct).
     // 2026-09-30: §2 (programa con varios momentos, historia opcional) y §10 (garantías de textos y fotos, sin datos de salud ni de menores identificables ni de terceros sin permiso) (Legal).
-    'version' => '2026-09-30',
+    'version' => '2026-10-16',
 
     'vendedor' => 'Lemon Squeezy',
     'vendedor_entidad' => 'Sold through Link, LLC (antes Lemon Squeezy LLC), Estados Unidos',
@@ -32,6 +33,14 @@ return [
     // no un consentimiento; la garantía contractual es el apartado 10 de las condiciones. Lo lee vista_constructor.php (D.avisoHistoria).
     // No es una casilla ni se guarda en el pedido, así que cambiarlo no exige subir 'version'.
     'aviso_historia' => 'No publiquéis datos de salud ni de menores identificables, ni datos de terceros sin su permiso.',
+
+    // Oposición a comunicaciones comerciales (LSSI art. 21.2: servicios parecidos a clientes, con opción de oponerse al recoger el
+    // email y en cada mensaje). Texto de Legal (2-oct-2026); la casilla, SIN marcar de antemano, está desde el 16-oct
+    // en el paso Publicar del creador y api_pagar guarda 'oposicion_comercial' (true/false, del servidor) en meta.aceptacion,
+    // que pasa al pedido. Es una casilla de
+    // NEGATIVA: marcarla significa «no me escribáis»; no marcarla no es un consentimiento (la base es el interés legítimo).
+    // El Padrino no envía NADA comercial hasta que lea esa marca del pedido (BOD-31). No es parte de las condiciones: cambiarla no sube 'version'.
+    'check_oposicion_comercial' => 'No quiero recibir por email ofertas de servicios parecidos al que contrato (por ejemplo, mejoras o extras de mi web). Puedo cambiarlo cuando quiera con el enlace de baja de cada mensaje.',
 
     'check_acompanantes' => 'Si doy datos de otras personas de mi grupo, les he avisado y están de acuerdo, o soy su padre, madre o tutor. Les enseñaré este aviso.',
 
