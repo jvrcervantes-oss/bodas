@@ -135,6 +135,51 @@ foreach (['/panel/entrar' => 'Entrar al panel', '/panel/recuperar' => 'Recuperar
     ok($st === 200 && stripos($cab, 'Cache-Control: private, no-store') !== false && marca_ok_con_enlaces($h) && strpos($h, $tit) !== false && strpos($h, 'class="rail') === false,
         "$r: 200, no-store, la marca, sin tema ni menú");
 }
+// CSRF de las páginas de acceso (BOD-28, 16-oct-2026): un POST que el navegador declara de otra web no cuenta intentos,
+// no manda correos y no fija contraseña. Se mandan más intentos malos que PANEL_MAX_INTENTOS: si contaran, el login de
+// abajo (contraseña mala → error, buena → entra) encontraría el panel bloqueado.
+function pide_desde(array $extra, string $ruta, array $campos): array {
+    global $pApp, $host;
+    $ch = curl_init('http://127.0.0.1:' . $pApp . $ruta);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 30, CURLOPT_HTTPHEADER => array_merge(['Host: ' . $host], $extra),
+        CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query($campos), CURLOPT_HEADER => true]);
+    $r = (string) curl_exec($ch); $st = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+    return [$st, $r];
+}
+$AJENOS = [['Origin: https://malo.example'], ['Sec-Fetch-Site: cross-site'], ['Origin: null'], ['Sec-Fetch-Site: same-site', 'Origin: https://otra-boda.bodaenlace.com']];
+for ($i = 0; $i < PANEL_MAX_INTENTOS + 1; $i++) {
+    [$st, $r] = pide_desde($AJENOS[$i % count($AJENOS)], '/panel/entrar', ['clave' => 'mala-mala-mala']);
+    ok($st === 403 && strpos($r, 'La página ha caducado') !== false && !preg_match('/^Set-Cookie: bw_/mi', $r), "entrar desde otra web ($i): 403 sin cookie");
+}
+ok((int) ((lee_json(panel_fichero($slug)) ?? [])['intentos'] ?? 0) === 0 && (int) ((lee_json(panel_fichero($slug)) ?? [])['bloqueo'] ?? 0) === 0, 'entrar desde otra web: no cuenta intentos ni bloquea');
+[$st] = pide_desde(['Origin: https://malo.example'], '/panel/entrar', ['clave' => 'clave-de-prueba-1']);
+ok($st === 403, 'entrar desde otra web con la contraseña buena: tampoco entra');
+$antes = count(glob(dir_datos('correos', '*.txt')) ?: []);
+foreach ($AJENOS as $ex) {
+    [$st] = pide_desde($ex, '/panel/recuperar', ['email' => 'pareja@example.com']);
+    ok($st === 403, 'recuperar desde otra web: 403 (' . implode(' + ', $ex) . ')');
+}
+ok(count(glob(dir_datos('correos', '*.txt')) ?: []) === $antes, 'recuperar desde otra web: no sale ningún correo');
+[$st, $r] = pide_desde(['Origin: https://malo.example'], '/panel/clave', ['t' => str_repeat('a', 48), 'clave' => 'otra-clave-larga', 'clave2' => 'otra-clave-larga']);
+ok($st === 403 && strpos($r, 'La página ha caducado') !== false, 'elegir contraseña desde otra web: 403');
+// Desde la propia web (el navegador manda su Origin y same-origin) sigue funcionando igual
+[$st, $r] = pide_desde(['Origin: ' . rtrim(url_boda($slug), '/'), 'Sec-Fetch-Site: same-origin'], '/panel/recuperar', ['email' => 'pareja@example.com']);
+ok($st === 200 && strpos($r, 'os acaba de llegar un enlace') !== false && count(glob(dir_datos('correos', '*.txt')) ?: []) === $antes + 1, 'recuperar desde la propia web: 200 y sale el correo');
+[$st, $r] = pide_desde(['Origin: ' . rtrim(url_boda($slug), '/'), 'Sec-Fetch-Site: same-origin'], '/panel/entrar', ['clave' => 'mala-mala-mala']);
+ok($st === 200 && strpos($r, 'Contraseña incorrecta') !== false, 'entrar desde la propia web con contraseña mala: cuenta y avisa');
+escribe_json(panel_fichero($slug), ['hash' => password_hash('clave-de-prueba-1', PASSWORD_DEFAULT), 'gen' => 0]);   // ese intento malo no condiciona lo de abajo
+// Lo que manda un navegador de verdad si la página va con no-referrer: Origin «null» pero same-origin. Manda Sec-Fetch-Site
+// y la pareja entra (revisor, 16-oct-2026: la primera versión del arreglo la dejaba fuera con 403)
+[$st, $r] = pide_desde(['Origin: null', 'Sec-Fetch-Site: same-origin'], '/panel/entrar', ['clave' => 'clave-de-prueba-1']);
+ok($st === 302 && preg_match('/^Set-Cookie: bw_/mi', $r), 'entrar con Origin null + same-origin (navegador real): entra');
+[$st, $r] = pide_desde(['Origin: null', 'Sec-Fetch-Site: same-origin'], '/panel/recuperar', ['email' => 'pareja@example.com']);
+ok($st === 200 && strpos($r, 'os acaba de llegar un enlace') !== false, 'recuperar con Origin null + same-origin: 200');
+// Y las tres páginas de acceso van con Referrer-Policy same-origin, para que el navegador mande su Origin real
+foreach (['/panel/entrar', '/panel/recuperar', '/panel/clave?t=' . str_repeat('a', 48)] as $ruta) {
+    [, , $cab] = pide('GET', $ruta);
+    ok(preg_match('/^Referrer-Policy: same-origin\r?$/mi', $cab) === 1 && stripos($cab, 'Referrer-Policy: no-referrer') === false, "$ruta: Referrer-Policy same-origin");
+}
+
 [$st, $h] = pide('POST', '/panel/entrar', ['clave' => 'mala-mala-mala']);
 ok($st === 200 && strpos($h, 'class="error" role="alert"') !== false, 'contraseña mala: error visible');
 [$st, , $cab] = pide('POST', '/panel/entrar?v=editar', ['clave' => 'clave-de-prueba-1']);

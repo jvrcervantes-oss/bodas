@@ -312,8 +312,10 @@ const CSP_CREADOR_PANEL = "default-src 'self'; img-src 'self' data: blob:; style
     . "form-action 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'";
 
 function panel_entrar(string $slug, array $c, string $metodo): void {
+    panel_cabecera_acceso();
     $error = '';
-    if ($metodo === 'POST') {
+    if ($metodo === 'POST' && !panel_post_propio($slug)) { http_response_code(403); $error = 'La página ha caducado. Vuelve a intentarlo.'; }
+    elseif ($metodo === 'POST') {
         $error = panel_login($slug, (string) ($_POST['clave'] ?? ''));
         // ?v=editar: venían del editor con la sesión cerrada; vuelven a él y recuperan lo que no se guardó
         if ($error === '') { header('Location: /panel' . (($_GET['v'] ?? '') === 'editar' ? '/editar' : '')); exit; }
@@ -329,9 +331,11 @@ function panel_entrar(string $slug, array $c, string $metodo): void {
 }
 
 function panel_clave(string $slug, array $c, string $metodo): void {
+    panel_cabecera_acceso();
     $tok = clean_str($_GET['t'] ?? $_POST['t'] ?? '', 60);
     $error = '';
-    if ($metodo === 'POST') {
+    if ($metodo === 'POST' && !panel_post_propio($slug)) { http_response_code(403); $error = 'La página ha caducado. Vuelve a intentarlo.'; }
+    elseif ($metodo === 'POST') {
         $a = (string) ($_POST['clave'] ?? '');
         $b = (string) ($_POST['clave2'] ?? '');
         $error = $a !== $b ? 'Las dos contraseñas no coinciden.' : panel_fija_clave($slug, $tok, $a);
@@ -350,8 +354,11 @@ function panel_clave(string $slug, array $c, string $metodo): void {
 
 /** Siempre la misma respuesta, exista o no el email: no se confirma a nadie qué email tiene la pareja. */
 function panel_recuperar(string $slug, array $c, string $metodo): void {
+    panel_cabecera_acceso();
     $msg = '';
-    if ($metodo === 'POST') {
+    $error = '';
+    if ($metodo === 'POST' && !panel_post_propio($slug)) { http_response_code(403); $error = 'La página ha caducado. Vuelve a intentarlo.'; }
+    elseif ($metodo === 'POST') {
         $email = strtolower(clean_str($_POST['email'] ?? '', 160));
         $p = lee_json(dir_boda($slug) . '/pedido.json') ?? [];
         $validos = array_filter([strtolower($c['pareja']['email']), strtolower((string) ($p['email'] ?? ''))]);
@@ -364,6 +371,7 @@ function panel_recuperar(string $slug, array $c, string $metodo): void {
         . '<p class="sub">Escribid el email de contacto de la web o el que usasteis al pagar y os mandamos un enlace para elegir contraseña.</p>'
         . '<form method="post" class="form"><div class="campo"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required></div>'
         . ($msg !== '' ? '<p class="ok" role="status">' . h($msg) . '</p>' : '')
+        . ($error !== '' ? '<p class="error" role="alert">' . h($error) . '</p>' : '')
         . '<button type="submit" class="btn b-rosa btn-ancho">Enviar enlace</button></form>'
         . '<p class="aux"><a href="/panel">Volver</a></p>');
 }
