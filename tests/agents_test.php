@@ -243,6 +243,11 @@ ok($stE === 401, "un bcrypt en AGENTS_CLAVE_SHA256 no abre: 401 ($stE)");
 file_put_contents($huellasF, '<?php return ' . var_export(['AGENTS_CLAVE_HASH' => hash('sha256', $clave), 'AGENTS_SUBIDA_SHA256' => hash('sha256', $llave)], true) . ';');
 $stE = $entra();
 ok($stE === 401, "con el nombre viejo AGENTS_CLAVE_HASH nadie entra: 401 ($stE)");
+// las dos huellas intercambiadas (cada una se lee por el NOMBRE de su clave, no por su forma): cerrado
+$secretos(hash('sha256', $llave), hash('sha256', $clave));
+[$stS] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
+$stE = $entra();
+ok($stS === 401 && $stE === 401, "huellas intercambiadas: cerrado, ni sube ($stS) ni entra ($stE)");
 $secretos(hash('sha256', $clave), substr(hash('sha256', $llave), 0, 63));
 [$stS] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
 ok($stS === 401, "sha256 recortado: no sube ($stS)");
