@@ -208,6 +208,10 @@ function api_pagar(string $metodo): void {
         'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
         // Quién vendía al aceptar (Legal, 27-sep): la casilla nombra al vendedor y queda atada a este pedido
         'vendedor' => $cortesia ? '' : (string) ($L['vendedor'] ?? ''),
+        // Oposición a comunicaciones comerciales (LSSI 21.2, BOD-31): casilla opcional de NEGATIVA. El booleano lo decide el
+        // servidor (solo 'si' literal es oposición) y, si se marcó, queda el texto exacto que se enseñó
+        'oposicion_comercial' => ($_POST['oposicion_comercial'] ?? '') === 'si',
+        'oposicion_texto' => ($_POST['oposicion_comercial'] ?? '') === 'si' ? (string) ($L['check_oposicion_comercial'] ?? '') : '',
     ]]);
 
     if ($cortesia) {

@@ -28,6 +28,8 @@ foreach (['core', 'schema', 'render', 'foto', 'alta', 'mapa', 'cortesia'] as $m)
 $secretos(['pasarela' => 'lemon']);
 [$idCod, $codigo] = cortesia_crea(1, false, date('Y-m-d', strtotime('+30 days')), 'prueba');
 [, $codigoPruebas] = cortesia_crea(1, false, date('Y-m-d', strtotime('+30 days')), 'prueba en pruebas');
+[, $codigoOp] = cortesia_crea(1, false, date('Y-m-d', strtotime('+30 days')), 'prueba oposicion');
+[, $codigoBasura] = cortesia_crea(1, false, date('Y-m-d', strtotime('+30 days')), 'prueba oposicion basura');
 $L = textos_legales();
 
 $puerto = 18000 + random_int(0, 999);
@@ -92,6 +94,19 @@ $ac = (array) ($ped['aceptacion'] ?? []);
 ok(($ac['condiciones'] ?? '') === ($L['check_condiciones_regalo'] ?? '-') && ($L['check_condiciones_regalo'] ?? '') !== '', 'regalo: guarda check_condiciones_regalo literal');
 ok(($ac['condiciones'] ?? '') !== ($L['check_condiciones'] ?? ''), 'regalo: no guarda la casilla de compra');
 ok(($ac['vendedor'] ?? 'x') === '' && ($ac['desistimiento'] ?? 'x') === '', 'regalo: sin vendedor ni desistimiento');
+ok(($ac['oposicion_comercial'] ?? null) === false && ($ac['oposicion_texto'] ?? 'x') === '', 'oposición: sin la casilla, el pedido guarda false y ningún texto');
+
+// 1b. Oposición a comunicaciones comerciales (LSSI 21.2, BOD-31): solo 'si' literal cuenta, y queda el texto que se enseñó
+$pedidoDe = function (string $slug) use ($tmp): array {
+    foreach (glob($tmp . '/pedidos/cortesia_*.json') ?: [] as $f) { $p = json_decode((string) file_get_contents($f), true) ?: []; if (($p['slug'] ?? '') === $slug) return $p; }
+    return [];
+};
+[$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-oposicion', 'codigo' => $codigoOp, 'oposicion_comercial' => 'si']);
+$ac = (array) ($pedidoDe('regalo-oposicion')['aceptacion'] ?? []);
+ok($st === 200 && ($ac['oposicion_comercial'] ?? null) === true && ($ac['oposicion_texto'] ?? '') === ($L['check_oposicion_comercial'] ?? '-'), 'oposición: marcada, el pedido guarda true y el texto literal (' . $st . ')');
+[$st, $j] = pagar($puerto, $base + ['slug' => 'regalo-basura', 'codigo' => $codigoBasura, 'oposicion_comercial' => 'true']);
+$ac = (array) ($pedidoDe('regalo-basura')['aceptacion'] ?? []);
+ok($st === 200 && ($ac['oposicion_comercial'] ?? null) === false, 'oposición: un valor que no es «si» no cuenta (' . $st . ')');
 
 // 2. Stripe: con clave configurada y todo en regla, el pago NO se abre (503)
 $secretos(['pasarela' => 'stripe', 'stripe_secret' => 'sk_test_x', 'stripe_tax_rate' => 'txr_x']);

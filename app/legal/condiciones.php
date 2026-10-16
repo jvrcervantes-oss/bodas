@@ -4,6 +4,7 @@
 // añadió los extras de pago y el plano de mesas, F1c/F1d, revisión #133: §2, §5 ter, §7, §8, §13, anexo II.2 y II.6;
 // la «e», decisión del owner del 27-sep: el plano de mesas va incluido en los dos packs, también regalados (§2), y
 // §5 ter queda sin ningún extra a la venta, con las reglas generales para cuando se venda uno).
+// Versión 2026-10-16 (Legal, BOD-31; borrador del 2-oct publicado el 16-oct por delegación del owner): anexo II.7 (transferencia a Indonesia con cláusulas tipo, módulo 2).
 // Versión 2026-09-30 (Legal): §2 lista «programa con varios momentos» e «historia» (opcional, texto libre) y §10 extiende la garantía
 // de las fotos a los textos, con la prohibición de datos de salud, de menores identificables y de terceros sin permiso.
 // Versión 2026-09-29 (Legal, consulta del 29-sep): en pruebas el servicio se presta solo por invitación con códigos de
@@ -26,7 +27,7 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión 2026-09-30, del 30 de septiembre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-10-16, del 16 de octubre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
 <p><?= $M ?> es un producto de AxisWorks. <?php if (titular_identificado($E)): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?><?= $E['nif'] !== '' ? ', con NIF ' . h($E['nif']) : '' ?><?= $E['domicilio'] !== '' ? ' y domicilio en ' . h($E['domicilio']) : '' ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta. Mientras tanto, el servicio solo se presta por invitación: quien presta el servicio entrega personalmente un código de regalo a cada pareja, y esa pareja sabe quién es. Con un código de regalo no compráis nada, no pagáis nada y no interviene <?= $V ?>; lo que estas condiciones dicen de la compra, el pago, el recibo o el desistimiento no se aplica a una web de regalo. Los códigos son personales y no se pueden ceder ni revender. Si os dan un código que no os entregó quien presta el servicio, no lo uséis y escribidnos a <?= email_enlace($E['email']) ?>: os diremos quién presta el servicio antes de que publiquéis nada.<?php endif; ?> En estas condiciones, «nosotros» es <?= titular_identificado($E) ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= email_enlace($E['email']) ?>.</p>
@@ -207,3 +208,6 @@ $V = h($L['vendedor'] ?? '');
   <li>En la lista de invitados, poner solo nombres y grupos: ni datos de contacto, ni de salud, ni notas sobre las personas. Los nombres de los grupos los ve quien abre su enlace, así que no pueden llevar etiquetas ofensivas.</li>
   <li>Enviar cada enlace de grupo solo a ese grupo, y cambiarlo desde el panel si llega a quien no debe.</li>
 </ul>
+
+<h2>II.7. Transferencia a Indonesia</h2>
+<p><?= $M ?> está establecida en Indonesia, que no tiene una decisión de adecuación de la Comisión Europea, y accede desde allí a los datos de los invitados. Para esa transferencia, las partes incorporan a este anexo las cláusulas contractuales tipo de la Comisión Europea (Decisión de Ejecución (UE) 2021/914), módulo dos, de responsable a encargado: la pareja es el exportador y <?= $M ?> el importador. Se aplican con estas elecciones: cláusula 7 (acoplamiento), no incluida; cláusula 9, autorización general de subencargados con el aviso de II.4; cláusula 11, sin organismo de resolución de litigios independiente; cláusula 17, derecho de España; cláusula 18, tribunales de España; autoridad de control competente, la del país de residencia de la pareja. Los apartados II.1 a II.5 de este anexo describen las partes, las transferencias, las medidas de seguridad y los subencargados que exigen los anexos de esas cláusulas.</p>
