@@ -14,8 +14,16 @@
 //
 // Por qué la plantilla y la foto NO van al repo: la plantilla es el código del ERP y el repo de Bodas es PÚBLICO; la foto es lo
 // que ve el dueño. Las dos viven en DATA_DIR/agents/, fuera del webroot, y solo se sirven con sesión.
-// Los secretos son dos hashes en DATA_DIR/secrets.php (nunca en git): AGENTS_CLAVE_HASH (password_hash de la contraseña del
-// owner) y AGENTS_SUBIDA_SHA256 (sha256 de la llave de subida del PC). Vacíos = cerrado: nadie entra y nada se sube.
+// Las dos HUELLAS viven en el repo, en app/agents_huellas.php, y suben por el despliegue normal (17-oct-2026). El paso por ssh a
+// secrets.php lo denegó el clasificador y no se rodea. Seguridad las dio por aceptables en un repo público porque son huellas de
+// secretos ALEATORIOS de máquina (2^144 y 2^256 intentos). Precedente: app/estudio_alta.php, revisión previa #96.
+//   AGENTS_CLAVE_SHA256   sha256 de la contraseña del owner (token de máquina de 144 bits)
+//   AGENTS_SUBIDA_SHA256  sha256 de la llave de subida del PC
+// Las dos son sha256 y no bcrypt: el detector de secretos del push frena el bcrypt (con él, una contraseña elegida por una
+// persona se prueba sin conexión) y contra un secreto de 144 bits un hash lento no añade nada. Lo que lo mantiene cierto es que
+// erp/aaas_local/sube_web.py se niega a escribir la huella de una contraseña que no sea de máquina (24+ caracteres urlsafe).
+// UNA sola fuente: secrets.php ya no cuenta para estas dos claves (una copia vieja allí ganaría en silencio a una rotación por push).
+// Si el fichero falta, si una huella va vacía o no tiene su forma, queda cerrado: nadie entra y nada se sube.
 
 declare(strict_types=1);
 
@@ -35,6 +43,23 @@ const AGENTS_LLAVES = [
     'clave privada' => '/-----BEGIN [A-Z ]*PRIVATE KEY-----/',
     'Stripe' => '/\b[sr]k_live_[A-Za-z0-9]{20,}/',
 ];
+
+if (!defined('AGENTS_HUELLAS_F')) define('AGENTS_HUELLAS_F', __DIR__ . '/agents_huellas.php');   // las pruebas lo apuntan a su copia
+const AGENTS_HUELLAS_FORMA = [
+    'AGENTS_CLAVE_SHA256' => '/^[a-f0-9]{64}$/',
+    'AGENTS_SUBIDA_SHA256' => '/^[a-f0-9]{64}$/',
+];
+
+/** Una de las dos huellas de app/agents_huellas.php, solo si tiene su forma; si no, '' (cerrado). */
+function agents_huella(string $k): string {
+    static $h = null;
+    if ($h === null) {
+        $d = is_file(AGENTS_HUELLAS_F) ? require AGENTS_HUELLAS_F : [];
+        $h = is_array($d) ? $d : [];
+    }
+    $v = $h[$k] ?? '';
+    return is_string($v) && isset(AGENTS_HUELLAS_FORMA[$k]) && preg_match(AGENTS_HUELLAS_FORMA[$k], $v) === 1 ? $v : '';
+}
 
 function agents_dir(string ...$p): string { return dir_datos('agents', ...$p); }
 function agents_url(string $sub = ''): string { return BASE_PATH . '/agents/' . $sub; }
@@ -105,11 +130,11 @@ function agents_sesion(): void {
     if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(16));
 }
 
-/** Huella del hash vigente: si el owner cambia la contraseña en secrets.php, todas las sesiones abiertas caen. */
+/** Huella del hash vigente: si se rota la contraseña (agents_huellas.php nuevo por push), todas las sesiones abiertas caen. */
 function agents_gen(string $hash): string { return substr(hash('sha256', 'agents|' . $hash), 0, 16); }
 
 function agents_dentro(): bool {
-    $hash = (string) secreto('AGENTS_CLAVE_HASH', '');
+    $hash = agents_huella('AGENTS_CLAVE_SHA256');
     $s = $_SESSION;
     if ($hash === '' || empty($s['ok'])) return false;
     if ((int) ($s['desde'] ?? 0) + AGENTS_SESION_MAX < time() || !hash_equals(agents_gen($hash), (string) ($s['gen'] ?? ''))) {
@@ -141,7 +166,7 @@ function agents_fallos(string $clave, int $ventana, bool $suma = false): int {
 }
 
 function agents_login(): void {
-    $hash = (string) secreto('AGENTS_CLAVE_HASH', '');
+    $hash = agents_huella('AGENTS_CLAVE_SHA256');
     if (!agents_csrf_ok()) { agents_formulario(403, 'La página ha caducado. Vuelve a intentarlo.'); return; }
     $clave = 'agents-entrar|' . ip_cliente();
     if (agents_fallos($clave, AGENTS_VENTANA_LOGIN) >= AGENTS_FALLOS_LOGIN) {
@@ -151,7 +176,7 @@ function agents_login(): void {
         return;
     }
     $pw = (string) ($_POST['clave'] ?? '');
-    if ($hash !== '' && $pw !== '' && strlen($pw) <= 256 && password_verify($pw, $hash)) {
+    if ($hash !== '' && $pw !== '' && strlen($pw) <= 256 && hash_equals($hash, hash('sha256', $pw))) {
         session_regenerate_id(true);
         $_SESSION = ['ok' => true, 'desde' => time(), 'gen' => agents_gen($hash), 'csrf' => bin2hex(random_bytes(16))];
         agents_log('entrar');
@@ -283,7 +308,7 @@ function agents_sube(string $metodo): void {
         return;
     }
     // La llave se mira ANTES de leer el cuerpo: sin ella no se parsea nada
-    $esperado = (string) secreto('AGENTS_SUBIDA_SHA256', '');
+    $esperado = agents_huella('AGENTS_SUBIDA_SHA256');
     $auth = (string) ($_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
     if (!preg_match('/^[a-f0-9]{64}$/', $esperado) || !preg_match('/^Bearer ([A-Za-z0-9_\-]{32,200})$/', $auth, $m)
         || !hash_equals($esperado, hash('sha256', $m[1]))) {

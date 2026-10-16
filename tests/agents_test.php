@@ -12,15 +12,17 @@ mkdir($tmp, 0700, true);
 mkdir($web, 0700, true);
 $clave = bin2hex(random_bytes(12));
 $llave = rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
-$secretos = function (string $hashClave, string $shaLlave) use ($tmp) {
-    file_put_contents($tmp . '/secrets.php', '<?php return ' . var_export(['AGENTS_CLAVE_HASH' => $hashClave, 'AGENTS_SUBIDA_SHA256' => $shaLlave], true) . ';');
+// Las huellas van en su fichero (el app/agents_huellas.php del repo, aquí una copia de la prueba); secrets.php ya no cuenta.
+$huellasF = $tmp . '/agents_huellas.php';
+$secretos = function (string $hashClave, string $shaLlave) use ($huellasF) {
+    file_put_contents($huellasF, '<?php return ' . var_export(['AGENTS_CLAVE_SHA256' => $hashClave, 'AGENTS_SUBIDA_SHA256' => $shaLlave], true) . ';');
 };
-$secretos(password_hash($clave, PASSWORD_DEFAULT), hash('sha256', $llave));
+$secretos(hash('sha256', $clave), hash('sha256', $llave));
 $fallos = 0;
 function ok(bool $c, string $q): void { global $fallos; if (!$c) { $fallos++; echo "FALLA: $q\n"; } else echo "ok: $q\n"; }
 
 $puerto = 18000 + random_int(0, 999);
-$env = array_merge(getenv(), ['BODAS_TEST_DATA' => $tmp]);
+$env = array_merge(getenv(), ['BODAS_TEST_DATA' => $tmp, 'BODAS_TEST_HUELLAS' => $huellasF]);
 $srv = proc_open([PHP_BINARY, '-S', '127.0.0.1:' . $puerto, '-t', $web, __DIR__ . '/router_prueba.php'], [1 => ['file', $tmp . '/srv.log', 'a'], 2 => ['file', $tmp . '/srv.log', 'a']], $pipes, null, $env);
 for ($i = 0; $i < 50 && !@fsockopen('127.0.0.1', $puerto); $i++) usleep(100000);
 
@@ -181,7 +183,7 @@ ok($st === 303 && cab($h, 'Location') === '/agents/', "salir con el token → 30
 [$st, , $b] = pide('GET', '/agents/', ['cookie' => $ck1]);
 ok($st === 401 && strpos($b, $MARCA) === false, "tras salir, la cookie ya no entra ($st)");
 
-// 7. Cambiar la contraseña en secrets.php tira las sesiones abiertas
+// 7. Cambiar la contraseña en el fichero de huellas tira las sesiones abiertas
 [, $h, $b] = pide('GET', '/agents/');
 [$ckA] = cookie($h);
 [, $h] = pide('POST', '/agents/', ['cookie' => $ckA, 'form' => ['clave' => $clave, 'csrf' => csrf($b)]]);
@@ -189,9 +191,9 @@ ok($st === 401 && strpos($b, $MARCA) === false, "tras salir, la cookie ya no ent
 [$st] = pide('GET', '/agents/', ['cookie' => $ckB]);
 ok($st === 200, "sesión nueva dentro ($st)");
 $clave2 = bin2hex(random_bytes(12));
-$secretos(password_hash($clave2, PASSWORD_DEFAULT), hash('sha256', $llave));
+$secretos(hash('sha256', $clave2), hash('sha256', $llave));
 [$st] = pide('GET', '/agents/', ['cookie' => $ckB]);
-ok($st === 401, "con otra contraseña en secrets.php, la sesión abierta cae ($st)");
+ok($st === 401, "con otra contraseña en el fichero de huellas, la sesión abierta cae ($st)");
 $clave = $clave2;
 
 // 8. Freno: 5 fallos por IP en 15 min → 429, y entonces ni la buena entra (fallos hasta aquí: 1)
@@ -202,7 +204,7 @@ for ($i = 0; $i < 4; $i++) pide('POST', '/agents/', ['cookie' => $ckF, 'form' =>
 [$st, $h] = pide('POST', '/agents/', ['cookie' => $ckF, 'form' => ['clave' => $clave, 'csrf' => $tokF]]);
 ok($st === 429 && cab($h, 'Retry-After') !== '', "a los 5 fallos → 429 con Retry-After, también con la contraseña buena ($st)");
 
-// 9. Sin hashes en secrets.php: cerrado (ni entra nadie ni se sube nada)
+// 9. Sin huellas: cerrado (ni entra nadie ni se sube nada)
 $secretos('', '');
 [$st] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
 ok($st === 401, "sin AGENTS_SUBIDA_SHA256 la llave buena no sube → 401 ($st)");
@@ -210,10 +212,52 @@ array_map('unlink', glob($tmp . '/agents/fallos/*') ?: []);
 [, $h, $b] = pide('GET', '/agents/');
 [$ckV] = cookie($h);
 [$st] = pide('POST', '/agents/', ['cookie' => $ckV, 'form' => ['clave' => $clave, 'csrf' => csrf($b)]]);
-ok($st === 401, "sin AGENTS_CLAVE_HASH nadie entra → 401 ($st)");
+ok($st === 401, "sin AGENTS_CLAVE_SHA256 nadie entra → 401 ($st)");
+
+// 9b. UNA sola fuente (Seguridad, 17-oct): las huellas buenas en secrets.php no abren nada si el fichero de huellas va vacío
+file_put_contents($tmp . '/secrets.php', '<?php return ' . var_export(['AGENTS_CLAVE_SHA256' => hash('sha256', $clave), 'AGENTS_SUBIDA_SHA256' => hash('sha256', $llave)], true) . ';');
+$entra = function () use ($clave): int {
+    global $tmp;
+    array_map('unlink', glob($tmp . '/agents/fallos/*') ?: []);
+    [, $h, $b] = pide('GET', '/agents/');
+    [$ck] = cookie($h);
+    [$st] = pide('POST', '/agents/', ['cookie' => $ck, 'form' => ['clave' => $clave, 'csrf' => csrf($b)]]);
+    return $st;
+};
+[$stS] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
+$stE = $entra();
+ok($stS === 401 && $stE === 401, "con las huellas solo en secrets.php: cerrado, ni sube ($stS) ni entra ($stE)");
+@unlink($tmp . '/secrets.php');
+// 9c. Huellas sin su forma (un bcrypt donde va el sha256 de la contraseña, sha con mayúsculas o recortado), con el nombre
+// viejo de la clave o el fichero ausente: cerrado
+$rapido = password_hash($clave, PASSWORD_BCRYPT, ['cost' => 4]);
+$secretos($rapido, strtoupper(hash('sha256', $llave)));
+[$stS] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
+$stE = $entra();
+ok($stS === 401 && $stE === 401, "huellas sin su forma: cerrado, ni sube ($stS) ni entra ($stE)");
+// un bcrypt BUENO de la contraseña buena, con la llave buena: la subida pasa pero nadie entra (el login solo casa sha256)
+$secretos(password_hash($clave, PASSWORD_DEFAULT), hash('sha256', $llave));
+$stE = $entra();
+ok($stE === 401, "un bcrypt en AGENTS_CLAVE_SHA256 no abre: 401 ($stE)");
+// la clave con su nombre de antes (AGENTS_CLAVE_HASH), aunque lleve el sha256 bueno: no cuenta
+file_put_contents($huellasF, '<?php return ' . var_export(['AGENTS_CLAVE_HASH' => hash('sha256', $clave), 'AGENTS_SUBIDA_SHA256' => hash('sha256', $llave)], true) . ';');
+$stE = $entra();
+ok($stE === 401, "con el nombre viejo AGENTS_CLAVE_HASH nadie entra: 401 ($stE)");
+$secretos(hash('sha256', $clave), substr(hash('sha256', $llave), 0, 63));
+[$stS] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
+ok($stS === 401, "sha256 recortado: no sube ($stS)");
+@unlink($huellasF);
+[$stS] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
+$stE = $entra();
+ok($stS === 401 && $stE === 401, "sin fichero de huellas: cerrado, ni sube ($stS) ni entra ($stE)");
+// 9d. Y con las huellas buenas en su fichero, la buena entra (el mismo camino que la de verdad)
+$secretos(hash('sha256', $clave), hash('sha256', $llave));
+$stE = $entra();
+ok($stE === 303 || $stE === 302 || $stE === 200, "con las huellas en su fichero la contraseña buena entra ($stE)");
+array_map('unlink', glob($tmp . '/agents/fallos/*') ?: []);
 
 // 10. Freno de la subida: 10 llaves malas por IP en una hora → 429
-$secretos(password_hash($clave, PASSWORD_DEFAULT), hash('sha256', $llave));
+$secretos(hash('sha256', $clave), hash('sha256', $llave));
 for ($i = 0; $i < 10; $i++) sube(['foto' => $foto, 'plantilla' => $plantilla], rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '='));
 [$st] = sube(['foto' => $foto, 'plantilla' => $plantilla], $llave);
 ok($st === 429, "a las 10 llaves malas → 429, también con la buena ($st)");
