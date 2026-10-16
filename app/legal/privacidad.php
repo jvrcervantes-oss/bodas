@@ -113,7 +113,7 @@ $tieneR = trim((string) ($R['nombre'] ?? '')) !== '' && (trim((string) ($R['emai
   <li>Reseñas publicadas: hasta que pidáis retirarlas o dejemos de ofrecer el servicio.</li>
   <li>Comunicaciones comerciales: hasta que os deis de baja. Guardamos la baja para respetarla.</li>
   <li>Lo que aprende y planifica el sistema de IA (lecciones y plan de la semana): no contiene datos personales y lo guardamos mientras sea útil. El registro de lo que gasta la IA, 6 años, porque forma parte de la contabilidad.</li>
-  <li>Registros técnicos de seguridad: lo estrictamente necesario, normalmente unas semanas.</li>
+  <li>Registro técnico de nuestra aplicación (puede llevar la IP y, si hay una incidencia con un pedido, el email): como mucho 12 meses. Los registros de acceso de nuestro alojamiento y de Cloudflare siguen los plazos de cada proveedor.</li>
 </ul>
 
 <h2><?= $V ?>, el vendedor</h2>
@@ -127,7 +127,7 @@ $tieneR = trim((string) ($R['nombre'] ?? '')) !== '' && (trim((string) ($R['emai
   <li>Hostinger, que aloja las webs y presta el servicio de correo (el buzón desde el que os escribimos y donde llegan vuestros mensajes), como encargado del tratamiento.</li>
   <li>Cloudflare, Inc. (Estados Unidos), como encargado del tratamiento: su red recibe las visitas a nuestras páginas y a las webs de boda (con vuestra dirección IP) y las entrega cifradas a nuestro alojamiento. No usamos sus funciones de analítica. La transferencia se ampara en las cláusulas contractuales tipo de la Comisión Europea que recoge su acuerdo de tratamiento.</li>
   <li>Anthropic, PBC (Estados Unidos), como encargado del tratamiento: recibe el texto de los correos a los que responde la IA y las cifras agregadas del negocio, como se explica arriba. La transferencia se ampara en las cláusulas contractuales tipo de la Comisión Europea (módulo dos, de responsable a encargado) que forman parte de su acuerdo de tratamiento de datos, incorporado a sus condiciones comerciales. No nos consta que Anthropic esté adherida al Marco de Privacidad de Datos UE-EE. UU., y no nos amparamos en él.</li>
-  <li>Railway y Supabase, como encargados del tratamiento: en ellos funciona El Padrino y se guardan las huellas y los estados de los correos, las cifras agregadas del negocio y el registro de sus acciones. Sus acuerdos de tratamiento incluyen cláusulas contractuales tipo para las transferencias fuera de la Unión Europea.</li>
+  <li>Railway y Supabase, como encargados del tratamiento: en ellos funciona El Padrino y se guardan las huellas y los estados de los correos, las cifras agregadas del negocio y el registro de sus acciones. Para calcular esas cifras, El Padrino recibe de nuestro servidor una lista de las webs con su dirección, el pack, la fecha de la boda y el número de confirmados, sin nombres de invitados, emails ni contenido; esa lista no se envía a la IA. Sus acuerdos de tratamiento incluyen cláusulas contractuales tipo para las transferencias fuera de la Unión Europea.</li>
   <li>Telegram: recibimos en él avisos internos del sistema, con un título y un número de pedido, sin vuestro nombre ni email.</li>
   <li>OpenStreetMap (Fundación OpenStreetMap, Reino Unido): recibe la dirección del lugar de la ceremonia o el convite, que no es la vuestra, para dibujar el mapa de vuestra web.</li>
   <li>La Administración tributaria y las autoridades, cuando la ley nos obliga.</li>
@@ -135,7 +135,7 @@ $tieneR = trim((string) ($R['nombre'] ?? '')) !== '' && (trim((string) ($R['emai
 <p>No vendemos ni cedemos vuestros datos a nadie más.</p>
 
 <h2>Transferencias fuera de la Unión Europea</h2>
-<p>El responsable está en Indonesia, que no tiene una decisión de adecuación de la Comisión Europea, y nuestro equipo accede a los datos desde allí. Para los datos que tratamos por encargo de las parejas, la garantía son las cláusulas contractuales tipo de la Comisión Europea que forman parte del anexo de encargo de las condiciones del servicio. Los proveedores de Estados Unidos citados arriba se amparan en las cláusulas tipo de sus acuerdos de tratamiento, salvo que se indique otra cosa en su apartado. Podéis pedirnos una copia de esas garantías escribiendo a <?= email_enlace($E['email']) ?>.</p>
+<p>El responsable está en Indonesia, que no tiene una decisión de adecuación de la Comisión Europea, y nuestro equipo accede a los datos desde allí. Para los datos que tratamos por encargo de las parejas, la garantía son las cláusulas contractuales tipo de la Comisión Europea que forman parte del anexo de encargo de las condiciones del servicio (apartado II.7, desde la versión del 16 de octubre de 2026). Si contratasteis antes, podéis pedirnos que se apliquen también a vuestra web escribiendo a <?= email_enlace($E['email']) ?>. Los proveedores de Estados Unidos citados arriba se amparan en las cláusulas tipo de sus acuerdos de tratamiento, salvo que se indique otra cosa en su apartado. Podéis pedirnos una copia de esas garantías escribiendo a <?= email_enlace($E['email']) ?>.</p>
 
 <h2>Cookies y almacenamiento en el navegador</h2>
 <p>No usamos cookies de analítica ni de publicidad. Medimos las visitas sin cookies, como se explica abajo.</p>
