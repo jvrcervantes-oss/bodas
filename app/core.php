@@ -67,7 +67,11 @@ const MARCA = 'BodaEnlace';   // owner, 26-sep-2026: «BodaEnlace, un producto d
 const MARCA_WEB = 'bodaenlace.com';
 
 $__dd = str_replace('\\', '/', realpath(DATA_DIR) ?: DATA_DIR) . '/';
-$__dr = str_replace('\\', '/', (string) (realpath((string) ($_SERVER['DOCUMENT_ROOT'] ?? '')) ?: '')) . '/';
+// Sin DOCUMENT_ROOT (el cron) no hay carpeta servida que comparar: realpath('') devuelve el directorio de trabajo, que en el
+// cron de Hostinger es el home, y DATA_DIR (~/datos/bodas) cae dentro: el diario moría en cada ejecución (BOD-33/58, 16-oct-2026)
+$__docroot = (string) ($_SERVER['DOCUMENT_ROOT'] ?? '');
+$__dr = str_replace('\\', '/', $__docroot === '' ? '' : (string) (realpath($__docroot) ?: '')) . '/';
+unset($__docroot);
 if (strpos($__dd, str_replace('\\', '/', WEB_DIR) . '/') === 0 || ($__dr !== '/' && strpos($__dd, $__dr) === 0)) {
     http_response_code(500);
     exit('DATA_DIR no puede estar dentro de la carpeta publicada.');

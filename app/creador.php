@@ -11,6 +11,8 @@ const CSP_CREADOR = "default-src 'self'; img-src 'self' data: blob:; style-src '
 function rutas_creador(string $ruta, string $metodo): void {
     // Panel del estudio (solo el owner): app/estudio.php
     if ($ruta === 'estudio' || strpos($ruta, 'estudio/') === 0) { rutas_estudio(trim(substr($ruta, 7), '/'), $metodo); return; }
+    // Escaparate del panel del AaaS (el owner con contraseña; la subida, el PC con su llave): app/agents.php
+    if ($ruta === 'agents' || strpos($ruta, 'agents/') === 0) { require_once APP_DIR . '/agents.php'; rutas_agents(substr($ruta, 7), $metodo); return; }
     // El Padrino (CEO autónomo, servicio aparte): app/padrino.php, solo con token
     // Guías del Padrino: SOLO bajo guia/ (nunca en la raíz), así no pueden pisar ninguna ruta
     if ($ruta === 'guia' || strpos($ruta, 'guia/') === 0) {
@@ -177,7 +179,9 @@ function api_pagar(string $metodo): void {
     }
     $slug = strtolower(clean_str($_POST['slug'] ?? '', 60));
     if (!slug_valido($slug)) json_response(['ok' => false, 'error' => 'El nombre de la web no es válido.'], 422);
-    analitica_evento('pago_intento');
+    // Compra de prueba de 1 € del estudio (BOD-62, temporal): la decide el servidor, nada del POST la enciende
+    $prueba = !$cortesia && $pasarela === 'lemon' && prueba_pago_reclama($slug);
+    if (!$prueba) analitica_evento('pago_intento');
 
     asegura_dir(dir_datos('pendientes'));
     if (count(glob(dir_datos('pendientes', '*'), GLOB_ONLYDIR) ?: []) > 500) {
@@ -202,8 +206,8 @@ function api_pagar(string $metodo): void {
     $L = textos_legales();
     // Precio congelado al abrir el pedido: si El Padrino lo cambia con el pago abierto, manda este.
     // Es también el importe que se manda a Lemon Squeezy (custom_price): una sola cuenta, en el servidor.
-    $precio = precio_total_cent($c);
-    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => $cortesia ? 'cortesia' : $pasarela, 'aceptacion' => [
+    $precio = $prueba ? PRUEBA_PAGO_CENT : precio_total_cent($c);
+    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => $cortesia ? 'cortesia' : $pasarela] + ($prueba ? ['prueba' => true] : []) + ['aceptacion' => [
         'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $cortesia ? ($L['check_condiciones_regalo'] ?? '') : ($L['check_condiciones'] ?? ''),
         'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
         // Quién vendía al aceptar (Legal, 27-sep): la casilla nombra al vendedor y queda atada a este pedido
@@ -233,7 +237,7 @@ function api_pagar(string $metodo): void {
             @unlink(dir_datos('reservas', $slug . '.json'));
             json_response(['ok' => false, 'error' => 'No hemos podido abrir el pago. Inténtalo de nuevo.'], 502);
         }
-        analitica_evento('checkout');
+        if (!$prueba) analitica_evento('checkout');
         json_response(['ok' => true, 'url' => $url]);
     }
     [$st, $s] = stripe_crea_checkout($token, $slug, $c['pareja']['email'], $c['atelier']);
@@ -325,7 +329,7 @@ function listo_muestra(array $ped): void {
     if ($enlace !== '') {
         $o .= '<p>Ahora elegid la contraseña de vuestro panel, desde donde veréis las respuestas, editaréis la web y descargaréis el ZIP:</p><p><a class="btn btn-sec" href="' . h($enlace) . '">Elegir contraseña</a></p>';
     }
-    $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel' . (($ped['factura'] ?? '') !== '' ? ', la factura (' . h($ped['factura']) . ')' : '') . ' y las condiciones.</p>';
+    $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel' . (($ped['factura'] ?? '') !== '' ? ', la factura (' . h($ped['factura']) . ')' : '') . ' y el enlace a las condiciones.</p>';
     // «Otra web» abre el constructor VACÍO: ?nueva=1 borra el borrador del navegador, que /listo no puede tocar (sin JS por la CSP)
     $o .= '<p class="nota"><a href="' . BASE_PATH . '/crear?nueva=1">Montar otra web de boda</a></p>';
     echo pagina_simple('¡Enhorabuena!', $o);

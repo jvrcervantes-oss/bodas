@@ -9,6 +9,8 @@ define('BASE_DOMAIN', 'bodaenlace.com');
 define('CREATOR_HOST', 'bodaenlace.com');
 define('CREATOR_BASE', '');
 define('CORREO_A_FICHERO', true);
+// /agents: las huellas de la prueba (tests/agents_test.php), nunca las del repo
+if (getenv('BODAS_TEST_HUELLAS')) define('AGENTS_HUELLAS_F', (string) getenv('BODAS_TEST_HUELLAS'));
 // Lemon: por defecto a un puerto muerto (nada sale a la red); tests/mesas_test.php lo apunta a tests/lemon_simulador.php
 define('LEMON_API', (string) (getenv('BODAS_TEST_LEMON') ?: 'http://127.0.0.1:9'));
 $_SERVER['SCRIPT_NAME'] = '/index.php';

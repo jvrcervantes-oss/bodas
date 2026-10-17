@@ -5,6 +5,8 @@
 // la «e», decisión del owner del 27-sep: el plano de mesas va incluido en los dos packs, también regalados (§2), y
 // §5 ter queda sin ningún extra a la venta, con las reglas generales para cuando se venda uno).
 // Versión 2026-10-16 (Legal, BOD-31; borrador del 2-oct publicado el 16-oct por delegación del owner): anexo II.7 (transferencia a Indonesia con cláusulas tipo, módulo 2).
+// Versión 2026-10-17 (owner + Legal): el correo de bienvenida ya no lleva estas condiciones enteras, solo el enlace y el
+// anexo I (que vive en desistimiento.php para no copiarlo): cabecera, §1 (qué lleva el correo) y el párrafo del idioma.
 // Versión 2026-09-30 (Legal): §2 lista «programa con varios momentos» e «historia» (opcional, texto libre) y §10 extiende la garantía
 // de las fotos a los textos, con la prohibición de datos de salud, de menores identificables y de terceros sin permiso.
 // Versión 2026-09-29 (Legal, consulta del 29-sep): en pruebas el servicio se presta solo por invitación con códigos de
@@ -27,7 +29,7 @@ $M = h(marca());
 $V = h($L['vendedor'] ?? '');
 ?>
 <h1>Condiciones del servicio</h1>
-<p>Versión 2026-10-16, del 16 de octubre de 2026. Se aplica la versión vigente el día de vuestra compra, que es la que os enviamos en el correo de bienvenida.</p>
+<p>Versión 2026-10-17, del 17 de octubre de 2026. Se aplica la versión vigente el día de vuestra compra; en el correo de bienvenida os indicamos cuál es.</p>
 
 <h2>1. Quiénes somos y quién os vende</h2>
 <p><?= $M ?> es un producto de AxisWorks. <?php if (titular_identificado($E)): ?>AxisWorks es el nombre comercial de <?= h($E['titular']) ?><?= $E['nif'] !== '' ? ', con NIF ' . h($E['nif']) : '' ?><?= $E['domicilio'] !== '' ? ' y domicilio en ' . h($E['domicilio']) : '' ?>.<?php else: ?>El servicio está en pruebas y todavía no se vende: los datos de quien lo presta (nombre, NIF y domicilio) se publicarán aquí antes de abrir la venta. Mientras tanto, el servicio solo se presta por invitación: quien presta el servicio entrega personalmente un código de regalo a cada pareja, y esa pareja sabe quién es. Con un código de regalo no compráis nada, no pagáis nada y no interviene <?= $V ?>; lo que estas condiciones dicen de la compra, el pago, el recibo o el desistimiento no se aplica a una web de regalo. Los códigos son personales y no se pueden ceder ni revender. Si os dan un código que no os entregó quien presta el servicio, no lo uséis y escribidnos a <?= email_enlace($E['email']) ?>: os diremos quién presta el servicio antes de que publiquéis nada.<?php endif; ?> En estas condiciones, «nosotros» es <?= titular_identificado($E) ? h($E['titular']) : 'quien presta el servicio con la marca ' . $M ?>. Para cualquier duda, incidencia o reclamación: <?= email_enlace($E['email']) ?>.</p>
@@ -60,9 +62,9 @@ $V = h($L['vendedor'] ?? '');
   <li>Revisáis la vista previa. Hasta pulsar el botón de pago podéis cambiar cualquier dato o corregir errores.</li>
   <li>Marcáis dos casillas: en la primera aceptáis estas condiciones y el encargo de tratamiento (anexo II), sabiendo que quien os vende es <?= $V ?>; en la segunda pedís que la web se cree y se publique ya (apartado 8).</li>
   <li>Pagáis en la página de <?= $V ?>, donde dais vuestro nombre, vuestro email y vuestra dirección de facturación. Al confirmarse el pago, la web se publica al momento.</li>
-  <li><?= $V ?> os envía por email el recibo del pago. Nosotros os enviamos otro email con la dirección de la web, un enlace de un solo uso para elegir la contraseña del panel, el texto exacto de las dos casillas que marcasteis, con su fecha, y el texto completo de estas condiciones.</li>
+  <li><?= $V ?> os envía por email el recibo del pago. Nosotros os enviamos otro email con la dirección de la web, un enlace de un solo uso para elegir la contraseña del panel, el texto exacto de las dos casillas que marcasteis, con su fecha, el enlace a estas condiciones y el modelo de formulario de desistimiento (anexo I).</li>
 </ul>
-<p>El contrato se celebra en castellano. Guardamos cada versión de estas condiciones con su fecha, y la vuestra os llega entera en el correo de bienvenida.</p>
+<p>El contrato se celebra en castellano. Guardamos cada versión de estas condiciones con su fecha.</p>
 
 <h2>5. Precio y pago</h2>
 <p>Dos packs, IVA incluido: Esencial, <?= h(euros(precio_esencial_cent())) ?>; y Atelier, con un diseño ilustrado de la colección y sus animaciones, <?= h(euros(precio_atelier_cent())) ?>. Pago único. No hay cuotas ni renovaciones.</p>
@@ -148,17 +150,7 @@ $V = h($L['vendedor'] ?? '');
 <p>No estamos adheridos a ninguna entidad de resolución alternativa de conflictos de consumo. Si no llegamos a un acuerdo, podéis acudir a los servicios de consumo de vuestra comunidad autónoma o a los tribunales.</p>
 <p>Estas condiciones se rigen por la ley española. Si residís en otro país de la Unión Europea, conserváis la protección que os dan las normas de consumo de ese país que no se pueden excluir por contrato. Podéis reclamar ante los tribunales de vuestro domicilio.</p>
 
-<h2>Anexo I. Modelo de formulario de desistimiento</h2>
-<p>Sirve para desistir del alojamiento o de un extra (apartado 5 ter) en los 14 días siguientes a su compra, o en cualquier otro caso en que la ley os reconozca el derecho de desistimiento (apartado 8).</p>
-<p>A la atención de <?= h($E['titular']) ?><?= $E['titular'] !== marca() ? ' (' . $M . ')' : '' ?>, <?= $E['domicilio'] !== '' ? h($E['domicilio']) . ', ' : '' ?><?= email_enlace($E['email']) ?>, o de <?= $V ?>:</p>
-<ul>
-  <li>Por la presente os comunico que desisto del contrato (del alojamiento, o del extra ____________) de la web de boda publicada en: ____________</li>
-  <li>Fecha de compra y número de pedido de <?= $V ?>: ____________</li>
-  <li>Nombre de quien compró: ____________</li>
-  <li>Dirección de quien compró: ____________</li>
-  <li>Firma (solo si se envía en papel): ____________</li>
-  <li>Fecha: ____________</li>
-</ul>
+<?php include __DIR__ . '/desistimiento.php'; ?>
 
 <h2>Anexo II. Encargo de tratamiento de datos (artículo 28 del RGPD)</h2>
 

@@ -22,6 +22,7 @@ const ESTUDIO_MAXIMA = 12 * 3600;
 
 function estudio_dir(string ...$p): string { return dir_datos('estudio', ...$p); }
 function estudio_url(string $sub = ''): string { return BASE_PATH . '/estudio' . ($sub !== '' ? '/' . $sub : ''); }
+function estudio_cookie(): string { return SCHEME === 'https' ? '__Host-bwe' : 'bwe'; }   // __Host- exige Secure y Path=/
 
 function estudio_sesion(): void {
     if (session_status() === PHP_SESSION_ACTIVE) return;
@@ -31,7 +32,7 @@ function estudio_sesion(): void {
     ini_set('session.use_only_cookies', '1');
     ini_set('session.gc_maxlifetime', (string) ESTUDIO_MAXIMA);
     $https = SCHEME === 'https';
-    session_name($https ? '__Host-bwe' : 'bwe');   // __Host- exige Secure y Path=/
+    session_name(estudio_cookie());
     session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'secure' => $https, 'httponly' => true, 'samesite' => 'Strict']);
     session_start();
     if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(16));
@@ -102,6 +103,7 @@ function rutas_estudio(string $sub, string $metodo): void {
         case 'codigos': echo estudio_pagina('Códigos de regalo', estudio_codigos($metodo)); return;
         case 'guias': echo estudio_pagina('Guías del Padrino', estudio_guias($metodo)); return;
         case 'padrino': echo estudio_pagina('Padrino: pausa', estudio_padrino($metodo)); return;
+        case 'prueba-pago': echo estudio_pagina('Compra de prueba', estudio_prueba_pago($metodo)); return;
         case 'factura':
             $html = render_factura(clean_str($_GET['n'] ?? '', 40));
             if ($html === null) { http_response_code(404); echo estudio_pagina('Factura', '<p>No existe.</p>'); return; }
@@ -261,13 +263,13 @@ function estudio_pedidos(): string {
     if (!$peds) return '<p>Todavía no hay pedidos.</p>';
     // Solo lo que se quedó cobrado: fuera reembolsos, cobros que no cuadran y duplicados (se devuelven)
     // Pedidos de prueba de LS fuera; reembolsos parciales, restados
-    $total = array_sum(array_map(fn($p) => in_array($p['estado'] ?? '', ['reembolsado', 'no-conforme', 'duplicado'], true) || !empty($p['ls']['test'])
+    $total = array_sum(array_map(fn($p) => in_array($p['estado'] ?? '', ['reembolsado', 'no-conforme', 'duplicado'], true) || !empty($p['ls']['test']) || !empty($p['prueba'])
         ? 0 : (int) ($p['importe']['total'] ?? 0) - (int) ($p['reembolso']['importe_cent'] ?? 0), $peds));
     $o = '<p class="est-resumen"><b>' . count($peds) . '</b> pedidos · <b>' . h(euros($total)) . '</b> cobrados (IVA incluido, sin pruebas ni devoluciones)</p>'
         . '<div class="est-tabla-wrap"><table class="est-tabla"><thead><tr><th>Fecha</th><th>Web</th><th>Estado</th><th>Importe</th><th>Factura / código</th></tr></thead><tbody>';
     foreach ($peds as $p) {
         $esRegalo = str_starts_with((string) ($p['session_id'] ?? ''), 'cortesia_');
-        $doc = ($p['pasarela'] ?? '') === 'lemon' ? 'Lemon Squeezy #' . h((string) ($p['ls']['order_number'] ?? '')) . (!empty($p['ls']['test']) ? ' (test)' : '') : (($p['factura'] ?? '') !== '' ? '<a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($p['factura'])) . '" target="_blank">' . h($p['factura']) . '</a>' : ($esRegalo ? 'Regalo ' . h((string) ($p['cortesia'] ?? '')) : '—'));
+        $doc = ($p['pasarela'] ?? '') === 'lemon' ? 'Lemon Squeezy #' . h((string) ($p['ls']['order_number'] ?? '')) . (!empty($p['ls']['test']) ? ' (test)' : (!empty($p['prueba']) ? ' (prueba del estudio)' : '')) : (($p['factura'] ?? '') !== '' ? '<a href="' . h(estudio_url('factura') . '?n=' . rawurlencode($p['factura'])) . '" target="_blank">' . h($p['factura']) . '</a>' : ($esRegalo ? 'Regalo ' . h((string) ($p['cortesia'] ?? '')) : '—'));
         $esExtra = ($p['tipo'] ?? '') === 'extra';
         $estadoK = (in_array($p['tipo'] ?? '', ['mejora', 'extra'], true) && ($p['estado'] ?? '') === 'creada') ? (string) $p['tipo'] : ($p['estado'] ?? '');
         $estado = ['creada' => 'Publicada', 'cobrada' => 'Cobrada, sin publicar', 'sin-datos' => '⚠ Cobrada sin datos', 'cortesia' => 'Regalo en curso',
@@ -349,6 +351,86 @@ function estudio_padrino(string $metodo): string {
         . '<input type="hidden" name="accion" value="' . ($pausado ? 'reanudar' : 'pausar') . '">'
         . '<button class="b-btn b-dark" type="submit" data-accion="' . ($pausado ? 'padrino-reanudar' : 'padrino-pausar') . '">' . ($pausado ? 'Reanudar al Padrino' : 'Pausar al Padrino') . '</button></form>';
     return $o;
+}
+
+// ------------------------------------------------------------ compra de prueba de 1 € (BOD-62, owner 17-oct-2026)
+// El owner prueba en real el aviso de pago de LS, el alta y la bienvenida sin pagar el precio entero. Solo con la sesión
+// del estudio, atada a esa sesión y a un nombre de web, de un solo uso, hasta 3 veces y con fecha de caducidad
+// (Seguridad #422). Temporal: se retira en un commit aparte en cuanto pase la prueba; la fecha la corta igual.
+const PRUEBA_PAGO_CENT = 100;
+const PRUEBA_PAGO_HASTA = '2026-10-24';
+const PRUEBA_PAGO_MAX = 3;
+const PRUEBA_PAGO_VIDA_S = 1800;   // como el checkout de LS (LEMON_CADUCIDAD_S)
+function prueba_pago_fichero(): string { return estudio_dir('prueba_pago.json'); }
+function prueba_pago_vigente(): bool { return date('Y-m-d') <= PRUEBA_PAGO_HASTA; }
+function prueba_pago_sid(): string { return hash('sha256', (string) session_id()); }
+
+/** Arma la próxima compra de este nombre de web a 1 €. '' si quedó armada; si no, el motivo. */
+function prueba_pago_arma(string $slug): string {
+    if (!prueba_pago_vigente()) return 'La compra de prueba ya no está disponible.';
+    if (!slug_valido($slug)) return 'El nombre de la web no es válido.';
+    return con_cerrojo(function () use ($slug) {
+        $fUsos = estudio_dir('prueba_pago_usos.json');
+        $usos = (int) ((lee_json($fUsos) ?? [])['usos'] ?? 0);
+        if ($usos >= PRUEBA_PAGO_MAX) return 'Ya se han armado las ' . PRUEBA_PAGO_MAX . ' compras de prueba.';
+        escribe_json($fUsos, ['usos' => $usos + 1]);
+        escribe_json(prueba_pago_fichero(), ['slug' => $slug, 'sid' => prueba_pago_sid(), 'hasta' => time() + PRUEBA_PAGO_VIDA_S]);
+        return '';
+    });
+}
+
+/**
+ * ¿Este pago es la compra de prueba armada? Solo se mira la sesión del estudio si hay armado, la petición viene del
+ * creador (Origin: una web de boda en <slug>.bodaenlace.com es mismo sitio y SameSite no la frena) y la cookie es de una
+ * sesión que ya existe en el servidor: a un comprador nunca se le abre ni se le da la cookie del estudio (revisor #422).
+ * Con sesión y armado, o casa todo o 409: nunca cae al precio normal sin avisar, tampoco con la sesión del owner caducada.
+ * La llave es el rename bajo el cerrojo: dos pagos a la vez no pueden gastar el mismo armado.
+ */
+function prueba_pago_reclama(string $slug): bool {
+    $id = (string) ($_COOKIE[estudio_cookie()] ?? '');
+    if (!is_file(prueba_pago_fichero()) || ($_SERVER['HTTP_ORIGIN'] ?? '') !== SCHEME . '://' . CREATOR_HOST
+        || !preg_match('/^[A-Za-z0-9,-]{22,256}$/', $id) || !is_file(estudio_dir('sesiones', 'sess_' . $id))) return false;
+    if (!estudio_dentro()) {
+        // La del owner, caducada con el armado vigente: se le avisa en vez de cobrarle el precio entero
+        if (hash_equals((string) ((lee_json(prueba_pago_fichero()) ?? [])['sid'] ?? ''), hash('sha256', $id))) {
+            json_response(['ok' => false, 'error' => 'Tu sesión del estudio ha caducado: vuelve a entrar en el panel y arma otra vez la compra de prueba.'], 409);
+        }
+        return false;
+    }
+    $r = con_cerrojo(function () use ($slug) {
+        $a = lee_json(prueba_pago_fichero());
+        if (!$a) return 'La compra de prueba ya no está armada: ármala otra vez desde el panel del estudio.';
+        if (!prueba_pago_vigente() || (int) ($a['hasta'] ?? 0) < time()) {
+            @unlink(prueba_pago_fichero());
+            return 'La compra de prueba ha caducado: ármala otra vez desde el panel del estudio.';
+        }
+        if (!hash_equals((string) ($a['sid'] ?? ''), prueba_pago_sid())) return 'La compra de prueba se armó en otra sesión del estudio.';
+        if (($a['slug'] ?? '') !== $slug) return 'La compra de prueba está armada para la web «' . ($a['slug'] ?? '') . '», no para esta.';
+        return @rename(prueba_pago_fichero(), estudio_dir('prueba_pago_gastada_' . date('Ymd_His') . '.json')) ? 'ok'
+            : 'No se ha podido usar la compra de prueba. Vuelve a intentarlo.';
+    });
+    if ($r !== 'ok') json_response(['ok' => false, 'error' => $r], 409);
+    estudio_log('prueba-pago-gastada', ['slug' => $slug]);
+    return true;
+}
+
+function estudio_prueba_pago(string $metodo): string {
+    $msg = '';
+    if ($metodo === 'POST' && ($_POST['accion'] ?? '') === 'armar') {
+        $slug = strtolower(clean_str($_POST['slug'] ?? '', 60));
+        $err = prueba_pago_arma($slug);
+        estudio_log('prueba-pago-armada', ['slug' => $slug, 'ok' => $err === '']);
+        $msg = $err !== '' ? $err : 'Armada para «' . $slug . '» durante 30 minutos. Abre el creador en esta misma ventana, monta la web con ese nombre y tu correo, y paga: Lemon Squeezy cobrará 1 €.';
+    }
+    $usos = (int) ((lee_json(estudio_dir('prueba_pago_usos.json')) ?? [])['usos'] ?? 0);
+    $o = $msg !== '' ? '<p class="est-ok">' . h($msg) . '</p>' : '';
+    $o .= '<p>Abre UN pago real de ' . h(euros(PRUEBA_PAGO_CENT)) . ' en vez del precio, para probar el aviso de pago, la publicación y el correo de bienvenida. '
+        . 'Solo vale en esta sesión, para el nombre de web que pongas, durante 30 minutos y una vez. Usadas: ' . $usos . ' de ' . PRUEBA_PAGO_MAX
+        . '. Disponible hasta el ' . h(fecha_corta(PRUEBA_PAGO_HASTA)) . '. Después, reembolsa el pedido en Lemon Squeezy: la web de prueba se archiva sola.</p>';
+    if (!prueba_pago_vigente() || $usos >= PRUEBA_PAGO_MAX) return $o;
+    return $o . '<form method="post" class="est-crear" action="' . h(estudio_url('prueba-pago')) . '">' . estudio_csrf_campo()
+        . '<input type="hidden" name="accion" value="armar"><label>Nombre de la web <input name="slug" required maxlength="40" pattern="[a-z0-9-]{3,40}"></label>'
+        . '<button class="b-btn b-dark" type="submit" data-accion="prueba-pago-armar">Armar la compra de prueba</button></form>';
 }
 
 function estudio_pagina(string $titulo, string $cuerpo, bool $menu = true): string {

@@ -15,7 +15,8 @@ return [
     // 2026-09-29: §1 (servicio por invitación con códigos de regalo en pruebas), licencia del ZIP (§11) y anexo II también al canjear (Legal).
     // 2026-10-16: anexo II.7 (transferencia a Indonesia, cláusulas tipo) (BOD-31, Legal; borrador del 2-oct publicado el 16-oct).
     // 2026-09-30: §2 (programa con varios momentos, historia opcional) y §10 (garantías de textos y fotos, sin datos de salud ni de menores identificables ni de terceros sin permiso) (Legal).
-    'version' => '2026-10-16',
+    // 2026-10-17: cabecera, §1 y párrafo del idioma: el correo de bienvenida lleva el enlace y el anexo I, no las condiciones enteras (owner + Legal).
+    'version' => '2026-10-17',
 
     'vendedor' => 'Lemon Squeezy',
     'vendedor_entidad' => 'Sold through Link, LLC (antes Lemon Squeezy LLC), Estados Unidos',

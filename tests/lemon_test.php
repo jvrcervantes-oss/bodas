@@ -196,7 +196,7 @@ ok(stripos($tr, 'os la regala') !== false && strpos($tr, 'Venta y cobro') === fa
 $acLs = ['fecha' => date('c'), 'version' => textos_legales()['version'], 'condiciones' => textos_legales()['check_condiciones'], 'desistimiento' => textos_legales()['check_desistimiento']];
 $tl2 = texto_bienvenida(['slug' => 'x', 'email' => 'a@b.c', 'pasarela' => 'lemon', 'factura' => '', 'aceptacion' => $acLs, 'ls' => ['order_number' => 77], 'importe' => ['total' => 12500]], $cfg, 'https://enlace');
 ok(strpos($tl2, '«' . $acLs['condiciones'] . '»') !== false && strpos($tl2, '«' . $acLs['desistimiento'] . '»') !== false, 'bienvenida LS: las dos casillas, literales');
-ok(strpos($tl2, 'CONDICIONES DEL SERVICIO') !== false && strpos($tl2, '8. DESISTIMIENTO Y REEMBOLSOS') !== false && strpos($tl2, 'ANEXO II') !== false, 'bienvenida LS: condiciones íntegras en el cuerpo');
+ok(strpos($tl2, 'ANEXO II') === false && strpos($tl2, url_creador('condiciones')) !== false, 'bienvenida LS: condiciones por enlace, no en el cuerpo (owner, 17-oct)');
 ok(strpos($tl2, 'Está en pruebas: los datos de quien lo presta') !== false && strpos($tl2, '00000000T') === false && strpos($tl2, 'Titular De Prueba') === false, 'bienvenida LS en pruebas: sin titular ni NIF, dice que está en pruebas');
 ok(strpos($tl2, 'pedido n.º 77') !== false && strpos($tl2, 'versión ' . $acLs['version']) !== false, 'bienvenida LS: número de pedido y versión de las condiciones');
 ok(!preg_match('~</?(p|h1|h2|ul|li|a|strong|em)\b~', $tl2), 'bienvenida: sin etiquetas HTML en el texto plano');
