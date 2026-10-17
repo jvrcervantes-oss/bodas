@@ -96,10 +96,16 @@ foreach ($correos as $q => [$texto, $html, $d]) {
         if ($c === '') continue;
         ok(strpos($html, '«' . h($c) . '»') !== false && strpos($texto, '«' . $c . '»') !== false, "$q: casilla literal en texto y HTML");
     }
-    // 6. Soporte duradero: las condiciones ÍNTEGRAS en el cuerpo HTML, sin una letra de menos que en el texto
     $leg = correo_legal_html($condDoc);
-    ok(strpos($html, $leg) !== false, "$q: el HTML lleva el bloque legal completo");
     $planoLegal = legal_a_texto($condDoc);
+    // 6a. La bienvenida lleva las condiciones por enlace, no en el cuerpo (owner, 17-oct-2026)
+    if (strpos($q, 'bienvenida') === 0) {
+        ok(strpos($html, $leg) === false && strpos($texto, $planoLegal) === false && stripos($visible, 'Anexo II') === false, "$q: sin las condiciones en el cuerpo");
+        ok(strpos($texto, url_creador('condiciones')) !== false && strpos($visible, url_creador('condiciones')) !== false, "$q: el enlace a las condiciones en texto y HTML");
+        continue;
+    }
+    // 6. Soporte duradero de las compras del panel: las condiciones ÍNTEGRAS en el cuerpo HTML, sin una letra de menos que en el texto
+    ok(strpos($html, $leg) !== false, "$q: el HTML lleva el bloque legal completo");
     ok(legal_a_texto($leg) === $planoLegal && strpos($texto, $planoLegal) !== false, "$q: condiciones del HTML = condiciones del texto, letra a letra");
     ok(strpos($visible, 'ANEXO II') !== false || stripos($visible, 'Anexo II') !== false, "$q: llega hasta el anexo II");
 }

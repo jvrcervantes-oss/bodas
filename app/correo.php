@@ -1,8 +1,8 @@
 <?php
-// Emails del producto, por SMTP autenticado desde hola@bodaenlace.com (ver remitente()). El de bienvenida es además el "soporte
-// duradero" que exige la ley: desde el 27-sep (Legal, BOD-6) lleva las condiciones ÍNTEGRAS en el CUERPO,
-// sin adjunto (los adjuntos lo mandaban a spam), y repite la petición de ejecución inmediata con la
-// pérdida del desistimiento (art. 98.7 TRLGDCU). Si se quita algo de eso, cae la excepción.
+// Emails del producto, por SMTP autenticado desde hola@bodaenlace.com (ver remitente()). El de bienvenida es además la
+// confirmación del contrato (art. 98.7 TRLGDCU): lleva el resumen de lo contratado y el texto literal de las casillas
+// (la petición de ejecución inmediata con la pérdida del desistimiento). Las condiciones van por ENLACE desde el
+// 17-oct-2026 (decisión del owner, aceptando el riesgo: ver datos_bienvenida); las compras del panel las siguen llevando.
 
 declare(strict_types=1);
 
@@ -217,13 +217,13 @@ function legal_a_texto(string $html): string {
 /**
  * Cuerpo del correo de bienvenida (separado del envío para poder probarlo).
  *
- * SOPORTE DURADERO (Legal, 27-sep-2026, BOD-6): este cuerpo ES la confirmación del art. 98.7 TRLGDCU.
- * Sin adjuntos: cualquier adjunto mandaba el correo a spam (6 variantes probadas). Un ENLACE a las
- * condiciones no es soporte duradero (TJUE C-49/11, Content Services), así que todo va DENTRO del
- * cuerpo: 1) el texto literal de las casillas con fecha y versión (sin él, la excepción del 103.m no
- * vale y el desistimiento sigue vivo); 2) la información del art. 97.1 (quién presta, quién vende,
- * qué, cuánto, hasta cuándo, garantía, reclamaciones); 3) las condiciones íntegras en texto plano.
- * El enlace a /condiciones es solo una comodidad. Si se quita algo de esto, cae la excepción.
+ * CONFIRMACIÓN DEL CONTRATO (art. 98.7 TRLGDCU): dentro del cuerpo van 1) el texto literal de las casillas con fecha y
+ * versión (sin él, la excepción del 103.m no vale y el desistimiento sigue vivo) y 2) la información del art. 97.1
+ * (quién presta, quién vende, qué, cuánto, hasta cuándo, garantía, reclamaciones). Sin adjuntos: mandaban el correo a
+ * spam (6 variantes probadas, 27-sep). Las condiciones íntegras iban también en el cuerpo (Legal, BOD-6) y desde el
+ * 17-oct-2026 van solo por enlace: lo decidió el owner sabiendo que un enlace no es soporte duradero (TJUE C-49/11,
+ * Content Services), así que una pareja puede discutir la pérdida del desistimiento. Volver atrás = recuperar el
+ * bloque 'legal' de bienvenida_html y legal_a_texto en bienvenida_texto (Backups/20261017_1100_*).
  */
 function texto_bienvenida(array $ped, array $cfg, string $enlace): string {
     return bienvenida_texto(datos_bienvenida($ped, $cfg, $enlace));
@@ -261,8 +261,7 @@ function datos_bienvenida(array $ped, array $cfg, string $enlace): array {
         'marcasteis' => ($tipo !== 'regalo' ? 'Antes de pagar' : 'Al publicar') . ($fecha !== '' ? ' (' . date('d/m/Y H:i', strtotime($fecha)) . ')' : '')
             . ' marcasteis lo siguiente' . (($acept['version'] ?? '') !== '' ? ' (condiciones, versión ' . $acept['version'] . ')' : '') . ':',
         'casillas' => $casillas,
-        'condiciones_url' => url_creador('condiciones'),
-        'condiciones' => documento_legal('condiciones', 'Condiciones del servicio')];
+        'condiciones_url' => url_creador('condiciones')];
 }
 
 function bienvenida_texto(array $d): string {
@@ -275,10 +274,8 @@ function bienvenida_texto(array $d): string {
         . correo_resumen_texto($d['resumen']) . "\n"
         . $d['marcasteis'] . "\n"
         . implode('', array_map(fn($c) => '«' . $c . "»\n", $d['casillas'])) . "\n"
-        . 'Las condiciones completas van al final de este correo. También están en ' . $d['condiciones_url'] . " (esa página enseña siempre la versión vigente; la vuestra es la de este correo).\n\n"
-        . "Cualquier duda: {$d['email']}\n\n" . marca_comercial_correo() . "\n\n"
-        . str_repeat('=', 40) . "\n\n"
-        . legal_a_texto($d['condiciones']) . "\n";
+        . 'Las condiciones del servicio están en ' . $d['condiciones_url'] . "\n\n"
+        . "Cualquier duda: {$d['email']}\n\n" . marca_comercial_correo() . "\n";
 }
 
 /** La misma bienvenida con diseño (plantilla correo_html). Mismos datos que bienvenida_texto: nada se calcula dos veces. */
@@ -294,15 +291,14 @@ function bienvenida_html(array $d): string {
         ['tipo' => 'caja', 'titulo' => 'Resumen de lo contratado', 'filas' => $d['resumen']],
         ['tipo' => 'aviso', 'fuerte' => 'Guardad este correo:', 'texto' => 'es la confirmación de vuestro contrato. ' . $d['marcasteis']],
         ['tipo' => 'citas', 'items' => $d['casillas']],
-        ['tipo' => 'texto', 'texto' => 'Las condiciones completas van al final de este correo, en letra pequeña. También están en ' . $d['condiciones_url'] . ' (esa página enseña siempre la versión vigente; la vuestra es la de este correo).'],
-        ['tipo' => 'legal', 'html' => correo_legal_html($d['condiciones'])],
+        ['tipo' => 'texto', 'texto' => 'Las condiciones del servicio están en ' . $d['condiciones_url']],
     ], 'Vuestra web ya está en línea: ' . preg_replace('~^https?://~', '', rtrim($d['url'], '/')));
 }
 
 function correo_bienvenida(array $ped, array $cfg, string $enlace): void {
     $url = url_boda($ped['slug']);
     $d = datos_bienvenida($ped, $cfg, $enlace);
-    // Sin adjunto de las condiciones: van enteras en el cuerpo (Legal, 27-sep, BOD-6). Solo una venta
+    // Sin adjunto de las condiciones (mandaba a spam; van por enlace, ver datos_bienvenida). Solo una venta
     // por Stripe, hoy apagada, lleva su factura BODA- adjunta.
     $adjuntos = [];
     if (($ped['factura'] ?? '') !== '') $adjuntos[$ped['factura'] . '.html'] = (string) render_factura($ped['factura']);
