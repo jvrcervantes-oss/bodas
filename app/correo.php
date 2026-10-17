@@ -245,8 +245,8 @@ function datos_bienvenida(array $ped, array $cfg, string $enlace): array {
     $pack = ($ped['atelier'] ?? '') !== '' ? 'Pack Atelier' : 'Pack Esencial';
     $total = (int) ($ped['importe']['total'] ?? 0);
     $num = (int) ($ls['order_number'] ?? 0);
-    // Las condiciones que van en el cuerpo son las vigentes al enviar: si la versión cambió entre la
-    // aceptación y el pago, se deja rastro para revisarlo a mano (revisor, 27-sep)
+    // El enlace a las condiciones enseña siempre la versión vigente al enviar: si cambió entre la
+    // aceptación y el pago, se deja rastro para revisarlo a mano (revisor, 27-sep; enlace desde el 17-oct)
     if (($acept['version'] ?? '') !== '' && $acept['version'] !== ($L['version'] ?? '')) {
         registra('ALERTA bienvenida con condiciones de otra versión', ['slug' => (string) $ped['slug'], 'aceptada' => $acept['version'], 'enviada' => $L['version'] ?? '']);
     }

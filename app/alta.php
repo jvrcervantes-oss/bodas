@@ -165,8 +165,7 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
     $cfg = lee_json($pend . '/config.json');
     $cfg['_estado'] = 'activa';
     // atelier: la boda pagó un diseño Atelier y puede usar cualquiera de la colección desde el panel
-    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'pasarela' => (string) ($ped['pasarela'] ?? ''), 'test' => !empty($ped['ls']['test'])]
-        + (!empty($ped['prueba']) ? ['prueba' => true] : []) + [
+    escribe_json($d . '/pedido.json', ['session_id' => $sid, 'pasarela' => (string) ($ped['pasarela'] ?? ''), 'test' => !empty($ped['ls']['test']),
         'factura' => $ped['factura'], 'email' => $ped['email'], 'creado' => date('c'), 'atelier' => $ped['atelier'] !== '',
         // Fecha con la que se contrató: tope para mover la fecha desde el panel (faltan(), MAX_MOVER_FECHA_DIAS)
         'fecha_pago' => (string) ($cfg['fecha'] ?? '')]);
@@ -180,7 +179,7 @@ function alta_publica(array $ped, string $pend, ?array $meta, string $fPedido, s
     @unlink(dir_datos('reservas', $ped['slug'] . '.json'));
     borra_arbol($pend);
     // Aviso al owner de cada venta (correo + Telegram). Tras 'creada': un reintento no lo repite
-    if (tipo_pago($ped) !== 'regalo') avisa_estudio('Venta nueva' . (!empty($ped['ls']['test']) || !empty($ped['prueba']) ? ' (prueba)' : ''), texto_venta($ped), aviso_ref($sid));
+    if (tipo_pago($ped) !== 'regalo') avisa_estudio('Venta nueva' . (!empty($ped['ls']['test']) ? ' (prueba)' : ''), texto_venta($ped), aviso_ref($sid));
     registra('boda creada', ['slug' => $slug, 'sid' => $sid, 'factura' => $ped['factura']]);
     return $ped;
 }

@@ -278,8 +278,6 @@ function lemon_alta(string $id, array $o, array $custom): array {
             avisa_estudio('Pago de web de boda sin datos del creador', "Pedido LS $id ($slug). Cobrado; la web no se ha podido crear. Contactar con {$ped['email']}.", 'Pedido LS ' . $id);
             return $ped;
         }
-        // Compra de prueba del estudio (BOD-62): la marca sale del meta.json del servidor, nunca del custom_data
-        if (!empty($meta['prueba'])) $ped['prueba'] = true;
         $motivos = lemon_motivos_no_conforme($o, $meta, $custom);
         if ($motivos) {
             $ped['estado'] = 'no-conforme';
@@ -291,7 +289,7 @@ function lemon_alta(string $id, array $o, array $custom): array {
         $contar = ($ped['estado'] ?? '') === 'cobrada' && empty($ped['_analitica']);
         $ped['_analitica'] = 1;
         escribe_json($fPedido, $ped);
-        if ($contar && empty($ped['prueba'])) analitica_evento('alta');   // una vez por pedido: la marca ya está escrita antes de contar
+        if ($contar) analitica_evento('alta');   // una vez por pedido: la marca ya está escrita antes de contar
         return alta_publica($ped, $pend, $meta, $fPedido, $sid, $token, $slug);
     });
 }
@@ -446,20 +444,9 @@ function lemon_reembolso(string $id, array $o, array $custom): string {
             avisa_estudio('Reembolso ' . ($total ? 'total' : 'parcial') . ' de un extra de boda', "Pedido LS $id ({$ped['slug']})." . $txt, 'Pedido LS ' . $id);
             return (string) $ped['estado'];
         }
-        // La web de una compra de prueba del estudio (BOD-62) se archiva sola con el reembolso total: no es de nadie
-        $fCfg = slug_valido((string) ($ped['slug'] ?? '')) ? dir_boda((string) $ped['slug']) . '/config.json' : '';
-        $cfgP = $fCfg !== '' ? lee_json($fCfg) : null;
-        $archivaPrueba = $aplicado && $total && !empty($ped['prueba']) && empty($ped['tipo']) && $cfgP
-            && ((lee_json(dir_boda((string) $ped['slug']) . '/pedido.json') ?? [])['session_id'] ?? '') === $sid;
-        if ($archivaPrueba) {
-            $cfgP['_estado'] = 'archivada';
-            escribe_json($fCfg, $cfgP);
-            registra('boda de prueba archivada por reembolso', ['slug' => $ped['slug'], 'sid' => $sid]);
-        }
-        $web = !$aplicado ? '' : ($archivaPrueba ? ' Era la compra de prueba del estudio: la web ' . url_boda((string) $ped['slug']) . ' ya está archivada.'
-            : (($ped['tipo'] ?? '') === 'mejora'
+        $web = !$aplicado ? '' : (($ped['tipo'] ?? '') === 'mejora'
             ? ' Era la mejora a Pack Atelier de ' . url_boda((string) $ped['slug']) . ': la boda conserva el Atelier; decide si quitarlo.'
-            : ' La web ' . url_boda((string) $ped['slug']) . ' sigue publicada: decide si retirarla.'));
+            : ' La web ' . url_boda((string) $ped['slug']) . ' sigue publicada: decide si retirarla.');
         avisa_estudio('Reembolso ' . ($total ? 'total' : 'parcial') . ' de una web de boda', "Pedido LS $id ({$ped['slug']})." . $web, 'Pedido LS ' . $id);
         return (string) $ped['estado'];
     });
