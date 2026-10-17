@@ -102,6 +102,10 @@ foreach ($correos as $q => [$texto, $html, $d]) {
     if (strpos($q, 'bienvenida') === 0) {
         ok(strpos($html, $leg) === false && strpos($texto, $planoLegal) === false && stripos($visible, 'Anexo II') === false, "$q: sin las condiciones en el cuerpo");
         ok(strpos($texto, url_creador('condiciones')) !== false && strpos($visible, url_creador('condiciones')) !== false, "$q: el enlace a las condiciones en texto y HTML");
+        // El anexo I sí va dentro de una bienvenida pagada (97.1, Legal 17-oct); una regalada no tiene desistimiento
+        $an = documento_legal('desistimiento', 'Modelo de formulario de desistimiento');
+        $conAnexo = $q === 'bienvenida';
+        ok((strpos($html, correo_legal_html($an)) !== false) === $conAnexo && (strpos($texto, legal_a_texto($an)) !== false) === $conAnexo, "$q: modelo de desistimiento " . ($conAnexo ? 'dentro' : 'fuera'));
         continue;
     }
     // 6. Soporte duradero de las compras del panel: las condiciones ÍNTEGRAS en el cuerpo HTML, sin una letra de menos que en el texto

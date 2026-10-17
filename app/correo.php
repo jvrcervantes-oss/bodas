@@ -1,8 +1,9 @@
 <?php
 // Emails del producto, por SMTP autenticado desde hola@bodaenlace.com (ver remitente()). El de bienvenida es además la
 // confirmación del contrato (art. 98.7 TRLGDCU): lleva el resumen de lo contratado y el texto literal de las casillas
-// (la petición de ejecución inmediata con la pérdida del desistimiento). Las condiciones van por ENLACE desde el
-// 17-oct-2026 (decisión del owner, aceptando el riesgo: ver datos_bienvenida); las compras del panel las siguen llevando.
+// (la petición de ejecución inmediata con la pérdida del desistimiento) y el modelo de formulario de desistimiento.
+// Las condiciones van por ENLACE desde el 17-oct-2026 (decisión del owner: ver datos_bienvenida); las compras del panel
+// las siguen llevando enteras.
 
 declare(strict_types=1);
 
@@ -219,7 +220,8 @@ function legal_a_texto(string $html): string {
  *
  * CONFIRMACIÓN DEL CONTRATO (art. 98.7 TRLGDCU): dentro del cuerpo van 1) el texto literal de las casillas con fecha y
  * versión (sin él, la excepción del 103.m no vale y el desistimiento sigue vivo) y 2) la información del art. 97.1
- * (quién presta, quién vende, qué, cuánto, hasta cuándo, garantía, reclamaciones). Sin adjuntos: mandaban el correo a
+ * (quién presta, quién vende, qué, cuánto, hasta cuándo, garantía legal y comercial, ZIP, reclamaciones y el modelo de
+ * formulario de desistimiento, legal/desistimiento.php; Legal, 17-oct). Sin adjuntos: mandaban el correo a
  * spam (6 variantes probadas, 27-sep). Las condiciones íntegras iban también en el cuerpo (Legal, BOD-6) y desde el
  * 17-oct-2026 van solo por enlace: lo decidió el owner sabiendo que un enlace no es soporte duradero (TJUE C-49/11,
  * Content Services), así que una pareja puede discutir la pérdida del desistimiento. Volver atrás = recuperar el
@@ -252,16 +254,23 @@ function datos_bienvenida(array $ped, array $cfg, string $enlace): array {
     $resumen[] = ['factura' => ['Pago', euros($total) . ", IVA incluido. Factura: {$ped['factura']} (adjunta)."],
         'lemon' => ['Venta y cobro', "$vend, que es quien os la vende (vendedor final)" . ($num > 0 ? ", pedido n.º $num" : '') . ($total > 0 ? ', ' . euros($total) . ', IVA incluido' : '') . ". El recibo y la factura os los envía $vend en otro correo."],
         'regalo' => ['Pago', 'ninguno. Esta web os la regala ' . marca() . '.']][$tipo];
-    if ($tipo !== 'regalo') $resumen[] = ['Desistimiento', 'sobre la creación y publicación de la web lo perdisteis al publicarse, porque así lo pedisteis antes de pagar (casilla de abajo). Del alojamiento podéis desistir hasta 14 días después de la compra pagando la parte ya prestada (apartado 8 de las condiciones). Después, no hay reembolsos por cambio de opinión.'];
-    $resumen[] = ['Garantía', 'la web tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9).'];
+    $cu = url_creador('condiciones');
+    // Las condiciones van por enlace (owner, 17-oct): cada fila lleva el dato entero y, si cita un apartado, dónde está
+    // (Legal, 17-oct: no se remite a un texto que no se entregó, art. 80)
+    if ($tipo !== 'regalo') $resumen[] = ['Desistimiento', 'sobre la creación y publicación de la web lo perdisteis al publicarse, porque así lo pedisteis antes de pagar (casilla de abajo). Del alojamiento podéis desistir hasta 14 días después de la compra pagando la parte ya prestada, escribiéndonos a ' . $E['email'] . '; al final de este correo va el modelo de formulario, aunque no es obligatorio (apartado 8 de las condiciones, en ' . $cu . '). Después, no hay reembolsos por cambio de opinión.'];
+    $resumen[] = ['Garantía', 'la web tiene que funcionar como se describe durante todo el alojamiento; si algo falla, lo arreglamos sin coste (apartado 9 de las condiciones). Esto se suma a la garantía legal de conformidad que os da la ley.'];
+    $resumen[] = ['ZIP', 'HTML estático de vuestra web y las fotos de la galería; se abre en cualquier navegador actual. Fuera de nuestro alojamiento no funcionan el formulario de asistencia, las canciones ni el panel.'];
     $resumen[] = ['Dudas y reclamaciones', (string) $E['email']];
+    $ver = (string) ($acept['version'] ?? '');
     $casillas = [(string) ($acept['condiciones'] ?? '')];
     if (($acept['desistimiento'] ?? '') !== '') $casillas[] = (string) $acept['desistimiento'];
     return ['url' => $url, 'enlace' => $enlace, 'borrado' => $borrado, 'email' => (string) $E['email'], 'resumen' => $resumen,
         'marcasteis' => ($tipo !== 'regalo' ? 'Antes de pagar' : 'Al publicar') . ($fecha !== '' ? ' (' . date('d/m/Y H:i', strtotime($fecha)) . ')' : '')
             . ' marcasteis lo siguiente' . (($acept['version'] ?? '') !== '' ? ' (condiciones, versión ' . $acept['version'] . ')' : '') . ':',
         'casillas' => $casillas,
-        'condiciones_url' => url_creador('condiciones')];
+        'condiciones' => 'Las condiciones del servicio están en ' . $cu . ($ver !== '' ? '; esa página enseña siempre la versión vigente, y la vuestra es la versión ' . $ver . ' indicada arriba.' : '.'),
+        // El anexo I (modelo de desistimiento) sí va dentro: es información del 97.1 (Legal, 17-oct; art. 71.3)
+        'desistimiento' => $tipo !== 'regalo' ? documento_legal('desistimiento', 'Modelo de formulario de desistimiento') : ''];
 }
 
 function bienvenida_texto(array $d): string {
@@ -274,12 +283,14 @@ function bienvenida_texto(array $d): string {
         . correo_resumen_texto($d['resumen']) . "\n"
         . $d['marcasteis'] . "\n"
         . implode('', array_map(fn($c) => '«' . $c . "»\n", $d['casillas'])) . "\n"
-        . 'Las condiciones del servicio están en ' . $d['condiciones_url'] . "\n\n"
-        . "Cualquier duda: {$d['email']}\n\n" . marca_comercial_correo() . "\n";
+        . $d['condiciones'] . "\n\n"
+        . "Cualquier duda: {$d['email']}\n\n" . marca_comercial_correo() . "\n"
+        . ($d['desistimiento'] !== '' ? "\n" . str_repeat('=', 40) . "\n\n" . legal_a_texto($d['desistimiento']) . "\n" : '');
 }
 
 /** La misma bienvenida con diseño (plantilla correo_html). Mismos datos que bienvenida_texto: nada se calcula dos veces. */
 function bienvenida_html(array $d): string {
+    $anexo = $d['desistimiento'] !== '' ? [['tipo' => 'legal', 'html' => correo_legal_html($d['desistimiento'])]] : [];
     return correo_html([
         ['tipo' => 'hero', 'kicker' => 'Web publicada', 'titulo' => ['¡Vuestra web ya está ', 'en línea', '!'],
             'texto' => 'Ya podéis compartirla con vuestros invitados.', 'url' => $d['url'],
@@ -291,7 +302,8 @@ function bienvenida_html(array $d): string {
         ['tipo' => 'caja', 'titulo' => 'Resumen de lo contratado', 'filas' => $d['resumen']],
         ['tipo' => 'aviso', 'fuerte' => 'Guardad este correo:', 'texto' => 'es la confirmación de vuestro contrato. ' . $d['marcasteis']],
         ['tipo' => 'citas', 'items' => $d['casillas']],
-        ['tipo' => 'texto', 'texto' => 'Las condiciones del servicio están en ' . $d['condiciones_url']],
+        ['tipo' => 'texto', 'texto' => $d['condiciones']],
+        ...$anexo,
     ], 'Vuestra web ya está en línea: ' . preg_replace('~^https?://~', '', rtrim($d['url'], '/')));
 }
 

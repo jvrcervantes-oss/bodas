@@ -329,7 +329,7 @@ function listo_muestra(array $ped): void {
     if ($enlace !== '') {
         $o .= '<p>Ahora elegid la contraseña de vuestro panel, desde donde veréis las respuestas, editaréis la web y descargaréis el ZIP:</p><p><a class="btn btn-sec" href="' . h($enlace) . '">Elegir contraseña</a></p>';
     }
-    $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel' . (($ped['factura'] ?? '') !== '' ? ', la factura (' . h($ped['factura']) . ')' : '') . ' y las condiciones.</p>';
+    $o .= '<p class="nota">Os hemos enviado un email a ' . h($ped['email']) . ' con el enlace del panel' . (($ped['factura'] ?? '') !== '' ? ', la factura (' . h($ped['factura']) . ')' : '') . ' y el enlace a las condiciones.</p>';
     // «Otra web» abre el constructor VACÍO: ?nueva=1 borra el borrador del navegador, que /listo no puede tocar (sin JS por la CSP)
     $o .= '<p class="nota"><a href="' . BASE_PATH . '/crear?nueva=1">Montar otra web de boda</a></p>';
     echo pagina_simple('¡Enhorabuena!', $o);
