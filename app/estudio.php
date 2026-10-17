@@ -380,12 +380,23 @@ function prueba_pago_arma(string $slug): string {
 }
 
 /**
- * ¿Este pago es la compra de prueba armada? Sin armado o sin la cookie del estudio, false SIN abrir sesión: a un comprador
- * nunca se le da la cookie del estudio. Con sesión y armado, o casa todo o 409: nunca cae en silencio al precio normal.
+ * ¿Este pago es la compra de prueba armada? Solo se mira la sesión del estudio si hay armado, la petición viene del
+ * creador (Origin: una web de boda en <slug>.bodaenlace.com es mismo sitio y SameSite no la frena) y la cookie es de una
+ * sesión que ya existe en el servidor: a un comprador nunca se le abre ni se le da la cookie del estudio (revisor #422).
+ * Con sesión y armado, o casa todo o 409: nunca cae al precio normal sin avisar, tampoco con la sesión del owner caducada.
  * La llave es el rename bajo el cerrojo: dos pagos a la vez no pueden gastar el mismo armado.
  */
 function prueba_pago_reclama(string $slug): bool {
-    if (!is_file(prueba_pago_fichero()) || empty($_COOKIE[estudio_cookie()]) || !estudio_dentro()) return false;
+    $id = (string) ($_COOKIE[estudio_cookie()] ?? '');
+    if (!is_file(prueba_pago_fichero()) || ($_SERVER['HTTP_ORIGIN'] ?? '') !== SCHEME . '://' . CREATOR_HOST
+        || !preg_match('/^[A-Za-z0-9,-]{22,256}$/', $id) || !is_file(estudio_dir('sesiones', 'sess_' . $id))) return false;
+    if (!estudio_dentro()) {
+        // La del owner, caducada con el armado vigente: se le avisa en vez de cobrarle el precio entero
+        if (hash_equals((string) ((lee_json(prueba_pago_fichero()) ?? [])['sid'] ?? ''), hash('sha256', $id))) {
+            json_response(['ok' => false, 'error' => 'Tu sesión del estudio ha caducado: vuelve a entrar en el panel y arma otra vez la compra de prueba.'], 409);
+        }
+        return false;
+    }
     $r = con_cerrojo(function () use ($slug) {
         $a = lee_json(prueba_pago_fichero());
         if (!$a) return 'La compra de prueba ya no está armada: ármala otra vez desde el panel del estudio.';

@@ -2,7 +2,8 @@
 // Compra de prueba de 1 € del estudio (BOD-62, revisión previa #422) de punta a punta por HTTP: la app en `php -S`
 // (router_prueba.php) y Lemon simulado (lemon_simulador.php), en LIVE. Un comprador nunca recibe la cookie del estudio
 // ni el precio de prueba; armada en el panel, solo esa sesión y ese nombre pagan 1 €, una vez; caducada, de otra sesión
-// u otro nombre = 409 (nunca 125 € en silencio); el alta y la bienvenida salen, el Padrino no la cuenta y el reembolso
+// u otro nombre = 409 (nunca 125 € en silencio); sin el Origin del creador o con una cookie inventada, precio normal y
+// ninguna sesión abierta; el alta y la bienvenida salen, el Padrino no la cuenta y el reembolso
 // la archiva. Tope de 3 armados. Uso: php tests/prueba_pago_test.php (sale con 1 si falla)
 
 declare(strict_types=1);
@@ -69,12 +70,14 @@ function arma(string $cookie, string $slug): string {
     [, $h] = pide('POST', '/estudio/prueba-pago', ['csrf' => csrf_de($h), 'accion' => 'armar', 'slug' => $slug], $cookie);
     return $h;
 }
-function pagar(string $slug, string $cookie = ''): array {
+/** POST /api/pagar como lo manda el navegador desde el creador (Origin del creador salvo que se pase otro; '' = sin Origin). */
+function pagar(string $slug, string $cookie = '', string $origen = 'https://bodaenlace.com'): array {
     $c = config_inicial();
     $c['pareja']['nombre1'] = 'Prueba'; $c['pareja']['nombre2'] = 'Estudio'; $c['pareja']['email'] = 'owner@example.com';
     $c['fecha'] = date('Y-m-d', strtotime('+200 days'));
     $c['ceremonia']['lugar'] = 'Ayuntamiento'; $c['ceremonia']['hora'] = '12:00';
-    [$st, $r, $nueva] = pide('POST', '/api/pagar', ['config' => json_encode($c), 'slug' => $slug, 'acepto_condiciones' => 'si', 'acepto_desistimiento' => 'si'], $cookie);
+    [$st, $r, $nueva] = pide('POST', '/api/pagar', ['config' => json_encode($c), 'slug' => $slug, 'acepto_condiciones' => 'si', 'acepto_desistimiento' => 'si'], $cookie,
+        $origen !== '' ? ['Origin: ' . $origen] : []);
     return [$st, json_decode($r, true) ?? ['crudo' => substr($r, 0, 300)], $nueva];
 }
 /** Cuerpo del último checkout que recibió el Lemon simulado. */
@@ -125,6 +128,18 @@ ok($st === 409 && strpos((string) ($j['error'] ?? ''), 'prueba-uno') !== false, 
 ok(count(glob($ls . '/checkout_*.json') ?: []) === $antes, 'el 409 no abre ningún pago');
 ok(is_file(prueba_pago_fichero()), 'el 409 no gasta el armado');
 
+// ---------------------------------------------------------------- 3b. desde una web de boda, sin Origin o con cookie inventada: precio normal
+foreach (['https://ana-y-luis.bodaenlace.com' => 'Origin de una web de boda', '' => 'sin Origin'] as $origen => $q) {
+    [$st] = pagar('prueba-uno', $est, $origen);
+    ok($st === 200 && (ultimo_checkout()['data']['attributes']['custom_price'] ?? 0) === precio_total_cent() && is_file(prueba_pago_fichero()), $q . ': precio normal y el armado sigue (' . $st . ')');
+    @unlink(dir_datos('reservas', 'prueba-uno.json'));
+}
+$inventada = str_repeat('a', 26);
+[$st, , $c] = pagar('prueba-uno', '__Host-bwe=' . $inventada);
+ok($st === 200 && $c === '' && (ultimo_checkout()['data']['attributes']['custom_price'] ?? 0) === precio_total_cent(), 'cookie inventada: precio normal y sin cookie nueva');
+ok(!is_file(estudio_dir('sesiones', 'sess_' . $inventada)), 'la cookie inventada no crea su fichero de sesión');
+@unlink(dir_datos('reservas', 'prueba-uno.json'));
+
 // ---------------------------------------------------------------- 4. la buena: 1 €, una vez
 [$st, $j] = pagar('prueba-uno', $est);
 $co = ultimo_checkout();
@@ -172,8 +187,16 @@ $otra = entra_estudio();
 [$st, $j] = pagar('prueba-cuatro', $otra);
 ok($st === 409 && strpos((string) ($j['error'] ?? ''), 'otra sesión') !== false, 'armada en otra sesión del estudio: 409');
 
+// ---------------------------------------------------------------- 7b. la sesión que armó caduca por inactividad: 409, nunca 125 €
+$fs = estudio_dir('sesiones', 'sess_' . explode('=', $est, 2)[1]);
+file_put_contents($fs, preg_replace('/ultimo\|i:\d+;/', 'ultimo|i:1;', (string) file_get_contents($fs)));
+$antes = count(glob($ls . '/checkout_*.json') ?: []);
+[$st, $j] = pagar('prueba-cuatro', $est);
+ok($st === 409 && strpos((string) ($j['error'] ?? ''), 'caducado') !== false, 'sesión del estudio caducada con armado: 409 (' . $st . ')');
+ok(count(glob($ls . '/checkout_*.json') ?: []) === $antes && is_file(prueba_pago_fichero()), 'no abre pago y el armado sigue');
+
 // ---------------------------------------------------------------- 8. tope de 3
-$h = arma($est, 'prueba-cinco');
+$h = arma($otra, 'prueba-cinco');
 ok(strpos($h, 'Ya se han armado las 3') !== false, 'el cuarto armado se rechaza');
 ok(((lee_json(prueba_pago_fichero()) ?? [])['slug'] ?? '') === 'prueba-cuatro', 'y no pisa el armado vigente');
 
