@@ -294,6 +294,7 @@ function padrino_resumen(): array {
         $cfg = lee_json($d . '/config.json');
         if (!$cfg) continue;
         $ped = lee_json($d . '/pedido.json') ?? [];
+        if (!empty($ped['prueba'])) continue;   // la compra de prueba del estudio (BOD-62) no es una boda de nadie
         $arch = ($cfg['_estado'] ?? '') === 'archivada';
         $conf = 0;
         if (!$arch) foreach (rsvp_vigentes($slug) as $r) $conf += count(personas($r));   // sin las sustituidas por un reenvío
@@ -330,7 +331,8 @@ function padrino_resumen(): array {
             // 'alta' = web nueva; 'mejora' = paso de Esencial a Atelier de una boda que ya existía (no es una venta nueva)
             // 'extra' = un servicio suelto de una boda que ya existía (plano de mesas…): tampoco es una venta nueva
             'tipo' => ($p['tipo'] ?? '') === 'mejora' ? 'mejora' : ($extra ? 'extra' : 'alta'),
-            'test' => !empty($p['ls']['test']),
+            // La compra de 1 € del estudio (BOD-62) cuenta como prueba: no es un ingreso ni una señal de precio
+            'test' => !empty($p['ls']['test']) || !empty($p['prueba']),
             'reembolsado_cent' => (int) ($p['reembolso']['importe_cent'] ?? 0),
         ];
     }

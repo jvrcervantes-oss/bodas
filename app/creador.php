@@ -177,7 +177,9 @@ function api_pagar(string $metodo): void {
     }
     $slug = strtolower(clean_str($_POST['slug'] ?? '', 60));
     if (!slug_valido($slug)) json_response(['ok' => false, 'error' => 'El nombre de la web no es válido.'], 422);
-    analitica_evento('pago_intento');
+    // Compra de prueba de 1 € del estudio (BOD-62, temporal): la decide el servidor, nada del POST la enciende
+    $prueba = !$cortesia && $pasarela === 'lemon' && prueba_pago_reclama($slug);
+    if (!$prueba) analitica_evento('pago_intento');
 
     asegura_dir(dir_datos('pendientes'));
     if (count(glob(dir_datos('pendientes', '*'), GLOB_ONLYDIR) ?: []) > 500) {
@@ -202,8 +204,8 @@ function api_pagar(string $metodo): void {
     $L = textos_legales();
     // Precio congelado al abrir el pedido: si El Padrino lo cambia con el pago abierto, manda este.
     // Es también el importe que se manda a Lemon Squeezy (custom_price): una sola cuenta, en el servidor.
-    $precio = precio_total_cent($c);
-    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => $cortesia ? 'cortesia' : $pasarela, 'aceptacion' => [
+    $precio = $prueba ? PRUEBA_PAGO_CENT : precio_total_cent($c);
+    escribe_json($pend . '/meta.json', ['slug' => $slug, 'creado' => time(), 'precio_cent' => $precio, 'pasarela' => $cortesia ? 'cortesia' : $pasarela] + ($prueba ? ['prueba' => true] : []) + ['aceptacion' => [
         'fecha' => date('c'), 'version' => $L['version'] ?? '', 'condiciones' => $cortesia ? ($L['check_condiciones_regalo'] ?? '') : ($L['check_condiciones'] ?? ''),
         'desistimiento' => $cortesia ? '' : ($L['check_desistimiento'] ?? ''), 'cortesia' => $cortesia ? ($cortesia[1]['id'] ?? '') : '',
         // Quién vendía al aceptar (Legal, 27-sep): la casilla nombra al vendedor y queda atada a este pedido
@@ -233,7 +235,7 @@ function api_pagar(string $metodo): void {
             @unlink(dir_datos('reservas', $slug . '.json'));
             json_response(['ok' => false, 'error' => 'No hemos podido abrir el pago. Inténtalo de nuevo.'], 502);
         }
-        analitica_evento('checkout');
+        if (!$prueba) analitica_evento('checkout');
         json_response(['ok' => true, 'url' => $url]);
     }
     [$st, $s] = stripe_crea_checkout($token, $slug, $c['pareja']['email'], $c['atelier']);
